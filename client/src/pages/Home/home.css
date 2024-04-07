@@ -1,0 +1,72 @@
+.page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-container {
+    display: flex;
+}
+
+
+.teacher-btn {
+    margin: 10px;
+    padding: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-rows: auto auto;
+    background-color: var(--main-color);
+    text-decoration: none;
+}
+
+.teacher-btn img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    margin-left: -2vw;
+}
+
+.student-btn {
+    margin: 10px;
+    padding: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-rows: auto auto;
+    background-color: var(--main-color);
+    text-decoration: none;
+}
+
+.student-btn img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    margin-right: -2vw;
+}
+
+.big-title {
+    font-size: 3.5vw;
+    font-weight: 600;
+    line-height: 1.25;
+    color: white;
+}
+
+.right-component {
+    display: flex;
+    justify-content: flex-end;
+    text-align: end;
+    align-items: end;
+}
+
+@media only screen and (max-width: 768px) {
+    .btn-container {
+        flex-direction: column;
+    }
+
+    .big-title {
+        font-size: 8vw;
+    }
+}

@@ -1,0 +1,213 @@
+/* Set default colors */
+:root {
+    --main-color: #5271ff;
+}
+
+/* Set default font */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'OpenSans', sans-serif;
+}
+
+.primary-blue {
+    background-color: var(--main-color);
+    color: #ffffff;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+}
+
+.content {
+    max-width: 1000px;
+    margin: auto;
+
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.app {
+    flex: 1 0 auto;
+}
+
+.title {
+    font-size: xx-large;
+    font-weight: 600;
+
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: x-large;
+    font-weight: 600;
+
+    margin-bottom: 1rem;
+}
+
+main {
+    padding: 2rem 2rem;
+}
+
+/* 
+
+
+main {
+    height: 85%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 5rem;
+}
+.wrapper {
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+    overflow: hidden;
+}
+
+.app {
+    height: 100%;
+    padding: 1rem;
+}
+
+.logo {
+    position: absolute;
+    cursor: pointer;
+    left: 0.5rem;
+    top: 0.5rem;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.title {
+    font-size: xx-large;
+    font-weight: 600;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+.text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+.text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+}
+
+.center-v-align {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.center-v-align > * {
+    padding: 10px;
+}
+
+.center-h-align {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-h-align > * {
+    padding: 10px;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.end-h-align {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.error-text {
+    color: red;
+}
+
+.page-title {
+    font-size: 36pt;
+    font-weight: 600;
+    text-align: center;
+}
+.quit-btn {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.mt-1\/2 {
+    margin-top: 0.5rem;
+}
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mb-3 {
+    margin-bottom: 3rem;
+}
+
+.mb-4 {
+    margin-bottom: 4rem;
+}
+
+.mb-5 {
+    margin-bottom: 5rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.blue {
+    color: #5271ff;
+}
+
+.w-12 {
+    width: 13rem;
+} */
