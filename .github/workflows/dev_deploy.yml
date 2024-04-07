@@ -20,7 +20,7 @@ jobs:
       - name: Build and Push Docker image for Router
         uses: docker/build-push-action@v2
         with:
-          context: ./nginx
-          file: ./nginx/Dockerfile
+          context: ./nginx/dev
+          file: ./nginx/dev/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/dev_${{ secrets.DOCKERHUB_ROUTER_REPO }}:latest
