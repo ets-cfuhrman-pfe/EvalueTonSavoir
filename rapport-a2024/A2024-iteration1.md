@@ -5,9 +5,9 @@
 | Étape jalon                                       | Date       |
 | :------------------------------------------------ | :--------- |
 | Début de l'itération                              | 2024/09/16 |
-| Première rencontre avec les promoteurs            | À déterminer     |
-| Démo de l'application et révision des user cases  | À déterminer     |
-| Fin de l'itération                                | 2024/09/20 |
+| Première rencontre avec les promoteurs            | À déterminer |
+| Démo de l'application                             | 2024/09/26 |
+| Fin de l'itération                                | 2024/09/27 |
 
 ## Objectifs clés
 
@@ -21,7 +21,8 @@ Les objectifs clés de cette itération sont les suivants:
 
 | Nom / Description              | Priorité | [Taille estimée (points)](#commentEstimer 'Comment estimer?') | Assigné à (nom) | Documents de référence                                                                          |
 | ------------------------------ | -------: | ------------------------------------------------------------: | --------------- | ----------------------------------------------------------------------------------------------- |
-| Déterminer une infrastructure pour l'authentification par SSO|         |                Laurent                                              |             ||
+| Mise à jour du document de Recueil de User Stories |     |     | Laurent ||
+| Déterminer une infrastructure pour l'authentification par SSO|      |     | Laurent | [Protocole SAML (Microsoft)](https://learn.microsoft.com/fr-fr/entra/identity-platform/single-sign-on-saml-protocol) |
 ## Problèmes principaux rencontrés
 
 | Problème                                                                                                                               | Notes                                                                                                                                                                                                                                         |
@@ -34,7 +35,8 @@ Les objectifs clés de cette itération sont les suivants:
 > Une brève description de la façon d'évaluer si les objectifs (définis plus haut) de haut niveau ont été atteints.
 > Vos critères d'évaluation doivent être objectifs (aucun membre de l'équipe ne peut avoir une opinion divergente) et quantifiables (sauf pour ceux évalués par l'auxiliaire d'enseignement). En voici des exemples:
 
--   Mise à jour du document de Recueil de User Stories
+-  Démo jugée satisfaisante de la part des promoteurs pour la fonctionnalité SSO
+-  Mise en place de quelques tests automatisés du fonctionnement (90 % qui passent)
 
 ## Évaluation
 
