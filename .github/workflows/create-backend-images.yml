@@ -1,0 +1,200 @@
+name: create-branch-images
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+      - 'releases/**'
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}/backend
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: ./server
+          dockerfile: ./server/Dockerfile
+          push: false
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Get current image digest
+        id: current_digest
+        run: echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}/backend:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | cut -d'@' -f2)" >> $GITHUB_ENV
+      - name: Get existing image digest
+        id: existing_digest
+        run: |
+          existing_digest=$(skopeo inspect docker://ghcr.io/${{ github.repository }}/backend:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | jq -r .Digest)
+          echo "existing_digest=$existing_digest" >> $GITHUB_ENV
+      - name: Compare digests and push if different
+        if: env.digest != env.existing_digest
+        uses: docker/build-push-action@v3
+        with:
+          context: ./server
+          dockerfile: ./server/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: ./client
+          dockerfile: ./client/Dockerfile
+          push: false
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Get current image digest
+        id: current_digest
+        run: echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}/frontend:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | cut -d'@' -f2)" >> $GITHUB_ENV
+      - name: Get existing image digest
+        id: existing_digest
+        run: |
+          existing_digest=$(skopeo inspect docker://ghcr.io/${{ github.repository }}/frontend:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | jq -r .Digest)
+          echo "existing_digest=$existing_digest" >> $GITHUB_ENV
+      - name: Compare digests and push if different
+        if: env.digest != env.existing_digest
+        uses: docker/build-push-action@v3
+        with:
+          context: ./client
+          dockerfile: ./client/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  router:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}/router
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: ./nginx
+          dockerfile: ./nginx/Dockerfile
+          push: false
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Get current image digest
+        id: current_digest
+        run: echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}/router:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | cut -d'@' -f2)" >> $GITHUB_ENV
+      - name: Get existing image digest
+        id: existing_digest
+        run: |
+          existing_digest=$(skopeo inspect docker://ghcr.io/${{ github.repository }}/router:$(echo ${{ steps.meta.outputs.tags }} | cut -d',' -f1) | jq -r .Digest)
+          echo "existing_digest=$existing_digest" >> $GITHUB_ENV
+      - name: Compare digests and push if different
+        if: env.digest != env.existing_digest
+        uses: docker/build-push-action@v3
+        with:
+          context: ./nginx
+          dockerfile: ./nginx/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
