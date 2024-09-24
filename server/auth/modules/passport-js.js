@@ -1,41 +1,32 @@
+const fs = require('fs');
 var passport = require('passport')
-var OAuthStrategy = require('passport-oauth').OAuth2Strategy;
 
 class PassportJs{
     constructor(authmanager,settings){
         this.authmanager = authmanager
+        this.registeredProviders = {}
         this.providers = Object.entries(settings)
     }
 
     registerAuth(expressapp){
+        expressapp.use(passport.initialize());
+        expressapp.use(passport.session());
+
         for(const [name,provider] of this.providers){
-            switch(provider.type){
-                case "oauth": this.registerOAuth(expressapp,name,provider)
+            if(!(provider.type in this.registeredProviders)){
+                this.registerProvider(provider.type)
             }
+            this.registeredProviders[provider.type].register(expressapp,passport,name,provider)
         }
     }
 
-    registerOAuth(app,name,provider){
-        passport.use(name, new OAuthStrategy({
-            authorizationURL: provider.authorization_url,
-            tokenURL: provider.token_url,
-            clientID: provider.client_id,
-            clientSecret: provider.client_secret,
-            callbackURL: `http://localhost:4400/api/auth/gmatte/callback`
-          },
-          function(accessToken, refreshToken, profile, done) {
-            //TODO do something with token + register/login
-            console.debug([accessToken,refreshToken,profile])
-          }
-        ));
+    registerProvider(providerType){
+        const providerPath = `${process.cwd()}/auth/modules/passport-providers/${providerType}.js`
 
-        app.use(`/api/auth/${name}`, passport.authenticate(name));
-        app.use(`/api/auth/${name}/callback`,
-            passport.authenticate(name, { 
-                successRedirect: '/', 
-                failureRedirect: '/login' 
-            })
-        );
+        if(fs.existsSync(providerPath)){
+            const Provider = require(providerPath);
+            this.registeredProviders[providerType]= new Provider()
+        }
     }
 }
 

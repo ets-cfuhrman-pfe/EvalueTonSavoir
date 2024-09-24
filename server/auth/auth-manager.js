@@ -8,11 +8,11 @@ const settings = {
             client_id : process.env['OAUTH_ClientID'],
             client_secret: process.env['OAUTH_ClientSecret'],
             config_url: process.env['OAUTH_ConfigUrl'],
-            authorization_url: process.env['OAUTH_AuthorizeUrl'],
             userinfo_url: process.env['OAUTH_UserinfoUrl'],
             token_url: process.env['OAUTH_TokenUrl'],
             logout_url: process.env['OAUTH_LogoutUrl'],
-            jwks : process.env['OAUTH_JWKS']
+            jwks : process.env['OAUTH_JWKS'],
+            scopes: [ 'groups' ]
         }
     }
 }
@@ -20,9 +20,6 @@ const settings = {
 class AuthManager{
     constructor(expressapp){
         this.modules = []
-    }
-
-    async setExpressApp(expressapp){
         this.app = expressapp
     }
 
@@ -65,5 +62,4 @@ class AuthManager{
     }
 }
 
-const authManager = new AuthManager();
-module.exports = authManager;
+module.exports = AuthManager;
