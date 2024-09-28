@@ -4,10 +4,30 @@
     align-items: center;
 }
 
+.auth-selection-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.auth-btn {
+    padding: 10px 20px;
+    background-color: #5271ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.auth-btn:hover {
+    background-color: #5976fa;
+}
+
 .btn-container {
     display: flex;
 }
-
 
 .teacher-btn {
     margin: 10px;

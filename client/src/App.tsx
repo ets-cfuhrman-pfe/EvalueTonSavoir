@@ -16,6 +16,9 @@ import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
 
+// Pages authentification selection
+import AuthSelection from './pages/AuthSelection/AuthSelection';
+
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
@@ -55,6 +58,9 @@ function App() {
 
                         {/* Pages espace étudiant */}
                         <Route path="/student/join-room" element={<JoinRoom />} />
+
+                        {/* Pages authentification selection */}
+                        <Route path="/auth-selection" element={<AuthSelection />} />
                     </Routes>
                 </main>
             </div>
