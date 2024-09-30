@@ -9,13 +9,13 @@ class UsersController {
 
     async register(req, res, next) {
         try {
-            const { email, password } = req.body;
+            const { email, password, role } = req.body;
 
             if (!email || !password) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
 
-            await model.register(email, password);
+            await model.register(email, password, role);
 
             emailer.registerConfirmation(email)
 
@@ -43,11 +43,12 @@ class UsersController {
                 throw new AppError(LOGIN_CREDENTIALS_ERROR);
             }
 
-            const token = jwt.create(user.email, user._id);
+            const token = jwt.create(user.email, user._id, user.role);
 
             return res.status(200).json({
                 token: token,
-                id: user.email
+                id: user.email,
+                role: user.role
             });
 
         }

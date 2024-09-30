@@ -5,6 +5,7 @@ const setupWebsocket = (io) => {
   let totalConnections = 0;
 
   io.on("connection", (socket) => {
+    // Get jwt and roles
     if (totalConnections >= MAX_TOTAL_CONNECTIONS) {
       console.log("Connection limit reached. Disconnecting client.");
       socket.emit(
@@ -24,6 +25,10 @@ const setupWebsocket = (io) => {
     );
 
     socket.on("create-room", (sentRoomName) => {
+      // If roles authorize else send error message
+      // else {
+      //   socket.emit('access_denied', 'You do not have permission to perform this action');
+      // }
       if (sentRoomName) {
         const roomName = sentRoomName.toUpperCase();
         if (!io.sockets.adapter.rooms.get(roomName)) {
