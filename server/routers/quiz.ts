@@ -1,19 +1,47 @@
-const express = require('express');
+import express, { Request, Response, NextFunction } from 'express';
+import jwt from '../middleware/jwtToken';
+import quizController from '../controllers/quiz';
+
 const router = express.Router();
 
-const jwt = require('../middleware/jwtToken.js');
-const quizController = require('../controllers/quiz.js')
+router.post("/create", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.create(req, res, next);
+});
 
-router.post("/create", jwt.authenticate, quizController.create);
-router.get("/get/:quizId", jwt.authenticate, quizController.get);
-router.delete("/delete/:quizId", jwt.authenticate, quizController.delete);
-router.put("/update", jwt.authenticate, quizController.update);
-router.put("/move", jwt.authenticate, quizController.move);
+router.get("/get/:quizId", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.get(req, res, next);
+});
 
-router.post("/duplicate", jwt.authenticate, quizController.duplicate);
-router.post("/copy/:quizId", jwt.authenticate, quizController.copy);
-router.put("/Share", jwt.authenticate, quizController.Share);
-router.get("/getShare/:quizId", jwt.authenticate, quizController.getShare);
-router.post("/receiveShare", jwt.authenticate, quizController.receiveShare);
+router.delete("/delete/:quizId", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.delete(req, res, next);
+});
 
-module.exports = router;
+router.put("/update", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.update(req, res, next);
+});
+
+router.put("/move", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.move(req, res, next);
+});
+
+router.post("/duplicate", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.duplicate(req, res, next);
+});
+
+router.post("/copy/:quizId", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.copy(req, res, next);
+});
+
+router.put("/Share", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.Share(req, res, next);
+});
+
+router.get("/getShare/:quizId", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.getShare(req, res, next);
+});
+
+router.post("/receiveShare", jwt.authenticate, (req: Request, res: Response, next: NextFunction) => {
+    quizController.receiveShare(req, res, next);
+});
+
+export default router;

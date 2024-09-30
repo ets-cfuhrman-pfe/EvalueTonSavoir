@@ -1,19 +1,34 @@
-import db from '../config/db';
-import bcrypt from 'bcrypt';
-import AppError from '../middleware/AppError';
-import { USER_ALREADY_EXISTS } from '../constants/errorCodes';
-import { Folder } from './folder';
 import { Image } from './image';
 import { Quiz } from './quiz';
+import { Folder } from './folder';
+
+export interface UserOptions {
+    email: string;
+    hashedPassword: string;
+    created_at?: Date;
+    _id?: string;
+    folders?: Array<Folder>;
+    images?: Array<Image>;
+    quizzes?: Array<Quiz>;
+}
 
 export class User {
-    constructor(public email: string, public hashedPassword: string, public created_at?: Date, public _id?: string, public folders?: Array<Folder>, public images?: Array<Image>, public quizzes?: Array<Quiz>) {
-        this.email = email;
-        this.hashedPassword = hashedPassword;
-        this.created_at = created_at || new Date();
-        this.folders = folders || new Array<Folder>();
-        this.images = images || new Array<Image>();
-        this.quizzes = quizzes || new Array<Quiz>();
+    email: string;
+    hashedPassword: string;
+    created_at?: Date;
+    _id?: string;
+    folders?: Array<Folder>;
+    images?: Array<Image>;
+    quizzes?: Array<Quiz>;
+
+    constructor(options: UserOptions) {
+        this.email = options.email;
+        this.hashedPassword = options.hashedPassword;
+        this.created_at = options.created_at || new Date();
+        this._id = options._id;
+        this.folders = options.folders || [];
+        this.images = options.images || [];
+        this.quizzes = options.quizzes || [];
     }
 
     // async hashPassword(password: string): Promise<string> {
