@@ -1,10 +1,9 @@
-const db = require('../config/db.js')
-const { ObjectId } = require('mongodb');
+import db from '../config/db';
+import { ObjectId } from 'mongodb';
 
-class Images {
-
-    async upload(file, userId) {
-        await db.connect()
+export class Image {
+    async upload(file: Express.Multer.File, userId: string): Promise<string> {
+        await db.connect();
         const conn = db.getConnection();
 
         const imagesCollection = conn.collection('images');
@@ -14,16 +13,16 @@ class Images {
             file_name: file.originalname,
             file_content: file.buffer.toString('base64'),
             mime_type: file.mimetype,
-            created_at: new Date()
+            created_at: new Date(),
         };
 
         const result = await imagesCollection.insertOne(newImage);
 
-        return result.insertedId;
+        return result.insertedId.toString();
     }
 
-    async get(id) {
-        await db.connect()
+    async get(id: string): Promise<{ file_name: string; file_content: Buffer; mime_type: string } | null> {
+        await db.connect();
         const conn = db.getConnection();
 
         const imagesCollection = conn.collection('images');
@@ -35,10 +34,9 @@ class Images {
         return {
             file_name: result.file_name,
             file_content: Buffer.from(result.file_content, 'base64'),
-            mime_type: result.mime_type
+            mime_type: result.mime_type,
         };
     }
-
 }
 
-module.exports = new Images;
+export default new Image();
