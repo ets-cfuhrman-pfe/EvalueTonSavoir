@@ -1,7 +1,7 @@
 import { TemplateOptions, Essay as EssayType } from './types';
 import QuestionContainer from './QuestionContainer';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import GlobalFeedback from './GlobalFeedback';
 import { ParagraphStyle, TextAreaStyle } from '../constants';
 import { state } from '.';
@@ -15,7 +15,7 @@ export default function Essay({ title, stem, globalFeedback }: EssayOptions): st
                 type: 'Développement',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             `<textarea class="gift-textarea" style="${TextAreaStyle(

@@ -1,7 +1,7 @@
 import { TemplateOptions, ShortAnswer as ShortAnswerType, TextFormat } from './types';
 import QuestionContainer from './QuestionContainer';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import GlobalFeedback from './GlobalFeedback';
 import { ParagraphStyle, InputStyle } from '../constants';
 import { state } from './index';
@@ -21,7 +21,7 @@ export default function ShortAnswer({
                 type: 'Réponse courte',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             Answers({ choices: choices }),
@@ -32,7 +32,7 @@ export default function ShortAnswer({
 
 function Answers({ choices }: AnswerOptions): string {
     const placeholder = choices
-        .map(({ text }) => TextType({ text: text as TextFormat }))
+        .map(({ text }) => textType({ text: text as TextFormat }))
         .join(', ');
     return `
     <div>

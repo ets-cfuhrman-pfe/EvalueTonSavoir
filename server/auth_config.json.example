@@ -1,0 +1,28 @@
+{
+    "auth": {
+        "passportjs":
+        [
+            {
+                "gmatte": {
+                    "type": "oauth",
+                    "OAUTH_AUTHORIZATION_URL": "https://auth.gmatte.xyz/application/o/authorize/",
+                    "OAUTH_TOKEN_URL": "https://auth.gmatte.xyz/application/o/token/",
+                    "OAUTH_USERINFO_URL": "https://auth.gmatte.xyz/application/o/userinfo/",
+                    "OAUTH_CLIENT_ID": "clientID",
+                    "OAUTH_CLIENT_SECRET": "clientSecret",
+                    "OAUTH_ADD_SCOPE": "groups",
+                    "OAUTH_ROLE_TEACHER_VALUE": "groups_evaluetonsavoir-prof",
+                    "OAUTH_ROLE_STUDENT_VALUE": "groups_evaluetonsavoir"
+                }
+            },
+            {
+                "oidc":{
+                    "type":"oidc"
+                }
+            }
+        ],
+        "Module X":{
+            
+        }
+    }
+}

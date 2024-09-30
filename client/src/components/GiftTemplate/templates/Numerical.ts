@@ -1,7 +1,7 @@
 import { TemplateOptions, Numerical as NumericalType, NumericalFormat } from './types';
 import QuestionContainer from './QuestionContainer';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import GlobalFeedback from './GlobalFeedback';
 import { ParagraphStyle, InputStyle } from '../constants';
 import { state } from '.';
@@ -21,7 +21,7 @@ export default function Numerical({
                 type: 'Numérique',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             NumericalAnswers({ choices: choices }),

@@ -255,8 +255,8 @@ const ManageRoom: React.FC = () => {
                 <div className='dumb'></div>
 
             </div>
-
-            <div className='room'>
+{/* the following breaks the css (nested room classes) */}
+            <div className=''>
 
                 {quizQuestions ? (
 

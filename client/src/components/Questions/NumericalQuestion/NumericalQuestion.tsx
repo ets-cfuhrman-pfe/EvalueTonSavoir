@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
-import TextType from '../../GiftTemplate/templates/TextType';
+import textType from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
 
 type CorrectAnswer = {
@@ -34,7 +34,7 @@ const NumericalQuestion: React.FC<Props> = (props) => {
     return (
         <div className="question-wrapper">
             <div>
-                <div dangerouslySetInnerHTML={{ __html: TextType({text: questionContent}) }} />
+                <div dangerouslySetInnerHTML={{ __html: textType({text: questionContent}) }} />
             </div>
             {showAnswer ? (
                 <>

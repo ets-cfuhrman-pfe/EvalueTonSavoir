@@ -19,8 +19,8 @@ import {
     TableHead,
     TableRow
 } from '@mui/material';
-import Latex from 'react-latex';
 import { UserType } from '../../Types/UserType';
+import { formatLatex } from '../GiftTemplate/templates/TextType';
 
 interface LiveResultsProps {
     socket: Socket | null;
@@ -51,14 +51,14 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
 
     useEffect(() => {
         // Set student list before starting
-        let newStudents:StudentResult[] = [];
+        let newStudents: StudentResult[] = [];
 
         for (const student of students as UserType[]) {
-            newStudents.push( { username: student.name, idUser: student.id, answers: [] } )
+            newStudents.push({ username: student.name, idUser: student.id, answers: [] })
         }
 
         setStudentResults(newStudents);
-        
+
     }, [])
 
     useEffect(() => {
@@ -242,16 +242,11 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                 </FormGroup>
             </div>
 
-            <Table size="small" stickyHeader component={Paper}>
+            <div className="table-container">
+            <Table size="small" component={Paper}>
                 <TableHead>
                     <TableRow>
-                        <TableCell
-                            sx={{
-                                borderStyle: 'solid',
-                                borderWidth: 1,
-                                borderColor: 'rgba(224, 224, 224, 1)'
-                            }}
-                        >
+                        <TableCell className="sticky-column">
                             <div className="text-base text-bold">Nom d'utilisateur</div>
                         </TableCell>
                         {Array.from({ length: maxQuestions }, (_, index) => (
@@ -259,7 +254,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                                 key={index}
                                 sx={{
                                     textAlign: 'center',
-                                    cursor: `pointer`,
+                                    cursor: 'pointer',
                                     borderStyle: 'solid',
                                     borderWidth: 1,
                                     borderColor: 'rgba(224, 224, 224, 1)'
@@ -270,6 +265,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                             </TableCell>
                         ))}
                         <TableCell
+                            className="sticky-header"
                             sx={{
                                 textAlign: 'center',
                                 borderStyle: 'solid',
@@ -285,6 +281,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                     {studentResults.map((student) => (
                         <TableRow key={student.idUser}>
                             <TableCell
+                                className="sticky-column"
                                 sx={{
                                     borderStyle: 'solid',
                                     borderWidth: 1,
@@ -301,6 +298,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                                 );
                                 const answerText = answer ? answer.answer.toString() : '';
                                 const isCorrect = answer ? answer.isCorrect : false;
+
                                 return (
                                     <TableCell
                                         key={index}
@@ -319,7 +317,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                                         }
                                     >
                                         {showCorrectAnswers ? (
-                                            <Latex>{answerText}</Latex>
+                                            <div>{formatLatex(answerText)}</div>
                                         ) : isCorrect ? (
                                             <FontAwesomeIcon icon={faCheck} />
                                         ) : (
@@ -347,7 +345,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                 </TableBody>
                 <TableFooter>
                     <TableRow sx={{ backgroundColor: '#d3d3d34f' }}>
-                        <TableCell sx={{ color: 'black' }}>
+                        <TableCell className="sticky-column" sx={{ color: 'black' }}>
                             <div className="text-base text-bold">% réussite</div>
                         </TableCell>
                         {Array.from({ length: maxQuestions }, (_, index) => (
@@ -383,6 +381,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ socket, questions, showSelect
                     </TableRow>
                 </TableFooter>
             </Table>
+        </div>
         </div>
     );
 };

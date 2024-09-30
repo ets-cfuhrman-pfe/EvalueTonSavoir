@@ -1,7 +1,7 @@
 import { TemplateOptions, Description as DescriptionType } from './types';
 import QuestionContainer from './QuestionContainer';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import { ParagraphStyle } from '../constants';
 import { state } from '.';
 
@@ -14,7 +14,7 @@ export default function Description({ title, stem }: DescriptionOptions): string
                 type: 'Description',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`
         ]

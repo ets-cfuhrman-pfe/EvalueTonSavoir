@@ -6,7 +6,7 @@ interface TextTypeOptions extends TemplateOptions {
     text: TextFormat;
 }
 
-function formatLatex(text: string): string {
+export function formatLatex(text: string): string {
     return text
         .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
@@ -28,7 +28,7 @@ function formatLatex(text: string): string {
  * @see marked
  * @see katex
  */
-export default function TextType({ text }: TextTypeOptions) {
+export default function textType({ text }: TextTypeOptions) {
     const formatText = formatLatex(text.text.trim());  // latex needs pure "&", ">", etc. Must not be escaped
 
     switch (text.format) {

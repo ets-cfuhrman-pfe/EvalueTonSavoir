@@ -22,7 +22,12 @@ services:
       SENDER_EMAIL: infoevaluetonsavoir@gmail.com
       EMAIL_PSW: 'vvml wmfr dkzb vjzb'
       JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
-      FRONTEND_URL: "http://localhost:5173"
+      SESSION_Secret: 'lookMomImQuizzing'
+      SITE_URL: http://localhost
+      FRONTEND_PORT: 5173
+      USE_PORTS: false
+    volumes:
+      - ./server/auth_config.json:/usr/src/app/serveur/config/auth_config.json
     depends_on:
       - mongo
     restart: always

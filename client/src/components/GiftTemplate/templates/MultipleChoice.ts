@@ -2,7 +2,7 @@ import { TemplateOptions, MultipleChoice as MultipleChoiceType } from './types';
 import QuestionContainer from './QuestionContainer';
 import GlobalFeedback from './GlobalFeedback';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import MultipleChoiceAnswers from './MultipleChoiceAnswers';
 import { ParagraphStyle } from '../constants';
 import { state } from '.';
@@ -21,7 +21,7 @@ export default function MultipleChoice({
                 type: 'Choix multiple',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             MultipleChoiceAnswers({ choices: choices }),

@@ -1,7 +1,7 @@
 import { TemplateOptions, Matching as MatchingType } from './types';
 import QuestionContainer from './QuestionContainer';
 import Title from './Title';
-import TextType from './TextType';
+import textType from './TextType';
 import GlobalFeedback from './GlobalFeedback';
 import { ParagraphStyle, SelectStyle } from '../constants';
 import { state } from '.';
@@ -24,7 +24,7 @@ export default function Matching({
                 type: 'Appariement',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             MatchAnswers({ choices: matchPairs }),
@@ -67,7 +67,7 @@ function MatchAnswers({ choices }: MatchAnswerOptions): string {
         .map(({ subquestion }) => {
             return `
           <div style="${OptionTable} ${ParagraphStyle(state.theme)}">
-            ${TextType({ text: subquestion })} 
+            ${textType({ text: subquestion })} 
           </div>
           <div>
             <select class="gift-select" style="${SelectStyle(state.theme)} ${Dropdown}">

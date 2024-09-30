@@ -1,5 +1,4 @@
-// App.tsx
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Page main
 import Home from './pages/Home/Home';
@@ -16,6 +15,9 @@ import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
 
+// Pages authentification selection
+import AuthSelection from './pages/AuthSelection/AuthSelection';
+
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
@@ -24,20 +26,16 @@ import ApiService from './services/ApiService';
 
 const handleLogout = () => {
     ApiService.logout();
-}
+};
 
 const isLoggedIn = () => {
     return ApiService.isLoggedIn();
-}
+};
 
 function App() {
     return (
         <div className="content">
-            
-                <Header
-                isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout}/>
-
+            <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
             <div className="app">
                 <main>
                     <Routes>
@@ -48,17 +46,35 @@ function App() {
                         <Route path="/teacher/login" element={<Login />} />
                         <Route path="/teacher/register" element={<Register />} />
                         <Route path="/teacher/resetPassword" element={<ResetPassword />} />
-                        <Route path="/teacher/dashboard" element={<Dashboard />} />
-                        <Route path="/teacher/share/:id" element={<Share />} />
-                        <Route path="/teacher/editor-quiz/:id" element={<QuizForm />} />
-                        <Route path="/teacher/manage-room/:id" element={<ManageRoom />} />
+
+                        {/* Routes protégées : redirection si l'utilisateur n'est pas connecté */}
+                        <Route
+                            path="/teacher/dashboard"
+                            element={isLoggedIn() ? <Dashboard /> : <Navigate to="/auth-selection" />}
+                        />
+                        <Route
+                            path="/teacher/share/:id"
+                            element={isLoggedIn() ? <Share /> : <Navigate to="/auth-selection" />}
+                        />
+                        <Route
+                            path="/teacher/editor-quiz/:id"
+                            element={isLoggedIn() ? <QuizForm /> : <Navigate to="/auth-selection" />}
+                        />
+                        <Route
+                            path="/teacher/manage-room/:id"
+                            element={isLoggedIn() ? <ManageRoom /> : <Navigate to="/auth-selection" />}
+                        />
 
                         {/* Pages espace étudiant */}
-                        <Route path="/student/join-room" element={<JoinRoom />} />
+                        <Route path="/student/join-room" element={isLoggedIn() ? <JoinRoom /> : <Navigate to="/auth-selection" />}
+                        />
+
+                        {/* Pages authentification sélection */}
+                        <Route path="/auth-selection" element={<AuthSelection />} />
                     </Routes>
                 </main>
             </div>
-                <Footer/>
+            <Footer />
         </div>
     );
 }

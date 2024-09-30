@@ -1,5 +1,5 @@
 import { TemplateOptions, Question } from './types';
-import TextType from './TextType';
+import textType from './TextType';
 import { state } from '.';
 import { theme } from '../constants';
 
@@ -21,7 +21,7 @@ export default function GlobalFeedback({ feedback }: GlobalFeedbackOptions): str
 
     return feedback !== null
         ? `<div style="${Container}">
-        <p>${TextType({ text: feedback })}</p>
+        <p>${textType({ text: feedback })}</p>
       </div>`
         : ``;
 }

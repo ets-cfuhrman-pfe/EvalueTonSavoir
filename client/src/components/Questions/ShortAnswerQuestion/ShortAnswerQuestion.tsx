@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
-import TextType from '../../GiftTemplate/templates/TextType';
+import textType from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
 
 type Choices = {
@@ -27,7 +27,7 @@ const ShortAnswerQuestion: React.FC<Props> = (props) => {
     return (
         <div className="question-wrapper">
             <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: TextType({text: questionContent}) }} />
+                <div dangerouslySetInnerHTML={{ __html: textType({text: questionContent}) }} />
             </div>
             {showAnswer ? (
                 <>

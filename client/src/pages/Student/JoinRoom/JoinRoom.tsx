@@ -152,22 +152,22 @@ const JoinRoom: React.FC = () => {
                     error={connectionError}>
 
                     <TextField
-                        label="Nom d'utilisateur"
-                        variant="outlined"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Nom d'utilisateur"
-                        sx={{ marginBottom: '1rem' }}
-                        fullWidth
-                    />
-
-                    <TextField
                         type="number"
                         label="Numéro de la salle"
                         variant="outlined"
                         value={roomName}
                         onChange={(e) => setRoomName(e.target.value)}
                         placeholder="Numéro de la salle"
+                        sx={{ marginBottom: '1rem' }}
+                        fullWidth
+                    />
+
+                    <TextField
+                        label="Nom d'utilisateur"
+                        variant="outlined"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Nom d'utilisateur"
                         sx={{ marginBottom: '1rem' }}
                         fullWidth
                     />

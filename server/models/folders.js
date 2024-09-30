@@ -13,7 +13,7 @@ class Folders {
 
         const existingFolder = await foldersCollection.findOne({ title: title, userId: userId });
 
-        if (existingFolder) return null;
+        if (existingFolder) return new Error('Folder already exists');
 
         const newFolder = {
             userId: userId,

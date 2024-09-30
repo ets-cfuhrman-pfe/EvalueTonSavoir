@@ -1,6 +1,6 @@
 import { TemplateOptions, TextChoice, TrueFalse as TrueFalseType } from './types';
 import QuestionContainer from './QuestionContainer';
-import TextType from './TextType';
+import textType from './TextType';
 import GlobalFeedback from './GlobalFeedback';
 import MultipleChoiceAnswers from './MultipleChoiceAnswers';
 import Title from './Title';
@@ -44,7 +44,7 @@ export default function TrueFalse({
                 type: 'Vrai/Faux',
                 title: title
             }),
-            `<p style="${ParagraphStyle(state.theme)}">${TextType({
+            `<p style="${ParagraphStyle(state.theme)}">${textType({
                 text: stem
             })}</p>`,
             MultipleChoiceAnswers({ choices: choices }),

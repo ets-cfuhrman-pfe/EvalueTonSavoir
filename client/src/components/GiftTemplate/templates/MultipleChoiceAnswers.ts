@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { TemplateOptions, TextFormat, Choice, MultipleChoice as MultipleChoiceType } from './types';
-import TextType from './TextType';
+import textType from './TextType';
 import AnswerIcon from './AnswerIcon';
 import { state } from '.';
 import { ParagraphStyle, theme } from '../constants';
@@ -41,7 +41,7 @@ export default function MultipleChoiceAnswers({ choices }: MultipleChoiceAnswerO
           }" id="${inputId}" name="${id}">
           ${AnswerWeight({ correct: isCorrectOption, weight: weight })}
             <label style="${CustomLabel} ${ParagraphStyle(state.theme)}" for="${inputId}">
-            ${TextType({ text: text as TextFormat })}
+            ${textType({ text: text as TextFormat })}
             </label>
           ${AnswerIcon({ correct: isCorrectOption })}
           ${AnswerFeedback({ feedback: feedback })}
@@ -85,5 +85,5 @@ function AnswerFeedback({ feedback }: AnswerFeedbackOptions): string {
       color: ${theme(state.theme, 'teal700', 'gray700')};
     `;
 
-    return feedback ? `<span style="${Container}">${TextType({ text: feedback })}</span>` : ``;
+    return feedback ? `<span style="${Container}">${textType({ text: feedback })}</span>` : ``;
 }

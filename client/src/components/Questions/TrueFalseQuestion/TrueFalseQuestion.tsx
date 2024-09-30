@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
-import TextType from '../../GiftTemplate/templates/TextType';
+import textType from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
 
 interface Props {
@@ -27,7 +27,7 @@ const TrueFalseQuestion: React.FC<Props> = (props) => {
     return (
         <div className="question-container">
             <div className="question content">
-            <div dangerouslySetInnerHTML={{ __html: TextType({ text: questionContent }) }} />
+            <div dangerouslySetInnerHTML={{ __html: textType({ text: questionContent }) }} />
             </div>
             <div className="choices-wrapper mb-1">
                 <Button
