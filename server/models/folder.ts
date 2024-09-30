@@ -1,10 +1,7 @@
-import db from '../config/db';
-import { ObjectId } from 'mongodb';
-import { Quiz } from './quiz';
 import { User } from './user';
 
 export class Folder {
-    private created_at: Date;
+    public created_at: Date;
 
     constructor (public title: string, public user: User) {
         this.title = title;
