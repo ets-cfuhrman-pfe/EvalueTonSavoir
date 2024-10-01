@@ -1,13 +1,22 @@
-const model = require('../models/quiz.js');
-const folderModel = require('../models/folders.js');
-const emailer = require('../config/email.js');
-
-const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR, DUPLICATE_QUIZ_ERROR, COPY_QUIZ_ERROR } = require('../constants/errorCodes');
+import { Request, Response, NextFunction } from 'express';
+import AppError from '../middleware/AppError';
+import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR } from '../constants/errorCodes';
+import { Quiz } from '../models/quiz';
+import { Folder } from '../models/folder';
+import Emailer from '../config/email';
 
 class QuizController {
+    private quiz: Quiz;
+    private folder: Folder;
+    private emailer: Emailer;
 
-    async create(req, res, next) {
+    constructor() {
+        this.folder = new Folder();
+        this.quiz = new Quiz();
+        this.emailer = new Emailer();
+    }
+
+    async create(req: Request, res: Response, next: NextFunction) {
         try {
             const { title, content, folderId } = req.body;
 
@@ -16,13 +25,13 @@ class QuizController {
             }
 
             // Is this folder mine
-            const owner = await folderModel.getOwner(folderId);
+            const owner = await this.folder.getOwner(folderId);
 
             if (owner != req.user.userId) {
                 throw new AppError(FOLDER_NOT_FOUND);
             }
 
-            const result = await model.create(title, content, folderId, req.user.userId);
+            const result = await this.quiz.create(title, content, folderId, req.user.userId);
 
             if (!result) {
                 throw new AppError(QUIZ_ALREADY_EXISTS);
@@ -38,7 +47,7 @@ class QuizController {
         }
     }
 
-    async get(req, res, next) {
+    async get(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId } = req.params;
 
@@ -47,7 +56,7 @@ class QuizController {
             }
 
 
-            const content = await model.getContent(quizId);
+            const content = await this.quiz.getContent(quizId);
 
             if (!content) {
                 throw new AppError(GETTING_QUIZ_ERROR);
@@ -68,7 +77,7 @@ class QuizController {
         }
     }
 
-    async delete(req, res, next) {
+    async delete(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId } = req.params;
 
@@ -77,13 +86,13 @@ class QuizController {
             }
 
             // Is this quiz mine
-            const owner = await model.getOwner(quizId);
+            const owner = await this.quiz.getOwner(quizId);
 
             if (owner != req.user.userId) {
                 throw new AppError(QUIZ_NOT_FOUND);
             }
 
-            const result = await model.delete(quizId);
+            const result = await this.quiz.delete(quizId);
 
             if (!result) {
                 throw new AppError(DELETE_QUIZ_ERROR);
@@ -99,7 +108,7 @@ class QuizController {
         }
     }
 
-    async update(req, res, next) {
+    async update(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId, newTitle, newContent } = req.body;
 
@@ -108,13 +117,13 @@ class QuizController {
             }
 
             // Is this quiz mine
-            const owner = await model.getOwner(quizId);
+            const owner = await this.quiz.getOwner(quizId);
 
             if (owner != req.user.userId) {
                 throw new AppError(QUIZ_NOT_FOUND);
             }
 
-            const result = await model.update(quizId, newTitle, newContent);
+            const result = await this.quiz.update(quizId, newTitle, newContent);
 
             if (!result) {
                 throw new AppError(UPDATE_QUIZ_ERROR);
@@ -130,7 +139,7 @@ class QuizController {
         }
     }
 
-    async move(req, res, next) {
+    async move(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId, newFolderId } = req.body;
 
@@ -139,20 +148,20 @@ class QuizController {
             }
 
             // Is this quiz mine
-            const quizOwner = await model.getOwner(quizId);
+            const quizOwner = await this.quiz.getOwner(quizId);
 
             if (quizOwner != req.user.userId) {
                 throw new AppError(QUIZ_NOT_FOUND);
             }
 
             // Is this folder mine
-            const folderOwner = await folderModel.getOwner(newFolderId);
+            const folderOwner = await this.folder.getOwner(newFolderId);
 
             if (folderOwner != req.user.userId) {
                 throw new AppError(FOLDER_NOT_FOUND);
             }
 
-            const result = await model.move(quizId, newFolderId);
+            const result = await this.quiz.move(quizId, newFolderId);
 
             if (!result) {
                 throw new AppError(MOVING_QUIZ_ERROR);
@@ -169,8 +178,7 @@ class QuizController {
 
     }
 
-    
-    async copy(req, res, next) {
+    async copy(req: Request, res: Response, next: NextFunction) {
         const { quizId, newTitle, folderId } = req.body;
 
         if (!quizId || !newTitle || !folderId) {
@@ -178,32 +186,9 @@ class QuizController {
         }
 
         throw new AppError(NOT_IMPLEMENTED);
-        // const { quizId } = req.params;
-        // const { newUserId } = req.body;
-
-        // try {
-        //     //Trouver le quiz a dupliquer 
-        //     const conn = db.getConnection();
-        //     const quiztoduplicate = await conn.collection('quiz').findOne({ _id: new ObjectId(quizId) });
-        //     if (!quiztoduplicate) {
-        //         throw new Error("Quiz non trouvé");
-        //     }
-        //     console.log(quiztoduplicate);
-        //     //Suppression du id du quiz pour ne pas le répliquer 
-        //     delete quiztoduplicate._id;
-        //     //Ajout du duplicata
-        //     await conn.collection('quiz').insertOne({ ...quiztoduplicate, userId: new ObjectId(newUserId) });
-        //     res.json(Response.ok("Dossier dupliqué avec succès pour un autre utilisateur"));
-
-        // } catch (error) {
-        //     if (error.message.startsWith("Quiz non trouvé")) {
-        //         return res.status(404).json(Response.badRequest(error.message));
-        //     }
-        //     res.status(500).json(Response.serverError(error.message));
-        // }
     }
 
-    async deleteQuizzesByFolderId(req, res, next) {
+    async deleteQuizzesByFolderId(req: Request, res: Response, next: NextFunction) {
         try {
             const { folderId } = req.body;
 
@@ -212,7 +197,7 @@ class QuizController {
             }
 
             // Call the method from the Quiz model to delete quizzes by folder ID
-            await Quiz.deleteQuizzesByFolderId(folderId);
+            await this.quiz.deleteQuizzesByFolderId(folderId);
 
             return res.status(200).json({
                 message: 'Quizzes deleted successfully.'
@@ -222,57 +207,57 @@ class QuizController {
         }
     }
 
-    async duplicate(req, res, next) {
-        const { quizId  } = req.body;
+    async duplicate(req: Request, res: Response, next: NextFunction) {
+        const { quizId } = req.body;
 
         try {
-            const newQuizId = await model.duplicate(quizId,req.user.userId);
+            const newQuizId = await this.quiz.duplicate(quizId, req.user.userId);
             res.status(200).json({ success: true, newQuizId });
         } catch (error) {
             return next(error);
         }
     }
 
-    async quizExists(title, userId) {
+    async quizExists(title: string, userId: string) {
         try {
-            const existingFile = await model.quizExists(title, userId);
+            const existingFile = await this.quiz.quizExists(title, userId);
             return existingFile !== null;
         } catch (error) {
             throw new AppError(GETTING_QUIZ_ERROR);
         }
     }
 
-    async Share(req, res, next) {
+    async Share(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId, email } = req.body;
-    
-            if ( !quizId || !email) {
+
+            if (!quizId || !email) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
-            }            
+            }
 
             const link = `${process.env.FRONTEND_URL}/teacher/Share/${quizId}`;
 
-            emailer.quizShare(email, link);
-    
+            this.emailer.quizShare(email, link);
+
             return res.status(200).json({
                 message: 'Quiz  partagé avec succès.'
             });
-    
+
         }
         catch (error) {
             return next(error);
         }
-    }    
-    
-    async getShare(req, res, next) {
+    }
+
+    async getShare(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId } = req.params;
-    
-            if ( !quizId ) {
-                throw new AppError(MISSING_REQUIRED_PARAMETER);
-            }            
 
-            const content = await model.getContent(quizId);
+            if (!quizId) {
+                throw new AppError(MISSING_REQUIRED_PARAMETER);
+            }
+
+            const content = await this.quiz.getContent(quizId);
 
             if (!content) {
                 throw new AppError(GETTING_QUIZ_ERROR);
@@ -281,36 +266,36 @@ class QuizController {
             return res.status(200).json({
                 data: content.title
             });
-    
+
         }
         catch (error) {
             return next(error);
         }
     }
 
-    async receiveShare(req, res, next) {
+    async receiveShare(req: Request, res: Response, next: NextFunction) {
         try {
             const { quizId, folderId } = req.body;
-    
+
             if (!quizId || !folderId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
 
-            const folderOwner = await folderModel.getOwner(folderId);
+            const folderOwner = await this.folder.getOwner(folderId);
             if (folderOwner != req.user.userId) {
                 throw new AppError(FOLDER_NOT_FOUND);
             }
-    
-            const content = await model.getContent(quizId);
+
+            const content = await this.quiz.getContent(quizId);
             if (!content) {
                 throw new AppError(GETTING_QUIZ_ERROR);
             }
-    
-            const result = await model.create(content.title, content.content, folderId, req.user.userId);
+
+            const result = await this.quiz.create(content.title, content.content, folderId, req.user.userId);
             if (!result) {
                 throw new AppError(QUIZ_ALREADY_EXISTS);
             }
-    
+
             return res.status(200).json({
                 message: 'Quiz partagé reçu.'
             });
@@ -319,8 +304,6 @@ class QuizController {
             return next(error);
         }
     }
-    
-
 }
 
-module.exports = new QuizController;
+export default new QuizController();

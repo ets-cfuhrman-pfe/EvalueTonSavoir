@@ -1,0 +1,34 @@
+@startuml MDD EvalueTonSavoir
+skinparam style strictuml
+hide empty members
+
+class "EvalueTonSavoir" as ETS
+
+class User {
+    id: string
+    email: string
+    hashedPassword: string
+    createdAt: Date
+}
+
+class Quiz {
+    id: string
+    title: string
+    content: string
+    createdAt: Date
+    updatedAt: Date
+}
+
+class Folder {
+    id: string
+    title: string
+    createdAt: Date
+}
+
+User "1" -- "1..*" Folder : Creates >
+Folder "1" *-- "1..*" Quiz : Contains >
+User "1" *-- "1..*" Quiz : Creates >
+ETS "1" *-- "1..*" User : Contains >
+ETS "1" *-- "1..*" Folder : Contains >
+ETS "1" *-- "1..*" Quiz : Contains >
+@enduml

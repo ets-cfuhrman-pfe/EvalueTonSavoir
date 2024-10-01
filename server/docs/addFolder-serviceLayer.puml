@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+participant ":Folder\nController" as FC
+participant ":Évalue\nTon\nSavoir" as ETS
+participant ":Map<string, User>" as MUS
+participant "user:User" as U
+participant "f:Folder" as F
+participant "FolderService" as FS
+participant "UserRepository" as UR
+participant "FolderRepository" as FR
+database "Database" as DB
+
+-> FC: addFolder(folderName: string,\nuserId: string)
+FC -> ETS : user = getUser(userId: string)
+note right: by Expert
+ETS -> MUS : user = find(userId)
+note right: id to object
+FC -> ETS : f = createFolder(folderName: string,\nuser: User)
+create F
+ETS -->> F : <<create>>
+note right: by Creator (ETS\naggregates Folder)
+ETS -> U : addFolder(f)
+note right: by Expert
+
+ETS -> FS: addFolderToUser(user, f)
+FS -> FR: save(f)
+FR -> DB: insertOne(f)
+DB --> FR: insertedId
+FR --> FS: save result
+
+FS -> UR: update(user)
+UR -> DB: updateOne({ _id: user._id }, { $set: { folders: user.folders } })
+DB --> UR: update result
+UR --> FS: update result
+
+FS --> ETS: success
+ETS --> FC: success
+@enduml

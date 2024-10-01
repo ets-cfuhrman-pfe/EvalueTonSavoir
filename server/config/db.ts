@@ -27,4 +27,4 @@ class DBConnection {
     }
 }
 
-export default DBConnection;
+export default new DBConnection();

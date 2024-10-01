@@ -1,0 +1,23 @@
+@startuml addFolder-RDCU
+skinparam style strictuml
+skinparam SequenceMessageAlignment center
+
+participant ":Folder\nController" as FC
+participant ":Évalue\nTon\nSavoir" as ETS
+participant ":Map<string, User>" as MUS
+participant "user:User" as U
+participant "f:Folder" as F
+
+-> FC: addFolder(folderName: string,\nuserId: string)
+FC -> ETS : user = getUser(userId: string)
+note right: by Expert
+ETS -> MUS : user = find(userId)
+note right: id to object
+FC -> ETS : f = createFolder(folderName: string,\nuser: User)
+create F
+ETS -->> F : <<create>>
+note right: by Creator (ETS\naggregates Folder)
+ETS -> U : addFolder(f)
+note right: by Expert
+
+@enduml
