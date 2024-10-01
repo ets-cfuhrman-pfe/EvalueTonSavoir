@@ -94,7 +94,7 @@ class AuthConfig {
     ];
 
     const requiredOIDCFields = [
-      'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_ISSUER_URL', 'OIDC_ROLE_TEACHER_VALUE', 'OIDC_ROLE_STUDENT_VALUE'
+      'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_CONFIG_URL', 'OIDC_ROLE_TEACHER_VALUE', 'OIDC_ROLE_STUDENT_VALUE','OIDC_ADD_SCOPE'
     ];
 
     const missingFieldsReport = [];
@@ -155,7 +155,7 @@ class AuthConfig {
             };
           } else if (providerConfig.type === 'oidc') {
             passportConfig[providerName] = {
-              type: providerConfig.type
+              type: providerConfig.type,
             };
           }
         });
