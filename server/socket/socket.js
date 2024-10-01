@@ -1,11 +1,38 @@
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
+var passport = require('passport')
+const Permissions = require("../models/permissions");
+const AppError = require("../middleware/AppError");
+const {UNAUTHORIZED_PERMISSION_MISSING} = require("../constants/errorCodes");
 
 const setupWebsocket = (io) => {
   let totalConnections = 0;
 
+  function onlyForHandshake(middleware) {
+    return (req, res, next) => {
+      const isHandshake = req._query.sid === undefined;
+      if (isHandshake) {
+        middleware(req, res, next);
+      } else {
+        next();
+      }
+    };
+  }
+
+  io.engine.use(onlyForHandshake(passport.session()));
+  io.engine.use(
+      onlyForHandshake((req, res, next) => {
+        if (req.user) {
+          next();
+        } else {
+          res.writeHead(401);
+          res.end();
+        }
+      }),
+  );
+
   io.on("connection", (socket) => {
-    // Get jwt and roles
+    const userRole = socket.request.user.role;
     if (totalConnections >= MAX_TOTAL_CONNECTIONS) {
       console.log("Connection limit reached. Disconnecting client.");
       socket.emit(
@@ -25,10 +52,10 @@ const setupWebsocket = (io) => {
     );
 
     socket.on("create-room", (sentRoomName) => {
-      // If roles authorize else send error message
-      // else {
-      //   socket.emit('access_denied', 'You do not have permission to perform this action');
-      // }
+      const userPermissions = Permissions.getPermissionsByRoleName(userRole);
+      if (!userPermissions.includes("create_quiz")) {
+        socket.emit(UNAUTHORIZED_PERMISSION_MISSING.code, UNAUTHORIZED_PERMISSION_MISSING.message);
+      }
       if (sentRoomName) {
         const roomName = sentRoomName.toUpperCase();
         if (!io.sockets.adapter.rooms.get(roomName)) {
@@ -49,6 +76,10 @@ const setupWebsocket = (io) => {
     });
 
     socket.on("join-room", ({ enteredRoomName, username }) => {
+      const userPermissions = Permissions.getPermissionsByRoleName(userRole);
+      if (!userPermissions.includes("participate_quiz")) {
+        socket.emit(UNAUTHORIZED_PERMISSION_MISSING.code, UNAUTHORIZED_PERMISSION_MISSING.message);
+      }
       if (io.sockets.adapter.rooms.has(enteredRoomName)) {
         const clientsInRoom =
           io.sockets.adapter.rooms.get(enteredRoomName).size;

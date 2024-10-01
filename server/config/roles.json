@@ -14,7 +14,8 @@
       "permissions": [
         "crud_quiz",
         "crud_folders",
-        "crud_images"
+        "crud_images",
+        "participate_quiz"
       ]
     },
     {

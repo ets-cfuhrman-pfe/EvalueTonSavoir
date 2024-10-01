@@ -1,12 +1,18 @@
 const Permissions = require('../models/permissions');
 const AppError = require("./AppError");
 const { UNAUTHORIZED_PERMISSION_MISSING} = require("../constants/errorCodes");
-const jwt = require("jsonwebtoken");
 
 class Rbac {
     checkPermission = (...permissions) => {
         return (req, res, next) => {
-            const userRole = req.user ? req.user.role : 'anonymous';
+            let userRole;
+            if (req.user) {
+                userRole = req.user.role;
+            } else if (req.session.passport.user) {
+                userRole = req.session.passport.user.role;
+            } else {
+                userRole = 'anonymous';
+            }
             const userPermissions = Permissions.getPermissionsByRoleName(userRole);
 
             for (let permission of permissions) {

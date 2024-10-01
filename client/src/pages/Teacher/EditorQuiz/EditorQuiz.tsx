@@ -171,6 +171,10 @@ const QuizForm: React.FC = () => {
         navigator.clipboard.writeText(link);
     }
 
+    if (!ApiService.isTeacher()) {
+        return (<div className="dashboard"></div>);
+    }
+
     return (
         <div className='quizEditor'>
 

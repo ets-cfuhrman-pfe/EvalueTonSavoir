@@ -1,4 +1,5 @@
 var OpenIDConnectStrategy = require('passport-openidconnect')
+const model = require("../../../models/users");
 
 class PassportOpenIDConnect {
 
@@ -54,6 +55,13 @@ class PassportOpenIDConnect {
             },
             (req, res) => {
                 if (req.user) {
+                    if (req.user.groups.includes(provider.OAUTH_ROLE_TEACHER_VALUE)) {
+                        model.register(req.user.email, "teacher");
+                    } else if (req.user.groups.includes(provider.OAUTH_ROLE_STUDENT_VALUE)) {
+                        model.register(req.user.email, "student");
+                    } else {
+                        model.register(req.user.email, "anonymous");
+                    }
                     res.json(req.user)
                     console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
                 } else {

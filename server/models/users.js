@@ -47,6 +47,37 @@ class Users {
         // TODO: verif if inserted properly...
     }
 
+    async register(email, role) {
+        await db.connect();
+        const conn = db.getConnection();
+
+        const userCollection = conn.collection('users');
+
+        const existingUser = await userCollection.findOne({ email: email });
+
+        if (existingUser) {
+            await userCollection.updateOne(
+                { email: existingUser.email },
+                {
+                    $set: { 'role': role },
+                    $currentDate: { lastModified: true }
+                }
+            );
+        } else {
+            const newUser = {
+                email: email,
+                role: role,
+                created_at: new Date()
+            };
+
+            await userCollection.insertOne(newUser);
+
+            const folderTitle = 'Dossier par Défaut';
+            const userId = newUser._id.toString();
+            await Folders.create(folderTitle, userId);
+        }
+    }
+
     async login(email, password) {
         await db.connect()
         const conn = db.getConnection();

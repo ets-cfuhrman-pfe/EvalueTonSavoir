@@ -76,6 +76,22 @@ class ApiService {
         return true;
     }
 
+    public isTeacher(): boolean {
+        const token = this.getToken()
+
+        if (token == null) {
+            return false;
+        }
+
+        let user = JSON.parse(atob(token.split('.')[1]))
+
+        if (user.role == "teacher") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public logout(): void {
         return localStorage.removeItem("jwt");
     }

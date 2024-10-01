@@ -1,4 +1,5 @@
 var OAuth2Strategy = require('passport-oauth2')
+const model = require("../../../models/users");
 
 class PassportOAuth {
     register(app, passport,endpoint, name, provider) {
@@ -17,6 +18,15 @@ class PassportOAuth {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
                 const userInfo = await userInfoResponse.json();
+                let role;
+
+                if (userInfo.groups.includes(provider.OAUTH_ROLE_TEACHER_VALUE)) {
+                    role = "teacher";
+                } else if (userInfo.groups.includes(provider.OAUTH_ROLE_STUDENT_VALUE)) {
+                    role = "student";
+                } else {
+                    role = "anonymous";
+                }
 
                 const user = {
                     id: userInfo.sub,
@@ -25,7 +35,8 @@ class PassportOAuth {
                     groups: userInfo.groups ?? [],
                     accessToken: accessToken,
                     refreshToken: refreshToken,
-                    expiresIn: params.expires_in
+                    expiresIn: params.expires_in,
+                    role: role
                 };
 
                 // Store the tokens in the session

@@ -151,15 +151,11 @@ class AuthConfig {
 
           if (providerConfig.type === 'oauth') {
             passportConfig[providerName] = {
-              type: providerConfig.type,
-              authorizationUrl: providerConfig.OAUTH_AUTHORIZATION_URL,
-              callbackUrl: providerConfig.OAUTH_CALLBACK_URL,
+              type: providerConfig.type
             };
           } else if (providerConfig.type === 'oidc') {
             passportConfig[providerName] = {
-              type: providerConfig.type,
-              issuerUrl: providerConfig.OIDC_ISSUER_URL,
-              callbackUrl: providerConfig.OIDC_CALLBACK_URL
+              type: providerConfig.type
             };
           }
         });

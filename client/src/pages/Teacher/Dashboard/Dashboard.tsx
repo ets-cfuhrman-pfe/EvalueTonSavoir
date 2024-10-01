@@ -357,8 +357,9 @@ const Dashboard: React.FC = () => {
         }
     }
 
-
-
+    if (!ApiService.isTeacher()) {
+        return (<div className="dashboard"></div>);
+    }
 
     return (
 
