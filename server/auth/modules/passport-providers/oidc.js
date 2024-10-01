@@ -31,11 +31,21 @@ class PassportOpenIDConnect {
         // patch pour la librairie permet d'obtenir les groupes, PR en cours mais "morte" : https://github.com/jaredhanson/passport-openidconnect/pull/101
         async function(req, issuer, profile, times, tok, done) {
             try {
+                let role;
+                if (profile.groups[0].value.includes(provider.OIDC_ROLE_TEACHER_VALUE)) {
+                    role = "teacher";
+                } else if (profile.groups[0].value.includes(provider.OIDC_ROLE_STUDENT_VALUE)) {
+                    role = "student";
+                } else {
+                    role = "anonymous";
+                }
+
                 const user = {
                     id: profile.id,
                     email: profile.emails[0].value,
                     name: profile.name.givenName,
-                    groups: profile.groups[0].value ?? []
+                    groups: profile.groups[0].value ?? [],
+                    role: role
                 };
                 return done(null, user);
             } catch (error) {
@@ -56,13 +66,6 @@ class PassportOpenIDConnect {
             },
             (req, res) => {
                 if (req.user) {
-                    if (req.user.groups.includes(provider.OAUTH_ROLE_TEACHER_VALUE)) {
-                        model.register(req.user.email, "teacher");
-                    } else if (req.user.groups.includes(provider.OAUTH_ROLE_STUDENT_VALUE)) {
-                        model.register(req.user.email, "student");
-                    } else {
-                        model.register(req.user.email, "anonymous");
-                    }
                     res.json(req.user)
                     console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
                 } else {
