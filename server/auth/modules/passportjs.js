@@ -52,11 +52,11 @@ class PassportJs{
 
 
     register(userinfos){
-        this.authmanager.register(userinfos)
+        return this.authmanager.register(userinfos)
     }
 
     authenticate(userinfos){
-        this.authmanager.login(userinfos)
+        return this.authmanager.login(userinfos)
     }
     
 }

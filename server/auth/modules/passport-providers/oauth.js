@@ -1,18 +1,13 @@
 var OAuth2Strategy = require('passport-oauth2')
-var authProvider = require('../../../models/authProvider')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var users = require('../../../models/users')
 var { hasNestedValue } = require('../../../utils')
-
+var jwt = require('../../../middleware/jwtToken')
 
 class PassportOAuth {
     constructor(passportjs,auth_name){
         this.passportjs = passportjs
         this.auth_name = auth_name
-    }
-
-    async getProviderInfo(auth_name){
-        return await authProvider.find(auth_name)
     }
 
     register(app, passport,endpoint, name, provider) {
@@ -44,14 +39,14 @@ class PassportOAuth {
                 if(hasNestedValue(userInfo,provider.OAUTH_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
                 if(hasNestedValue(userInfo,provider.OAUTH_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
 
-                const user_association = await authUserAssoc.find_user_association(self.auth_name._id,userInfo.sub)
+                const user_association = await authUserAssoc.find_user_association(self.auth_name._id,received_user.auth_id)
 
                 let user_account = null
                 if(user_association){
                     user_account = await users.getById(user_association.user_id)
                 } 
                 else {
-                    let user_id = await users.getId(userInfo.email)
+                    let user_id = await users.getId(received_user.email)
                     user_account = user_id ? await users.getById(user_id) : await users.register(received_user.email,"")
                     await authUserAssoc.link(self.auth_name,received_user.auth_id,user_account._id)
                 }
@@ -88,10 +83,14 @@ class PassportOAuth {
             },
             (req, res) => {
                 if (req.user) {
-                    res.json(req.user)
+                    // res.json(req.user)
 
-                    const redirectUrl = `http://localhost:3000/api/auth/gmatte/callback?user=${encodeURIComponent(req.user)}`;
-                    res.redirect(redirectUrl);
+                    //const redirectUrl = `http://your-frontend-url.com/oauth/callback?user=${encodeURIComponent(req.user)}`;
+                    //res.redirect(redirectUrl);
+
+                    const tokenToSave = jwt.create(req.user.email, req.user._id);
+                    res.redirect('/oauth/callback?user=' + tokenToSave);
+
                     console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
                 } else {
                     res.status(401).json({ error: "L'authentification a échoué" });

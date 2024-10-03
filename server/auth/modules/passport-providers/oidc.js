@@ -1,9 +1,13 @@
 var OpenIDConnectStrategy = require('passport-openidconnect')
+var authUserAssoc = require('../../../models/authUserAssociation')
+var users = require('../../../models/users')
+var { hasNestedValue } = require('../../../utils')
+var jwt = require('../../../middleware/jwtToken')
 
 class PassportOpenIDConnect {
-    constructor(passportjs,auth_id){
+    constructor(passportjs,auth_name){
         this.passportjs = passportjs
-        this.auth_id = auth_id
+        this.auth_name = auth_name
     }
 
     async getConfigFromConfigURL(name,provider){
@@ -19,6 +23,7 @@ class PassportOpenIDConnect {
 
         const config = await this.getConfigFromConfigURL(name,provider)
         const cb_url =`${process.env['BACKEND_URL']}${endpoint}/${name}/callback`
+        const self = this
 
         passport.use(name, new OpenIDConnectStrategy({
             issuer: config.issuer,
@@ -34,15 +39,35 @@ class PassportOpenIDConnect {
         // patch pour la librairie permet d'obtenir les groupes, PR en cours mais "morte" : https://github.com/jaredhanson/passport-openidconnect/pull/101
         async function(req, issuer, profile, times, tok, done) {
             try {
-                const user = {
-                    id: profile.id,
+                const received_user = {
+                    auth_id: profile.id,
                     email: profile.emails[0].value,
                     name: profile.name.givenName,
-                    groups: profile.groups[0].value ?? []
+                    roles: []
                 };
-                return done(null, user);
+
+                if(hasNestedValue(profile,provider.OIDC_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
+                if(hasNestedValue(profile,provider.OIDC_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
+    
+                const user_association = await authUserAssoc.find_user_association(self.auth_name._id,received_user.auth_id)
+
+                let user_account = null
+                if(user_association){
+                    user_account = await users.getById(user_association.user_id)
+                } 
+                else {
+                    let user_id = await users.getId(received_user.email)
+                    user_account = user_id ? await users.getById(user_id) : await users.register(received_user.email,"")
+                    await authUserAssoc.link(self.auth_name,received_user.auth_id,user_account._id)
+                }
+
+                user_account.name = received_user.name
+                user_account.roles = received_user.roles
+                await users.editUser(user_account)
+                self.passportjs.authenticate(user_account)
+
+                return done(null, user_account);
             } catch (error) {
-                
             }
         }));
 
@@ -59,7 +84,11 @@ class PassportOpenIDConnect {
             },
             (req, res) => {
                 if (req.user) {
-                    res.json(req.user)
+                    // res.json(req.user)
+
+                    const tokenToSave = jwt.create(req.user.email, req.user._id);
+                    res.redirect('/oauth/callback?user=' + tokenToSave);
+
                     console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
                 } else {
                     res.status(401).json({ error: "L'authentification a échoué" });

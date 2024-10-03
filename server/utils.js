@@ -3,6 +3,13 @@ function hasNestedValue(obj, path, delimiter = "_") {
   let current = obj;
 
   for (const key of keys) {
+    while(Array.isArray(current) && current.length == 1 && current[0]){
+      current = current[0]
+    }
+    while(current['value']){
+      current = current.value
+    }
+    
     if (current && typeof current === "object") {
       if (Array.isArray(current)) {
         const index = current.findIndex(x => x == key)
