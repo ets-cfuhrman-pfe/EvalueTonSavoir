@@ -2,8 +2,28 @@ import React from 'react';
 
 import './home.css';
 import { Link } from 'react-router-dom';
+import ApiService from "../../services/ApiService.tsx";
 
 const Home: React.FC = () => {
+
+    if (!ApiService.isTeacher()) {
+        return (<div className="page">
+            <div className="btn-container">
+
+                <Link to="/student/join-room" className="student-btn">
+                    <div className="big-title">
+                        Espace
+                        <br/>
+                        étudiant
+                    </div>
+                    <div className="right-component">
+                        <img src="student.svg"/>
+                    </div>
+                </Link>
+            </div>
+        </div>);
+    }
+
     return (
         <div className="page">
             <div className="btn-container">
@@ -11,24 +31,24 @@ const Home: React.FC = () => {
                 <Link to="/student/join-room" className="student-btn">
                     <div className="big-title">
                         Espace
-                        <br />
+                        <br/>
                         étudiant
                     </div>
                     <div className="right-component">
-                        <img src="student.svg" />
+                        <img src="student.svg"/>
                     </div>
                 </Link>
 
                 <Link to="/teacher/dashboard" className="teacher-btn">
                     <div>
-                        <img src="teacher.svg" />
+                        <img src="teacher.svg"/>
                     </div>
                     <div className="right-component big-title">
-                        Espace <br />
+                        Espace <br/>
                         enseignant
                     </div>
                 </Link>
-                
+
             </div>
         </div>
     );

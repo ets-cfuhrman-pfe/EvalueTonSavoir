@@ -18,7 +18,7 @@ class Users {
     return await bcrypt.compare(password, hash);
   }
 
-  async register(email, password) {
+  async register(email, password, role) {
     await db.connect();
     const conn = db.getConnection();
 
@@ -33,6 +33,7 @@ class Users {
     const newUser = {
       email: email,
       password: await this.hashPassword(password),
+      roles: [role],
       created_at: new Date(),
     };
 

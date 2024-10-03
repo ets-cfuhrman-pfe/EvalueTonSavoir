@@ -76,6 +76,23 @@ class ApiService {
         return true;
     }
 
+    public isTeacher(): boolean {
+        const token = this.getToken()
+
+        if (token == null) {
+            return false;
+        }
+
+        let user = JSON.parse(atob(token.split('.')[1]))
+
+        if (user.roles.includes("teacher")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     public logout(): void {
         return localStorage.removeItem("jwt");
     }
@@ -86,16 +103,16 @@ class ApiService {
      * @returns true if  successful 
      * @returns A error string if unsuccessful,
      */
-    public async register(email: string, password: string): Promise<any> {
+    public async register(email: string, password: string, role: string): Promise<any> {
         try {
 
-            if (!email || !password) {
-                throw new Error(`L'email et le mot de passe sont requis.`);
+            if (!email || !password || !role) {
+                throw new Error(`L'email, le role et le mot de passe sont requis.`);
             }
 
             const url: string = this.constructRequestUrl(`/user/register`);
             const headers = this.constructRequestHeaders();
-            const body = { email, password };
+            const body = { email, password, role };
 
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 

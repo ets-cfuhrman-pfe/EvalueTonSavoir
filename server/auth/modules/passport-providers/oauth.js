@@ -90,8 +90,8 @@ class PassportOAuth {
                 if (req.user) {
                     res.json(req.user)
 
-                    //const redirectUrl = `http://your-frontend-url.com/oauth/callback?user=${encodeURIComponent(req.user)}`;
-                    //res.redirect(redirectUrl);
+                    const redirectUrl = `http://localhost:3000/api/auth/gmatte/callback?user=${encodeURIComponent(req.user)}`;
+                    res.redirect(redirectUrl);
                     console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
                 } else {
                     res.status(401).json({ error: "L'authentification a échoué" });

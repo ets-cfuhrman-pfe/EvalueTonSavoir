@@ -1,0 +1,27 @@
+{
+  "roles": [
+    {
+      "name": "admin",
+      "permissions": [
+        "crud_quiz",
+        "crud_folders",
+        "crud_images",
+        "crud_user"
+      ]
+    },
+    {
+      "name": "teacher",
+      "permissions": [
+        "crud_quiz",
+        "crud_folders",
+        "crud_images"
+      ]
+    },
+    {
+      "name": "student",
+      "permissions": [
+        "participate_quiz"
+      ]
+    }
+  ]
+}
