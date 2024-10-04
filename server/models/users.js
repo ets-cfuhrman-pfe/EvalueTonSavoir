@@ -1,11 +1,14 @@
 //user
-const db = require('../config/db.js');
 const bcrypt = require('bcrypt');
 const AppError = require('../middleware/AppError.js');
 const { USER_ALREADY_EXISTS } = require('../constants/errorCodes');
-const Folders = require('../models/folders.js');
 
 class Users {
+    constructor(db, foldersModel) {
+        // console.log("Users constructor: db", db)
+        this.db = db;
+        this.folders = foldersModel;
+    }
     
     async hashPassword(password) {
         return await bcrypt.hash(password, 10)
@@ -20,8 +23,8 @@ class Users {
     }
 
     async register(email, password) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
         
         const userCollection = conn.collection('users');
 
@@ -37,18 +40,19 @@ class Users {
             created_at: new Date()
         };
 
-        await userCollection.insertOne(newUser);
+        const result = await userCollection.insertOne(newUser);
+        // console.log("userCollection.insertOne() result", result);
+        const userId = result.insertedId.toString();
 
         const folderTitle = 'Dossier par Défaut'; 
-        const userId = newUser._id.toString(); 
-        await Folders.create(folderTitle, userId);
+        await this.folders.create(folderTitle, userId);
 
-        // TODO: verif if inserted properly...
+        return result;
     }
 
     async login(email, password) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const userCollection = conn.collection('users');
 
@@ -74,8 +78,8 @@ class Users {
     }
 
     async changePassword(email, newPassword) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const userCollection = conn.collection('users');
 
@@ -89,8 +93,8 @@ class Users {
     }
 
     async delete(email) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const userCollection = conn.collection('users');
 
@@ -102,8 +106,8 @@ class Users {
     }
 
     async getId(email) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const userCollection = conn.collection('users');
 
@@ -118,4 +122,4 @@ class Users {
 
 }
 
-module.exports = new Users;
+module.exports = Users;

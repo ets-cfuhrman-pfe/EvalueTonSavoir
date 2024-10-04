@@ -9,7 +9,7 @@ const setupWebsocket = (io) => {
       console.log("Connection limit reached. Disconnecting client.");
       socket.emit(
         "join-failure",
-        "Le nombre maximum de connexion a été atteint"
+        "Le nombre maximum de connexions a été atteint"
       );
       socket.disconnect(true);
       return;

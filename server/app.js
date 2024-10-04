@@ -7,7 +7,35 @@ const dotenv = require('dotenv')
 const { setupWebsocket } = require("./socket/socket");
 const { Server } = require("socket.io");
 
-//import routers
+// instantiate the db
+const db = require('./config/db.js');
+// instantiate the models
+const quiz = require('./models/quiz.js');
+const quizModel = new quiz(db);
+const folders = require('./models/folders.js');
+const foldersModel = new folders(db, quizModel);
+const users = require('./models/users.js');
+const userModel = new users(db, foldersModel);
+const images = require('./models/images.js');
+const imageModel = new images(db);
+
+// instantiate the controllers
+const usersController = require('./controllers/users.js');
+const usersControllerInstance = new usersController(userModel);
+const foldersController = require('./controllers/folders.js');
+const foldersControllerInstance = new foldersController(foldersModel);
+const quizController = require('./controllers/quiz.js');
+const quizControllerInstance = new quizController(quizModel, foldersModel);
+const imagesController = require('./controllers/images.js');
+const imagesControllerInstance = new imagesController(imageModel);
+
+// export the controllers
+module.exports.users = usersControllerInstance;
+module.exports.folders = foldersControllerInstance;
+module.exports.quizzes = quizControllerInstance;
+module.exports.images = imagesControllerInstance;
+
+//import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
 const folderRouter = require('./routers/folders.js');
 const quizRouter = require('./routers/quiz.js');
@@ -15,7 +43,6 @@ const imagesRouter = require('./routers/images.js')
 
 // Setup environement
 dotenv.config();
-const db = require('./config/db.js');
 const errorHandler = require("./middleware/errorHandler.js");
 
 // Start app

@@ -1,4 +1,4 @@
-name: Frontend Tests
+name: Tests
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  frontend-test:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,12 +19,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' 
+          node-version: '18'
 
-      - name: Install Dependencies
-        run: npm ci
-        working-directory: ./client
+      - name: Install Dependencies and Run Tests
+        run: |
+          npm ci
+          npm test
+        working-directory: ${{ matrix.directory }}
 
-      - name: Run Tests
-        run: npm test
-        working-directory: ./client
+    strategy:
+      matrix:
+        directory: [client, server]

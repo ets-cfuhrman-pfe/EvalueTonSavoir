@@ -7,7 +7,7 @@
     "build": "webpack --config webpack.config.js",
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "jest"
+    "test": "jest --colors"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "jest-mock": "^29.7.0",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.4"
   },
