@@ -1,4 +1,3 @@
-const fs = require('fs');
 var passport = require('passport')
 var authprovider = require('../../models/authProvider')
 
@@ -51,12 +50,12 @@ class PassportJs{
     }
 
 
-    register(userinfos){
-        return this.authmanager.register(userinfos)
+    register(userInfos){
+        return this.authmanager.register(userInfos)
     }
 
-    authenticate(userinfos){
-        return this.authmanager.login(userinfos)
+    authenticate(userInfo,req,res,next){
+        return this.authmanager.login(userInfo,req,res,next)
     }
     
 }

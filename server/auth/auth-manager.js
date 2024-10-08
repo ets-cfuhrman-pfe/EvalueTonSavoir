@@ -1,5 +1,8 @@
 const fs = require('fs');
 const AuthConfig = require('../config/auth.js');
+const jwt = require('../middleware/jwtToken.js');
+const emailer = require('../config/email.js');
+const model = require('../models/users.js');
 
 class AuthManager{
     constructor(expressapp,configs=null){
@@ -39,18 +42,19 @@ class AuthManager{
         }
     }
 
-    async login(userInfos){
-        // TODO global user login method
-        console.log(userInfos)
+    async login(userInfo,req,res,next){
+        const tokenToSave = jwt.create(userInfo.email, userInfo._id);
+        res.redirect(`/oauth/callback?user=${tokenToSave}`);
+        console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
     }
 
     async register(userInfos){
-        // TODO global user register method
-        console.log(userInfos)
-    }
-
-    async logout(){
-        // TODO global user logout method
+        if (!userInfos.email || !userInfos.password) {
+            throw new AppError(MISSING_REQUIRED_PARAMETER);
+        }
+        const user = await model.register(userInfos);
+        emailer.registerConfirmation(user.email)
+        return user
     }
 }
 

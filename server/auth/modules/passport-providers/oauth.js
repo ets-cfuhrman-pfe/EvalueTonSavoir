@@ -39,22 +39,26 @@ class PassportOAuth {
                 if(hasNestedValue(userInfo,provider.OAUTH_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
                 if(hasNestedValue(userInfo,provider.OAUTH_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
 
-                const user_association = await authUserAssoc.find_user_association(self.auth_name._id,received_user.auth_id)
+                const user_association = await authUserAssoc.find_user_association(self.auth_name,received_user.auth_id)
 
-                let user_account = null
+                let user_account
                 if(user_association){
                     user_account = await users.getById(user_association.user_id)
                 } 
                 else {
                     let user_id = await users.getId(received_user.email)
-                    user_account = user_id ? await users.getById(user_id) : await users.register(received_user.email,"")
+                    if(user_id){
+                        user_account = await users.getById(user_id);
+                    } else {
+                        received_user.password = users.generatePassword()
+                        user_account = await self.passportjs.register(received_user)
+                    }
                     await authUserAssoc.link(self.auth_name,received_user.auth_id,user_account._id)
                 }
 
                 user_account.name = received_user.name
                 user_account.roles = received_user.roles
                 await users.editUser(user_account)
-                self.passportjs.authenticate(user_account)
 
                 // Store the tokens in the session
                 req.session.oauth2Tokens = {
@@ -83,15 +87,7 @@ class PassportOAuth {
             },
             (req, res) => {
                 if (req.user) {
-                    // res.json(req.user)
-
-                    //const redirectUrl = `http://your-frontend-url.com/oauth/callback?user=${encodeURIComponent(req.user)}`;
-                    //res.redirect(redirectUrl);
-
-                    const tokenToSave = jwt.create(req.user.email, req.user._id);
-                    res.redirect('/oauth/callback?user=' + tokenToSave);
-
-                    console.info(`L'utilisateur '${req.user.name}' vient de se connecter`)
+                    self.passportjs.authenticate(req.user,req,res)
                 } else {
                     res.status(401).json({ error: "L'authentification a échoué" });
                 }

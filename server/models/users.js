@@ -18,21 +18,22 @@ class Users {
     return await bcrypt.compare(password, hash);
   }
 
-  async register(email, password) {
+  async register(userInfos) {
     await db.connect();
     const conn = db.getConnection();
 
     const userCollection = conn.collection("users");
 
-    const existingUser = await userCollection.findOne({ email: email });
+    const existingUser = await userCollection.findOne({ email: userInfos.email });
 
     if (existingUser) {
       throw new AppError(USER_ALREADY_EXISTS);
     }
 
     const newUser = {
-      email: email,
-      password: await this.hashPassword(password),
+      name: userInfos.name ?? userInfos.email,
+      email: userInfos.email,
+      password: await this.hashPassword(userInfos.password),
       created_at: new Date(),
     };
 
