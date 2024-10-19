@@ -28,6 +28,7 @@ import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
     // Check login status every time the route changes
@@ -37,7 +38,13 @@ const App: React.FC = () => {
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
         };
 
+        const fetchAuthenticatedRooms = async () => {
+            const data = await ApiService.getRoomsRequireAuth();
+            setRoomsRequireAuth(data);
+        };
+
         checkLoginStatus();
+        fetchAuthenticatedRooms();
     }, [location]);
 
     const handleLogout = () => {
@@ -76,7 +83,7 @@ const App: React.FC = () => {
                         {/* Pages espace étudiant */}
                         <Route
                             path="/student/join-room"
-                            element={isAuthenticated ? <JoinRoom /> : <Navigate to="/login" />}
+                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoom /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages authentification */}
