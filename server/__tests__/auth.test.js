@@ -205,3 +205,40 @@ describe(
       });  
   })
 );
+
+describe(
+  "Rooms requiring authentication", () => {
+    // Making a copy of env variables to restore them later
+    const OLD_ENV_VARIABLES = process.env;
+
+    let authConfigInstance;
+
+    beforeAll(() => {
+      authConfigInstance = new AuthConfig();
+    });
+
+    // Clearing cache just in case
+    beforeEach(() => {
+      jest.resetModules();
+      process.env = { ...OLD_ENV_VARIABLES };
+    });
+
+    // Resetting the old values
+    afterAll(() => {
+      process.env = OLD_ENV_VARIABLES;
+    });
+
+    // tests cases as [environment variable value, expected value]
+    const cases = [["true", true], ["false", false], ["", false], ["other_than_true_false", false]];
+    test.each(cases)(
+      "Given %p as AUTHENTICATED_ROOMS environment variable value, returns %p",
+      (envVarArg, expectedResult) => {
+        process.env.AUTHENTICATED_ROOMS = envVarArg;
+        const isAuthRequired = authConfigInstance.getRoomsRequireAuth();
+
+        expect(isAuthRequired).toEqual(expectedResult);
+      }
+    );
+
+  }
+)
