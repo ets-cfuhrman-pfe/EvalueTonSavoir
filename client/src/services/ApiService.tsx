@@ -105,6 +105,17 @@ class ApiService {
         }
     }
 
+    // Route to know if rooms need authentication to join
+    public async getRoomsRequireAuth(): Promise<any> {
+        const url: string = this.constructRequestUrl(`/auth/getRoomsRequireAuth`);
+        const result: AxiosResponse = await axios.get(url);
+
+        if (result.status == 200) {
+            return result.data.roomsRequireAuth;
+        }
+        return false;
+    }
+
     public logout(): void {
         return localStorage.removeItem("jwt");
     }

@@ -20,6 +20,17 @@ class authController {
         }
     }
 
+    async getRoomsRequireAuth(req, res, next) {
+        const authC = new AuthConfig();
+        const roomsRequireAuth = authC.getRoomsRequireAuth();
+
+        const response = {
+            roomsRequireAuth
+        }
+
+        return res.json(response);
+    }
+
 }
 
 module.exports = new authController;

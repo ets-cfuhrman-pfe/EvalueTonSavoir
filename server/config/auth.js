@@ -175,6 +175,17 @@ class AuthConfig {
     }
   }
 
+  // Check if students must be authenticated to join a room
+  getRoomsRequireAuth() {
+    const roomRequireAuth = process.env.AUTHENTICATED_ROOMS;
+
+    if (!roomRequireAuth || roomRequireAuth !== "true") {
+      return false;
+    }
+
+    return true;
+  }
+
 
 }
 
