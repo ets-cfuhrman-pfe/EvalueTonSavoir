@@ -9,6 +9,7 @@ describe('isQuizValid function', () => {
         const validQuiz: QuizType = {
             _id: '1',
             folderId: 'test',
+            folderName: 'test',
             userId: 'user',
             created_at: new Date('2021-10-01'),
             updated_at: new Date('2021-10-02'),
@@ -24,6 +25,7 @@ describe('isQuizValid function', () => {
         const invalidQuiz: QuizType = {
             _id: '2',
             folderId: 'test',
+            folderName: 'test',
             userId: 'user',
             title: '',
             created_at: new Date('2021-10-01'),
@@ -39,6 +41,7 @@ describe('isQuizValid function', () => {
         const invalidQuiz: QuizType = {
             _id: '2',
             folderId: 'test',
+            folderName: 'test',
             userId: 'user',
             title: 'sample',
             created_at: new Date('2021-10-01'),

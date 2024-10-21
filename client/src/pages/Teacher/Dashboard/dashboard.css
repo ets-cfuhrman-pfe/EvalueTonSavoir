@@ -78,3 +78,42 @@ div:has(> #select-folder) {
     flex-direction: row;
     align-items: center;
 }
+
+.dashboard .list .quiz .actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.folder-card {
+    position: relative;
+    /* margin: 40px 0 20px 0; /* Add top margin to make space for the tab */
+    border-radius: 8px;
+    color: #f9f9f9;
+    --outline-color: #e1e1e1;
+    border: 2px solid var(--outline-color);
+}
+
+.folder-tab {
+    position: absolute;
+    top: -33px;
+    left: 9px;
+    padding: 5px 10px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+    white-space: nowrap; /* Prevent text from wrapping */
+    display: inline-block; /* Ensure the tab width is based on content */
+    border: 2px solid var(--outline-color);
+    border-bottom-style: none;
+    background-color: white; /* Optional: background color to match the card */
+    color: #3f51b5; /* Text color to match the outline */
+}
+
+/* .folder-card:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.folder-card:nth-child(even) {
+    background-color: #e0e0e0;
+} */
