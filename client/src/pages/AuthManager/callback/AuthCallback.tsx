@@ -9,9 +9,11 @@ const OAuthCallback: React.FC = () => {
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const user = searchParams.get('user');
+        const username = searchParams.get('username');
 
         if (user) {
             apiService.saveToken(user);
+            apiService.saveUsername(username || "");
             navigate('/');
         } else {
             navigate('/login');

@@ -15,9 +15,11 @@ import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from '../../../components/LoginContainer/LoginContainer'
 
+import ApiService from '../../../services/ApiService'
+
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(ApiService.getUsername());
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isWaitingForTeacher, setIsWaitingForTeacher] = useState(false);
     const [question, setQuestion] = useState<QuestionType>();
