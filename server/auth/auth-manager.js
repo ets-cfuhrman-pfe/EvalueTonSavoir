@@ -44,7 +44,7 @@ class AuthManager{
 
     async login(userInfo,req,res,next){
         const tokenToSave = jwt.create(userInfo.email, userInfo._id,userInfo.roles);
-        res.redirect(`/auth/callback?user=${tokenToSave}`);
+        res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
         console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
     }
 

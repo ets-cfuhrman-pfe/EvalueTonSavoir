@@ -105,6 +105,30 @@ class ApiService {
         }
     }
 
+    public saveUsername(username: string): void {
+        if (!username || username.length === 0) {
+            return;
+        }
+
+        const object = {
+            username: username
+        }
+
+        localStorage.setItem("username", JSON.stringify(object));
+    }
+
+    public getUsername(): string {
+        const objectStr = localStorage.getItem("username");
+        
+        if (!objectStr) {
+            return "";
+        }
+
+        const object = JSON.parse(objectStr)
+
+        return object.username;
+    }
+
     // Route to know if rooms need authentication to join
     public async getRoomsRequireAuth(): Promise<any> {
         const url: string = this.constructRequestUrl(`/auth/getRoomsRequireAuth`);
@@ -117,6 +141,7 @@ class ApiService {
     }
 
     public logout(): void {
+        localStorage.removeItem("username");
         return localStorage.removeItem("jwt");
     }
 
