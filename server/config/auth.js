@@ -14,11 +14,11 @@ class AuthConfig {
     try {
       const configData = fs.readFileSync(configPath, 'utf-8');
       this.config = JSON.parse(configData);
-      return this.config
     } catch (error) {
-      console.error("Erreur lors de la lecture du fichier de configuration :", error);
-      return null;
+      console.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mit de fichier de configuration.");
+      this.config = {}
     }
+    return this.config
   }
 
   // Méthode pour load le fichier de test
