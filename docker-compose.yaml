@@ -49,6 +49,13 @@ services:
       - mongodb_data:/data/db
     restart: always
 
+  # Ce conteneur contient la base de donnée cache nécessaire au bon fonctionnement des salles de quiz
+  valkey:
+    image: valkey/valkey:alpine
+    container_name: valkey
+    volumes:
+      - ./deployments/valkey.conf:/usr/local/etc/valkey/valkey.conf
+
   # Ce conteneur assure que l'application est à jour en allant chercher s'il y a des mises à jours à chaque heure
   watchtower:
     image: containrrr/watchtower
