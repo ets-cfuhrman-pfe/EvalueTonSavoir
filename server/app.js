@@ -19,7 +19,7 @@ const authRouter = require('./routers/auth.js')
 dotenv.config();
 
 // Setup urls from configs
-const use_ports = (process.env['USE_PORTS']).toLowerCase() == "true"
+const use_ports = (process.env['USE_PORTS'] || 'false').toLowerCase() == "true"
 process.env['FRONTEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['FRONTEND_PORT']}`:"")
 process.env['BACKEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['PORT']}`:"")
 
