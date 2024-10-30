@@ -1,0 +1,19 @@
+---
+- name: Déployer l'application Docker Compose
+  hosts: local
+  tasks:
+    - name: S'assurer que Docker est installé
+      win_package:
+        name: Docker Desktop
+        state: present
+
+    - name: S'assurer que Docker Compose est installé
+      win_package:
+        name: docker-compose
+        state: present
+
+    - name: Démarrer les conteneurs Docker
+      docker_compose:
+        project_src: 
+        restarted: yes
+        build: yes
