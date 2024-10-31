@@ -1,19 +1,61 @@
 ---
-- name: Déployer l'application Docker Compose
+- name: Déployer des services avec Docker Compose
   hosts: local
   tasks:
-    - name: S'assurer que Docker est installé
-      win_package:
-        name: Docker Desktop
+    - name: Installer les dépendances de compilation
+      ansible.builtin.package:
+        name: 
+          - python3-venv
+          - python3-dev
+          - build-essential
+          - libyaml-dev
+          - curl
         state: present
+      become: true
 
-    - name: S'assurer que Docker Compose est installé
-      win_package:
-        name: docker-compose
+    - name: Télécharger docker-compose binaire
+      ansible.builtin.get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      become: true
+
+    - name: Vérifier l'installation de docker-compose
+      ansible.builtin.command:
+        cmd: docker-compose --version
+
+    - name: Lancer Docker Compose
+      community.docker.docker_compose:
+        project_src: "/mnt/c/Users/X/EvalueTonSavoir" # Change X by the project path
         state: present
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
 
-    - name: Démarrer les conteneurs Docker
-      docker_compose:
-        project_src: 
-        restarted: yes
-        build: yes
+# ---
+# - name: Déployer l'application Docker Compose
+#   hosts: local
+#   tasks:
+#     - name: S'assurer que Docker est installé
+#       win_package:
+#         name: Docker Desktop
+#         state: present
+
+#     - name: S'assurer que Docker Compose est installé
+#       win_package:
+#         name: docker-compose
+#         state: present
+
+#     - name: Démarrer les conteneurs Docker
+#       docker_compose:
+#         project_src: 
+#         restarted: yes
+#         build: yes
+
+# ---
+# - name: Déployer des services avec Docker Compose
+#   hosts: local
+#   tasks:
+#     - name: Lancer Docker Compose
+#       community.docker.docker_compose:
+#         project_src: 
+#         state: present  # "present" pour construire et démarrer les services
