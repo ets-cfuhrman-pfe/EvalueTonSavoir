@@ -22,39 +22,8 @@
           cmd: docker compose version
   
       - name: Lancer Docker Compose
-        ansible.builtin.shell: |
-          docker compose -f /mnt/c/Users/Jerry/Profile/ETS/Session_16_A24/PFE_LOG795/EvalueTonSavoir/docker-compose.yaml up -d
+        ansible.builtin.shell: | # change X by the project path
+          docker compose -f /mnt/c/Users/X/EvalueTonSavoir/docker-compose.yaml up -d 
         args:
-          chdir: "/mnt/c/Users/Jerry/Profile/ETS/Session_16_A24/PFE_LOG795/EvalueTonSavoir"
+          chdir: "/mnt/c/Users/X/EvalueTonSavoir"
         become: true
-  
-  
-
-# ---
-# - name: Déployer l'application Docker Compose
-#   hosts: local
-#   tasks:
-#     - name: S'assurer que Docker est installé
-#       win_package:
-#         name: Docker Desktop
-#         state: present
-
-#     - name: S'assurer que Docker Compose est installé
-#       win_package:
-#         name: docker-compose
-#         state: present
-
-#     - name: Démarrer les conteneurs Docker
-#       docker_compose:
-#         project_src: 
-#         restarted: yes
-#         build: yes
-
-# ---
-# - name: Déployer des services avec Docker Compose
-#   hosts: local
-#   tasks:
-#     - name: Lancer Docker Compose
-#       community.docker.docker_compose:
-#         project_src: 
-#         state: present  # "present" pour construire et démarrer les services
