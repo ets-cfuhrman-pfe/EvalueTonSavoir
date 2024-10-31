@@ -1,35 +1,34 @@
 ---
-- name: Déployer des services avec Docker Compose
-  hosts: local
-  tasks:
-    - name: Installer les dépendances de compilation
-      ansible.builtin.package:
-        name: 
-          - python3-venv
-          - python3-dev
-          - build-essential
-          - libyaml-dev
-          - curl
-        state: present
-      become: true
-
-    - name: Télécharger docker-compose binaire
-      ansible.builtin.get_url:
-        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
-        dest: /usr/local/bin/docker-compose
-        mode: '0755'
-      become: true
-
-    - name: Vérifier l'installation de docker-compose
-      ansible.builtin.command:
-        cmd: docker-compose --version
-
-    - name: Lancer Docker Compose
-      community.docker.docker_compose:
-        project_src: "/mnt/c/Users/X/EvalueTonSavoir" # Change X by the project path
-        state: present
-      vars:
-        ansible_python_interpreter: /usr/bin/python3
+  - name: Déployer des services avec Docker Compose
+    hosts: local
+    tasks:
+      - name: Installer les dépendances de compilation et curl
+        ansible.builtin.package:
+          name: 
+            - python3-venv
+            - curl
+          state: present
+        become: true
+  
+      - name: Télécharger Docker Compose plugin
+        ansible.builtin.get_url:
+          url: https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64
+          dest: /usr/local/lib/docker/cli-plugins/docker-compose
+          mode: '0755'
+        become: true
+  
+      - name: Vérifier l'installation de Docker Compose plugin
+        ansible.builtin.command:
+          cmd: docker compose version
+  
+      - name: Lancer Docker Compose
+        ansible.builtin.shell: |
+          docker compose -f /mnt/c/Users/Jerry/Profile/ETS/Session_16_A24/PFE_LOG795/EvalueTonSavoir/docker-compose.yaml up -d
+        args:
+          chdir: "/mnt/c/Users/Jerry/Profile/ETS/Session_16_A24/PFE_LOG795/EvalueTonSavoir"
+        become: true
+  
+  
 
 # ---
 # - name: Déployer l'application Docker Compose
