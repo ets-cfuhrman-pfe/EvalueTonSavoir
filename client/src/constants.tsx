@@ -1,6 +1,6 @@
 // constants.tsx
 const ENV_VARIABLES = {
-    MODE: 'production',
+    MODE: process.env.MODE || 'production',
     VITE_BACKEND_URL: process.env.VITE_BACKEND_URL || "",
     VITE_BACKEND_SOCKET_URL: process.env.VITE_BACKEND_SOCKET_URL || "",
 };

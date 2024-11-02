@@ -22,22 +22,17 @@ class WebSocketService {
 
     connect(backendUrl: string): Socket {
         console.log(`WebSocketService.connect('${backendUrl}')`);
-
-        // // Ensure the URL uses wss: if the URL starts with https:
-        // const protocol = backendUrl.startsWith('https:') ? 'wss:' : 'ws:';
-        // console.log(`WebSocketService.connect: protocol=${protocol}`);
-        // const url = backendUrl.replace(/^http(s):/, protocol);
-        // console.log(`WebSocketService.connect: changed url=${url}`);
         const url = backendUrl || window.location.host;
+        console.log(`WebSocketService.connect: url=${url}`);
 
         this.socket = io(url, {
             transports: ['websocket'],
-            reconnectionAttempts: 1
+            reconnectionAttempts: 1,
+            secure: url.startsWith('https'),
         });
 
         return this.socket;
     }
-
 
     disconnect() {
         if (this.socket) {
