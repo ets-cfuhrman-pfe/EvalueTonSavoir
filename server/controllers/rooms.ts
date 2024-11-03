@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis';
+import { GlideClient, GlideClientConfiguration } from '@valkey/valkey-glide';
 import { 
   RoomInfo,
   RoomOptions,
@@ -11,17 +11,17 @@ import { DockerRoomProvider } from './providers/docker-provider';
 import { KubernetesRoomProvider } from './providers/kubernetes-provider';
 
 interface RoomManagerOptions {
-  redisUrl?: string;
+  valkeyConfig?: GlideClientConfiguration;
   provider?: ProviderType;
   providerOptions?: ProviderConfig;
 }
 
 export class RoomManager {
-  private redis: Redis;
+  private valkey: GlideClient;
   private provider: BaseRoomProvider<RoomInfo>;
 
   constructor(options: RoomManagerOptions = {}) {
-    this.redis = new Redis(options.redisUrl || process.env.REDIS_URL);
+    this.valkey = new GlideClient();
     this.provider = this.createProvider(
       options.provider || process.env.ROOM_PROVIDER as ProviderType || 'cluster',
       options.providerOptions
