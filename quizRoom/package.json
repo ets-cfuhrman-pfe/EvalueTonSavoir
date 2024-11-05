@@ -1,21 +1,23 @@
 {
-  "name": "ets-pfe004-evaluetonsavoir-quizroom",
+  "name": "quizroom",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "jest --colors"
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "dev": "ts-node app.ts"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
-  "dependencies": {
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
-    "socket.io": "^4.7.2"
-  },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "jest-mock": "^29.7.0"
+    "@types/express": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "socket.io": "^4.8.1"
   }
 }

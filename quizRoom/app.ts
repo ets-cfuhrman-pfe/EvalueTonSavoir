@@ -4,7 +4,7 @@ import { Server, ServerOptions } from "socket.io";
 // Import setupWebsocket
 import { setupWebsocket } from "./socket/setupWebSocket";
 
-const port = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 4500;
+const port =  4500;
 
 // Create HTTP and WebSocket server
 const server = http.createServer();
