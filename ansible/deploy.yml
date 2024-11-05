@@ -21,9 +21,9 @@
       - name: Telecharger le fichier docker-compose
         ansible.builtin.get_url:
             url: https://raw.githubusercontent.com/ets-cfuhrman-pfe/EvalueTonSavoir/refs/heads/main/docker-compose.yaml
-            dest: ./docker-
+            dest: ./docker-compose.yaml
             
       - name: Lancer Docker Compose
         ansible.builtin.shell:
-          docker compose up -d 
+          docker-compose up -d 
         become: true
