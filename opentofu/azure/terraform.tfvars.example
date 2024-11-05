@@ -1,0 +1,7 @@
+image_registry_user       = "username"
+image_registry_password   = "password"
+image_registry_server     = "index.docker.io"
+backend_session_secret    = "session_secret"
+backend_email_sender      = "mail@mail.com"
+backend_email_password    = "password"
+backend_jwt_secret        = "jwt_secret"

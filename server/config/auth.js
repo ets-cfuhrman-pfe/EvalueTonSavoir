@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const pathAuthConfig = './auth_config.json';
 
-const configPath = path.join(process.cwd(), pathAuthConfig);
+let configPath = path.join(process.cwd(), pathAuthConfig);
 
 class AuthConfig {
 
@@ -12,6 +12,9 @@ class AuthConfig {
   // Méthode pour lire le fichier de configuration JSON
   loadConfig() {
     try {
+      if (!fs.existsSync(configPath)) {
+        configPath = path.join(process.cwd(), "config", "auth", pathAuthConfig);
+      }
       const configData = fs.readFileSync(configPath, 'utf-8');
       this.config = JSON.parse(configData);
     } catch (error) {
