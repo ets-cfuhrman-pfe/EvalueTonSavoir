@@ -2,28 +2,28 @@
   - name: Déployer des services avec Docker Compose
     hosts: local
     tasks:
-      - name: Installer les dépendances de compilation et curl
-        ansible.builtin.package:
-          name: 
-            - python3-venv
-            - curl
-          state: present
-        become: true
   
-      - name: Télécharger Docker Compose plugin
-        ansible.builtin.get_url:
-          url: https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64
-          dest: /usr/local/lib/docker/cli-plugins/docker-compose
-          mode: '0755'
-        become: true
+      - name: Télécharger Docker
+        ansible.builtin.package:
+            name: docker-compose
+            state: present
   
       - name: Vérifier l'installation de Docker Compose plugin
         ansible.builtin.command:
           cmd: docker compose version
-  
+          
+      - name: Commencer le service docker
+        ansible.builtin.service:
+            name: docker
+            state: started
+            enabled: yes
+          
+      - name: Telecharger le fichier docker-compose
+        ansible.builtin.get_url:
+            url: https://raw.githubusercontent.com/ets-cfuhrman-pfe/EvalueTonSavoir/refs/heads/main/docker-compose.yaml
+            dest: ./docker-
+            
       - name: Lancer Docker Compose
-        ansible.builtin.shell: | # change X by the project path
-          docker compose -f /mnt/c/Users/X/EvalueTonSavoir/docker-compose.yaml up -d 
-        args:
-          chdir: "/mnt/c/Users/X/EvalueTonSavoir"
+        ansible.builtin.shell:
+          docker compose up -d 
         become: true
