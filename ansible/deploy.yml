@@ -25,5 +25,14 @@
             
       - name: Lancer Docker Compose
         ansible.builtin.shell:
-          docker-compose up -d 
+          docker-compose up -d
         become: true
+
+      - name: Vérification des services Docker
+        ansible.builtin.command:
+          cmd: docker ps
+        register: docker_ps_output
+  
+      - name: Afficher l'état des conteneurs Docker
+        ansible.builtin.debug:
+          msg: "{{ docker_ps_output.stdout }}"
