@@ -27,6 +27,17 @@ services:
       - mongo
     restart: always
 
+  quizroom:
+    build:
+      context: ./quizRoom
+      dockerfile: Dockerfile
+    container_name: quizroom
+    ports:
+      - "4500:4500"
+    depends_on:
+      - backend
+    restart: always
+
   # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
   nginx:
     image: fuhrmanator/evaluetonsavoir-routeur:latest
