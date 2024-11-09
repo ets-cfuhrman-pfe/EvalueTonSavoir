@@ -1,7 +1,10 @@
-const { ObjectId } = require('mongodb');
-const { generateUniqueTitle } = require('./utils');
+import type { DBConnection } from '../config/db';
+import { ObjectId } from 'mongodb';
+import { generateUniqueTitle } from '../utils/models-utils'
 
-class Quiz {
+export class Quiz {
+
+    db: DBConnection
 
     constructor(db) {
         // console.log("Quiz constructor: db", db)
@@ -44,7 +47,7 @@ class Quiz {
 
         const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });
 
-        return quiz.userId;
+        return quiz?.userId;
     }
 
     async getContent(quizId) {
@@ -151,5 +154,4 @@ class Quiz {
     }
 
 }
-
-module.exports = Quiz;
+export default Quiz;

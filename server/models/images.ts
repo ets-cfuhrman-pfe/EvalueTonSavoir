@@ -1,15 +1,16 @@
-//const db = require('../config/db.js')
-const { ObjectId } = require('mongodb');
+import type {DBConnection} from '../config/db.js'
+import { ObjectId } from 'mongodb';
 
 class Images {
+    db:DBConnection
 
     constructor(db) {
         this.db = db;
     }
 
     async upload(file, userId) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const imagesCollection = conn.collection('images');
 
@@ -27,8 +28,8 @@ class Images {
     }
 
     async get(id) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const imagesCollection = conn.collection('images');
 
@@ -45,4 +46,4 @@ class Images {
 
 }
 
-module.exports = Images;
+export default Images

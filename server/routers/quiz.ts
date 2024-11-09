@@ -1,7 +1,9 @@
-const express = require('express');
+import express, { Response, Request } from "express";
+import jwt from '../middleware/jwtToken.js';
+import {controllers} from '../app.js'
+
+const quizzes = controllers.quizzes
 const router = express.Router();
-const quizzes = require('../app.js').quizzes;
-const jwt = require('../middleware/jwtToken.js');
 
 if (!quizzes) {
   console.error("quizzes is not defined");
@@ -19,4 +21,4 @@ router.put("/Share", jwt.authenticate, quizzes.share);
 router.get("/getShare/:quizId", jwt.authenticate, quizzes.getShare);
 router.post("/receiveShare", jwt.authenticate, quizzes.receiveShare);
 
-module.exports = router;
+export default router

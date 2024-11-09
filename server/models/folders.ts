@@ -1,8 +1,14 @@
 //model
-const ObjectId = require('mongodb').ObjectId;
-const { generateUniqueTitle } = require('./utils');
+import type { DBConnection } from '../config/db';
+import type {Quiz} from './quiz'
+import {ObjectId} from 'mongodb'
+import { generateUniqueTitle } from '../utils/models-utils';
 
 class Folders {
+
+    db: DBConnection
+    quizModel:Quiz
+
     constructor(db, quizModel) {
         this.db = db;
         this.quizModel = quizModel;
@@ -57,7 +63,7 @@ class Folders {
 
         const folder = await foldersCollection.findOne({ _id: ObjectId.createFromHexString(folderId) });
 
-        return folder.userId;
+        return folder?.userId;
     }
 
     // finds all quizzes in a folder
@@ -151,7 +157,8 @@ class Folders {
     async copy(folderId, userId) {
 
         const sourceFolder = await this.getFolderWithContent(folderId);
-        const newFolderId = await this.create(sourceFolder.title, userId);
+
+        const newFolderId = await this.create(sourceFolder[0].title, userId);
         if (!newFolderId) {
             throw new Error('Failed to create a new folder.');
         }
@@ -192,4 +199,4 @@ class Folders {
 
 }
 
-module.exports = Folders;
+export default Folders

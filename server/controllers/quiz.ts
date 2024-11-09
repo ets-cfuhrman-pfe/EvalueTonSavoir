@@ -1,9 +1,13 @@
-const emailer = require('../config/email.js');
+import emailer from '../config/email.js';
 
-const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR, DUPLICATE_QUIZ_ERROR, COPY_QUIZ_ERROR } = require('../constants/errorCodes');
+import AppError from'../middleware/AppError.js';
+import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR, DUPLICATE_QUIZ_ERROR, COPY_QUIZ_ERROR } from'../constants/errorCodes.js';
+import Folders from '../models/folders.js';
+import Quiz from '../models/quiz.js';
 
 class QuizController {
+    folders:Folders
+    quizzes:Quiz
 
     constructor(quizModel, foldersModel) {
         this.folders = foldersModel;
@@ -207,7 +211,7 @@ class QuizController {
             }
     
             // Call the method from the Quiz model to delete quizzes by folder ID
-            await Quiz.deleteQuizzesByFolderId(folderId);
+            await this.quizzes.deleteQuizzesByFolderId(folderId);
     
             return res.status(200).json({
                 message: 'Quizzes deleted successfully.'
@@ -314,4 +318,4 @@ class QuizController {
 
 }
 
-module.exports = QuizController;
+export default QuizController

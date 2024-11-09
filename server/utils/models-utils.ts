@@ -1,5 +1,7 @@
+
+
 // utils.js
-async function generateUniqueTitle(baseTitle, existsCallback) {
+export async function generateUniqueTitle(baseTitle:string, existsCallback:CallableFunction) {
     console.log(`generateUniqueTitle(${baseTitle})`);
     let newTitle = baseTitle;
     let counter = 1;
@@ -12,7 +14,7 @@ async function generateUniqueTitle(baseTitle, existsCallback) {
     }
 
     // If the base title does not end with a parentheses expression, start with "(1)"
-    if (!match[2]) {
+    if (match != null && match[2] != null) {
         newTitle = `${baseTitle} (${counter})`;
     } else {
         // else increment the counter in the parentheses expression as a first try
@@ -29,7 +31,3 @@ async function generateUniqueTitle(baseTitle, existsCallback) {
 
     return newTitle;
 }
-
-module.exports = {
-    generateUniqueTitle
-};

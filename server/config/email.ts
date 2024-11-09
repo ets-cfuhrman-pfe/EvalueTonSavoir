@@ -1,22 +1,19 @@
-const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 class Emailer {
-
-    constructor() {
-        this.senderEmail = process.env.SENDER_EMAIL;
-        this.psw = process.env.EMAIL_PSW;
-        this.transporter = nodemailer.createTransport({
-            service: process.env.EMAIL_SERVICE,
-            auth: {
-                user: this.senderEmail,
-                pass: this.psw
-            }
-        });
-    }
-
+    senderEmail = process.env.SENDER_EMAIL;
+    psw = process.env.EMAIL_PSW;
+    transporter = nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE,
+        auth: {
+            user: this.senderEmail,
+            pass: this.psw
+        }
+    });
+    
     registerConfirmation(email) {
         this.transporter.sendMail({
             from: this.senderEmail,
@@ -46,4 +43,4 @@ class Emailer {
 
 }
 
-module.exports = new Emailer();
+export default new Emailer()

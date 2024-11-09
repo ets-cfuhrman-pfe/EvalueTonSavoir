@@ -1,7 +1,9 @@
+import { Server as SocketIOServer } from 'socket.io';
+
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
 
-const setupWebsocket = (io) => {
+const setupWebsocket = (io: SocketIOServer) => {
   let totalConnections = 0;
 
   io.on("connection", (socket) => {
@@ -46,7 +48,7 @@ const setupWebsocket = (io) => {
     socket.on("join-room", ({ enteredRoomName, username }) => {
       if (io.sockets.adapter.rooms.has(enteredRoomName)) {
         const clientsInRoom =
-          io.sockets.adapter.rooms.get(enteredRoomName).size;
+          io.sockets.adapter.rooms.get(enteredRoomName)?.size ?? 0;
 
         if (clientsInRoom <= MAX_USERS_PER_ROOM) {
           const newStudent = {
@@ -122,4 +124,4 @@ const setupWebsocket = (io) => {
   };
 };
 
-module.exports = { setupWebsocket };
+export default setupWebsocket

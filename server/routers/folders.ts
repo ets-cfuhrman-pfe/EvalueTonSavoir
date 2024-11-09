@@ -1,7 +1,9 @@
-const express = require('express');
+import express, { Response, Request } from "express";
+import jwt from '../middleware/jwtToken.js';
+import {controllers} from '../app.js'
+
+const folders = controllers.folders
 const router = express.Router();
-const jwt = require('../middleware/jwtToken.js');
-const folders = require('../app.js').folders;
 
 router.post("/create", jwt.authenticate, folders.create);
 router.get("/getUserFolders", jwt.authenticate, folders.getUserFolders);
@@ -14,7 +16,7 @@ router.post("/duplicate", jwt.authenticate, folders.duplicate);
 
 router.post("/copy/:folderId", jwt.authenticate, folders.copy);
 
-module.exports = router;
+export default router
 
 // export also folders (the controller)
 module.exports.folders = folders;

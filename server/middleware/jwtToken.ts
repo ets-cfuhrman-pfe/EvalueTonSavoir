@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
-const AppError = require('./AppError.js');
-const { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } = require('../constants/errorCodes');
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+import AppError from './AppError.ts';
+import { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } from '../constants/errorCodes';
 
 dotenv.config();
 
@@ -34,4 +34,4 @@ class Token {
     }
 }
 
-module.exports = new Token();
+export default new Token()

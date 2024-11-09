@@ -1,5 +1,6 @@
-const AppError = require("./AppError");
-const fs = require('fs');
+import AppError from './AppError'
+import fs from 'fs';
+import { HttpStatusCode } from '../utils/http-status-codes';
 
 const errorHandler = (error, req, res, next) => {
     console.log("ERROR", error);
@@ -12,7 +13,7 @@ const errorHandler = (error, req, res, next) => {
     }
 
     logError(error.stack);
-    return res.status(505).send("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
 }
 
 const logError = (error) => {
@@ -21,4 +22,4 @@ const logError = (error) => {
     log_file.write(time + '\n' + error + '\n\n');
 }
 
-module.exports = errorHandler;
+export default errorHandler

@@ -1,7 +1,9 @@
-const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, IMAGE_NOT_FOUND } = require('../constants/errorCodes');
+import AppError from '../middleware/AppError.js';
+import { MISSING_REQUIRED_PARAMETER, IMAGE_NOT_FOUND } from '../constants/errorCodes.js';
+import Images from '../models/images.js';
 
 class ImagesController {
+    images:Images
 
     constructor(imagesModel) {
         this.images = imagesModel;
@@ -52,4 +54,4 @@ class ImagesController {
 
 }
 
-module.exports = ImagesController;
+export default ImagesController

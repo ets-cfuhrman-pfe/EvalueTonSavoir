@@ -1,17 +1,16 @@
-import { GlideClient, GlideClientConfiguration } from '@valkey/valkey-glide';
+import { GlideClient } from '@valkey/valkey-glide';
 import { 
   RoomInfo,
   RoomOptions,
   ProviderType,
   ProviderConfig
 } from '../../types/room';
-import { BaseRoomProvider } from './providers/base-provider';
-import { ClusterRoomProvider } from './providers/cluster-provider';
-import { DockerRoomProvider } from './providers/docker-provider';
-import { KubernetesRoomProvider } from './providers/kubernetes-provider';
+import { BaseRoomProvider } from '../roomsProviders/base-provider';
+import { ClusterRoomProvider } from '../roomsProviders/cluster-provider';
+//import { DockerRoomProvider } from '../roomsProviders/docker-provider';
+//import { KubernetesRoomProvider } from '../roomsProviders/kubernetes-provider';
 
 interface RoomManagerOptions {
-  valkeyConfig?: GlideClientConfiguration;
   provider?: ProviderType;
   providerOptions?: ProviderConfig;
 }
@@ -20,8 +19,8 @@ export class RoomManager {
   private valkey: GlideClient;
   private provider: BaseRoomProvider<RoomInfo>;
 
-  constructor(options: RoomManagerOptions = {}) {
-    this.valkey = new GlideClient();
+  constructor(options: RoomManagerOptions = {}, valkeyClient:GlideClient) {
+    this.valkey = valkeyClient;
     this.provider = this.createProvider(
       options.provider || process.env.ROOM_PROVIDER as ProviderType || 'cluster',
       options.providerOptions
@@ -36,11 +35,13 @@ export class RoomManager {
   ): BaseRoomProvider<RoomInfo> {
     switch (type) {
       case 'cluster':
-        return new ClusterRoomProvider(this.redis, options);
+        return new ClusterRoomProvider(this.valkey, options);
+        /*
       case 'docker':
         return new DockerRoomProvider(this.redis, options);
       case 'kubernetes':
         return new KubernetesRoomProvider(this.redis, options);
+        */
       default:
         throw new Error(`Unknown provider type: ${type}`);
     }
@@ -73,3 +74,5 @@ export class RoomManager {
     return `room-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
+
+module.exports = RoomManager;

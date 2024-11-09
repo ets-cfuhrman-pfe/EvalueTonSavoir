@@ -1,9 +1,14 @@
 //user
-const bcrypt = require('bcrypt');
-const AppError = require('../middleware/AppError.js');
-const { USER_ALREADY_EXISTS } = require('../constants/errorCodes');
+import bcrypt from 'bcrypt';
+import AppError from '../middleware/AppError.js'
+import { USER_ALREADY_EXISTS } from '../constants/errorCodes.js';
+import type { DBConnection } from '../config/db.js';
+import Folders from './folders.js';
 
 class Users {
+    db:DBConnection
+    folders:Folders
+
     constructor(db, foldersModel) {
         // console.log("Users constructor: db", db)
         this.db = db;
@@ -122,4 +127,4 @@ class Users {
 
 }
 
-module.exports = Users;
+export default Users

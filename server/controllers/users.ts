@@ -1,11 +1,13 @@
-const emailer = require('../config/email.js');
-const jwt = require('../middleware/jwtToken.js');
+import emailer from'../config/email.js';
+import jwt from'../middleware/jwtToken.js';
 
-const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR, DELETE_USER_ERROR } = require('../constants/errorCodes');
+import AppError from'../middleware/AppError.js';
+import { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR, DELETE_USER_ERROR, USER_NOT_FOUND,USER_CONTROLLER_NOT_INITIALIZED } from'../constants/errorCodes';
+import Users from '../models/users.js'
 
 // controllers must use arrow functions to bind 'this' to the class instance in order to access class properties as callbacks in Express
 class UsersController {
+    users:Users
 
     constructor(userModel) {
         this.users = userModel;
@@ -20,7 +22,7 @@ class UsersController {
             }
     
             if (!this.users) {
-                throw new AppError('Users model not found');
+                throw new AppError(USER_NOT_FOUND);
             }
             await this.users.register(email, password);
     
@@ -43,7 +45,7 @@ class UsersController {
             }
 
             if (!this) {
-                throw new AppError('UsersController not initialized');
+                throw new AppError(USER_CONTROLLER_NOT_INITIALIZED);
             }
 
             const user = await this.users.login(email, password);
@@ -143,4 +145,4 @@ class UsersController {
     }
 }
 
-module.exports = UsersController;
+export default UsersController;
