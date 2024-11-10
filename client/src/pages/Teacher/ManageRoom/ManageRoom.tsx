@@ -10,7 +10,7 @@ import webSocketService, { AnswerReceptionFromBackendType } from '../../../servi
 import { QuizType } from '../../../Types/QuizType';
 
 import './manageRoom.css';
-import { ENV_VARIABLES } from '../../../constants';
+//import { ENV_VARIABLES } from '../../../constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import { Button } from '@mui/material';
 import LoadingCircle from '../../../components/LoadingCircle/LoadingCircle';
@@ -81,7 +81,7 @@ const ManageRoom: React.FC = () => {
 
     const createWebSocketRoom = () => {
         setConnectingError('');
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
+        const socket = webSocketService.connect("localhost:4500");
 
         socket.on('connect', () => {
             webSocketService.createRoom();

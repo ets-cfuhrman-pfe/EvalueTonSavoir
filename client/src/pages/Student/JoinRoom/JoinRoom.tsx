@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Socket } from 'socket.io-client';
-import { ENV_VARIABLES } from '../../../constants';
+//import { ENV_VARIABLES } from '../../../constants';
 
 import StudentModeQuiz from '../../../components/StudentModeQuiz/StudentModeQuiz';
 import TeacherModeQuiz from '../../../components/TeacherModeQuiz/TeacherModeQuiz';
@@ -27,14 +27,14 @@ const JoinRoom: React.FC = () => {
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
     useEffect(() => {
-        handleCreateSocket();
+        //handleCreateSocket();
         return () => {
             disconnect();
         };
     }, []);
 
     const handleCreateSocket = () => {
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
+        const socket = webSocketService.connect("localhost:4500");
 
         socket.on('join-success', () => {
             setIsWaitingForTeacher(true);

@@ -51,6 +51,7 @@ class Quiz {
         await this.db.connect()
         const conn = this.db.getConnection();
 
+        
         const quizCollection = conn.collection('files');
 
         const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });

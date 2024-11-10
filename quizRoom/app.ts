@@ -1,6 +1,5 @@
 import http from "http";
 import { Server, ServerOptions } from "socket.io";
-import { GlideClient, GlideClientConfiguration } from '@valkey/valkey-glide';
 
 // Import setupWebsocket
 import { setupWebsocket } from "./socket/setupWebSocket";
