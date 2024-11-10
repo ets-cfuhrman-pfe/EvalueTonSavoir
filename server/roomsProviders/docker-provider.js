@@ -17,6 +17,7 @@ class DockerRoomProvider extends BaseRoomProvider {
   }
 
   async deleteRoom(roomId) {
+    return await this.roomRepository.delete(roomId);   // shortcircuit -- not implemented yet
     try {
       const container = this.docker.getContainer(roomId);
       await container.stop();
@@ -34,8 +35,10 @@ class DockerRoomProvider extends BaseRoomProvider {
   }
 
   async getRoomStatus(roomId) {
-    const room = await roomRepository.get(roomId);
+    const room = await this.roomRepository.get(roomId);
     if (!room) return null;
+
+    return room; // shortcircuit -- not implemented yet
 
     try {
       const container = this.docker.getContainer(room.containerId);

@@ -1,8 +1,12 @@
+const {Room} = require('../models/room.js');
 
 const BaseRoomProvider = require('../roomsProviders/base-provider.js');
 //const ClusterRoomProvider = require('../roomsProviders/cluster-provider.js');
 const DockerRoomProvider = require('../roomsProviders/docker-provider.js');
 //const KubernetesRoomProvider = require('../roomsProviders/kubernetes-provider');
+
+const NB_CODE_CHARS = 6;
+const DEFAULT_HOST = "localhost:4500"
 
 class RoomsController {
     constructor(options = {}, roomRepository) {
@@ -40,8 +44,19 @@ class RoomsController {
     }
 
     async createRoom(options = {}) {
-        const roomId = options.roomId || this.generateRoomId();
-        return await this.provider.createRoom(roomId, options);
+        let roomIdValid = false
+        let roomId;
+
+        while(!roomIdValid){
+            roomId = options.roomId || this.generateRoomId();
+            roomIdValid = !(await this.provider.getRoomInfo(roomId));
+        }
+
+        return await this.roomRepository.create(new Room(roomId, roomId, DEFAULT_HOST, 0));
+    }
+
+    async updateRoom(roomId, info) {
+        return await this.provider.updateRoomInfo(roomId, {});
     }
 
     async deleteRoom(roomId) {
@@ -57,7 +72,14 @@ class RoomsController {
     }
 
     generateRoomId() {
-        return Math.random().toString(36).substring(2, 7);
+        const characters = "0123456789";
+        let result = "";
+        for (let i = 0; i < NB_CODE_CHARS; i++) {
+          result += characters.charAt(
+            Math.floor(Math.random() * characters.length)
+          );
+        }
+        return result;
     }
 }
 

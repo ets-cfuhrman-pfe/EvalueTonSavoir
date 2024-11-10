@@ -29,8 +29,8 @@ class RoomRepository{
         if (existingRoom) {
             throw new Error(`Room already exists with id: ${room.id}`);
         }
-        const result = await this.collection.insertOne(room);
-        return result.insertedId;
+        const returnedId = await this.collection.insertOne(room);
+        return await this.collection.findOne({ _id: returnedId.insertedId });
     }
 
     async get(id) {

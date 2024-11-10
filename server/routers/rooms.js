@@ -4,7 +4,7 @@ const jwt = require('../middleware/jwtToken.js');
 
 const router = Router();
 
-router.get("/listRooms", async (req, res)=> {
+router.get("/", async (req, res)=> {
     try {
         const data = await roomsController.listRooms();
         res.json(data);
@@ -14,30 +14,48 @@ router.get("/listRooms", async (req, res)=> {
 });
 
 
-router.get("/createRoom", async (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const data = await roomsController.createRoom();
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to list rooms" });
+        res.status(500).json({ error: "Failed to create room" });
     }
 });
 
-router.get("/deleteRoom", async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
-        const data = await roomsController.deleteRoom();
+        const data = await roomsController.updateRoom(req.params.id);
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to list rooms" });
+        res.status(500).json({ error: "Failed to update rooms" });
     }
 });
 
-router.get("/getRoomStatus", async (req, res) => {
+router.delete("/:id", async (req, res) => {
+    try {
+        const data = await roomsController.deleteRoom(req.params.id);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: `Failed to delete room` });
+    }
+});
+
+router.get("/:id", async (req, res) => {
     try {
         const data = await roomsController.getRoomStatus();
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to list rooms" });
+        res.status(500).json({ error: "Failed to join rooms" });
+    }
+});
+
+router.get("/:id/status", async (req, res) => {
+    try {
+        const data = await roomsController.getRoomStatus(req.params.id);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to list room infos" });
     }
 });
 
