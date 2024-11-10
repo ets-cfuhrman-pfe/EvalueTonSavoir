@@ -1,4 +1,4 @@
-import AppError from './AppError'
+import AppError from './app-error'
 import fs from 'fs';
 import { HttpStatusCode } from '../utils/http-status-codes';
 

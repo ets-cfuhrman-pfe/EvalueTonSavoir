@@ -43,4 +43,4 @@ class Emailer {
 
 }
 
-export default new Emailer()
+export default Emailer

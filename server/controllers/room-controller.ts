@@ -15,7 +15,7 @@ interface RoomManagerOptions {
   providerOptions?: ProviderConfig;
 }
 
-export class RoomManager {
+export class RoomController {
   private valkey: GlideClient;
   private provider: BaseRoomProvider<RoomInfo>;
 
@@ -75,4 +75,4 @@ export class RoomManager {
   }
 }
 
-module.exports = RoomManager;
+export default RoomController;

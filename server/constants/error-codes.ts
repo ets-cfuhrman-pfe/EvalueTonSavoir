@@ -1,4 +1,4 @@
-import type { AppErrorInfos } from "../middleware/AppError";
+import type { AppErrorInfos } from "../middleware/app-error";
 import { HttpStatusCode } from "../utils/http-status-codes";
 
 export const UNAUTHORIZED_NO_TOKEN_GIVEN:AppErrorInfos = {

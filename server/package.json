@@ -15,7 +15,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@valkey/valkey-glide": "^1.1.0",
+    "@valkey-ts/client": "^1.5.14",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.4",

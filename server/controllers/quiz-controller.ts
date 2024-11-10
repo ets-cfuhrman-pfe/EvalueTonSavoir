@@ -1,7 +1,7 @@
-import emailer from '../config/email.js';
+import emailer from '../config/emailer.js';
 
-import AppError from'../middleware/AppError.js';
-import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR, DUPLICATE_QUIZ_ERROR, COPY_QUIZ_ERROR } from'../constants/errorCodes.js';
+import AppError from'../middleware/app-error.js';
+import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUIZ_NOT_FOUND, FOLDER_NOT_FOUND, QUIZ_ALREADY_EXISTS, GETTING_QUIZ_ERROR, DELETE_QUIZ_ERROR, UPDATE_QUIZ_ERROR, MOVING_QUIZ_ERROR, DUPLICATE_QUIZ_ERROR, COPY_QUIZ_ERROR } from'../constants/error-codes.js';
 import Folders from '../models/folders.js';
 import Quiz from '../models/quiz.js';
 

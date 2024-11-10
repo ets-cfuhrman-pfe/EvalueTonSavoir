@@ -1,8 +1,8 @@
-import AppError from '../middleware/AppError.js';
-import { MISSING_REQUIRED_PARAMETER, IMAGE_NOT_FOUND } from '../constants/errorCodes.js';
+import AppError from '../middleware/app-error.js';
+import { MISSING_REQUIRED_PARAMETER, IMAGE_NOT_FOUND } from '../constants/error-codes.js';
 import Images from '../models/images.js';
 
-class ImagesController {
+class ImageController {
     images:Images
 
     constructor(imagesModel) {
@@ -54,4 +54,4 @@ class ImagesController {
 
 }
 
-export default ImagesController
+export default ImageController

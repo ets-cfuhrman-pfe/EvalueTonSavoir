@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import AppError from './AppError.ts';
-import { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } from '../constants/errorCodes';
+import AppError from './app-error.ts';
+import { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } from '../constants/error-codes.ts';
 
 dotenv.config();
 

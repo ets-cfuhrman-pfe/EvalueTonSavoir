@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { ServerOptions, Server as SocketIOServer } from 'socket.io';
-import { GlideClient } from '@valkey/valkey-glide';
 
 // Set app defaults
 const environment: string = process.env.NODE_ENV ?? "production";
@@ -14,12 +13,12 @@ const isDev: boolean = environment === "development";
 import setupWebsocket from "./socket/socket";
 
 // Import Database
-import db from './config/db';
+import db from './config/db-connection';
 
 // Import Models
 import Quiz from './models/quiz';
 import Folders from './models/folders';
-import Users from './models/users';
+import Users from './models/user-model';
 import Images from './models/images';
 
 // Instantiate models
@@ -29,28 +28,28 @@ const userModel = new Users(db, foldersModel);
 const imageModel = new Images(db);
 
 // Initialize cache
+/*
 const valkey = await GlideClient.createClient({
   addresses: [{
     host: process.env.VALKEY_HOST ?? 'localhost',
     port: Number(process.env.VALKEY_PORT) ?? 6379
   }]
 });
+*/
 
 // Import Controllers
-import UsersController from './controllers/users';
-import FoldersController from './controllers/folders';
-import QuizController from './controllers/quiz';
-import ImagesController from './controllers/images';
-import { RoomManager as RoomsController } from './controllers/rooms';
+import UsersController from './controllers/user-controller';
+import FoldersController from './controllers/folder-controller';
+import QuizController from './controllers/quiz-controller';
+import ImagesController from './controllers/image-controller';
+//import { RoomManager as RoomsController } from './controllers/rooms';
 
 // Instantiate Controllers
 const usersControllerInstance = new UsersController(userModel);
 const foldersControllerInstance = new FoldersController(foldersModel);
 const quizControllerInstance = new QuizController(quizModel, foldersModel);
 const imagesControllerInstance = new ImagesController(imageModel);
-
-// Initialize valkey before creating rooms controller
-const roomsControllerInstance = new RoomsController({}, valkey);
+//const roomsControllerInstance = new RoomsController({}, valkey);
 
 
 // Export Controllers
@@ -59,18 +58,18 @@ export const controllers = {
   folders: foldersControllerInstance,
   quizzes: quizControllerInstance,
   images: imagesControllerInstance,
-  rooms: roomsControllerInstance
+  //rooms: roomsControllerInstance
 };
 
 // Import Routers
-import userRouter from './routers/users';
-import folderRouter from './routers/folders';
-import quizRouter from './routers/quiz';
-import imagesRouter from './routers/images';
+import userRouter from './routers/user-router';
+import folderRouter from './routers/folder-router';
+import quizRouter from './routers/quiz-router';
+import imagesRouter from './routers/image-router';
 
 // Setup environment
 dotenv.config();
-import errorHandler from "./middleware/errorHandler";
+import errorHandler from "./middleware/error-handler";
 
 // Start app
 const app: Application = express();

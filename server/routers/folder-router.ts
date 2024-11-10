@@ -1,5 +1,5 @@
-import express, { Response, Request } from "express";
-import jwt from '../middleware/jwtToken.js';
+import express from "express";
+import jwt from '../middleware/jwt-token.js';
 import {controllers} from '../app.js'
 
 const folders = controllers.folders

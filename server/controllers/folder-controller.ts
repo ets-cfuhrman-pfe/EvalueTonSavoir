@@ -1,41 +1,16 @@
 //controller
-import AppError from '../middleware/AppError.js';
-import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, FOLDER_NOT_FOUND, FOLDER_ALREADY_EXISTS, GETTING_FOLDER_ERROR, DELETE_FOLDER_ERROR, UPDATE_FOLDER_ERROR, MOVING_FOLDER_ERROR, DUPLICATE_FOLDER_ERROR, COPY_FOLDER_ERROR } from '../constants/errorCodes';
-import Folders from '../models/folders.js';
+import AppError from '../middleware/app-error.js';
+import { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, FOLDER_NOT_FOUND, FOLDER_ALREADY_EXISTS, GETTING_FOLDER_ERROR, DELETE_FOLDER_ERROR, UPDATE_FOLDER_ERROR, MOVING_FOLDER_ERROR, DUPLICATE_FOLDER_ERROR, COPY_FOLDER_ERROR } from '../constants/error-codes.js';
+import FolderRepository from '../repository/folder-repository.js';
+import Folder from '../models/folder-model.js';
+
 
 // controllers must use arrow functions to bind 'this' to the class instance in order to access class properties as callbacks in Express
-class FoldersController {
-    folders:Folders
-
-    constructor(foldersModel) {
-        this.folders = foldersModel;
-    }
+class FolderController{
 
     /***
      * Basic queries
      */
-    create = async (req, res, next) => {
-        try {
-            const { title } = req.body;
-    
-            if (!title) {
-                throw new AppError(MISSING_REQUIRED_PARAMETER);
-            }
-    
-            const result = await this.folders.create(title, req.user.userId);
-    
-            if (!result) {
-                throw new AppError(FOLDER_ALREADY_EXISTS);
-            }
-    
-            return res.status(200).json({
-                message: 'Dossier créé avec succès.'
-            });
-    
-        } catch (error) {
-            return next(error);
-        }
-    }
     
     getUserFolders = async (req, res, next) => {
         try {
@@ -260,4 +235,4 @@ class FoldersController {
 
 }
 
-export default FoldersController
+export default FolderController
