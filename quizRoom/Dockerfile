@@ -1,5 +1,5 @@
 # Use the Node base image
-FROM node:18 as quizroom
+FROM node:18 AS quizroom
 
 # Create a working directory
 WORKDIR /usr/src/app

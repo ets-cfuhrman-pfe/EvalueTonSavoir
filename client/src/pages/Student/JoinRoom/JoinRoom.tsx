@@ -34,7 +34,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     const handleCreateSocket = () => {
-        const socket = webSocketService.connect("localhost:4500");
+        const socket = webSocketService.connect(`/api/room/${roomName}/socket`);
 
         socket.on('join-success', () => {
             setIsWaitingForTeacher(true);

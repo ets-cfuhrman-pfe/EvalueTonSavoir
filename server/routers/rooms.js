@@ -46,19 +46,8 @@ router.get("/:id", async (req, res) => {
         const data = await roomsController.getRoomStatus();
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to join rooms" });
-    }
-});
-
-router.get("/:id/status", async (req, res) => {
-    try {
-        const data = await roomsController.getRoomStatus(req.params.id);
-        res.json(data);
-    } catch (error) {
         res.status(500).json({ error: "Failed to list room infos" });
     }
 });
-
-
 
 module.exports = router;
