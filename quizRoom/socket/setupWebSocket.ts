@@ -88,7 +88,13 @@ export const setupWebsocket = (io: Server): void => {
         idQuestion,
       });
     });
+
+    socket.on("error", (error) => {
+      console.error("WebSocket server error:", error);
+    });
   });
+
+
 
   const generateRoomName = (length = 6): string => {
     const characters = "0123456789";

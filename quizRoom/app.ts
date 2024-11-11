@@ -1,15 +1,19 @@
 import http from "http";
 import { Server, ServerOptions } from "socket.io";
-
-// Import setupWebsocket
 import { setupWebsocket } from "./socket/setupWebSocket";
+import dotenv from "dotenv";
 
-const port =  4500;
+// Load environment variables
+dotenv.config();
+
+const port = 4500;
+const roomId = process.env.ROOM_ID; // Load roomId from environment variable
+console.log(`I am: /api/room/${roomId}/socket`);
 
 // Create HTTP and WebSocket server
 const server = http.createServer();
 const ioOptions: Partial<ServerOptions> = {
-  path: '/api/room/975239/socket', // TODO : use env variable to set room id
+  path: `/api/room/${roomId}/socket`, // Use roomId from env variable
   cors: {
     origin: "*",
     methods: ["GET", "POST"],

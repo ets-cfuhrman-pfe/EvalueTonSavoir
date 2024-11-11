@@ -26,7 +26,7 @@ class DockerRoomProvider extends BaseRoomProvider {
           ]
         }
       },
-      Env: options.env || []
+      Env: [...options.env || [], `ROOM_ID=${roomId}`]
     };
 
     const container = await this.docker.createContainer(containerConfig);
@@ -34,10 +34,11 @@ class DockerRoomProvider extends BaseRoomProvider {
 
     const containerInfo = await container.inspect();
     const containerIP = containerInfo.NetworkSettings.IPAddress;
-    const host = `${containerIP}:4500`;
 
+    const host = `${containerIP}:4500`;
     return await this.roomRepository.create(new Room(roomId, container_name, host, 0));
   }
+
 
   async deleteRoom(roomId) {
     const container_name = `room_${roomId}`;

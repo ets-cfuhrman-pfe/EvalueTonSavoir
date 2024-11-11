@@ -79,14 +79,19 @@ const ManageRoom: React.FC = () => {
         }
     };
 
-    const createWebSocketRoom = async() => {
+    const createWebSocketRoom = async () => {
         setConnectingError('');
-        const room = await(await fetch('/api/room',{method:'post'})).json();
+        const room = await (await fetch('/api/room', { method: 'post' })).json();
         const socket = webSocketService.connect(`/api/room/${room.id}/socket`);
 
         socket.on('connect', () => {
-            webSocketService.createRoom();
+            webSocketService.createRoom(room.id);
         });
+
+        socket.on("error", (error) => {
+            console.error("WebSocket server error:", error);
+        });
+
         socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
             console.error('WebSocket connection error:', error);
@@ -143,7 +148,7 @@ const ManageRoom: React.FC = () => {
                     console.log('Quiz questions not found (cannot update answers without them).');
                     return;
                 }
-    
+
                 // Update the students state using the functional form of setStudents
                 setStudents((prevStudents) => {
                     // print the list of current student names
@@ -151,7 +156,7 @@ const ManageRoom: React.FC = () => {
                     prevStudents.forEach((student) => {
                         console.log(student.name);
                     });
-    
+
                     let foundStudent = false;
                     const updatedStudents = prevStudents.map((student) => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
@@ -171,7 +176,7 @@ const ManageRoom: React.FC = () => {
                                 updatedAnswers = [...student.answers, newAnswer];
                             }
                             return { ...student, answers: updatedAnswers };
-                                    }
+                        }
                         return student;
                     });
                     if (!foundStudent) {

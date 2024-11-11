@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { io,Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 //import { ENV_VARIABLES } from '../../../constants';
 
 import StudentModeQuiz from '../../../components/StudentModeQuiz/StudentModeQuiz';
@@ -34,15 +34,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     const handleCreateSocket = () => {
-        debugger;
-        const socket = io('/', {
-            path: `/api/room/${roomName}/socket`,
-            transports: ['websocket'],
-            autoConnect: true,
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
+        const socket = webSocketService.connect(`/api/room/${roomName}/socket`);
 
         socket.on('join-success', () => {
             setIsWaitingForTeacher(true);

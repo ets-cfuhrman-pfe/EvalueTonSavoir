@@ -21,10 +21,14 @@ class WebSocketService {
     private socket: Socket | null = null;
 
     connect(backendUrl: string): Socket {
-        // console.log(backendUrl);
-        this.socket = io(`${backendUrl}`, {
+        this.socket = io( '/',{
+            path: backendUrl,
             transports: ['websocket'],
-            reconnectionAttempts: 1
+            autoConnect: true,
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 10000,
+            timeout: 20000,
         });
         return this.socket;
     }
@@ -37,9 +41,14 @@ class WebSocketService {
         }
     }
 
-    createRoom() {
+    createRoom(roomName: string) {
         if (this.socket) {
-            this.socket.emit('create-room');
+            if(roomName){
+                this.socket.emit('create-room', {roomName});
+            }
+            else{
+                this.socket.emit('create-room');
+            }
         }
     }
 
