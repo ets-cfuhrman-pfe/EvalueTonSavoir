@@ -62,6 +62,8 @@ class WebSocketService {
     endQuiz(roomName: string) {
         if (this.socket) {
             this.socket.emit('end-quiz', { roomName });
+            //Delete room in mongoDb, roomContainer will be deleted in cleanup
+            fetch(`/api/room/${roomName}`, { method: 'DELETE' });
         }
     }
 
