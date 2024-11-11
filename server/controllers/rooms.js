@@ -6,7 +6,7 @@ const DockerRoomProvider = require('../roomsProviders/docker-provider.js');
 //const KubernetesRoomProvider = require('../roomsProviders/kubernetes-provider');
 
 const NB_CODE_CHARS = 6;
-const DEFAULT_HOST = "localhost:4500"
+const DEFAULT_HOST = "172.18.0.5:4500" // must be room ip not name
 
 class RoomsController {
     constructor(options = {}, roomRepository) {

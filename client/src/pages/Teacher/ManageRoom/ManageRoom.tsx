@@ -79,9 +79,10 @@ const ManageRoom: React.FC = () => {
         }
     };
 
-    const createWebSocketRoom = () => {
+    const createWebSocketRoom = async() => {
         setConnectingError('');
-        const socket = webSocketService.connect("localhost:4500");
+        const room = await(await fetch('/api/room',{method:'post'})).json();
+        const socket = webSocketService.connect(`/api/room/${room.id}/socket`);
 
         socket.on('connect', () => {
             webSocketService.createRoom();
