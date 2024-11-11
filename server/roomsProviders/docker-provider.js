@@ -9,27 +9,48 @@ class DockerRoomProvider extends BaseRoomProvider {
   }
 
   async createRoom(roomId, options) {
-    const host = "localhost:4500";
-    const id = await this.roomRepository.create(
-      new Room(roomId, roomId, host, 0)
-    );
-    return roomRepository.get(id);
+    const container_name = `room_${roomId}`;
+
+    const containerConfig = {
+      Image: 'evaluetonsavoir-quizroom', // Your local Docker image name
+      name: container_name,
+      ExposedPorts: {
+        "4500/tcp": {}
+      },
+      HostConfig: {
+        PortBindings: {
+          "4500/tcp": [
+            {
+              HostPort: ""
+            }
+          ]
+        }
+      },
+      Env: options.env || []
+    };
+
+    // Use `this.docker` instead of `docker`
+    const container = await this.docker.createContainer(containerConfig);
+    await container.start();
+
+    const containerInfo = await container.inspect();
+    const containerIP = containerInfo.NetworkSettings.IPAddress;
+    const host = `${containerIP}:4500`;
+
+    return await this.roomRepository.create(new Room(roomId, container_name, host, 0));
   }
 
   async deleteRoom(roomId) {
-    return await this.roomRepository.delete(roomId);   // shortcircuit -- not implemented yet
+    return await this.roomRepository.delete(roomId); // Short-circuit -- not implemented yet
     try {
       const container = this.docker.getContainer(roomId);
       await container.stop();
       await container.remove();
 
-      await roomRepository.delete(roomId);
+      await this.roomRepository.delete(roomId);
       console.log(`Conteneur pour la salle ${roomId} supprimé.`);
     } catch (error) {
-      console.error(
-        `Erreur lors de la suppression du conteneur pour la salle ${roomId}:`,
-        error
-      );
+      console.error(`Erreur lors de la suppression du conteneur pour la salle ${roomId}:`, error);
       throw new Error("Failed to delete room");
     }
   }
@@ -38,7 +59,7 @@ class DockerRoomProvider extends BaseRoomProvider {
     const room = await this.roomRepository.get(roomId);
     if (!room) return null;
 
-    return room; // shortcircuit -- not implemented yet
+    return room; // Short-circuit -- not implemented yet
 
     try {
       const container = this.docker.getContainer(room.containerId);
@@ -58,10 +79,7 @@ class DockerRoomProvider extends BaseRoomProvider {
       await this.roomRepository.update(updatedRoomInfo);
       return updatedRoomInfo;
     } catch (error) {
-      console.error(
-        `Erreur lors de la récupération du statut du conteneur pour la salle ${roomId}:`,
-        error
-      );
+      console.error(`Erreur lors de la récupération du statut du conteneur pour la salle ${roomId}:`, error);
       return null;
     }
   }

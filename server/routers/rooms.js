@@ -19,7 +19,8 @@ router.post("/", async (req, res) => {
         const data = await roomsController.createRoom();
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to create room" });
+        console.log(error);
+        res.status(500).json({ error: "Failed to create room :" + error });
     }
 });
 

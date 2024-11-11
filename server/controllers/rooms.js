@@ -52,7 +52,7 @@ class RoomsController {
             roomIdValid = !(await this.provider.getRoomInfo(roomId));
         }
 
-        return await this.roomRepository.create(new Room(roomId, roomId, DEFAULT_HOST, 0));
+        return await this.provider.createRoom(roomId,options);
     }
 
     async updateRoom(roomId, info) {
