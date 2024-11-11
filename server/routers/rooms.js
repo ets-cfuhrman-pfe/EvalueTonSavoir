@@ -43,7 +43,7 @@ router.delete("/:id", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try {
-        const data = await roomsController.getRoomStatus();
+        const data = await roomsController.getRoomStatus(req.params.id);
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: "Failed to list room infos" });

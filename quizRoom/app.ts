@@ -9,7 +9,7 @@ const port =  4500;
 // Create HTTP and WebSocket server
 const server = http.createServer();
 const ioOptions: Partial<ServerOptions> = {
-  path: "/socket.io",
+  path: '/api/room/975239/socket', // TODO : use env variable to set room id
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
