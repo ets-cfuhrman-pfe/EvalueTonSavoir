@@ -43,12 +43,7 @@ class WebSocketService {
 
     createRoom(roomName: string) {
         if (this.socket) {
-            if(roomName){
-                this.socket.emit('create-room', {roomName});
-            }
-            else{
-                this.socket.emit('create-room');
-            }
+            this.socket.emit('create-room', roomName || undefined);
         }
     }
 

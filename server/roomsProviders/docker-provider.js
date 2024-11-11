@@ -24,7 +24,8 @@ class DockerRoomProvider extends BaseRoomProvider {
               HostPort: ""
             }
           ]
-        }
+        },
+        NetworkMode: "evaluetonsavoir_quiz_network" 
       },
       Env: [...options.env || [], `ROOM_ID=${roomId}`]
     };
@@ -33,7 +34,7 @@ class DockerRoomProvider extends BaseRoomProvider {
     await container.start();
 
     const containerInfo = await container.inspect();
-    const containerIP = containerInfo.NetworkSettings.IPAddress;
+    const containerIP = containerInfo.NetworkSettings.Networks.evaluetonsavoir_quiz_network.IPAddress;
 
     const host = `${containerIP}:4500`;
     return await this.roomRepository.create(new Room(roomId, container_name, host, 0));

@@ -17,8 +17,12 @@ export const setupWebsocket = (io: Server): void => {
     totalConnections++;
     console.log("A user connected:", socket.id, "| Total connections:", totalConnections);
 
-    socket.on("create-room", (sentRoomName?: string) => {
-      const roomName = sentRoomName ? sentRoomName.toUpperCase() : generateRoomName();
+    socket.on("create-room", (sentRoomName) => {
+      // Ensure sentRoomName is a string before applying toUpperCase()
+      const roomName = (typeof sentRoomName === "string" && sentRoomName.trim() !== "") 
+        ? sentRoomName.toUpperCase() 
+        : generateRoomName();
+    
       if (!io.sockets.adapter.rooms.get(roomName)) {
         socket.join(roomName);
         socket.emit("create-success", roomName);
