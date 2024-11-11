@@ -12,7 +12,7 @@ class DockerRoomProvider extends BaseRoomProvider {
     const container_name = `room_${roomId}`;
 
     const containerConfig = {
-      Image: 'evaluetonsavoir-quizroom', // Your local Docker image name
+      Image: 'evaluetonsavoir-quizroom',
       name: container_name,
       ExposedPorts: {
         "4500/tcp": {}
@@ -29,7 +29,6 @@ class DockerRoomProvider extends BaseRoomProvider {
       Env: options.env || []
     };
 
-    // Use `this.docker` instead of `docker`
     const container = await this.docker.createContainer(containerConfig);
     await container.start();
 
@@ -41,28 +40,36 @@ class DockerRoomProvider extends BaseRoomProvider {
   }
 
   async deleteRoom(roomId) {
-    return await this.roomRepository.delete(roomId); // Short-circuit -- not implemented yet
-    try {
-      const container = this.docker.getContainer(roomId);
-      await container.stop();
-      await container.remove();
+    const container_name = `room_${roomId}`;
 
-      await this.roomRepository.delete(roomId);
-      console.log(`Conteneur pour la salle ${roomId} supprimé.`);
+    try {
+      const container = this.docker.getContainer(container_name);
+      const containerInfo = await container.inspect();
+
+      if (containerInfo) {
+        await container.stop();
+        await container.remove();
+        console.log(`Container for room ${roomId} stopped and removed.`);
+      }
     } catch (error) {
-      console.error(`Erreur lors de la suppression du conteneur pour la salle ${roomId}:`, error);
-      throw new Error("Failed to delete room");
+      if (error.statusCode === 404) {
+        console.warn(`Container for room ${roomId} not found, proceeding to delete room record.`);
+      } else {
+        console.error(`Error handling container for room ${roomId}:`, error);
+        throw new Error("Failed to delete room");
+      }
     }
+
+    await this.roomRepository.delete(roomId);
+    console.log(`Room ${roomId} deleted from repository.`);
   }
 
   async getRoomStatus(roomId) {
     const room = await this.roomRepository.get(roomId);
     if (!room) return null;
 
-    return room; // Short-circuit -- not implemented yet
-
     try {
-      const container = this.docker.getContainer(room.containerId);
+      const container = this.docker.getContainer(room.containerId || `room_${roomId}`);
       const info = await container.inspect();
 
       const updatedRoomInfo = {
@@ -79,8 +86,25 @@ class DockerRoomProvider extends BaseRoomProvider {
       await this.roomRepository.update(updatedRoomInfo);
       return updatedRoomInfo;
     } catch (error) {
-      console.error(`Erreur lors de la récupération du statut du conteneur pour la salle ${roomId}:`, error);
-      return null;
+      if (error.statusCode === 404) {
+        console.warn(`Container for room ${roomId} not found, room status set to "terminated".`);
+        const terminatedRoomInfo = {
+          ...room,
+          status: "terminated",
+          containerStatus: {
+            Running: false,
+            StartedAt: room.containerStatus?.StartedAt || null,
+            FinishedAt: Date.now(),
+          },
+          lastUpdate: Date.now(),
+        };
+
+        await this.roomRepository.update(terminatedRoomInfo);
+        return terminatedRoomInfo;
+      } else {
+        console.error(`Error retrieving container status for room ${roomId}:`, error);
+        return null;
+      }
     }
   }
 
@@ -90,16 +114,45 @@ class DockerRoomProvider extends BaseRoomProvider {
   }
 
   async cleanup() {
-    /*
-    const rooms = await this.listRooms();
-    for (const room of rooms) {
-      if(room.nbStudents == 0){
-        await this.deleteRoom(room.roomId);
+    const rooms = await this.roomRepository.getAll();
+    const roomIds = new Set(rooms.map(room => room.id));
+
+    const containers = await this.docker.listContainers({ all: true });
+    const containerIds = new Set();
+
+    for (const containerInfo of containers) {
+      const containerName = containerInfo.Names[0].replace("/", "");
+      if (containerName.startsWith("room_")) {
+        const roomId = containerName.split("_")[1];
+        containerIds.add(roomId);
+
+        if (!roomIds.has(roomId)) {
+          try {
+            const container = this.docker.getContainer(containerInfo.Id);
+            await container.stop();
+            await container.remove();
+            console.log(`Loose container ${containerName} deleted.`);
+          } catch (error) {
+            console.error(`Failed to delete loose container ${containerName}:`, error);
+          }
+        }
       }
     }
-    console.log("Nettoyage des salles terminé.");
-    */
+
+    for (const room of rooms) {
+      if (!containerIds.has(room.id)) {
+        try {
+          await this.roomRepository.delete(room.id);
+          console.log(`Orphan room ${room.id} deleted from repository.`);
+        } catch (error) {
+          console.error(`Failed to delete orphan room ${room.id} from repository:`, error);
+        }
+      }
+    }
+
+    console.log("Cleanup of loose containers and orphan rooms completed.");
   }
+
 }
 
 module.exports = DockerRoomProvider;
