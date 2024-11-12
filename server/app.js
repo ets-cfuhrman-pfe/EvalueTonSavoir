@@ -3,10 +3,6 @@ const express = require("express");
 const http = require("http");
 const dotenv = require('dotenv');
 
-// Import Sockets
-const { setupWebsocket } = require("./socket/socket");
-const { Server } = require("socket.io");
-
 // instantiate the db
 const db = require('./config/db.js');
 // instantiate the models
@@ -61,28 +57,10 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
 
-
-const configureServer = (httpServer, isDev) => {
-  return new Server(httpServer, {
-    path: "/socket.io",
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-      credentials: true,
-    },
-    secure: !isDev, // true for https, false for http
-  });
-};
-
-// Start sockets (depending on the dev or prod environment)
 let server = http.createServer(app); 
 let isDev = process.env.NODE_ENV === 'development';
-
 console.log(`Environnement: ${process.env.NODE_ENV} (${isDev ? 'dev' : 'prod'})`);
 
-const io = configureServer(server);
-
-setupWebsocket(io);
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

@@ -1,5 +1,5 @@
 const Docker = require("dockerode");
-const { Room, RoomRepository } = require("../models/room.js");
+const { Room } = require("../models/room.js");
 const BaseRoomProvider = require("./base-provider.js");
 
 class DockerRoomProvider extends BaseRoomProvider {
@@ -125,7 +125,6 @@ class DockerRoomProvider extends BaseRoomProvider {
       throw error;
     }
   }
-
 
   async deleteRoom(roomId) {
     const container_name = `room_${roomId}`;

@@ -1,5 +1,6 @@
 // WebSocketService.tsx
 import { io, Socket } from 'socket.io-client';
+import apiService from './ApiService';
 
 // Must (manually) sync these types to server/socket/socket.js
 
@@ -63,7 +64,7 @@ class WebSocketService {
         if (this.socket) {
             this.socket.emit('end-quiz', { roomName });
             //Delete room in mongoDb, roomContainer will be deleted in cleanup
-            fetch(`/api/room/${roomName}`, { method: 'DELETE' });
+            apiService.deleteRoom(roomName);
         }
     }
 

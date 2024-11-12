@@ -4,7 +4,7 @@ const jwt = require('../middleware/jwtToken.js');
 
 const router = Router();
 
-router.get("/", async (req, res)=> {
+router.get("/",jwt.authenticate, async (req, res)=> {
     try {
         const data = await roomsController.listRooms();
         res.json(data);
@@ -14,7 +14,7 @@ router.get("/", async (req, res)=> {
 });
 
 
-router.post("/", async (req, res) => {
+router.post("/",jwt.authenticate, async (req, res) => {
     try {
         const data = await roomsController.createRoom();
         res.json(data);
@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id",jwt.authenticate, async (req, res) => {
     try {
         const data = await roomsController.updateRoom(req.params.id);
         res.json(data);
@@ -33,7 +33,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id",jwt.authenticate, async (req, res) => {
     try {
         const data = await roomsController.deleteRoom(req.params.id);
         res.json(data);
