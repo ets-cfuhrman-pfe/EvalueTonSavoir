@@ -1,5 +1,6 @@
 // WebSocketService.tsx
 import { io, Socket } from 'socket.io-client';
+import apiService from './ApiService';
 
 // Must (manually) sync these types to server/socket/socket.js
 
@@ -21,10 +22,14 @@ class WebSocketService {
     private socket: Socket | null = null;
 
     connect(backendUrl: string): Socket {
-        // console.log(backendUrl);
-        this.socket = io(`${backendUrl}`, {
+        this.socket = io( '/',{
+            path: backendUrl,
             transports: ['websocket'],
-            reconnectionAttempts: 1
+            autoConnect: true,
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 10000,
+            timeout: 20000,
         });
         return this.socket;
     }
@@ -37,9 +42,9 @@ class WebSocketService {
         }
     }
 
-    createRoom() {
+    createRoom(roomName: string) {
         if (this.socket) {
-            this.socket.emit('create-room');
+            this.socket.emit('create-room', roomName || undefined);
         }
     }
 
@@ -58,6 +63,8 @@ class WebSocketService {
     endQuiz(roomName: string) {
         if (this.socket) {
             this.socket.emit('end-quiz', { roomName });
+            //Delete room in mongoDb, roomContainer will be deleted in cleanup
+            apiService.deleteRoom(roomName);
         }
     }
 

@@ -3,17 +3,25 @@ version: '3'
 services: 
 
   frontend:
-    image: fuhrmanator/evaluetonsavoir-frontend:latest
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     container_name: frontend
     ports:
       - "5173:5173"
+    networks:
+      - quiz_network
     restart: always
 
   backend:
-    image: fuhrmanator/evaluetonsavoir-backend:latest
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       PORT: 3000
       MONGO_URI: "mongodb://mongo:27017/evaluetonsavoir"
@@ -25,9 +33,11 @@ services:
       FRONTEND_URL: "http://localhost:5173"
     depends_on:
       - mongo
+    networks:
+      - quiz_network
     restart: always
 
-  quizroom:
+  quizroom: # Forces image to update
     build:
       context: ./quizRoom
       dockerfile: Dockerfile
@@ -36,20 +46,24 @@ services:
       - "4500:4500"
     depends_on:
       - backend
+    networks:
+      - quiz_network
     restart: always
 
-  # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
   nginx:
-    image: fuhrmanator/evaluetonsavoir-routeur:latest
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: nginx
     ports: 
       - "80:80"
     depends_on:
        - backend
        - frontend
+    networks:
+      - quiz_network
     restart: always
 
-  # Ce conteneur est la base de données principale pour l'application
   mongo:
     image: mongo
     container_name: mongo
@@ -58,9 +72,10 @@ services:
     tty: true
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - quiz_network
     restart: always
 
-  # Ce conteneur assure que l'application est à jour en allant chercher s'il y a des mises à jours à chaque heure
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -72,7 +87,13 @@ services:
       - WATCHTOWER_DEBUG=true
       - WATCHTOWER_INCLUDE_RESTARTING=true
       - WATCHTOWER_SCHEDULE=0 0 5 * * * # At 5 am everyday
+    networks:
+      - quiz_network
     restart: always
+
+networks:
+  quiz_network:
+    driver: bridge
 
 volumes:
   mongodb_data:

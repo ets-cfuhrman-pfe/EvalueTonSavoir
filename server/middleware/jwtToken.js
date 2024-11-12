@@ -22,7 +22,7 @@ class Token {
                 if (error) {
                     throw new AppError(UNAUTHORIZED_INVALID_TOKEN)
                 }
-
+                
                 req.user = payload;
             });
         
