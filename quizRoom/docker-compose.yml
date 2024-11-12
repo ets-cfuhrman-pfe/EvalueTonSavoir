@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  quizroom:
+    build:
+      context: .
+      args:
+        - PORT=${PORT:-4500}
+    ports:
+      - "${PORT:-4500}:${PORT:-4500}"
+    environment:
+      - PORT=${PORT:-4500}
+      - ROOM_ID=${ROOM_ID}
+    healthcheck:
+      test: curl -f http://localhost:${PORT:-4500}/health || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 30s

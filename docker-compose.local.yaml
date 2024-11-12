@@ -37,7 +37,7 @@ services:
       - quiz_network
     restart: always
 
-  quizroom:
+  quizroom: # Forces image to update
     build:
       context: ./quizRoom
       dockerfile: Dockerfile
