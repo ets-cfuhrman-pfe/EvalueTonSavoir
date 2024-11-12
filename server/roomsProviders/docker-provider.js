@@ -6,11 +6,12 @@ class DockerRoomProvider extends BaseRoomProvider {
   constructor(config, roomRepository) {
     super(config, roomRepository);
     const dockerSocket = process.env.DOCKER_SOCKET || "/var/run/docker.sock";
-    
+
     this.docker = new Docker({ socketPath: dockerSocket });
+    this.docker_network = 'evaluetonsavoir_quiz_network';
   }
 
-  async syncInstantiatedRooms(){
+  async syncInstantiatedRooms() {
     let containers = await this.docker.listContainers();
     containers = containers.filter(container => container.Image === this.quiz_docker_image);
 
@@ -19,28 +20,28 @@ class DockerRoomProvider extends BaseRoomProvider {
     for (let container of containers) {
       const container_name = container.Names[0].slice(1);
       if (!container_name.startsWith("room_")) {
-        console.warn(`Container ${container_name} does not follow the room naming convention, removing it.`);
+        console.warn(`Le conteneur ${container_name} ne suit pas la convention de nommage, il sera supprimé.`);
         const curContainer = this.docker.getContainer(container.Id);
         await curContainer.stop();
         await curContainer.remove();
         containerIds.delete(container.Id);
-        console.warn(`Container ${container_name} removed.`);
+        console.warn(`Le conteneur ${container_name} a été supprimé.`);
       }
-      else{
-        console.warn(`Found orphan container : ${container_name}`);
+      else {
+        console.warn(`Conteneur orphelin trouvé : ${container_name}`);
         const roomId = container_name.slice(5);
         const room = await this.roomRepository.get(roomId);
-        
+
         if (!room) {
-          console.warn(`container not our rooms database`);
+          console.warn(`Le conteneur n'est pas dans notre base de données.`);
           const containerInfo = await this.docker.getContainer(container.Id).inspect();
           const containerIP = containerInfo.NetworkSettings.Networks.evaluetonsavoir_quiz_network.IPAddress;
           const host = `${containerIP}:4500`;
-          console.warn(`Creating room ${roomId} in our database - host : ${host}`);
+          console.warn(`Création de la salle ${roomId} dans notre base de donnée - hôte : ${host}`);
           return await this.roomRepository.create(new Room(roomId, container_name, host));
         }
 
-        console.warn(`room ${roomId} already in our database`);
+        console.warn(`La salle ${roomId} est déjà dans notre base de données.`);
       }
     }
   }
@@ -48,23 +49,81 @@ class DockerRoomProvider extends BaseRoomProvider {
   async createRoom(roomId, options) {
     const container_name = `room_${roomId}`;
 
-    const containerConfig = {
-      Image: this.quiz_docker_image,
-      name: container_name,
-      HostConfig: {
-        NetworkMode: "evaluetonsavoir_quiz_network" 
-      },
-      Env: [...options.env || [], `ROOM_ID=${roomId}`]
-    };
+    try {
+      const containerConfig = {
+        Image: this.quiz_docker_image,
+        name: container_name,
+        HostConfig: {
+          NetworkMode: this.docker_network,
+          RestartPolicy: {
+            Name: 'unless-stopped'
+          }
+        },
+        Env: [
+          `ROOM_ID=${roomId}`,
+          `PORT=${this.quiz_docker_port}`,
+          ...(options.env || [])
+        ]
+      };
 
-    const container = await this.docker.createContainer(containerConfig);
-    await container.start();
+      if (this.quiz_expose_port) {
+        containerConfig.ExposedPorts = {
+          [`${this.quiz_docker_port}/tcp`]: {}
+        };
+        containerConfig.HostConfig.PortBindings = {
+          [`${this.quiz_docker_port}/tcp`]: [{ HostPort: '' }] // Empty string for random port
+        };
+      }
 
-    const containerInfo = await container.inspect();
-    const containerIP = containerInfo.NetworkSettings.Networks.evaluetonsavoir_quiz_network.IPAddress;
+      const container = await this.docker.createContainer(containerConfig);
+      await container.start();
 
-    const host = `${containerIP}:${this.quiz_docker_port ?? "4500"}`;
-    return await this.roomRepository.create(new Room(roomId, container_name, host, 0));
+      const containerInfo = await container.inspect();
+      const networkInfo = containerInfo.NetworkSettings.Networks[this.docker_network];
+
+      if (!networkInfo) {
+        throw new Error(`Le conteneur n'as pu se connecter au réseau:  ${this.docker_network}`);
+      }
+
+      const containerIP = networkInfo.IPAddress;
+      const host = `http://${containerIP}:${this.quiz_docker_port}`;
+
+
+      let health = false;
+      let attempts = 0;
+      const maxAttempts = 15;
+
+      while (!health && attempts < maxAttempts) {
+        try {
+          const response = await fetch(`${host}/health`, {
+            timeout: 1000
+          });
+
+          if (response.ok) {
+            health = true;
+            console.log(`Le conteneur  ${container_name} est tombé actif en ${attempts + 1} tentatives`);
+          } else {
+            throw new Error(`Health check failed with status ${response.status}`);
+          }
+        } catch (error) {
+          attempts++;
+          console.log(`Attente du conteneur: ${container_name} (tentative ${attempts}/${maxAttempts})`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      if (!health) {
+        console.error(`Container ${container_name} failed health check after ${maxAttempts} attempts`);
+        await container.stop();
+        await container.remove();
+        throw new Error(`Room ${roomId} did not respond within acceptable timeout`);
+      }
+
+      return await this.roomRepository.create(new Room(roomId, container_name, host, 0));
+    } catch (error) {
+      console.error(`Échec de la création de la salle ${roomId}:`, error);
+      throw error;
+    }
   }
 
 
@@ -79,18 +138,18 @@ class DockerRoomProvider extends BaseRoomProvider {
       if (containerInfo) {
         await container.stop();
         await container.remove();
-        console.log(`Container for room ${roomId} stopped and removed.`);
+        console.log(`Le conteneur pour la salle ${roomId} a été arrêté et supprimé.`);
       }
     } catch (error) {
       if (error.statusCode === 404) {
-        console.warn(`Container for room ${roomId} not found, proceeding to delete room record.`);
+        console.warn(`Le conteneur pour la salle ${roomId} n'as pas été trouvé, la salle sera supprimée de la base de données.`);
       } else {
-        console.error(`Error handling container for room ${roomId}:`, error);
-        throw new Error("Failed to delete room");
+        console.error(`Erreur pour la salle ${roomId}:`, error);
+        throw new Error("La salle :${roomId} n'as pas pu être supprimée.");
       }
     }
-  
-    console.log(`Room ${roomId} deleted from repository.`);
+
+    console.log(`La salle ${roomId} a été supprimée.`);
   }
 
   async getRoomStatus(roomId) {
@@ -116,7 +175,7 @@ class DockerRoomProvider extends BaseRoomProvider {
       return updatedRoomInfo;
     } catch (error) {
       if (error.statusCode === 404) {
-        console.warn(`Container for room ${roomId} not found, room status set to "terminated".`);
+        console.warn(`Le conteneur pour la salle ${roomId} n'as pas été trouvé, il sera mis en état "terminé".`);
         const terminatedRoomInfo = {
           ...room,
           status: "terminated",
@@ -131,7 +190,7 @@ class DockerRoomProvider extends BaseRoomProvider {
         await this.roomRepository.update(terminatedRoomInfo);
         return terminatedRoomInfo;
       } else {
-        console.error(`Error retrieving container status for room ${roomId}:`, error);
+        console.error(`Une érreur s'est produite lors de l'obtention de l'état de la salle ${roomId}:`, error);
         return null;
       }
     }
@@ -149,7 +208,7 @@ class DockerRoomProvider extends BaseRoomProvider {
         try {
           await this.deleteRoom(room.id);
         } catch (error) {
-          console.error(`Error cleaning up room ${room.id}:`, error);
+          console.error(`Érreur lors du néttoyage de la salle ${room.id}:`, error);
         }
       }
     }
@@ -163,7 +222,7 @@ class DockerRoomProvider extends BaseRoomProvider {
         const curContainer = this.docker.getContainer(container.Id);
         await curContainer.stop();
         await curContainer.remove();
-        console.warn(`Orphan container ${container.Names[0]} removed.`);
+        console.warn(`Conteneur orphelin ${container.Names[0]} supprimé.`);
       }
     }
   }

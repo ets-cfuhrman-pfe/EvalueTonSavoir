@@ -13,30 +13,32 @@ class BaseRoomProvider {
     this.roomRepository = roomRepository;
 
     this.quiz_docker_image = process.env.QUIZROOM_IMAGE || "evaluetonsavoir-quizroom";
+    this.quiz_docker_port = process.env.QUIZROOM_PORT || 4500;
+    this.quiz_expose_port = process.env.QUIZROOM_EXPOSE_PORT || false;
   }
 
   async createRoom(roomId, options) {
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async deleteRoom(roomId) {
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async getRoomStatus(roomId) {
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async listRooms() {
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async cleanup() {
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async syncInstantiatedRooms(){
-    throw new Error("Method not implemented");
+    throw new Error("Fonction non-implantée - classe abstraite");
   }
 
   async updateRoomsInfo() {
@@ -58,7 +60,8 @@ class BaseRoomProvider {
 
         await this.roomRepository.update(room);
       } catch (error) {
-        console.error(`Error updating room ${room.id}:`, error);
+        room.mustBeCleaned = true;
+        await this.roomRepository.update(room);
       }
     }
   }

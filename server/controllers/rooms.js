@@ -34,7 +34,7 @@ class RoomsController {
                 return new KubernetesRoomProvider(options);
             */
             default:
-                throw new Error(`Unknown provider type: ${type}`);
+                throw new Error(`Type d'approvisionement inconnu: ${type}`);
         }
     }
 

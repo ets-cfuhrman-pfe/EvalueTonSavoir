@@ -32,7 +32,7 @@ class RoomRepository {
         await this.init();
         const existingRoom = await this.collection.findOne({ id: room.id });
         if (existingRoom) {
-            throw new Error(`Room already exists with id: ${room.id}`);
+            throw new Error(`Érreur: la salle ${room.id} existe déja`);
         }
         const returnedId = await this.collection.insertOne(room);
         return await this.collection.findOne({ _id: returnedId.insertedId });
@@ -42,7 +42,7 @@ class RoomRepository {
         await this.init();
         const existingRoom = await this.collection.findOne({ id: id });
         if (!existingRoom) {
-            console.warn(`Room with id ${id} not found.`);
+            console.warn(`La sale avec l'identifiant ${id} n'as pas été trouvé.`);
             return null;
         }
         return existingRoom;
@@ -77,7 +77,7 @@ class RoomRepository {
         await this.init();
         const result = await this.collection.deleteOne({ id: id });
         if (result.deletedCount === 0) {
-            console.warn(`Room with id ${id} not found for deletion.`);
+            console.warn(`La salle ${id} n'as pas été trouvée pour éffectuer sa suppression.`);	
             return false;
         }
         return true;
