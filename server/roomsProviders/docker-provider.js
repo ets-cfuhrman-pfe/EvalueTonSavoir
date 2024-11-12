@@ -5,26 +5,53 @@ const BaseRoomProvider = require("./base-provider.js");
 class DockerRoomProvider extends BaseRoomProvider {
   constructor(config, roomRepository) {
     super(config, roomRepository);
-    this.docker = new Docker({ socketPath: "/var/run/docker.sock" });
+    const dockerSocket = process.env.DOCKER_SOCKET || "/var/run/docker.sock";
+    
+    this.docker = new Docker({ socketPath: dockerSocket });
+  }
+
+  async syncInstantiatedRooms(){
+    let containers = await this.docker.listContainers();
+    containers = containers.filter(container => container.Image === this.quiz_docker_image);
+
+    const containerIds = new Set(containers.map(container => container.Id));
+
+    for (let container of containers) {
+      const container_name = container.Names[0].slice(1);
+      if (!container_name.startsWith("room_")) {
+        console.warn(`Container ${container_name} does not follow the room naming convention, removing it.`);
+        const curContainer = this.docker.getContainer(container.Id);
+        await curContainer.stop();
+        await curContainer.remove();
+        containerIds.delete(container.Id);
+        console.warn(`Container ${container_name} removed.`);
+      }
+      else{
+        console.warn(`Found orphan container : ${container_name}`);
+        const roomId = container_name.slice(5);
+        const room = await this.roomRepository.get(roomId);
+        
+        if (!room) {
+          console.warn(`container not our rooms database`);
+          const containerInfo = await this.docker.getContainer(container.Id).inspect();
+          const containerIP = containerInfo.NetworkSettings.Networks.evaluetonsavoir_quiz_network.IPAddress;
+          const host = `${containerIP}:4500`;
+          console.warn(`Creating room ${roomId} in our database - host : ${host}`);
+          return await this.roomRepository.create(new Room(roomId, container_name, host));
+        }
+
+        console.warn(`room ${roomId} already in our database`);
+      }
+    }
   }
 
   async createRoom(roomId, options) {
     const container_name = `room_${roomId}`;
 
     const containerConfig = {
-      Image: 'evaluetonsavoir-quizroom',
+      Image: this.quiz_docker_image,
       name: container_name,
-      ExposedPorts: {
-        "4500/tcp": {}
-      },
       HostConfig: {
-        PortBindings: {
-          "4500/tcp": [
-            {
-              HostPort: ""
-            }
-          ]
-        },
         NetworkMode: "evaluetonsavoir_quiz_network" 
       },
       Env: [...options.env || [], `ROOM_ID=${roomId}`]
@@ -36,13 +63,14 @@ class DockerRoomProvider extends BaseRoomProvider {
     const containerInfo = await container.inspect();
     const containerIP = containerInfo.NetworkSettings.Networks.evaluetonsavoir_quiz_network.IPAddress;
 
-    const host = `${containerIP}:4500`;
+    const host = `${containerIP}:${this.quiz_docker_port ?? "4500"}`;
     return await this.roomRepository.create(new Room(roomId, container_name, host, 0));
   }
 
 
   async deleteRoom(roomId) {
     const container_name = `room_${roomId}`;
+    await this.roomRepository.delete(roomId);
 
     try {
       const container = this.docker.getContainer(container_name);
@@ -61,8 +89,7 @@ class DockerRoomProvider extends BaseRoomProvider {
         throw new Error("Failed to delete room");
       }
     }
-
-    await this.roomRepository.delete(roomId);
+  
     console.log(`Room ${roomId} deleted from repository.`);
   }
 
@@ -117,44 +144,29 @@ class DockerRoomProvider extends BaseRoomProvider {
 
   async cleanup() {
     const rooms = await this.roomRepository.getAll();
-    const roomIds = new Set(rooms.map(room => room.id));
-
-    const containers = await this.docker.listContainers({ all: true });
-    const containerIds = new Set();
-
-    for (const containerInfo of containers) {
-      const containerName = containerInfo.Names[0].replace("/", "");
-      if (containerName.startsWith("room_")) {
-        const roomId = containerName.split("_")[1];
-        containerIds.add(roomId);
-
-        if (!roomIds.has(roomId)) {
-          try {
-            const container = this.docker.getContainer(containerInfo.Id);
-            await container.stop();
-            await container.remove();
-            console.log(`Loose container ${containerName} deleted.`);
-          } catch (error) {
-            console.error(`Failed to delete loose container ${containerName}:`, error);
-          }
-        }
-      }
-    }
-
-    for (const room of rooms) {
-      if (!containerIds.has(room.id)) {
+    for (let room of rooms) {
+      if (room.mustBeCleaned) {
         try {
-          await this.roomRepository.delete(room.id);
-          console.log(`Orphan room ${room.id} deleted from repository.`);
+          await this.deleteRoom(room.id);
         } catch (error) {
-          console.error(`Failed to delete orphan room ${room.id} from repository:`, error);
+          console.error(`Error cleaning up room ${room.id}:`, error);
         }
       }
     }
 
-    console.log("Cleanup of loose containers and orphan rooms completed.");
-  }
+    let containers = await this.docker.listContainers();
+    containers = containers.filter(container => container.Image === this.quiz_docker_image);
+    const roomIds = rooms.map(room => room.id);
 
+    for (let container of containers) {
+      if (!roomIds.includes(container.Names[0].slice(6))) {
+        const curContainer = this.docker.getContainer(container.Id);
+        await curContainer.stop();
+        await curContainer.remove();
+        console.warn(`Orphan container ${container.Names[0]} removed.`);
+      }
+    }
+  }
 }
 
 module.exports = DockerRoomProvider;

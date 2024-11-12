@@ -1,9 +1,15 @@
 class Room {
-    constructor(id, name, host, nbStudents = 0) { // Default nbStudents to 0
+    constructor(id, name, host, nbStudents = 0,) { // Default nbStudents to 0
         this.id = id;
         this.name = name;
+        
+        if (!host.startsWith('http://') && !host.startsWith('https://')) {
+            host = 'http://' + host;
+        }
         this.host = host;
+
         this.nbStudents = nbStudents;
+        this.mustBeCleaned = false;
     }
 }
 
@@ -47,15 +53,21 @@ class RoomRepository {
         return await this.collection.find().toArray();
     }
 
-    async update(room) {
+    async update(room,roomId = null) {
         await this.init();
+    
+        const searchId = roomId ?? room.id;
+        
         const result = await this.collection.updateOne(
-            { id: room.id },
-            { $set: room }
+            { id: searchId },
+            { $set: room },
+            { upsert: false }
         );
-
+    
         if (result.modifiedCount === 0) {
-            console.warn(`Room with id ${room.id} was not updated because it was not found.`);
+            if (result.matchedCount > 0) {
+                return true; // Document exists but no changes needed
+            }
             return false;
         }
         return true;

@@ -5,10 +5,14 @@
  * @typedef {import('../../types/room').BaseProviderConfig} BaseProviderConfig
  */
 
+const MIN_NB_SECONDS_BEFORE_CLEANUP = process.env.MIN_NB_SECONDS_BEFORE_CLEANUP || 60
+
 class BaseRoomProvider {
   constructor(config = {}, roomRepository) {
     this.config = config;
     this.roomRepository = roomRepository;
+
+    this.quiz_docker_image = process.env.QUIZROOM_IMAGE || "evaluetonsavoir-quizroom";
   }
 
   async createRoom(roomId, options) {
@@ -31,19 +35,32 @@ class BaseRoomProvider {
     throw new Error("Method not implemented");
   }
 
-  async updateRoomInfo(roomId, info) {
-    let room = await this.getRoomInfo(roomId);
+  async syncInstantiatedRooms(){
+    throw new Error("Method not implemented");
+  }
 
-    if (!room) return false;
+  async updateRoomsInfo() {
+    const rooms = await this.roomRepository.getAll();
+    for(var room of rooms){
+      const url = `${room.host}/health`;
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          room.mustBeCleaned = true;
+          await this.roomRepository.update(room);
+          continue;
+        }
+    
+        const json = await response.json();
+        room.nbStudents = json.connections;
+        room.mustBeCleaned = room.nbStudents === 0 && json.uptime >MIN_NB_SECONDS_BEFORE_CLEANUP;
 
-    for (let key of Object.keys(room)) {
-      if (info[key] !== undefined) {
-        room[key] = info[key];
+        await this.roomRepository.update(room);
+      } catch (error) {
+        console.error(`Error updating room ${room.id}:`, error);
       }
     }
-
-    const result = await this.roomRepository.update(room);
-    return result != null;
   }
 
   async getRoomInfo(roomId) {

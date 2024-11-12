@@ -6,7 +6,8 @@ const DockerRoomProvider = require('../roomsProviders/docker-provider.js');
 //const KubernetesRoomProvider = require('../roomsProviders/kubernetes-provider');
 
 const NB_CODE_CHARS = 6;
-const DEFAULT_HOST = "172.18.0.5:4500" // must be room ip not name
+const NB_MS_UPDATE_ROOM = 1000;
+const NB_MS_CLEANUP = 30000;
 
 class RoomsController {
     constructor(options = {}, roomRepository) {
@@ -16,7 +17,7 @@ class RoomsController {
             roomRepository
         );
         this.roomRepository = roomRepository;
-        this.setupCleanup();
+        this.setupTasks();
     }
 
     createProvider(type, options, repository) {
@@ -37,10 +38,17 @@ class RoomsController {
         }
     }
 
-    setupCleanup() {
+    async setupTasks(){
+        await this.provider.syncInstantiatedRooms();
+        // Update rooms
+        setInterval(() => {
+            this.provider.updateRoomsInfo().catch(console.error);
+        }, NB_MS_UPDATE_ROOM);
+
+        // Cleanup rooms
         setInterval(() => {
             this.provider.cleanup().catch(console.error);
-        }, 30000);
+        }, NB_MS_CLEANUP);
     }
 
     async createRoom(options = {}) {
