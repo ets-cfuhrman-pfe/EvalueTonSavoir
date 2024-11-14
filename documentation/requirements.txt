@@ -1,0 +1,6 @@
+mkdocs
+mkdocs[i18n]
+mkdocs_puml
+mkdocs-material
+Pygments
+ghp-import
