@@ -1,0 +1,70 @@
+services:
+
+  frontend:
+    image: fuhrmanator/evaluetonsavoir-frontend:latest
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_BACKEND_URL: "http://localhost:4400"
+      # don't define VITE_BACKEND_SOCKET_URL so it will default to window.location.host
+      # VITE_BACKEND_SOCKET_URL: "" 
+    restart: always
+
+  backend:
+    image: fuhrmanator/evaluetonsavoir-backend:latest
+    container_name: backend
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      MONGO_URI: "mongodb://mongo:27017/evaluetonsavoir"
+      MONGO_DATABASE: evaluetonsavoir
+      EMAIL_SERVICE: gmail
+      SENDER_EMAIL: infoevaluetonsavoir@gmail.com
+      EMAIL_PSW: 'vvml wmfr dkzb vjzb'
+      JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
+      FRONTEND_URL: "http://localhost:5173"
+    depends_on:
+      - mongo
+    restart: always
+
+  # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
+  nginx:
+    image: fuhrmanator/evaluetonsavoir-routeur:latest
+    container_name: nginx
+    ports: 
+      - "80:80"
+    depends_on:
+       - backend
+       - frontend
+    restart: always
+
+  # Ce conteneur est la base de données principale pour l'application
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    tty: true
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+
+  # Ce conteneur assure que l'application est à jour en allant chercher s'il y a des mises à jours à chaque heure
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=America/Montreal
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_DEBUG=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_SCHEDULE=0 0 5 * * * # At 5 am everyday
+    restart: always
+
+volumes:
+  mongodb_data:
+    external: false
