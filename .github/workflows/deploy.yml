@@ -1,4 +1,4 @@
-name: create-documentation
+name: CI/CD Pipeline for Nginx Router
 on:
   workflow_call:
   workflow_dispatch:

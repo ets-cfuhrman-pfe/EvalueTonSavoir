@@ -1,4 +1,4 @@
-name: Publish docs via GitHub Pages
+name: Creates docs and deploy to gh-pages
 on:
   workflow_call:
   workflow_dispatch:
