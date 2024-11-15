@@ -1,9 +1,8 @@
+const roomCache = new Map();
+
 async function fetchRoomInfo(r) {
     try {
-        // Make request to API to get room info
-        let res = await r.subrequest('/api/room/' + r.variables.room_id, {
-            method: 'GET'
-        });
+        let res = await r.subrequest(`/api/room/${r.variables.room_id}`, { method: 'GET' });
 
         if (res.status !== 200) {
             r.error(`Failed to fetch room info: ${res.status}`);
@@ -11,7 +10,7 @@ async function fetchRoomInfo(r) {
         }
 
         let room = JSON.parse(res.responseText);
-        r.error(`Debug: Room info: ${JSON.stringify(room)}`); // Debug log
+        r.error(`Debug: Room info fetched: ${JSON.stringify(room)}`);
         return room;
     } catch (error) {
         r.error(`Error fetching room info: ${error}`);
@@ -19,36 +18,48 @@ async function fetchRoomInfo(r) {
     }
 }
 
-async function routeWebSocket(r) {
-    try {
-        const roomInfo = await fetchRoomInfo(r);
+function checkCache(r) {
+    let room = roomCache.get(r.variables.room_id);
+    if (room) {
+        r.error(`Cache hit for room_id: ${r.variables.room_id}`);
+        r.return(200, JSON.stringify(room));
+    } else {
+        r.error(`Cache miss for room_id: ${r.variables.room_id}`);
+        r.return(404);
+    }
+}
 
-        if (!roomInfo || !roomInfo.host) {
-            r.error(`Debug: Invalid room info: ${JSON.stringify(roomInfo)}`);
+function setCache(r) {
+    let room = JSON.parse(r.responseBody);
+    roomCache.set(r.variables.room_id, room);
+    r.error(`Cached room info: ${JSON.stringify(room)}`);
+}
+
+async function routeWebSocket(r) {
+    let room = roomCache.get(r.variables.room_id);
+
+    if (!room) {
+        r.error(`Cache miss. Fetching room info for: ${r.variables.room_id}`);
+        room = await fetchRoomInfo(r);
+
+        if (!room || !room.host) {
+            r.error(`Invalid room info for room_id: ${r.variables.room_id}`);
             r.return(404, 'Room not found or invalid');
             return;
         }
 
-        // Make sure the host includes protocol if not already present
-        let proxyUrl = roomInfo.host;
-        if (!proxyUrl.startsWith('http://') && !proxyUrl.startsWith('https://')) {
-            proxyUrl = 'http://' + proxyUrl;
-        }
-
-        r.error(`Debug: Original URL: ${r.uri}`);
-        r.error(`Debug: Setting proxy target to: ${proxyUrl}`);
-        r.error(`Debug: Headers: ${JSON.stringify(r.headersIn)}`);
-
-        // Set the proxy target variable
-        r.variables.proxy_target = proxyUrl;
-
-        // Redirect to the websocket proxy
-        r.internalRedirect('@websocket_proxy');
-
-    } catch (error) {
-        r.error(`WebSocket routing error: ${error}`);
-        r.return(500, 'Internal routing error');
+        roomCache.set(r.variables.room_id, room); // Cache the result
+    } else {
+        r.error(`Cache hit for room_id: ${r.variables.room_id}`);
     }
+
+    let proxyUrl = room.host.startsWith('http://') || room.host.startsWith('https://')
+        ? room.host
+        : `http://${room.host}`;
+
+    r.error(`Routing WebSocket to: ${proxyUrl}`);
+    r.variables.proxy_target = proxyUrl;
+    r.internalRedirect('@websocket_proxy');
 }
 
-export default { routeWebSocket };
+export default { routeWebSocket, checkCache, setCache };
