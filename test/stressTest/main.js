@@ -3,126 +3,102 @@ import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
 
 const BASE_URL = 'http://localhost';
-const user = {
-    username: 'admin@example.com',
-    password: 'adminPassword',
-};
-
-const numberRooms = 30;
-const studentPerRoom = 59; // Max is 60; 1 slot is reserved for the teacher
-
+const user = { username: 'admin@example.com', password: 'adminPassword' };
+const numberRooms = 5;
+const studentPerRoom = 59; // Max is 60; 1 slot reserved for the teacher
 const roomAssociations = {};
 const allSockets = []; // Track all active WebSocket connections
 
-async function createRoomsAndTeachers(token) {
-    const roomCreationPromises = [];
-    const teachers = [];
-
-    for (let index = 0; index < numberRooms; index++) {
-        roomCreationPromises.push(
-            createRoomContainer(BASE_URL, token).then((room) => {
-                if (room?.id) {
-                    const teacher = new Teacher(`teacher_${index}`, room.id);
-                    teachers.push(teacher);
-
-                    roomAssociations[room.id] = {
-                        teacher,
-                        students: [],
-                    };
-
-                    // Track teacher WebSocket for cleanup
-                    if (teacher.socket) {
-                        allSockets.push(teacher.socket);
-                    }
-                }
-            })
-        );
-    }
-
-    await Promise.allSettled(roomCreationPromises);
-    console.log(`Created ${Object.keys(roomAssociations).length} rooms with associated teachers.`);
-    return teachers;
-}
-
-async function connectTeachersToRooms(teachers) {
-    const teacherConnectionPromises = teachers.map(async (teacher) => {
-        await teacher.connectToRoom(BASE_URL);
-        if (teacher.socket) {
-            allSockets.push(teacher.socket); // Track WebSocket
+async function createRoomContainers(token) {
+    const roomCreationPromises = Array.from({ length: numberRooms }, async () => {
+        const room = await createRoomContainer(BASE_URL, token);
+        if (room?.id) {
+            roomAssociations[room.id] = { teacher: null, students: [] };
+            console.log(`Created room with ID: ${room.id}`);
+        } else {
+            console.warn('Failed to create a room.');
         }
     });
 
-    await Promise.allSettled(teacherConnectionPromises);
-    console.log('All teachers connected to their rooms.');
+    await Promise.allSettled(roomCreationPromises);
+    console.log(`Created ${Object.keys(roomAssociations).length} room containers.`);
+}
+
+async function addAndConnectTeachers() {
+    const teacherCreationPromises = Object.keys(roomAssociations).map(async (roomId, index) => {
+        const teacher = new Teacher(`teacher_${index}`, roomId);
+        const socket = await teacher.connectToRoom(BASE_URL);
+
+        if (socket.connected) {
+            allSockets.push(socket); 
+            roomAssociations[roomId].teacher = teacher;
+            console.log(`Teacher ${teacher.username} connected to room ${roomId}.`);
+        } else {
+            console.warn(`Failed to connect teacher_${index} to room ${roomId}`);
+        }
+    });
+
+    await Promise.allSettled(teacherCreationPromises);
+    console.log('All teachers added and connected to their respective rooms.');
 }
 
 async function addAndConnectStudents() {
-    const studentCreationPromises = [];
-
-    Object.entries(roomAssociations).forEach(([roomId, association], roomIndex) => {
-        for (let i = 0; i < studentPerRoom; i++) {
+    const studentCreationPromises = Object.entries(roomAssociations).flatMap(([roomId, association], roomIndex) =>
+        Array.from({ length: studentPerRoom }, async (_, i) => {
             const student = new Student(`student_${roomIndex}_${i}`, roomId);
-            association.students.push(student);
+            const socket = await student.connectToRoom(BASE_URL);
 
-            studentCreationPromises.push(
-                student.connectToRoom(BASE_URL).then(() => {
-                    if (student.socket) {
-                        allSockets.push(student.socket); // Track WebSocket
-                    }
-                })
-            );
-        }
-    });
+            if (socket.connected) {
+                allSockets.push(socket); 
+                association.students.push(student);
+                console.log(`Student ${student.username} connected to room ${roomId}.`);
+            } else {
+                console.warn(`Failed to connect student_${roomIndex}_${i} to room ${roomId}`);
+            }
+        })
+    );
 
     await Promise.allSettled(studentCreationPromises);
-    console.log('All students connected to their respective rooms.');
+    console.log('All students added and connected to their respective rooms.');
 }
 
 function closeAllSockets() {
-    console.log('Closing all WebSocket connections...');
+    console.log('Closing all Socket.IO connections...');
     allSockets.forEach((socket) => {
-        try {
-            if (socket.readyState === socket.OPEN) {
-                socket.close(); // Gracefully close the WebSocket
-                console.log('Closed WebSocket connection.');
+        if (socket && socket.connected) { 
+            try {
+                socket.disconnect(); 
+                console.log('Disconnected Socket.IO connection.');
+            } catch (error) {
+                console.error('Error disconnecting Socket.IO socket:', error.message);
             }
-        } catch (error) {
-            console.error('Error closing WebSocket:', error.message);
         }
     });
-    console.log('All WebSocket connections closed.');
+    console.log('All Socket.IO connections disconnected.');
 }
 
 async function main() {
     try {
         const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
-        if (!token) {
-            console.error('Failed to log in. Exiting...');
-            return;
-        }
+        if (!token) throw new Error('Failed to log in.');
 
-        const teachers = await createRoomsAndTeachers(token);
-        await connectTeachersToRooms(teachers);
-        await addAndConnectStudents();
+        await createRoomContainers(token);  
+        await addAndConnectTeachers();      
+        await addAndConnectStudents();     
 
         console.log('All tasks completed.');
     } catch (error) {
         console.error('An error occurred:', error.message);
-    } finally {
-        closeAllSockets();
     }
 }
 
-// Handle script termination (Ctrl+C)
+// Handle script termination and exit
 process.on('SIGINT', () => {
     console.log('Script interrupted (Ctrl+C).');
     closeAllSockets();
-    process.exit(0); // Exit cleanly
+    process.exit(0);
 });
 
-// Handle script exit
-process.on('exit', () => {
-    closeAllSockets();
-});
+process.on('exit', closeAllSockets);
 
 main();
