@@ -1,0 +1,18 @@
+{
+    "roomsCreated": 5,
+    "roomsFailed": 0,
+    "teachersConnected": 5,
+    "teachersFailed": 0,
+    "studentsConnected": 295,
+    "studentsFailed": 0,
+    "startTime": "2024-11-16T01:06:28.606Z",
+    "endTime": "2024-11-16T01:06:31.135Z",
+    "executionTime": 2.529,
+    "memoryUsage": {
+        "rss": 72040448,
+        "heapTotal": 51122176,
+        "heapUsed": 23656264,
+        "external": 4503630,
+        "arrayBuffers": 170538
+    }
+}

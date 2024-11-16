@@ -1,6 +1,7 @@
 import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServices.js';
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
+import { writeMetricsToFile } from './utility/writeMetrics.js';
 
 const BASE_URL = 'http://localhost';
 const user = { username: 'admin@example.com', password: 'adminPassword' };
@@ -105,17 +106,18 @@ function closeAllSockets() {
     console.log('Toutes les connexions Socket.IO ont été déconnectées.');
 }
 
-function generateReport(){
+function generateReport() {
     console.log('Toutes les tâches ont été terminées.');
-        console.log('--- Résultats du test de charge ---');
-        console.log(`Salles créées : ${metrics.roomsCreated}`);
-        console.log(`Échecs de création de salles : ${metrics.roomsFailed}`);
-        console.log(`Enseignants connectés : ${metrics.teachersConnected}`);
-        console.log(`Échecs de connexion des enseignants : ${metrics.teachersFailed}`);
-        console.log(`Étudiants connectés : ${metrics.studentsConnected}`);
-        console.log(`Échecs de connexion des étudiants : ${metrics.studentsFailed}`);
-        console.log(`Durée totale d'exécution : ${(metrics.endTime - metrics.startTime) / 1000}s`);
-        console.log('Utilisation de la mémoire :', process.memoryUsage());
+    console.log('--- Résultats du test de charge ---');
+    console.log(`Salles créées : ${metrics.roomsCreated}`);
+    console.log(`Échecs de création de salles : ${metrics.roomsFailed}`);
+    console.log(`Enseignants connectés : ${metrics.teachersConnected}`);
+    console.log(`Échecs de connexion des enseignants : ${metrics.teachersFailed}`);
+    console.log(`Étudiants connectés : ${metrics.studentsConnected}`);
+    console.log(`Échecs de connexion des étudiants : ${metrics.studentsFailed}`);
+    console.log(`Durée totale d'exécution : ${(metrics.endTime - metrics.startTime) / 1000}s`);
+    console.log('Utilisation de la mémoire :', process.memoryUsage());
+    writeMetricsToFile( metrics);
 }
 
 async function main() {
@@ -129,7 +131,7 @@ async function main() {
         await addAndConnectStudents();
 
         metrics.endTime = new Date();
-        
+
         generateReport();
     } catch (error) {
         console.error('Une erreur est survenue :', error.message);
