@@ -118,7 +118,7 @@ export async function createRoomContainer(baseUrl, token) {
       throw new Error(`Room creation failed. Status: ${res.status}`);
     }
 
-    console.log("Room successfully created:", res.data);
+    //console.log("Room successfully created:", res.data);
     return res.data;
   } catch (error) {
     console.error("Room creation error:", error.message);
