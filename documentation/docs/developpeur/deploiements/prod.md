@@ -5,7 +5,7 @@ Nous avons choisi d'exécuter les composantes de cette application avec Docker, 
 
 Voici un diagramme de déploiement expliquant la relation des composantes et comment les images Docker sont créées et déployées dans un serveur.
 
-```puml
+```plantuml
     @startuml
     [Navigateur moderne (Windows/Android)] as Navigateur
     [MongoDB] as MongoDB

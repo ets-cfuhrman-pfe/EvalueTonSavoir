@@ -4,6 +4,7 @@
 Pour lancer la documentation, il faut installer python et entrer dans le dossier documentation.
 Il faut ensuite installer les dépendances avec `pip install -r requirements.txt`.
 Pour lancer le mode développement il faut executer `python -m mkdocs serve`
+Afin d'accellerer le déploiement et ne pas être touché par des érreurs de "rate-limiting", il est préférable d'utiliser une image docker de plantuml. Pour cela, il faut utiliser la commande suivante : `docker run -d --name plantuml -p 8080:8080 plantuml/plantuml-server:tomcat`
 
 ## Deploiement
 Le code est automatiquement déployé par la github-action `create-docs.yaml`
