@@ -17,3 +17,7 @@ Si vous ajoutez des plugins, veuillez mettre a jour le fichier `requirements.txt
 
 La documentation utilise [MkDocs](https://www.mkdocs.org/) avec [le theme matérial]((https://squidfunk.github.io/mkdocs-material/)). Il y a bien des fonctionalitées tel que les code-blocks qui peuvent être activés.
 Vous pouvez avoir accès a la documentation ici : [https://squidfunk.github.io/mkdocs-material/reference/code-blocks/](https://squidfunk.github.io/mkdocs-material/reference/code-blocks/)
+
+## Autre méthode de lancement (virtuel)
+Si vous avez un probleme avec votre environement et vous avez besoin d'un environement virtuel, il s'agit de faire `python -m venv .venv` dans le dossier document et d'activer cet environemment avec le fichier activate (changeant depedant de votre invite de commande) : `.venv\script\activate`
+vous pouvez ensuite continuer les autres étapes.

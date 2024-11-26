@@ -4,4 +4,3 @@ mkdocs_puml
 mkdocs-material
 Pygments
 ghp-import
-plantuml
