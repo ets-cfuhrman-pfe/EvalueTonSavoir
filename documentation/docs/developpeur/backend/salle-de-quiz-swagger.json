@@ -13,6 +13,11 @@
             "description": "Via npm"
         }
     ],
+    "security": [
+      {
+          "bearerAuth": []
+      }
+  ],
     "paths": {
       "/api/room": {
         "get": {
@@ -100,6 +105,13 @@
       }
     },
     "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        }
+    },
       "schemas": {
         "Room": {
           "type": "object",
