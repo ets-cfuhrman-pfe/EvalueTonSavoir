@@ -14,7 +14,7 @@
         }
     ],
     "paths": {
-      "/api/rooms": {
+      "/api/room": {
         "get": {
           "summary": "Get all rooms",
           "description": "Returns a list of rooms",
@@ -51,7 +51,7 @@
           }
         }
       },
-      "/api/rooms/{roomId}": {
+      "/api/room/{roomId}": {
         "get": {
           "summary": "Get a room by id",
           "description": "Returns a room by id",

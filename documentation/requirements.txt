@@ -4,3 +4,4 @@ mkdocs_puml
 mkdocs-material
 Pygments
 ghp-import
+mkdocs-swagger-ui-tag
