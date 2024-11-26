@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import os from "os";
 
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
@@ -19,10 +20,10 @@ export const setupWebsocket = (io: Server): void => {
 
     socket.on("create-room", (sentRoomName) => {
       // Ensure sentRoomName is a string before applying toUpperCase()
-      const roomName = (typeof sentRoomName === "string" && sentRoomName.trim() !== "") 
-        ? sentRoomName.toUpperCase() 
+      const roomName = (typeof sentRoomName === "string" && sentRoomName.trim() !== "")
+        ? sentRoomName.toUpperCase()
         : generateRoomName();
-    
+
       if (!io.sockets.adapter.rooms.get(roomName)) {
         socket.join(roomName);
         socket.emit("create-success", roomName);
@@ -96,9 +97,61 @@ export const setupWebsocket = (io: Server): void => {
     socket.on("error", (error) => {
       console.error("WebSocket server error:", error);
     });
+
+
+    // Stress Testing
+
+    socket.on("message-test", ({ roomName, message }: { roomName: string; message: string }) => {
+      console.log(`Message reçu dans la salle ${roomName} : ${message}`);
+      socket.to(roomName).emit("message", { id: socket.id, message });
+    });
+
+    socket.on("get-usage", () => {
+      try {
+        const memoryUsage = process.memoryUsage();
+        const cpuUsage = process.cpuUsage();
+        const totalMemory = os.totalmem();
+        const freeMemory = os.freemem();
+        const loadAverage = os.loadavg(); // Load average over 1, 5, and 15 minutes
+    
+        // Calculate CPU usage percentage
+        const userCpuPercentage = ((cpuUsage.user / 1e6) / os.cpus().length).toFixed(2); // in %
+        const systemCpuPercentage = ((cpuUsage.system / 1e6) / os.cpus().length).toFixed(2); // in %
+    
+        const usageData = {
+          memory: {
+            total: totalMemory,
+            free: freeMemory,
+            rss: memoryUsage.rss,
+            heapTotal: memoryUsage.heapTotal,
+            heapUsed: memoryUsage.heapUsed,
+            external: memoryUsage.external,
+            usagePercentage: (((totalMemory - freeMemory) / totalMemory) * 100).toFixed(2), // % used
+          },
+          cpu: {
+            user: cpuUsage.user,
+            system: cpuUsage.system,
+            userPercentage: userCpuPercentage,
+            systemPercentage: systemCpuPercentage,
+          },
+          system: {
+            uptime: os.uptime(), // System uptime in seconds
+            loadAverage: {
+              "1min": loadAverage[0],
+              "5min": loadAverage[1],
+              "15min": loadAverage[2],
+            },
+          },
+        };
+    
+        socket.emit("usage-data", usageData); // Send usage data back to the client
+      } catch (error) {
+        console.error("Error getting usage data:", error);
+        socket.emit("error", { message: "Failed to retrieve usage data" });
+      }
+    });
+
   });
-
-
 
   const generateRoomName = (length = 6): string => {
     const characters = "0123456789";

@@ -19,23 +19,19 @@ export class Teacher {
                     reconnectionDelay: 10000,
                     timeout: 20000,
                 });
-    
+
                 this.socket.on('connect', () => {
                     this.createRoom(this.roomName);
-                    resolve(this.socket); 
+                    this.listenForMessages(); // Start listening for messages
+                    resolve(this.socket);
                 });
-    
+
                 this.socket.on('error', (error) => {
-                    reject(new Error(`Connection error: ${error.message}`)); 
+                    reject(new Error(`Connection error: ${error.message}`));
                 });
-    
-                this.socket.on('create-success', () => {
-                    
-                });
-    
             } catch (error) {
-                console.error(`Error connecting ${this.name} to room ${this.roomId}:`, error.message);
-                reject(error); 
+                console.error(`Error connecting ${this.name} to room ${this.roomName}:`, error.message);
+                reject(error);
             }
         });
     }
@@ -43,6 +39,20 @@ export class Teacher {
     createRoom() {
         if (this.socket) {
             this.socket.emit('create-room', this.roomName || undefined);
+        }
+    }
+
+    sendMessage(message) {
+        if (this.socket && this.socket.connected) {
+            this.socket.emit('message-test', { room: this.roomName, message });
+        }
+    }
+
+    listenForMessages() {
+        if (this.socket) {
+            this.socket.on('message-test', (data) => {
+                console.log(`Message received in room ${this.roomName} by ${this.username}:`, data.message);
+            });
         }
     }
 }

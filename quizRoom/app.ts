@@ -2,7 +2,8 @@ import http from "http";
 import { Server, ServerOptions } from "socket.io";
 import { setupWebsocket } from "./socket/setupWebSocket";
 import dotenv from "dotenv";
-import express from 'express';
+import express from "express";
+import os from "os"; // Import the os module
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +36,7 @@ app.get('/health', (_, res) => {
     });
   }
 });
+
 
 const ioOptions: Partial<ServerOptions> = {
   path: `/api/room/${roomId}/socket`,

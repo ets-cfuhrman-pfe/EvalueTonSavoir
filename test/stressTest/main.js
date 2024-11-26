@@ -1,16 +1,15 @@
-import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServices.js';
+import { attemptLoginOrRegister, createRoomContainer, captureResourceUsageForContainers } from './utility/apiServices.js';
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
-import { writeMetricsToFile } from './utility/writeMetrics.js';
+import { writeMetricsToFile, generateGraphs } from './utility/writeMetrics.js';
 
 const BASE_URL = 'http://localhost';
 const user = { username: 'admin@example.com', password: 'adminPassword' };
-const numberRooms = 5;
-const studentPerRoom = 59; // Max : 60, 1 place réservée pour le professeur
+const numberRooms = 20;
+const studentPerRoom = 58; // Max: 60, 1 reserved for teacher
 const roomAssociations = {};
-const allSockets = []; // Suivi de toutes les connexions WebSocket actives
+const allSockets = []; // Tracks all active WebSocket connections
 
-// Métriques
 const metrics = {
     roomsCreated: 0,
     roomsFailed: 0,
@@ -18,133 +17,211 @@ const metrics = {
     teachersFailed: 0,
     studentsConnected: 0,
     studentsFailed: 0,
+    messagesSent: 0,
+    messagesReceived: 0,
+    totalLatency: 0,
+    maxLatency: 0,
+    minLatency: Number.MAX_SAFE_INTEGER,
+    throughput: 0,
     startTime: null,
     endTime: null,
 };
 
+// Creates rooms and tracks their creation
 async function createRoomContainers(token) {
-    console.time('Temps de création des salles');
+    console.time('Room creation time');
     const roomCreationPromises = Array.from({ length: numberRooms }, async () => {
-        const room = await createRoomContainer(BASE_URL, token);
-        if (room?.id) {
-            roomAssociations[room.id] = { teacher: null, students: [] };
-            metrics.roomsCreated++;
-            console.log(`Salle créée avec l'ID : ${room.id}`);
-        } else {
+        try {
+            const room = await createRoomContainer(BASE_URL, token);
+            if (room?.id) {
+                roomAssociations[room.id] = { teacher: null, students: [] };
+                metrics.roomsCreated++;
+                console.log(`Room created with ID: ${room.id}`);
+            }
+        } catch {
             metrics.roomsFailed++;
-            console.warn('Échec de la création d’une salle.');
+            console.warn('Failed to create a room.');
         }
     });
 
     await Promise.allSettled(roomCreationPromises);
-    console.timeEnd('Temps de création des salles');
-    console.log(`Nombre total de salles créées : ${Object.keys(roomAssociations).length}`);
+    console.timeEnd('Room creation time');
+    console.log(`Total rooms created: ${Object.keys(roomAssociations).length}`);
 }
 
+// Connects teachers to their respective rooms
 async function addAndConnectTeachers() {
-    console.time('Temps de connexion des enseignants');
-    const teacherCreationPromises = Object.keys(roomAssociations).map(async (roomId, index) => {
+    console.time('Teacher connection time');
+    const teacherPromises = Object.keys(roomAssociations).map(async (roomId, index) => {
         const teacher = new Teacher(`teacher_${index}`, roomId);
         const start = Date.now();
         const socket = await teacher.connectToRoom(BASE_URL);
         const latency = Date.now() - start;
 
+        metrics.totalLatency += latency;
+        metrics.maxLatency = Math.max(metrics.maxLatency, latency);
+        metrics.minLatency = Math.min(metrics.minLatency, latency);
+
         if (socket.connected) {
             allSockets.push(socket);
             roomAssociations[roomId].teacher = teacher;
             metrics.teachersConnected++;
-            console.log(`Enseignant ${teacher.username} connecté à la salle ${roomId}. Latence : ${latency}ms`);
+            console.log(`Teacher ${teacher.username} connected to room ${roomId}. Latency: ${latency}ms`);
         } else {
             metrics.teachersFailed++;
-            console.warn(`Échec de la connexion de l'enseignant ${index} à la salle ${roomId}`);
+            console.warn(`Failed to connect teacher ${index} to room ${roomId}`);
         }
     });
 
-    await Promise.allSettled(teacherCreationPromises);
-    console.timeEnd('Temps de connexion des enseignants');
-    console.log('Tous les enseignants ont été ajoutés et connectés à leurs salles respectives.');
+    await Promise.allSettled(teacherPromises);
+    console.timeEnd('Teacher connection time');
+    console.log('All teachers connected to their respective rooms.');
 }
 
+// Connects students to their respective rooms
 async function addAndConnectStudents() {
-    console.time('Temps de connexion des étudiants');
-    const studentCreationPromises = Object.entries(roomAssociations).flatMap(([roomId, association], roomIndex) =>
+    console.time('Student connection time');
+    const studentPromises = Object.entries(roomAssociations).flatMap(([roomId, association], roomIndex) =>
         Array.from({ length: studentPerRoom }, async (_, i) => {
             const student = new Student(`student_${roomIndex}_${i}`, roomId);
             const start = Date.now();
             const socket = await student.connectToRoom(BASE_URL);
             const latency = Date.now() - start;
 
+            metrics.totalLatency += latency;
+            metrics.maxLatency = Math.max(metrics.maxLatency, latency);
+            metrics.minLatency = Math.min(metrics.minLatency, latency);
+
             if (socket.connected) {
                 allSockets.push(socket);
                 association.students.push(student);
                 metrics.studentsConnected++;
-                console.log(`Étudiant ${student.username} connecté à la salle ${roomId}. Latence : ${latency}ms`);
             } else {
                 metrics.studentsFailed++;
-                console.warn(`Échec de la connexion de l'étudiant ${roomIndex}_${i} à la salle ${roomId}`);
+                console.warn(`Failed to connect student ${roomIndex}_${i} to room ${roomId}`);
             }
         })
     );
 
-    await Promise.allSettled(studentCreationPromises);
-    console.timeEnd('Temps de connexion des étudiants');
-    console.log('Tous les étudiants ont été ajoutés et connectés à leurs salles respectives.');
+    await Promise.allSettled(studentPromises);
+    console.timeEnd('Student connection time');
+    console.log('All students connected to their respective rooms.');
 }
 
+// Simulates conversations in all rooms
+async function simulateConversation() {
+    console.log("Conversation simulation started...");
+    const messages = [
+        "Bonjour, tout le monde !",
+        "Pouvez-vous répondre à la question 1 ?",
+        "J'ai une question sur l'exercice.",
+        "Voici la réponse à la question 1.",
+        "Merci pour vos réponses, continuons avec la question 2.",
+        "Je ne comprends pas bien, pouvez-vous expliquer à nouveau ?",
+    ];
+
+    const interval = 1000;
+    const duration = 10000;
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < duration) {
+        for (const [roomId, association] of Object.entries(roomAssociations)) {
+            if (association.teacher) {
+                const teacherMessage = `Teacher says: ${messages[Math.floor(Math.random() * messages.length)]}`;
+                association.teacher.sendMessage(teacherMessage);
+                metrics.messagesSent++;
+            }
+
+            for (const student of association.students) {
+                const studentMessage = `${student.username} says: ${messages[Math.floor(Math.random() * messages.length)]}`;
+                student.sendMessage(studentMessage);
+                metrics.messagesSent++;
+            }
+        }
+        await new Promise((resolve) => setTimeout(resolve, interval));
+    }
+
+    console.log("Conversation simulation ended.");
+}
+
+// Closes all active WebSocket connections
 function closeAllSockets() {
-    console.log('Fermeture de toutes les connexions Socket.IO...');
+    console.log('Closing all Socket.IO connections...');
     allSockets.forEach((socket) => {
         if (socket && socket.connected) {
             try {
                 socket.disconnect();
-                console.log('Connexion Socket.IO déconnectée.');
+                console.log('Socket.IO connection disconnected.');
             } catch (error) {
-                console.error('Erreur lors de la déconnexion du socket Socket.IO :', error.message);
+                console.error('Error disconnecting Socket.IO connection:', error.message);
             }
         }
     });
-    console.log('Toutes les connexions Socket.IO ont été déconnectées.');
+    console.log('All Socket.IO connections have been disconnected.');
 }
 
-function generateReport() {
-    console.log('Toutes les tâches ont été terminées.');
-    console.log('--- Résultats du test de charge ---');
-    console.log(`Salles créées : ${metrics.roomsCreated}`);
-    console.log(`Échecs de création de salles : ${metrics.roomsFailed}`);
-    console.log(`Enseignants connectés : ${metrics.teachersConnected}`);
-    console.log(`Échecs de connexion des enseignants : ${metrics.teachersFailed}`);
-    console.log(`Étudiants connectés : ${metrics.studentsConnected}`);
-    console.log(`Échecs de connexion des étudiants : ${metrics.studentsFailed}`);
-    console.log(`Durée totale d'exécution : ${(metrics.endTime - metrics.startTime) / 1000}s`);
-    console.log('Utilisation de la mémoire :', process.memoryUsage());
-    writeMetricsToFile( metrics);
-}
-
+// Main function to orchestrate the workflow
 async function main() {
     try {
         metrics.startTime = new Date();
-        const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
-        if (!token) throw new Error('Échec de la connexion.');
 
+        // Login or register
+        const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
+        if (!token) throw new Error('Failed to login or register.');
+
+        // Room creation
         await createRoomContainers(token);
-        await addAndConnectTeachers();
-        await addAndConnectStudents();
+
+        // Resource monitoring and test activities
+        const roomIds = Object.keys(roomAssociations);
+        const usageCaptureInterval = 100;
+        let testCompleted = false;
+
+        const resourceCapturePromise = captureResourceUsageForContainers(
+            BASE_URL,
+            roomIds,
+            usageCaptureInterval,
+            () => testCompleted,
+            metrics
+        );
+
+        const testPromise = (async () => {
+            await addAndConnectTeachers();
+            await addAndConnectStudents();
+            await simulateConversation();
+            testCompleted = true;
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+        })();
+
+        await Promise.all([resourceCapturePromise, testPromise]);
 
         metrics.endTime = new Date();
+        writeMetricsToFile(metrics);
+        await generateGraphs(metrics.resourceUsage, metrics);
 
-        generateReport();
+        console.log("All tasks completed successfully!");
     } catch (error) {
-        console.error('Une erreur est survenue :', error.message);
+        console.error('Error:', error.message);
     }
 }
 
-// Gestion de l'interruption et de la fermeture
+// Handle process interruptions
 process.on('SIGINT', () => {
-    console.log('Script interrompu (Ctrl+C).');
+    console.log('Process interrupted (Ctrl+C).');
     closeAllSockets();
     process.exit(0);
 });
 
-process.on('exit', closeAllSockets);
+process.on('exit', () => closeAllSockets());
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    closeAllSockets();
+    process.exit(1);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection:', promise, 'reason:', reason);
+    closeAllSockets();
+    process.exit(1);
+});
 
 main();
