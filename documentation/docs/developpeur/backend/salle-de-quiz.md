@@ -182,4 +182,4 @@ end
 
 ## API
 
-<swagger-ui src="/swagger/salle-de-quiz.json"/>
+<swagger-ui src="salle-de-quiz-swagger.json"/>
