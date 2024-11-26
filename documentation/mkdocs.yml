@@ -50,12 +50,15 @@ plugins:
   - search
   - offline
   - plantuml:
+      default: https://www.plantuml.com/plantuml/ # default
       puml_url: http://localhost:8080/plantuml # dev
-      puml_url: https://www.plantuml.com/plantuml/ # default
       puml_keyword: plantuml
       theme:
         light: material/deep-purple-light
         dark: material/deep-purple-dark
+  - swagger-ui-tag:
+      docExpansion: "list"
+      tryItOutEnabled: false
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -65,3 +68,13 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css
