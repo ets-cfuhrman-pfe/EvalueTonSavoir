@@ -6,29 +6,58 @@ Nous avons choisi d'exécuter les composantes de cette application avec Docker, 
 Voici un diagramme de déploiement expliquant la relation des composantes et comment les images Docker sont créées et déployées dans un serveur.
 
 ```plantuml
-    @startuml
-    [Navigateur moderne (Windows/Android)] as Navigateur
-    [MongoDB] as MongoDB
-    Navigateur -> "docker-compose.yml"
-    [Docker] as Docker
-    "docker-compose.yml" -> [evaluetonSavoir-backend (Express, Javscript)]
-    [evaluetonSavoir-backend (Express, Javscript)] -> API_REST
-    [evaluetonSavoir-backend (Express, Javscript)] -> SOCKET_SALLE
-    [evaluetonSavoir-routeur (nginx)] as routeur
-    API_REST -> routeur
-    SOCKET_SALLE -> routeur
-    [evaluetonSavoir-frontend (Vue + TypeScript React)] as frontend
-    routeur -> frontend
-    [Docker hub] as DockerHub
-    [image-evaluetonSavoir-backend] -> DockerHub
-    [image-evaluetonSavoir-routeur] -> DockerHub
-    [image-evaluetonSavoir-frontend] -> DockerHub
-    [GitHub] as GitHub
-    "backend-deploy.yml" <- GitHub
-    "routeur-deploy.yml" <- GitHub
-    "frontend-deploy.yml" <- GitHub
-    Navigateur <--> evalsa.etsmtl.ca : chargée à partir des pages web
-    @enduml
+@startuml
+skinparam style strictuml
+skinparam component {
+  BackgroundColor<<Container>> LightBlue
+  BackgroundColor<<Image>> lightgreen
+}
+node "evalsa.etsmtl.ca" {
+  artifact "docker-compose.yml" as compose
+  node "Docker" as docker {
+     [evaluetonsavoir-routeur\n(nginx)] <<Container>> as ROC
+     [evaluetonsavoir-frontend\n(vite + TypeScript React)] <<Container>> as FEC
+     component "evaluetonsavoir-backend\n(Express, Javascript)" <<Container>> as BEC {
+      port API_REST
+      port SOCKET_SALLE
+     }
+  }
+  database "MongoDB" as BD
+  BD -- BEC
+
+}
+
+node "Docker hub" {
+ component evaluetonsavoir-routeur <<image>> as RO {
+ }
+ component evaluetonsavoir-frontend <<image>> as FE {
+ }
+ component evaluetonsavoir-backend <<image>> as BE {
+ }
+}
+
+node "GitHub" {
+  artifact "routeur-deploy.yml" <<action>> as RO_D
+  artifact "backend-deploy.yml" <<action>> as BE_D
+  artifact "frontend-deploy.yml" <<action>> as FE_D
+}
+
+BE <-- BE_D : on commit
+FE <-- FE_D
+RO <-- RO_D
+
+BEC <.. BE : "pull à 5h du matin"
+FEC <.. FE
+ROC <.. RO
+
+node "Navigateur moderne\n(Windows/Android)" as browser {
+    [React App] as RA_NAV
+}
+
+RA_NAV <.. FEC : chargée à partir des pages web
+RA_NAV ..> API_REST : API REST
+RA_NAV <..> SOCKET_SALLE : WebSocket
+@enduml
 ```
 
 ## Prérequis

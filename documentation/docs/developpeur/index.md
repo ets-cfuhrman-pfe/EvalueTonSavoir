@@ -30,7 +30,6 @@ Afin de faciliter le déploiement de masse :
 ```plantuml
 @startuml
 
-
 package Proxy{
     component Nginx
 }
@@ -54,6 +53,7 @@ Backend --right-> MongoDb
 Backend --up-> Nginx
 
 Frontend --up-> Nginx
+
 @enduml
 ```
 

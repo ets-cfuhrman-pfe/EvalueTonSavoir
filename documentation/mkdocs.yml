@@ -50,8 +50,7 @@ plugins:
   - search
   - offline
   - plantuml:
-      default: https://www.plantuml.com/plantuml/ # default
-      puml_url: http://localhost:8080/plantuml # dev
+      puml_url: !ENV [PUMLURL,'http://localhost:8080'] # dev
       puml_keyword: plantuml
       theme:
         light: material/deep-purple-light

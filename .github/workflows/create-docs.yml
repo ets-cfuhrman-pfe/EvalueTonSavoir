@@ -9,6 +9,8 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    env:
+      PUMLURL: "https://www.plantuml.com/plantuml/"
     steps:
       - name: Checkout main
         uses: actions/checkout@v2
