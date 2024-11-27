@@ -1,227 +1,187 @@
-import { attemptLoginOrRegister, createRoomContainer, captureResourceUsageForContainers } from './utility/apiServices.js';
+import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServices.js';
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
-import { writeMetricsToFile, generateGraphs } from './utility/writeMetrics.js';
+import { Watcher } from './class/watcher.js';
 
 const BASE_URL = 'http://localhost';
 const user = { username: 'admin@example.com', password: 'adminPassword' };
 const numberRooms = 20;
-const studentPerRoom = 58; // Max: 60, 1 reserved for teacher
+const usersPerRoom = 60;
 const roomAssociations = {};
-const allSockets = []; // Tracks all active WebSocket connections
+const maxMessages = 20; // Number of conversation rounds
+const conversationInterval = 1000; // Interval between teacher messages (ms)
+const batchSize = 10;       // Number of simultaneous connections
+const batchDelay = 500; 
 
-const metrics = {
-    roomsCreated: 0,
-    roomsFailed: 0,
-    teachersConnected: 0,
-    teachersFailed: 0,
-    studentsConnected: 0,
-    studentsFailed: 0,
-    messagesSent: 0,
-    messagesReceived: 0,
-    totalLatency: 0,
-    maxLatency: 0,
-    minLatency: Number.MAX_SAFE_INTEGER,
-    throughput: 0,
-    startTime: null,
-    endTime: null,
-};
+/**
+ * Creates rooms with controlled concurrency.
+ */
+async function createRoomContainers() {
+    console.log('Attempting login or register to get token');
+    const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
+    if (!token) throw new Error('Failed to login or register.');
 
-// Creates rooms and tracks their creation
-async function createRoomContainers(token) {
-    console.time('Room creation time');
-    const roomCreationPromises = Array.from({ length: numberRooms }, async () => {
+    console.log('Room creation');
+    const roomPromises = Array.from({ length: numberRooms }, async (_, index) => {
         try {
             const room = await createRoomContainer(BASE_URL, token);
             if (room?.id) {
-                roomAssociations[room.id] = { teacher: null, students: [] };
-                metrics.roomsCreated++;
-                console.log(`Room created with ID: ${room.id}`);
+                roomAssociations[room.id] = { watcher: null, teacher: null, students: [] };
+                console.log(`Room ${index + 1} created with ID: ${room.id}`);
             }
-        } catch {
-            metrics.roomsFailed++;
-            console.warn('Failed to create a room.');
+        } catch (err) {
+            console.warn(`Failed to create room ${index + 1}:`, err.message);
         }
     });
 
-    await Promise.allSettled(roomCreationPromises);
-    console.timeEnd('Room creation time');
+    // Use Promise.allSettled to ensure all promises complete
+    await Promise.allSettled(roomPromises);
+
     console.log(`Total rooms created: ${Object.keys(roomAssociations).length}`);
+    console.log('Finished room creation');
 }
 
-// Connects teachers to their respective rooms
-async function addAndConnectTeachers() {
-    console.time('Teacher connection time');
-    const teacherPromises = Object.keys(roomAssociations).map(async (roomId, index) => {
-        const teacher = new Teacher(`teacher_${index}`, roomId);
-        const start = Date.now();
-        const socket = await teacher.connectToRoom(BASE_URL);
-        const latency = Date.now() - start;
+/**
+ * Adds participants (teacher, watcher, students) to rooms.
+ */
+function addUsersToRoom() {
+    console.log('Adding room participants');
+    Object.keys(roomAssociations).forEach((roomId, roomIndex) => {
+        const participants = roomAssociations[roomId];
 
-        metrics.totalLatency += latency;
-        metrics.maxLatency = Math.max(metrics.maxLatency, latency);
-        metrics.minLatency = Math.min(metrics.minLatency, latency);
+        // Assign a teacher and watcher
+        console.log('adding users to room ' + roomId);
+        participants.teacher = new Teacher(`teacher_${roomIndex}`, roomId);
+        participants.watcher = new Watcher(`watcher_${roomIndex}`, roomId);
 
-        if (socket.connected) {
-            allSockets.push(socket);
-            roomAssociations[roomId].teacher = teacher;
-            metrics.teachersConnected++;
-            console.log(`Teacher ${teacher.username} connected to room ${roomId}. Latency: ${latency}ms`);
-        } else {
-            metrics.teachersFailed++;
-            console.warn(`Failed to connect teacher ${index} to room ${roomId}`);
+        // Add students
+        for (let i = 0; i < usersPerRoom - 2; i++) {
+            participants.students.push(new Student(`student_${roomIndex}_${i}`, roomId));
         }
     });
-
-    await Promise.allSettled(teacherPromises);
-    console.timeEnd('Teacher connection time');
-    console.log('All teachers connected to their respective rooms.');
+    console.log('Finished adding room participants');
 }
 
-// Connects students to their respective rooms
-async function addAndConnectStudents() {
-    console.time('Student connection time');
-    const studentPromises = Object.entries(roomAssociations).flatMap(([roomId, association], roomIndex) =>
-        Array.from({ length: studentPerRoom }, async (_, i) => {
-            const student = new Student(`student_${roomIndex}_${i}`, roomId);
-            const start = Date.now();
-            const socket = await student.connectToRoom(BASE_URL);
-            const latency = Date.now() - start;
+/**
+ * Connects participants to their respective rooms.
+ */
+async function connectParticipants(baseUrl) {
+    console.log('Connecting participants in batches');
+    const batchSize = 10; // Connect 10 participants at a time
+    const batchDelay = 500; // Wait 500ms between batches
 
-            metrics.totalLatency += latency;
-            metrics.maxLatency = Math.max(metrics.maxLatency, latency);
-            metrics.minLatency = Math.min(metrics.minLatency, latency);
+    for (const [roomId, participants] of Object.entries(roomAssociations)) {
+        console.log(`Processing room ${roomId}`);
+        
+        // Collect all participants for this room
+        const allParticipants = [
+            participants.teacher,
+            participants.watcher,
+            ...participants.students
+        ].filter(Boolean);
 
-            if (socket.connected) {
-                allSockets.push(socket);
-                association.students.push(student);
-                metrics.studentsConnected++;
-            } else {
-                metrics.studentsFailed++;
-                console.warn(`Failed to connect student ${roomIndex}_${i} to room ${roomId}`);
-            }
-        })
-    );
+        // Process participants in batches
+        for (let i = 0; i < allParticipants.length; i += batchSize) {
+            const batch = allParticipants.slice(i, i + batchSize);
+            const batchPromises = batch.map(participant => 
+                participant.connectToRoom(baseUrl)
+                    .catch(err => {
+                        console.warn(
+                            `Failed to connect ${participant.username} in room ${roomId}:`,
+                            err.message
+                        );
+                        return null;
+                    })
+            );
 
-    await Promise.allSettled(studentPromises);
-    console.timeEnd('Student connection time');
-    console.log('All students connected to their respective rooms.');
-}
-
-// Simulates conversations in all rooms
-async function simulateConversation() {
-    console.log("Conversation simulation started...");
-    const messages = [
-        "Bonjour, tout le monde !",
-        "Pouvez-vous répondre à la question 1 ?",
-        "J'ai une question sur l'exercice.",
-        "Voici la réponse à la question 1.",
-        "Merci pour vos réponses, continuons avec la question 2.",
-        "Je ne comprends pas bien, pouvez-vous expliquer à nouveau ?",
-    ];
-
-    const interval = 1000;
-    const duration = 10000;
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < duration) {
-        for (const [roomId, association] of Object.entries(roomAssociations)) {
-            if (association.teacher) {
-                const teacherMessage = `Teacher says: ${messages[Math.floor(Math.random() * messages.length)]}`;
-                association.teacher.sendMessage(teacherMessage);
-                metrics.messagesSent++;
-            }
-
-            for (const student of association.students) {
-                const studentMessage = `${student.username} says: ${messages[Math.floor(Math.random() * messages.length)]}`;
-                student.sendMessage(studentMessage);
-                metrics.messagesSent++;
-            }
+            await Promise.all(batchPromises);
+            await new Promise(resolve => setTimeout(resolve, batchDelay));
         }
-        await new Promise((resolve) => setTimeout(resolve, interval));
     }
-
-    console.log("Conversation simulation ended.");
+    
+    console.log('Finished connecting participants');
 }
 
-// Closes all active WebSocket connections
-function closeAllSockets() {
-    console.log('Closing all Socket.IO connections...');
-    allSockets.forEach((socket) => {
-        if (socket && socket.connected) {
-            try {
-                socket.disconnect();
-                console.log('Socket.IO connection disconnected.');
-            } catch (error) {
-                console.error('Error disconnecting Socket.IO connection:', error.message);
-            }
+/**
+ * Simulates a conversation between the teacher and students in each room.
+ */
+async function simulateParticipants() {
+    const conversationPromises = Object.entries(roomAssociations).map(async ([roomId, participants]) => {
+        const { teacher, students } = participants;
+
+        if (!teacher || students.length === 0) {
+            console.warn(`Room ${roomId} has no teacher or students to simulate.`);
+            return;
         }
+
+        console.log(`Starting simulation for room ${roomId}`);
+
+        // Wait for room creation and joins to complete
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        for (let i = 0; i < maxMessages; i++) {
+            const teacherMessage = `Message ${i + 1} from ${teacher.username}`;
+            teacher.broadcastMessage(teacherMessage);
+            // Add delay between messages
+            await new Promise(resolve => setTimeout(resolve, conversationInterval));
+        }
+
+        console.log(`Finished simulation for room ${roomId}`);
     });
-    console.log('All Socket.IO connections have been disconnected.');
+
+    await Promise.all(conversationPromises);
 }
 
-// Main function to orchestrate the workflow
+/**
+ * Disconnects all participants from rooms.
+ */
+function disconnectParticipants() {
+    console.time('Disconnecting participants');
+    Object.values(roomAssociations).forEach(participants => {
+        participants.teacher?.disconnect();
+        participants.watcher?.disconnect();
+        participants.students.forEach(student => student.disconnect());
+    });
+    console.timeEnd('Disconnecting participants');
+    console.log('All participants disconnected successfully.');
+}
+
+/**
+ * Main orchestration function.
+ */
 async function main() {
     try {
-        metrics.startTime = new Date();
+        await createRoomContainers();
+        addUsersToRoom();
+        await connectParticipants(BASE_URL);
+        await simulateParticipants();
 
-        // Login or register
-        const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
-        if (!token) throw new Error('Failed to login or register.');
-
-        // Room creation
-        await createRoomContainers(token);
-
-        // Resource monitoring and test activities
-        const roomIds = Object.keys(roomAssociations);
-        const usageCaptureInterval = 100;
-        let testCompleted = false;
-
-        const resourceCapturePromise = captureResourceUsageForContainers(
-            BASE_URL,
-            roomIds,
-            usageCaptureInterval,
-            () => testCompleted,
-            metrics
-        );
-
-        const testPromise = (async () => {
-            await addAndConnectTeachers();
-            await addAndConnectStudents();
-            await simulateConversation();
-            testCompleted = true;
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-        })();
-
-        await Promise.all([resourceCapturePromise, testPromise]);
-
-        metrics.endTime = new Date();
-        writeMetricsToFile(metrics);
-        await generateGraphs(metrics.resourceUsage, metrics);
-
-        console.log("All tasks completed successfully!");
+        console.log('All tasks completed successfully!');
     } catch (error) {
         console.error('Error:', error.message);
     }
 }
 
-// Handle process interruptions
+// Graceful shutdown handlers
 process.on('SIGINT', () => {
     console.log('Process interrupted (Ctrl+C).');
-    closeAllSockets();
+    disconnectParticipants();
     process.exit(0);
 });
 
-process.on('exit', () => closeAllSockets());
-process.on('uncaughtException', (err) => {
+process.on('exit', disconnectParticipants);
+
+process.on('uncaughtException', err => {
     console.error('Uncaught Exception:', err);
-    closeAllSockets();
-    process.exit(1);
-});
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection:', promise, 'reason:', reason);
-    closeAllSockets();
+    disconnectParticipants();
     process.exit(1);
 });
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    disconnectParticipants();
+    process.exit(1);
+});
+
+// Execute the main function
 main();

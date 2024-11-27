@@ -1,58 +1,41 @@
-import { io } from "socket.io-client";
+// student.js
+import { RoomParticipant } from './roomParticipant.js';
 
-export class Student {
+export class Student extends RoomParticipant {
     constructor(username, roomName) {
-        this.username = username;
-        this.roomName = roomName;
-        this.socket = null;
+        super(username, roomName);
     }
 
     connectToRoom(baseUrl) {
-        return new Promise((resolve, reject) => {
-            try {
-                this.socket = io(baseUrl, {
-                    path: `/api/room/${this.roomName}/socket`,
-                    transports: ['websocket'],
-                    autoConnect: true,
-                    reconnection: true,
-                    reconnectionAttempts: 10,
-                    reconnectionDelay: 10000,
-                    timeout: 20000,
-                });
-
-                this.socket.on('connect', () => {
-                    this.joinRoom(this.roomName, this.username);
-                    this.listenForMessages(); // Start listening for messages
-                    resolve(this.socket);
-                });
-
-                this.socket.on('error', (error) => {
-                    reject(new Error(`Connection error: ${error.message}`));
-                });
-
-            } catch (error) {
-                console.error(`Error connecting ${this.name} to room ${this.roomName}:`, error.message);
-                reject(error);
-            }
+        return super.connectToRoom(baseUrl, () => {
+            this.joinRoom();
+            this.listenForTeacherMessage();
         });
     }
 
-    joinRoom(roomName, username) {
+    joinRoom() {
         if (this.socket) {
-            this.socket.emit('join-room', { roomName, username });
+            this.socket.emit('join-room', {
+                enteredRoomName: this.roomName,
+                username: this.username
+            });
         }
     }
 
-    sendMessage(message) {
-        if (this.socket && this.socket.connected) {
-            this.socket.emit('message-test', { room: this.roomName, message });
+    listenForTeacherMessage() {
+        if (this.socket) {
+            this.socket.on('message-sent-teacher', ({ message }) => {
+                this.respondToTeacher(message);
+            });
         }
     }
 
-    listenForMessages() {
+    respondToTeacher(message) {
+        const reply = `${this.username} replying to: "${message}"`;
         if (this.socket) {
-            this.socket.on('message-test', (data) => {
-                console.log(`Message received in room ${this.roomName} by ${this.username}:`, data.message);
+            this.socket.emit('message-from-student', {
+                roomName: this.roomName,
+                message: reply
             });
         }
     }

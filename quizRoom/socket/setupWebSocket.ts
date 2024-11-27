@@ -24,6 +24,7 @@ export const setupWebsocket = (io: Server): void => {
         ? sentRoomName.toUpperCase()
         : generateRoomName();
 
+      console.log(`Created room with name: ${roomName}`);
       if (!io.sockets.adapter.rooms.get(roomName)) {
         socket.join(roomName);
         socket.emit("create-success", roomName);
@@ -101,9 +102,14 @@ export const setupWebsocket = (io: Server): void => {
 
     // Stress Testing
 
-    socket.on("message-test", ({ roomName, message }: { roomName: string; message: string }) => {
+    socket.on("message-from-teacher", ({ roomName, message }: { roomName: string; message: string }) => {
       console.log(`Message reçu dans la salle ${roomName} : ${message}`);
-      socket.to(roomName).emit("message", { id: socket.id, message });
+      socket.to(roomName).emit("message-sent-teacher", { message });
+    });
+
+    socket.on("message-from-student", ({ roomName, message }: { roomName: string; message: string }) => {
+      console.log(`Message reçu dans la salle ${roomName} : ${message}`);
+      socket.to(roomName).emit("message-sent-student", { message });
     });
 
     socket.on("get-usage", () => {

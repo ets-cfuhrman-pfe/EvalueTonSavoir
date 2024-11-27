@@ -13,6 +13,7 @@
     "axios": "^1.7.7",
     "chartjs-node-canvas": "^4.1.6",
     "dockerode": "^4.0.2",
+    "p-limit": "^6.1.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   }

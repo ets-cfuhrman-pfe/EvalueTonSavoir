@@ -1,13 +1,6 @@
 import axios from "axios";
-import { io } from "socket.io-client";
 
-/**
- * Logs in a user.
- * @param {string} baseUrl - The base URL of the API.
- * @param {string} email - The user's email.
- * @param {string} password - The user's password.
- * @returns {Promise<string>} - The authentication token if successful.
- */
+// Logs in a user.
 async function login(baseUrl, email, password) {
   if (!email || !password) throw new Error("Email and password are required.");
 
@@ -27,13 +20,7 @@ async function login(baseUrl, email, password) {
   }
 }
 
-/**
- * Registers a new user.
- * @param {string} baseUrl - The base URL of the API.
- * @param {string} email - The user's email.
- * @param {string} password - The user's password.
- * @returns {Promise<string>} - A success message if registration is successful.
- */
+// Registers a new user.
 async function register(baseUrl, email, password) {
   if (!email || !password) throw new Error("Email and password are required.");
 
@@ -53,13 +40,7 @@ async function register(baseUrl, email, password) {
   }
 }
 
-/**
- * Attempts to log in a user, or registers and logs in if the login fails.
- * @param {string} baseUrl - The base URL of the API.
- * @param {string} username - The user's email/username.
- * @param {string} password - The user's password.
- * @returns {Promise<string|null>} - The authentication token if successful, otherwise null.
- */
+// Attempts to log in a user, or registers and logs in if the login fails.
 export async function attemptLoginOrRegister(baseUrl, username, password) {
   try {
     return await login(baseUrl, username, password);
@@ -75,12 +56,7 @@ export async function attemptLoginOrRegister(baseUrl, username, password) {
   }
 }
 
-/**
- * Creates a new room.
- * @param {string} baseUrl - The base URL of the API.
- * @param {string} token - The authorization token.
- * @returns {Promise<object>} - The created room object if successful.
- */
+// Creates a new room
 export async function createRoomContainer(baseUrl, token) {
   if (!token) throw new Error("Authorization token is required.");
 
@@ -98,60 +74,4 @@ export async function createRoomContainer(baseUrl, token) {
     console.error("Room creation error:", error.message);
     throw error;
   }
-}
-
-/**
- * Captures resource usage from multiple containers via WebSocket.
- * @param {string} baseUrl - The base URL of the API.
- * @param {string[]} roomIds - List of room IDs.
- * @param {number} interval - Time interval between captures (ms).
- * @param {function} shouldStop - Callback to determine if capturing should stop.
- * @param {object} metrics - Metrics object to store resource usage.
- */
-export async function captureResourceUsageForContainers(baseUrl, roomIds, interval, shouldStop, metrics) {
-  console.log("Starting resource usage capture...");
-
-  const sockets = {};
-  const resourceData = {};
-
-  // Initialize WebSocket connections for each room
-  roomIds.forEach((id) => {
-    resourceData[id] = [];
-    const socket = io(baseUrl, {
-      path: `/api/room/${id}/socket`,
-      transports: ["websocket"],
-      autoConnect: true,
-      reconnection: true,
-    });
-
-    socket.on("connect", () => console.log(`Connected to room ${id}`));
-    socket.on("connect_error", (err) => console.error(`Connection error for room ${id}:`, err.message));
-    sockets[id] = socket;
-  });
-
-  // Capture resource usage periodically
-  while (!shouldStop()) {
-    for (const id of roomIds) {
-      const socket = sockets[id];
-      if (socket?.connected) {
-        try {
-          socket.emit("get-usage");
-          socket.once("usage-data", (data) => {
-            resourceData[id].push({ timestamp: Date.now(), ...data });
-          });
-        } catch (error) {
-          console.warn(`Error capturing metrics for room ${id}:`, error.message);
-        }
-      } else {
-        console.warn(`Socket not connected for room ${id}`);
-      }
-    }
-    await new Promise((resolve) => setTimeout(resolve, interval));
-  }
-
-  // Close all WebSocket connections
-  Object.values(sockets).forEach((socket) => socket.close());
-  console.log("Resource usage capture completed.");
-
-  metrics.resourceUsage = resourceData;
 }

@@ -1,57 +1,45 @@
-import { io } from "socket.io-client";
+import { RoomParticipant } from './roomParticipant.js';
 
-export class Teacher {
+export class Teacher extends RoomParticipant {
     constructor(username, roomName) {
-        this.username = username;
-        this.roomName = roomName;
-        this.socket = null;
+        super(username, roomName);
+        this.ready = false;
     }
 
     connectToRoom(baseUrl) {
-        return new Promise((resolve, reject) => {
-            try {
-                this.socket = io(baseUrl, {
-                    path: `/api/room/${this.roomName}/socket`,
-                    transports: ['websocket'],
-                    autoConnect: true,
-                    reconnection: true,
-                    reconnectionAttempts: 10,
-                    reconnectionDelay: 10000,
-                    timeout: 20000,
-                });
-
-                this.socket.on('connect', () => {
-                    this.createRoom(this.roomName);
-                    this.listenForMessages(); // Start listening for messages
-                    resolve(this.socket);
-                });
-
-                this.socket.on('error', (error) => {
-                    reject(new Error(`Connection error: ${error.message}`));
-                });
-            } catch (error) {
-                console.error(`Error connecting ${this.name} to room ${this.roomName}:`, error.message);
-                reject(error);
-            }
+        return super.connectToRoom(baseUrl, () => {
+            this.createRoom();
+            this.listenForStudentMessage();
+            
+            // Add room creation confirmation listener
+            this.socket.on('create-success', () => {
+                console.log(`Room ${this.roomName} created by teacher ${this.username}`);
+                this.ready = true;
+            });
         });
     }
 
     createRoom() {
         if (this.socket) {
-            this.socket.emit('create-room', this.roomName || undefined);
+            this.socket.emit('create-room', this.roomName);
         }
     }
 
-    sendMessage(message) {
-        if (this.socket && this.socket.connected) {
-            this.socket.emit('message-test', { room: this.roomName, message });
+    broadcastMessage(message) {
+        if (this.socket && this.ready) {
+            this.socket.emit('message-from-teacher', {
+                roomName: this.roomName,
+                message
+            });
+        } else {
+            console.warn(`Teacher ${this.username} not ready to broadcast yet`);
         }
     }
 
-    listenForMessages() {
+    listenForStudentMessage() {
         if (this.socket) {
-            this.socket.on('message-test', (data) => {
-                console.log(`Message received in room ${this.roomName} by ${this.username}:`, data.message);
+            this.socket.on('message-sent-student', ({ message }) => {
+                //console.log(`Teacher ${this.username} received: "${message}"`);
             });
         }
     }
