@@ -1,0 +1,80 @@
+site_name: EvalueTonSavoir
+repo_url: https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir
+edit_uri: edit/main/documentation/docs
+
+theme:
+  language: fr
+  icon:
+    repo: fontawesome/brands/github
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Mode sombre
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Mode clair
+  features:
+  - content.code.copy
+  - content.code.select
+  - content.code.annotate
+  - navigation.instant
+  - navigation.instant.progress
+  - navigation.tracking
+  - content.action.edit
+  highlightjs: true
+  hljs_languages:
+  - javascript
+  - typescript
+  - css
+  - react
+  - yaml
+  - latex
+  - katex
+  - gift
+
+use_directory_urls: false
+
+plugins:
+  - search
+  - offline
+  - plantuml:
+      default: https://www.plantuml.com/plantuml/ # default
+      puml_url: http://localhost:8080/plantuml # dev
+      puml_keyword: plantuml
+      theme:
+        light: material/deep-purple-light
+        dark: material/deep-purple-dark
+  - swagger-ui-tag:
+      docExpansion: "list"
+      tryItOutEnabled: false
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css
