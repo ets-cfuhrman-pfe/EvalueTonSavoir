@@ -59,6 +59,9 @@ RUN chown -R nginx:nginx /var/cache/nginx \
 # Verify the configuration
 # RUN nginx -t --dry-run
 
+# Switch to non-root user
+USER nginx
+
 # Expose HTTP port
 EXPOSE 80
 

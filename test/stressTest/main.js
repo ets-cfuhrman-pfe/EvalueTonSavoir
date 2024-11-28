@@ -5,53 +5,75 @@ import { Watcher } from './class/watcher.js';
 
 const BASE_URL = 'http://localhost';
 const user = { username: 'admin@example.com', password: 'adminPassword' };
-const numberRooms = 20;
+const numberRooms = 10;
 const usersPerRoom = 60;
 const roomAssociations = {};
-const maxMessages = 20; // Number of conversation rounds
-const conversationInterval = 1000; // Interval between teacher messages (ms)
-const batchSize = 10;       // Number of simultaneous connections
-const batchDelay = 500; 
+const maxMessages = 20;
+const conversationInterval = 1000;
+const batchSize = 20;
+const batchDelay = 250;
+
 
 /**
- * Creates rooms with controlled concurrency.
+ * Creates a room and immediately connects a teacher to it.
+ */
+async function createRoomWithTeacher(token, index) {
+    try {
+        const room = await createRoomContainer(BASE_URL, token);
+        if (!room?.id) {
+            throw new Error('Room creation failed');
+        }
+
+        console.log(`Room ${index + 1} created with ID: ${room.id}`);
+
+        // Initialize room associations
+        roomAssociations[room.id] = { watcher: null, teacher: null, students: [] };
+
+        // Create and connect teacher immediately
+        const teacher = new Teacher(`teacher_${index}`, room.id);
+        roomAssociations[room.id].teacher = teacher;
+
+        // Connect teacher to room
+        await teacher.connectToRoom(BASE_URL);
+        console.log(`Teacher connected to room ${room.id}`);
+
+        return room.id;
+    } catch (err) {
+        console.warn(`Failed to create/connect room ${index + 1}:`, err.message);
+        return null;
+    }
+}
+
+/**
+ * Creates rooms and connects teachers with controlled concurrency.
  */
 async function createRoomContainers() {
     console.log('Attempting login or register to get token');
     const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
     if (!token) throw new Error('Failed to login or register.');
 
-    console.log('Room creation');
-    const roomPromises = Array.from({ length: numberRooms }, async (_, index) => {
-        try {
-            const room = await createRoomContainer(BASE_URL, token);
-            if (room?.id) {
-                roomAssociations[room.id] = { watcher: null, teacher: null, students: [] };
-                console.log(`Room ${index + 1} created with ID: ${room.id}`);
-            }
-        } catch (err) {
-            console.warn(`Failed to create room ${index + 1}:`, err.message);
-        }
-    });
+    console.log('Room creation with immediate teacher connection');
+    const roomPromises = Array.from({ length: numberRooms }, (_, index) =>
+        createRoomWithTeacher(token, index)
+    );
 
-    // Use Promise.allSettled to ensure all promises complete
-    await Promise.allSettled(roomPromises);
+    const results = await Promise.allSettled(roomPromises);
+    const successfulRooms = results.filter(r => r.status === 'fulfilled' && r.value).length;
 
-    console.log(`Total rooms created: ${Object.keys(roomAssociations).length}`);
-    console.log('Finished room creation');
+    console.log(`Total rooms created and connected: ${successfulRooms}`);
+    console.log('Finished room creation and teacher connection');
 }
 
 /**
- * Adds participants (teacher, watcher, students) to rooms.
+ * Adds remaining participants (watcher, students) to rooms.
  */
-function addUsersToRoom() {
-    console.log('Adding room participants');
+function addRemainingUsers() {
+    console.log('Adding remaining room participants');
     Object.keys(roomAssociations).forEach((roomId, roomIndex) => {
         const participants = roomAssociations[roomId];
 
-        // Assign a teacher and watcher
-        console.log('adding users to room ' + roomId);
-        participants.teacher = new Teacher(`teacher_${roomIndex}`, roomId);
+        // Add watcher
+        console.log('Adding users to room ' + roomId);
         participants.watcher = new Watcher(`watcher_${roomIndex}`, roomId);
 
         // Add students
@@ -59,31 +81,27 @@ function addUsersToRoom() {
             participants.students.push(new Student(`student_${roomIndex}_${i}`, roomId));
         }
     });
-    console.log('Finished adding room participants');
+    console.log('Finished adding remaining room participants');
 }
 
 /**
- * Connects participants to their respective rooms.
+ * Connects remaining participants to their respective rooms.
  */
-async function connectParticipants(baseUrl) {
-    console.log('Connecting participants in batches');
-    const batchSize = 10; // Connect 10 participants at a time
-    const batchDelay = 500; // Wait 500ms between batches
-
+async function connectRemainingParticipants(baseUrl) {
+    console.log('Connecting remaining participants in batches');
     for (const [roomId, participants] of Object.entries(roomAssociations)) {
         console.log(`Processing room ${roomId}`);
-        
-        // Collect all participants for this room
-        const allParticipants = [
-            participants.teacher,
+
+        // Collect remaining participants for this room
+        const remainingParticipants = [
             participants.watcher,
             ...participants.students
         ].filter(Boolean);
 
         // Process participants in batches
-        for (let i = 0; i < allParticipants.length; i += batchSize) {
-            const batch = allParticipants.slice(i, i + batchSize);
-            const batchPromises = batch.map(participant => 
+        for (let i = 0; i < remainingParticipants.length; i += batchSize) {
+            const batch = remainingParticipants.slice(i, i + batchSize);
+            const batchPromises = batch.map(participant =>
                 participant.connectToRoom(baseUrl)
                     .catch(err => {
                         console.warn(
@@ -98,13 +116,11 @@ async function connectParticipants(baseUrl) {
             await new Promise(resolve => setTimeout(resolve, batchDelay));
         }
     }
-    
-    console.log('Finished connecting participants');
+
+    console.log('Finished connecting remaining participants');
 }
 
-/**
- * Simulates a conversation between the teacher and students in each room.
- */
+// Rest of the code remains the same
 async function simulateParticipants() {
     const conversationPromises = Object.entries(roomAssociations).map(async ([roomId, participants]) => {
         const { teacher, students } = participants;
@@ -116,13 +132,11 @@ async function simulateParticipants() {
 
         console.log(`Starting simulation for room ${roomId}`);
 
-        // Wait for room creation and joins to complete
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         for (let i = 0; i < maxMessages; i++) {
             const teacherMessage = `Message ${i + 1} from ${teacher.username}`;
             teacher.broadcastMessage(teacherMessage);
-            // Add delay between messages
             await new Promise(resolve => setTimeout(resolve, conversationInterval));
         }
 
@@ -132,9 +146,6 @@ async function simulateParticipants() {
     await Promise.all(conversationPromises);
 }
 
-/**
- * Disconnects all participants from rooms.
- */
 function disconnectParticipants() {
     console.time('Disconnecting participants');
     Object.values(roomAssociations).forEach(participants => {
@@ -146,14 +157,11 @@ function disconnectParticipants() {
     console.log('All participants disconnected successfully.');
 }
 
-/**
- * Main orchestration function.
- */
 async function main() {
     try {
         await createRoomContainers();
-        addUsersToRoom();
-        await connectParticipants(BASE_URL);
+        addRemainingUsers();
+        await connectRemainingParticipants(BASE_URL);
         await simulateParticipants();
 
         console.log('All tasks completed successfully!');
@@ -183,5 +191,4 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
 });
 
-// Execute the main function
 main();
