@@ -64,7 +64,7 @@ async function createRoomContainers() {
     const results = await Promise.allSettled(roomPromises);
     const successfulRooms = results.filter(r => r.status === 'fulfilled' && r.value).length;
 
-    console.log(`Total rooms created and connected: ${successfulRooms}`);
+    console.log(`Total rooms created and connected (${numberRooms}): ${successfulRooms}`);
     console.log('Finished room creation and teacher connection');
 }
 
@@ -175,6 +175,19 @@ function disconnectParticipants() {
     });
     console.timeEnd('Disconnecting participants');
     console.log('All participants disconnected successfully.');
+}
+
+function generateExecutionData() {
+    console.log('Generating execution data');
+    aggreatedData = {};
+    Object.keys(roomAssociations).forEach((roomId, roomIndex) => {
+        const participants = roomAssociations[roomId];
+        const data = participants.watcher.roomRessourcesData;
+        aggreatedData.push(data);
+
+        
+    });
+    console.log('finished generating execution data');
 }
 
 async function main() {
