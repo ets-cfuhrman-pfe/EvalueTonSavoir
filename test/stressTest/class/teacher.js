@@ -1,22 +1,21 @@
 import { RoomParticipant } from './roomParticipant.js';
 
 export class Teacher extends RoomParticipant {
+
+    nbrMessageReceived = 0;
+
     constructor(username, roomName) {
         super(username, roomName);
         this.ready = false;
     }
 
     connectToRoom(baseUrl) {
-        return super.connectToRoom(baseUrl, () => {
-            this.createRoom();
-            this.listenForStudentMessage();
-            
-            // Add room creation confirmation listener
-            this.socket.on('create-success', () => {
-                console.log(`Room ${this.roomName} created by teacher ${this.username}`);
-                this.ready = true;
-            });
-        });
+        return super.connectToRoom(baseUrl);
+    }
+
+    onConnected() {
+        this.createRoom();
+        this.listenForStudentMessage();
     }
 
     createRoom() {
@@ -26,7 +25,7 @@ export class Teacher extends RoomParticipant {
     }
 
     broadcastMessage(message) {
-        if (this.socket && this.ready) {
+        if (this.socket) {
             this.socket.emit('message-from-teacher', {
                 roomName: this.roomName,
                 message
@@ -40,6 +39,7 @@ export class Teacher extends RoomParticipant {
         if (this.socket) {
             this.socket.on('message-sent-student', ({ message }) => {
                 //console.log(`Teacher ${this.username} received: "${message}"`);
+                this.nbrMessageReceived++;
             });
         }
     }

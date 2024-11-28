@@ -9,8 +9,11 @@ export class Watcher extends RoomParticipant {
         super(username, roomName);
     }
 
-    async connectToRoom(baseUrl) {
-        await super.connectToRoom(baseUrl);
+    connectToRoom(baseUrl) {
+        return super.connectToRoom(baseUrl);
+    }
+
+    onConnected() {
         this.startCheckingResources();
     }
 
@@ -29,7 +32,7 @@ export class Watcher extends RoomParticipant {
         }
     }
 
-    startCheckingResources(intervalMs = 500) {
+    startCheckingResources(intervalMs = 250) {
         if (this.checkRessourceInterval) {
             console.warn(`Resource checking is already running for room ${this.roomName}.`);
             return;

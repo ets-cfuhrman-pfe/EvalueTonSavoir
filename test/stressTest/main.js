@@ -7,18 +7,19 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost';
-const user = { 
-    username: process.env.USER_EMAIL || 'admin@admin.com', 
-    password: process.env.USER_PASSWORD || 'admin' 
+const BASE_URL = process.env.BASE_URL || 'http://msevignyl.duckdns.org';
+const user = {
+    username: process.env.USER_EMAIL || 'admin@admin.com',
+    password: process.env.USER_PASSWORD || 'admin'
 };
-const numberRooms = parseInt(process.env.NUMBER_ROOMS || '5');
+const numberRooms = parseInt(process.env.NUMBER_ROOMS || '50');
 const usersPerRoom = parseInt(process.env.USERS_PER_ROOM || '60');
 const roomAssociations = {};
 const maxMessages = parseInt(process.env.MAX_MESSAGES || '20');
 const conversationInterval = parseInt(process.env.CONVERSATION_INTERVAL || '1000');
-const batchSize = 10;       // Number of simultaneous connections
+const batchSize = 5;
 const batchDelay = 500;
+const roomDelay = 1000;
 
 /**
  * Creates a room and immediately connects a teacher to it.
@@ -30,8 +31,6 @@ async function createRoomWithTeacher(token, index) {
             throw new Error('Room creation failed');
         }
 
-        console.log(`Room ${index + 1} created with ID: ${room.id}`);
-
         // Initialize room associations
         roomAssociations[room.id] = { watcher: null, teacher: null, students: [] };
 
@@ -41,7 +40,6 @@ async function createRoomWithTeacher(token, index) {
 
         // Connect teacher to room
         await teacher.connectToRoom(BASE_URL);
-        console.log(`Teacher connected to room ${room.id}`);
 
         return room.id;
     } catch (err) {
@@ -79,7 +77,6 @@ function addRemainingUsers() {
         const participants = roomAssociations[roomId];
 
         // Add watcher
-        console.log('Adding users to room ' + roomId);
         participants.watcher = new Watcher(`watcher_${roomIndex}`, roomId);
 
         // Add students
@@ -95,32 +92,49 @@ function addRemainingUsers() {
  */
 async function connectRemainingParticipants(baseUrl) {
     console.log('Connecting remaining participants in batches');
+
     for (const [roomId, participants] of Object.entries(roomAssociations)) {
         console.log(`Processing room ${roomId}`);
 
-        // Collect remaining participants for this room
         const remainingParticipants = [
             participants.watcher,
             ...participants.students
         ].filter(Boolean);
 
-        // Process participants in batches
+        // Connect in smaller batches with longer delays
         for (let i = 0; i < remainingParticipants.length; i += batchSize) {
             const batch = remainingParticipants.slice(i, i + batchSize);
+
+            // Add connection timeout handling
             const batchPromises = batch.map(participant =>
-                participant.connectToRoom(baseUrl)
-                    .catch(err => {
-                        console.warn(
-                            `Failed to connect ${participant.username} in room ${roomId}:`,
-                            err.message
-                        );
-                        return null;
-                    })
+                Promise.race([
+                    participant.connectToRoom(baseUrl),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+                    )
+                ]).catch(err => {
+                    console.warn(
+                        `Failed to connect ${participant.username} in room ${roomId}:`,
+                        err.message
+                    );
+                    return null;
+                })
             );
 
             await Promise.all(batchPromises);
+
+            // Cleanup disconnected sockets
+            batch.forEach(participant => {
+                if (!participant.socket?.connected) {
+                    participant.disconnect();
+                }
+            });
+
             await new Promise(resolve => setTimeout(resolve, batchDelay));
         }
+
+        // Add delay between rooms
+        await new Promise(resolve => setTimeout(resolve, roomDelay));
     }
 
     console.log('Finished connecting remaining participants');

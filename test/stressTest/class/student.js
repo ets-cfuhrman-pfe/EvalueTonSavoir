@@ -2,15 +2,20 @@
 import { RoomParticipant } from './roomParticipant.js';
 
 export class Student extends RoomParticipant {
+
+    nbrMessageReceived = 0;
+
     constructor(username, roomName) {
         super(username, roomName);
     }
 
     connectToRoom(baseUrl) {
-        return super.connectToRoom(baseUrl, () => {
-            this.joinRoom();
-            this.listenForTeacherMessage();
-        });
+        return super.connectToRoom(baseUrl);
+    }
+
+    onConnected() {
+        this.joinRoom();
+        this.listenForTeacherMessage();
     }
 
     joinRoom() {
@@ -25,6 +30,7 @@ export class Student extends RoomParticipant {
     listenForTeacherMessage() {
         if (this.socket) {
             this.socket.on('message-sent-teacher', ({ message }) => {
+                this.nbrMessageReceived++;
                 this.respondToTeacher(message);
             });
         }
