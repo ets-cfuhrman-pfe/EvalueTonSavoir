@@ -20,6 +20,20 @@
             "name": "Debug frontend",
             "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}/client/"
-          }
+          },
+          {
+            "name": "Docker: Attach to Node",
+            "type": "node",
+            "request": "attach",
+            "restart": true,
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app",
+            "protocol": "inspector",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
     ]
 }
