@@ -2,17 +2,23 @@ import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServic
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
 import { Watcher } from './class/watcher.js';
+import dotenv from 'dotenv';
 
-const BASE_URL = 'http://localhost';
-const user = { username: 'admin@example.com', password: 'adminPassword' };
-const numberRooms = 10;
-const usersPerRoom = 60;
+// Load environment variables
+dotenv.config();
+
+const BASE_URL = process.env.BASE_URL || 'http://localhost';
+const user = { 
+    username: process.env.USER_EMAIL || 'admin@admin.com', 
+    password: process.env.USER_PASSWORD || 'admin' 
+};
+const numberRooms = parseInt(process.env.NUMBER_ROOMS || '5');
+const usersPerRoom = parseInt(process.env.USERS_PER_ROOM || '60');
 const roomAssociations = {};
-const maxMessages = 20;
-const conversationInterval = 1000;
-const batchSize = 20;
-const batchDelay = 250;
-
+const maxMessages = parseInt(process.env.MAX_MESSAGES || '20');
+const conversationInterval = parseInt(process.env.CONVERSATION_INTERVAL || '1000');
+const batchSize = 10;       // Number of simultaneous connections
+const batchDelay = 500;
 
 /**
  * Creates a room and immediately connects a teacher to it.
