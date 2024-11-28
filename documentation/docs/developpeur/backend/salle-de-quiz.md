@@ -97,7 +97,7 @@ circle Dockerode
 Room - RoomRepository
 BaseRoomProvider o-- RoomRepository
 DockerRoomProvider --|> BaseRoomProvider
-DockerRoomProvider - Dockerode
+DockerRoomProvider -left- Dockerode
 Dockerode o-- QuizRoom
 RoomController o-- BaseRoomProvider
 RoomRouter o-- RoomController
