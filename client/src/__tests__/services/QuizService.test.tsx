@@ -31,8 +31,8 @@ Object.defineProperty(window, 'localStorage', {
 // NOTE: this suite seems to be designed around local storage of quizzes (older version, before a database) 
 describe.skip('QuizService', () => {
     const mockQuizzes: QuizType[] = [
-        { folderId: 'test', userId: 'user', _id: 'quiz1', title: 'Quiz One', content: ['Q1', 'Q2'], created_at: new Date('2024-09-15'), updated_at: new Date('2024-09-15') },
-        { folderId: 'test', userId: 'user', _id: 'quiz2', title: 'Quiz Two', content: ['Q3', 'Q4'], created_at: new Date('2024-09-15'), updated_at: new Date('2024-09-15') },
+        { folderId: 'test', folderName: 'test', userId: 'user', _id: 'quiz1', title: 'Quiz One', content: ['Q1', 'Q2'], created_at: new Date('2024-09-15'), updated_at: new Date('2024-09-15') },
+        { folderId: 'test', folderName: 'test', userId: 'user', _id: 'quiz2', title: 'Quiz Two', content: ['Q3', 'Q4'], created_at: new Date('2024-09-15'), updated_at: new Date('2024-09-15') },
     ];
 
     beforeEach(() => {
