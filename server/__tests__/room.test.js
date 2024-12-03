@@ -50,9 +50,20 @@ describe('Rooms', () => {
         const roomID = '123456';
         const roomName = 'room123456';
         const hostname = 'localhost';
+        const mongoObjectID = new ObjectId();
 
-        collection.findOne.mockResolvedValue(null);
-        collection.insertOne.mockResolvedValue({ insertedId: new ObjectId() });
+        // Mock first findOne to simulate no entry
+        collection.findOne.mockResolvedValueOnce(null);
+
+        //Mock second findOne to simulate new room
+        collection.findOne.mockResolvedValueOnce({
+            _id: mongoObjectID,
+            id: roomID,
+            name: roomName,
+            host: hostname,
+        });
+
+        collection.insertOne.mockResolvedValue({ insertedId: mongoObjectID });
 
         const room = new Room(roomID, roomName, hostname);
 
@@ -60,16 +71,21 @@ describe('Rooms', () => {
 
         expect(db.connect).toHaveBeenCalled();
         expect(db.getConnection).toHaveBeenCalled();
-        expect(collection.findOne).toHaveBeenCalled();
-        expect(result).toBeDefined();
+        expect(collection.findOne).toHaveBeenCalledWith({id: '123456'});
     });
 
     it('should throw an error if a room with same ID exists', async () => {
         const roomID = '123456';
-        const roomName = 'room123456';
+        const roomName = 'otherRoom';
         const hostname = 'localhost';
+        const mongoObjectID = new ObjectId();
 
-        collection.findOne.mockResolvedValue({ id: roomID });
+        collection.findOne.mockResolvedValueOnce({
+            _id: mongoObjectID,
+            id: roomID,
+            name: roomName,
+            host: hostname,
+        });
 
         const room = new Room(roomID, roomName, hostname);
 
