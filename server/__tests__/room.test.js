@@ -28,7 +28,7 @@ describe('Rooms', () => {
         // Mock the collection object
         collection = {
             findOne: jest.fn(),
-            insertOne: jest.fn(), // Mock the insertOne method
+            insertOne: jest.fn(),
             find: jest.fn().mockReturnValue({ toArray: jest.fn() }), // Mock the find method
             deleteOne: jest.fn(),
             deleteMany: jest.fn(),
@@ -97,6 +97,7 @@ describe('Rooms', () => {
     });
 
     it('should get the room with existing id', async () => {
+        const logSpy = jest.spyOn(global.console, "warn");
         const roomID = '123456';
         collection.findOne.mockResolvedValue({ id: roomID });
 
@@ -106,9 +107,13 @@ describe('Rooms', () => {
         expect(db.getConnection).toHaveBeenCalled();
         expect(collection.findOne).toHaveBeenCalled();
         expect(result.id).toBe("123456");
+        expect(logSpy).toHaveBeenCalledTimes(0);
+
+        logSpy.mockClear();
     });
 
     it('should get null if no room with id is found', async () => {
+        const logSpy = jest.spyOn(global.console, "warn");
         const roomID = '123456';
         collection.findOne.mockResolvedValue(null);
 
@@ -118,6 +123,9 @@ describe('Rooms', () => {
         expect(db.getConnection).toHaveBeenCalled();
         expect(collection.findOne).toHaveBeenCalled();
         expect(result).toBeNull();
+        expect(logSpy).toHaveBeenCalledTimes(1);
+
+        logSpy.mockClear();
     });
 
     it('should return all rooms', async () => {
@@ -158,6 +166,7 @@ describe('Rooms', () => {
     );
 
     it('should delete existing room', async () => {
+        const logSpy = jest.spyOn(global.console, "warn");
         const mongoObjectID = new ObjectId();
         const roomID = '123456';
 
@@ -168,9 +177,13 @@ describe('Rooms', () => {
         const result = await roomRepo.delete(roomID);
 
         expect(result).toBeTruthy();
+        expect(logSpy).toHaveBeenCalledTimes(0);
+
+        logSpy.mockClear();
     });
 
     it('should not delete un-existing room', async () => {
+        const logSpy = jest.spyOn(global.console, "warn");
         const mongoObjectID = new ObjectId();
         const roomID = '123456';
 
@@ -181,5 +194,8 @@ describe('Rooms', () => {
         const result = await roomRepo.delete(roomID);
 
         expect(result).toBeFalsy();
+        expect(logSpy).toHaveBeenCalledTimes(1);
+
+        logSpy.mockClear();
     });
 });
