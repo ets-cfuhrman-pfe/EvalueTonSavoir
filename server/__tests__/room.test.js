@@ -139,10 +139,28 @@ describe('Rooms', () => {
     // TODO : add update() test
 
     it('should delete existing room', async () => {
-        collection.deleteOne.mockReturnValue({ id: '123456' });
-        const result = await roomRepo.delete('123456');
+        const mongoObjectID = new ObjectId();
+        const roomID = '123456';
+
+        collection.deleteOne.mockResolvedValue({
+            deletedCount: 1,
+        });
+
+        const result = await roomRepo.delete(roomID);
 
         expect(result).toBeTruthy();
     });
 
+    it('should not delete un-existing room', async () => {
+        const mongoObjectID = new ObjectId();
+        const roomID = '123456';
+
+        collection.deleteOne.mockResolvedValue({
+            deletedCount: 0,
+        });
+
+        const result = await roomRepo.delete(roomID);
+
+        expect(result).toBeFalsy();
+    });
 });
