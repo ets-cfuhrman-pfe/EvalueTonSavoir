@@ -136,7 +136,26 @@ describe('Rooms', () => {
         expect(result).toEqual(rooms);
     });
 
-    // TODO : add update() test
+    // matchedCount : number of document matching the id
+    // modifiedCount : number of modified documents, matching the id
+    // expectedResult : true or false wether the update happened or not
+    const cases = [[0, 0, false], [0, 1, true], [1, 0, true], [1, 1, true]];
+    test.each(cases)(
+        "Given %p as modified count and %p as matched count, return %p",
+        async (modifiedCount, matchedCount, expectedResult) => {
+            collection.updateOne.mockResolvedValue({
+                matchedCount: matchedCount,
+                modifiedCount: modifiedCount
+            });
+
+            const updatedRoom = new Room('123456', 'roomName', 'hostname');
+            const result = await roomRepo.update(updatedRoom);
+
+            expect(db.connect).toHaveBeenCalled();
+            expect(collection.updateOne).toHaveBeenCalled();
+            expect(result).toBe(expectedResult);
+        }
+    );
 
     it('should delete existing room', async () => {
         const mongoObjectID = new ObjectId();
