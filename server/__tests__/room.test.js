@@ -102,6 +102,9 @@ describe('Rooms', () => {
 
         const result = await roomRepo.get(roomID);
 
+        expect(db.connect).toHaveBeenCalled();
+        expect(db.getConnection).toHaveBeenCalled();
+        expect(collection.findOne).toHaveBeenCalled();
         expect(result.id).toBe("123456");
     });
 
@@ -111,6 +114,9 @@ describe('Rooms', () => {
 
         const result = await roomRepo.get(roomID);
 
+        expect(db.connect).toHaveBeenCalled();
+        expect(db.getConnection).toHaveBeenCalled();
+        expect(collection.findOne).toHaveBeenCalled();
         expect(result).toBeNull();
     });
 
@@ -126,6 +132,7 @@ describe('Rooms', () => {
         const result = await roomRepo.getAll();
 
         expect(db.connect).toHaveBeenCalled();
+        expect(collection.find).toHaveBeenCalled();
         expect(result).toEqual(rooms);
     });
 
