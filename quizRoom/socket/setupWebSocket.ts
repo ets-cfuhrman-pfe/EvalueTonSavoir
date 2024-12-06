@@ -112,47 +112,44 @@ export const setupWebsocket = (io: Server): void => {
       socket.to(roomName).emit("message-sent-student", { message });
     });
 
+    class ContainerMetrics {
+      private totalSystemMemory = os.totalmem();
+    
+      getMetrics() {
+        try {
+          // Get CPU usage percentage directly from system
+          const cpus = os.cpus();
+          const cpuUsage = cpus.reduce((acc, cpu) => {
+            const total = Object.values(cpu.times).reduce((a, b) => a + b);
+            const idle = cpu.times.idle;
+            return acc + ((total - idle) / total) * 100;
+          }, 0) / cpus.length;
+    
+          const memoryUsage = process.memoryUsage();
+          const mbFactor = 1024 * 1024;
+    
+          return {
+            memoryUsedMB: (memoryUsage.rss / mbFactor).toFixed(2),
+            memoryUsedPercentage: (
+              (memoryUsage.rss / this.totalSystemMemory) * 100
+            ).toFixed(2),
+            cpuUsedPercentage: cpuUsage.toFixed(2)
+          };
+        } catch (error) {
+          console.error("Error getting container metrics:", error);
+          throw error;
+        }
+      }
+    }
+
+    // Usage in WebSocket setup
+    const containerMetrics = new ContainerMetrics();
+
     socket.on("get-usage", () => {
       try {
-        const memoryUsage = process.memoryUsage();
-        const cpuUsage = process.cpuUsage();
-        const totalMemory = os.totalmem();
-        const freeMemory = os.freemem();
-        const loadAverage = os.loadavg(); // Load average over 1, 5, and 15 minutes
-    
-        // Calculate CPU usage percentage
-        const userCpuPercentage = ((cpuUsage.user / 1e6) / os.cpus().length).toFixed(2); // in %
-        const systemCpuPercentage = ((cpuUsage.system / 1e6) / os.cpus().length).toFixed(2); // in %
-    
-        const usageData = {
-          memory: {
-            total: totalMemory,
-            free: freeMemory,
-            rss: memoryUsage.rss,
-            heapTotal: memoryUsage.heapTotal,
-            heapUsed: memoryUsage.heapUsed,
-            external: memoryUsage.external,
-            usagePercentage: (((totalMemory - freeMemory) / totalMemory) * 100).toFixed(2), // % used
-          },
-          cpu: {
-            user: cpuUsage.user,
-            system: cpuUsage.system,
-            userPercentage: userCpuPercentage,
-            systemPercentage: systemCpuPercentage,
-          },
-          system: {
-            uptime: os.uptime(), // System uptime in seconds
-            loadAverage: {
-              "1min": loadAverage[0],
-              "5min": loadAverage[1],
-              "15min": loadAverage[2],
-            },
-          },
-        };
-    
-        socket.emit("usage-data", usageData); // Send usage data back to the client
+        const usageData = containerMetrics.getMetrics();
+        socket.emit("usage-data", usageData);
       } catch (error) {
-        console.error("Error getting usage data:", error);
         socket.emit("error", { message: "Failed to retrieve usage data" });
       }
     });

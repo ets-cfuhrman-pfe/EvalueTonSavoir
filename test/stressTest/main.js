@@ -3,23 +3,24 @@ import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
 import { Watcher } from './class/watcher.js';
 import dotenv from 'dotenv';
+import generateMetricsReport from './utility/metrics_generator.js';
 
 // Load environment variables
 dotenv.config();
 
-const BASE_URL = process.env.BASE_URL || 'http://msevignyl.duckdns.org';
+const BASE_URL = process.env.BASE_URL || 'http://localhost';
 const user = {
     username: process.env.USER_EMAIL || 'admin@admin.com',
     password: process.env.USER_PASSWORD || 'admin'
 };
-const numberRooms = parseInt(process.env.NUMBER_ROOMS || '50');
+const numberRooms = parseInt(process.env.NUMBER_ROOMS || '4');
 const usersPerRoom = parseInt(process.env.USERS_PER_ROOM || '60');
 const roomAssociations = {};
 const maxMessages = parseInt(process.env.MAX_MESSAGES || '20');
 const conversationInterval = parseInt(process.env.CONVERSATION_INTERVAL || '1000');
 const batchSize = 5;
-const batchDelay = 500;
-const roomDelay = 1000;
+const batchDelay = 250;
+const roomDelay = 500;
 
 /**
  * Creates a room and immediately connects a teacher to it.
@@ -177,17 +178,39 @@ function disconnectParticipants() {
     console.log('All participants disconnected successfully.');
 }
 
-function generateExecutionData() {
-    console.log('Generating execution data');
-    aggreatedData = {};
-    Object.keys(roomAssociations).forEach((roomId, roomIndex) => {
-        const participants = roomAssociations[roomId];
-        const data = participants.watcher.roomRessourcesData;
-        aggreatedData.push(data);
+async function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-        
-    });
-    console.log('finished generating execution data');
+async function generateExecutionData() {
+    console.log('Generating execution data');
+
+    const allRoomsData = {};
+    for (const [roomId, participants] of Object.entries(roomAssociations)) {
+        if (participants.watcher?.roomRessourcesData.length > 0) {
+            // Add phase markers to the data
+            const data = participants.watcher.roomRessourcesData;
+            const simulationStartIdx = 20; // Assuming first 20 samples are baseline
+            const simulationEndIdx = data.length - 20; // Last 20 samples are post-simulation
+
+            data.forEach((sample, index) => {
+                if (index < simulationStartIdx) {
+                    sample.phase = 'baseline';
+                } else if (index > simulationEndIdx) {
+                    sample.phase = 'post-simulation';
+                } else {
+                    sample.phase = 'simulation';
+                }
+            });
+
+            allRoomsData[roomId] = data;
+        }
+    }
+
+    const result = await generateMetricsReport(allRoomsData);
+    console.log(`Generated metrics in ${result.outputDir}`);
+
+    console.log('Finished generating execution data');
 }
 
 async function main() {
@@ -195,8 +218,17 @@ async function main() {
         await createRoomContainers();
         addRemainingUsers();
         await connectRemainingParticipants(BASE_URL);
+
+        // Wait for initial baseline metrics
+        console.log('Collecting baseline metrics...');
+        await wait(5000);
+
         await simulateParticipants();
 
+        console.log('Waiting for system to stabilize...');
+        await wait(5000); // 5 second delay
+        
+        await generateExecutionData();
         console.log('All tasks completed successfully!');
     } catch (error) {
         console.error('Error:', error.message);
