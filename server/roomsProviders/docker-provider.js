@@ -8,7 +8,7 @@ class DockerRoomProvider extends BaseRoomProvider {
     const dockerSocket = process.env.DOCKER_SOCKET || "/var/run/docker.sock";
 
     this.docker = new Docker({ socketPath: dockerSocket });
-    this.docker_network = 'evaluetonsavoir_quiz_network';
+    this.docker_network = process.env.QUIZ_NETWORK_NAME || 'evaluetonsavoir_quiz_network';
   }
 
   async syncInstantiatedRooms() {
