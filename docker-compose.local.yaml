@@ -63,6 +63,12 @@ services:
     networks:
       - quiz_network
     restart: always
+    #environment:
+    #  - PORT=8000
+    #  - FRONTEND_HOST=frontend
+    #  - FRONTEND_PORT=5173
+    #  - BACKEND_HOST=backend
+    #  - BACKEND_PORT=3000
 
   mongo:
     image: mongo
