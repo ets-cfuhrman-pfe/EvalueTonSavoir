@@ -3,21 +3,29 @@ version: '3'
 services: 
 
   frontend:
+    container_name: frontend
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: frontend
     ports:
       - "5173:5173"
     networks:
       - quiz_network
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$${PORT} || exit 1"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
     
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: backend
+    networks:
+      - quiz_network
     ports:
       - "3000:3000"
     volumes:
@@ -30,14 +38,12 @@ services:
       SENDER_EMAIL: infoevaluetonsavoir@gmail.com
       EMAIL_PSW: 'vvml wmfr dkzb vjzb'
       JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
-      FRONTEND_URL: "http://localhost:5173"
-      #QUIZROOM_IMAGE: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-quizroom:latest
-    depends_on:
-      mongo:
-        condition: service_healthy
-    networks:
-      - quiz_network
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$${PORT}/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
 
   quizroom: # Forces image to update
     build:
@@ -49,6 +55,12 @@ services:
     networks:
       - quiz_network
     restart: always
+    healthcheck:
+      test: ["CMD", "/usr/src/app/healthcheck.sh"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
 
   nginx:
     build:

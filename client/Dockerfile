@@ -12,9 +12,10 @@ RUN npm install
 
 RUN npm run build
 
-EXPOSE 5173
+ENV PORT=5173
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:5173 || exit 1
+    CMD curl -f http://localhost:${PORT} || exit 1
 
 CMD [ "npm", "run", "preview" ]
