@@ -2,6 +2,7 @@ import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServic
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
 import { Watcher } from './class/watcher.js';
+import { TestMetrics } from './utility/test_metrics.js';
 import dotenv from 'dotenv';
 import generateMetricsReport from './utility/metrics_generator.js';
 
@@ -27,19 +28,32 @@ const config = {
 };
 
 const rooms = new Map();
+const metrics = new TestMetrics();
 
 async function setupRoom(token, index) {
     try {
         const room = await createRoomContainer(config.baseUrl, token);
         if (!room?.id) throw new Error('Room creation failed');
+        metrics.roomsCreated++;
 
         const teacher = new Teacher(`teacher_${index}`, room.id);
         const watcher = new Watcher(`watcher_${index}`, room.id);
+        
         await Promise.all([
             teacher.connectToRoom(config.baseUrl)
-                .catch(err => console.warn(`Teacher ${index} connection failed:`, err.message)),
+                .then(() => metrics.usersConnected++)
+                .catch(err => {
+                    metrics.userConnectionsFailed++;
+                    metrics.logError('teacherConnection', err);
+                    console.warn(`Teacher ${index} connection failed:`, err.message);
+                }),
             watcher.connectToRoom(config.baseUrl)
-                .catch(err => console.warn(`Watcher ${index} connection failed:`, err.message))
+                .then(() => metrics.usersConnected++)
+                .catch(err => {
+                    metrics.userConnectionsFailed++;
+                    metrics.logError('watcherConnection', err);
+                    console.warn(`Watcher ${index} connection failed:`, err.message);
+                })
         ]);
 
         const students = Array.from({ length: config.rooms.usersPerRoom - 2 },
@@ -48,6 +62,8 @@ async function setupRoom(token, index) {
         rooms.set(room.id, { teacher, watcher, students });
         return room.id;
     } catch (err) {
+        metrics.roomsFailed++;
+        metrics.logError('roomSetup', err);
         console.warn(`Room ${index} setup failed:`, err.message);
         return null;
     }
@@ -61,9 +77,15 @@ async function connectParticipants(roomId) {
         const batch = participants.slice(i, i + config.rooms.batchSize);
         await Promise.all(batch.map(p =>
             Promise.race([
-                p.connectToRoom(config.baseUrl),
+                p.connectToRoom(config.baseUrl).then(() => {
+                    metrics.usersConnected++;
+                }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-            ]).catch(err => console.warn(`Connection failed for ${p.username}:`, err.message))
+            ]).catch(err => {
+                metrics.userConnectionsFailed++;
+                metrics.logError('studentConnection', err);
+                console.warn(`Connection failed for ${p.username}:`, err.message);
+            })
         ));
         await new Promise(resolve => setTimeout(resolve, config.rooms.batchDelay));
     }
@@ -75,23 +97,30 @@ async function simulate() {
         const expectedResponses = connectedStudents.length;
 
         for (let i = 0; i < config.simulation.maxMessages; i++) {
+            metrics.messagesAttempted++;
             const initialMessages = teacher.nbrMessageReceived;
 
-            teacher.broadcastMessage(`Message ${i + 1} from ${teacher.username}`);
-
             try {
+                teacher.broadcastMessage(`Message ${i + 1} from ${teacher.username}`);
+                metrics.messagesSent++;
+
                 await Promise.race([
                     new Promise(resolve => {
                         const checkResponses = setInterval(() => {
                             const receivedResponses = teacher.nbrMessageReceived - initialMessages;
                             if (receivedResponses >= expectedResponses) {
+                                metrics.messagesReceived += receivedResponses;
                                 clearInterval(checkResponses);
                                 resolve();
                             }
                         }, 100);
-                    })
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Response timeout')), config.simulation.responseTimeout)
+                    )
                 ]);
             } catch (error) {
+                metrics.logError('messaging', error);
                 console.error(`Error in room ${roomId} message ${i + 1}:`, error);
             }
 
@@ -99,7 +128,6 @@ async function simulate() {
         }
     });
 
-    // Wait for all simulations to complete
     await Promise.all(simulations);
     console.log('All room simulations completed');
 }
@@ -111,7 +139,7 @@ async function generateReport() {
             watcher.roomRessourcesData
         ])
     );
-    return generateMetricsReport(data);
+    return generateMetricsReport(data,metrics);
 }
 
 function cleanup() {
@@ -134,20 +162,21 @@ async function main() {
         await Promise.all(roomIds.filter(Boolean).map(connectParticipants));
 
         console.log('Retrieving baseline metrics...');
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Baseline metrics
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
         console.log('Starting simulation across all rooms...');
         await simulate();
 
         console.log('Simulation complete. Waiting for system stabilization...');
-        await new Promise(resolve => setTimeout(resolve, 10000)); // System stabilization
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
-        console.log('All simulations finished, generating final report...');
+        console.log('Generating final report...');
         const folderName = await generateReport();
         console.log(`Metrics report generated in ${folderName.outputDir}`);
 
         console.log('All done!');
     } catch (error) {
+        metrics.logError('main', error);
         console.error('Error:', error.message);
     } finally {
         cleanup();

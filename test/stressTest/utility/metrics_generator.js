@@ -122,10 +122,60 @@ async function generateGlobalGraphs(data, chartJSNodeCanvas, globalMetricsDir) {
     ]);
 }
 
-export default async function generateMetricsReport(allRoomsData) {
+async function saveMetricsSummary(metrics, baseOutputDir) {
+    const metricsData = metrics.getSummary();
+
+    // Save as JSON
+    fs.writeFileSync(
+        path.join(baseOutputDir, 'metrics-summary.json'),
+        JSON.stringify(metricsData, null, 2)
+    );
+
+    // Save as formatted text
+    const textSummary = `
+Load Test Summary
+================
+
+Rooms
+-----
+Created: ${metricsData.rooms.created}
+Failed: ${metricsData.rooms.failed}
+Total: ${metricsData.rooms.total}
+
+Users
+-----
+Connected: ${metricsData.users.connected}
+Failed: ${metricsData.users.failed}
+Total: ${metricsData.users.total}
+
+Messages
+--------
+Attempted: ${metricsData.messages.attempted}
+Sent: ${metricsData.messages.sent}
+Received: ${metricsData.messages.received}
+
+Errors by Category
+----------------
+${Object.entries(metricsData.errors)
+            .map(([category, count]) => `${category}: ${count}`)
+            .join('\n')}
+`;
+
+    fs.writeFileSync(
+        path.join(baseOutputDir, 'metrics-summary.txt'),
+        textSummary.trim()
+    );
+}
+
+export default async function generateMetricsReport(allRoomsData, testMetrics) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const baseOutputDir = `./output/${timestamp}`;
     ensureDirectoryExists(baseOutputDir);
+
+    if (testMetrics) {
+        await saveMetricsSummary(testMetrics, baseOutputDir);
+    }
+
     const globalMetricsDir = path.join(baseOutputDir, 'global');
     ensureDirectoryExists(globalMetricsDir);
 
