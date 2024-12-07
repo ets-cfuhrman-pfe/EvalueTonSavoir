@@ -5,255 +5,157 @@ import { Watcher } from './class/watcher.js';
 import dotenv from 'dotenv';
 import generateMetricsReport from './utility/metrics_generator.js';
 
-// Load environment variables
 dotenv.config();
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost';
-const user = {
-    username: process.env.USER_EMAIL || 'admin@admin.com',
-    password: process.env.USER_PASSWORD || 'admin'
+const config = {
+    baseUrl: process.env.BASE_URL || 'http://msevignyl.duckdns.org',
+    auth: {
+        username: process.env.USER_EMAIL || 'admin@admin.com',
+        password: process.env.USER_PASSWORD || 'admin'
+    },
+    rooms: {
+        count: parseInt(process.env.NUMBER_ROOMS || '5'),
+        usersPerRoom: parseInt(process.env.USERS_PER_ROOM || '60'),
+        batchSize: 5,
+        batchDelay: 250
+    },
+    simulation: {
+        maxMessages: parseInt(process.env.MAX_MESSAGES || '20'),
+        messageInterval: parseInt(process.env.CONVERSATION_INTERVAL || '1000'),
+        responseTimeout: 5000
+    }
 };
-const numberRooms = parseInt(process.env.NUMBER_ROOMS || '4');
-const usersPerRoom = parseInt(process.env.USERS_PER_ROOM || '60');
-const roomAssociations = {};
-const maxMessages = parseInt(process.env.MAX_MESSAGES || '20');
-const conversationInterval = parseInt(process.env.CONVERSATION_INTERVAL || '1000');
-const batchSize = 5;
-const batchDelay = 250;
-const roomDelay = 500;
 
-/**
- * Creates a room and immediately connects a teacher to it.
- */
-async function createRoomWithTeacher(token, index) {
+const rooms = new Map();
+
+async function setupRoom(token, index) {
     try {
-        const room = await createRoomContainer(BASE_URL, token);
-        if (!room?.id) {
-            throw new Error('Room creation failed');
-        }
+        const room = await createRoomContainer(config.baseUrl, token);
+        if (!room?.id) throw new Error('Room creation failed');
 
-        // Initialize room associations
-        roomAssociations[room.id] = { watcher: null, teacher: null, students: [] };
-
-        // Create and connect teacher immediately
         const teacher = new Teacher(`teacher_${index}`, room.id);
-        roomAssociations[room.id].teacher = teacher;
+        const watcher = new Watcher(`watcher_${index}`, room.id);
+        await Promise.all([
+            teacher.connectToRoom(config.baseUrl)
+                .catch(err => console.warn(`Teacher ${index} connection failed:`, err.message)),
+            watcher.connectToRoom(config.baseUrl)
+                .catch(err => console.warn(`Watcher ${index} connection failed:`, err.message))
+        ]);
 
-        // Connect teacher to room
-        await teacher.connectToRoom(BASE_URL);
+        const students = Array.from({ length: config.rooms.usersPerRoom - 2 },
+            (_, i) => new Student(`student_${index}_${i}`, room.id));
 
+        rooms.set(room.id, { teacher, watcher, students });
         return room.id;
     } catch (err) {
-        console.warn(`Failed to create/connect room ${index + 1}:`, err.message);
+        console.warn(`Room ${index} setup failed:`, err.message);
         return null;
     }
 }
 
-/**
- * Creates rooms and connects teachers with controlled concurrency.
- */
-async function createRoomContainers() {
-    console.log('Attempting login or register to get token');
-    const token = await attemptLoginOrRegister(BASE_URL, user.username, user.password);
-    if (!token) throw new Error('Failed to login or register.');
+async function connectParticipants(roomId) {
+    const { students } = rooms.get(roomId);
+    const participants = [...students];
 
-    console.log('Room creation with immediate teacher connection');
-    const roomPromises = Array.from({ length: numberRooms }, (_, index) =>
-        createRoomWithTeacher(token, index)
+    for (let i = 0; i < participants.length; i += config.rooms.batchSize) {
+        const batch = participants.slice(i, i + config.rooms.batchSize);
+        await Promise.all(batch.map(p =>
+            Promise.race([
+                p.connectToRoom(config.baseUrl),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+            ]).catch(err => console.warn(`Connection failed for ${p.username}:`, err.message))
+        ));
+        await new Promise(resolve => setTimeout(resolve, config.rooms.batchDelay));
+    }
+}
+
+async function simulate() {
+    const simulations = Array.from(rooms.entries()).map(async ([roomId, { teacher, students }]) => {
+        const connectedStudents = students.filter(student => student.socket?.connected);
+        const expectedResponses = connectedStudents.length;
+
+        for (let i = 0; i < config.simulation.maxMessages; i++) {
+            const initialMessages = teacher.nbrMessageReceived;
+
+            teacher.broadcastMessage(`Message ${i + 1} from ${teacher.username}`);
+
+            try {
+                await Promise.race([
+                    new Promise(resolve => {
+                        const checkResponses = setInterval(() => {
+                            const receivedResponses = teacher.nbrMessageReceived - initialMessages;
+                            if (receivedResponses >= expectedResponses) {
+                                clearInterval(checkResponses);
+                                resolve();
+                            }
+                        }, 100);
+                    })
+                ]);
+            } catch (error) {
+                console.error(`Error in room ${roomId} message ${i + 1}:`, error);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, config.simulation.messageInterval));
+        }
+    });
+
+    // Wait for all simulations to complete
+    await Promise.all(simulations);
+    console.log('All room simulations completed');
+}
+
+async function generateReport() {
+    const data = Object.fromEntries(
+        Array.from(rooms.entries()).map(([id, { watcher }]) => [
+            id,
+            watcher.roomRessourcesData
+        ])
     );
-
-    const results = await Promise.allSettled(roomPromises);
-    const successfulRooms = results.filter(r => r.status === 'fulfilled' && r.value).length;
-
-    console.log(`Total rooms created and connected (${numberRooms}): ${successfulRooms}`);
-    console.log('Finished room creation and teacher connection');
+    return generateMetricsReport(data);
 }
 
-/**
- * Adds remaining participants (watcher, students) to rooms.
- */
-function addRemainingUsers() {
-    console.log('Adding remaining room participants');
-    Object.keys(roomAssociations).forEach((roomId, roomIndex) => {
-        const participants = roomAssociations[roomId];
-
-        // Add watcher
-        participants.watcher = new Watcher(`watcher_${roomIndex}`, roomId);
-
-        // Add students
-        for (let i = 0; i < usersPerRoom - 2; i++) {
-            participants.students.push(new Student(`student_${roomIndex}_${i}`, roomId));
-        }
-    });
-    console.log('Finished adding remaining room participants');
-}
-
-/**
- * Connects remaining participants to their respective rooms.
- */
-async function connectRemainingParticipants(baseUrl) {
-    console.log('Connecting remaining participants in batches');
-
-    for (const [roomId, participants] of Object.entries(roomAssociations)) {
-        console.log(`Processing room ${roomId}`);
-
-        const remainingParticipants = [
-            participants.watcher,
-            ...participants.students
-        ].filter(Boolean);
-
-        // Connect in smaller batches with longer delays
-        for (let i = 0; i < remainingParticipants.length; i += batchSize) {
-            const batch = remainingParticipants.slice(i, i + batchSize);
-
-            // Add connection timeout handling
-            const batchPromises = batch.map(participant =>
-                Promise.race([
-                    participant.connectToRoom(baseUrl),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error('Connection timeout')), 10000)
-                    )
-                ]).catch(err => {
-                    console.warn(
-                        `Failed to connect ${participant.username} in room ${roomId}:`,
-                        err.message
-                    );
-                    return null;
-                })
-            );
-
-            await Promise.all(batchPromises);
-
-            // Cleanup disconnected sockets
-            batch.forEach(participant => {
-                if (!participant.socket?.connected) {
-                    participant.disconnect();
-                }
-            });
-
-            await new Promise(resolve => setTimeout(resolve, batchDelay));
-        }
-
-        // Add delay between rooms
-        await new Promise(resolve => setTimeout(resolve, roomDelay));
+function cleanup() {
+    for (const { teacher, watcher, students } of rooms.values()) {
+        [teacher, watcher, ...students].forEach(p => p?.disconnect());
     }
-
-    console.log('Finished connecting remaining participants');
-}
-
-// Rest of the code remains the same
-async function simulateParticipants() {
-    const conversationPromises = Object.entries(roomAssociations).map(async ([roomId, participants]) => {
-        const { teacher, students } = participants;
-
-        if (!teacher || students.length === 0) {
-            console.warn(`Room ${roomId} has no teacher or students to simulate.`);
-            return;
-        }
-
-        console.log(`Starting simulation for room ${roomId}`);
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        for (let i = 0; i < maxMessages; i++) {
-            const teacherMessage = `Message ${i + 1} from ${teacher.username}`;
-            teacher.broadcastMessage(teacherMessage);
-            await new Promise(resolve => setTimeout(resolve, conversationInterval));
-        }
-
-        console.log(`Finished simulation for room ${roomId}`);
-    });
-
-    await Promise.all(conversationPromises);
-}
-
-function disconnectParticipants() {
-    console.time('Disconnecting participants');
-    Object.values(roomAssociations).forEach(participants => {
-        participants.teacher?.disconnect();
-        participants.watcher?.disconnect();
-        participants.students.forEach(student => student.disconnect());
-    });
-    console.timeEnd('Disconnecting participants');
-    console.log('All participants disconnected successfully.');
-}
-
-async function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function generateExecutionData() {
-    console.log('Generating execution data');
-
-    const allRoomsData = {};
-    for (const [roomId, participants] of Object.entries(roomAssociations)) {
-        if (participants.watcher?.roomRessourcesData.length > 0) {
-            // Add phase markers to the data
-            const data = participants.watcher.roomRessourcesData;
-            const simulationStartIdx = 20; // Assuming first 20 samples are baseline
-            const simulationEndIdx = data.length - 20; // Last 20 samples are post-simulation
-
-            data.forEach((sample, index) => {
-                if (index < simulationStartIdx) {
-                    sample.phase = 'baseline';
-                } else if (index > simulationEndIdx) {
-                    sample.phase = 'post-simulation';
-                } else {
-                    sample.phase = 'simulation';
-                }
-            });
-
-            allRoomsData[roomId] = data;
-        }
-    }
-
-    const result = await generateMetricsReport(allRoomsData);
-    console.log(`Generated metrics in ${result.outputDir}`);
-
-    console.log('Finished generating execution data');
 }
 
 async function main() {
     try {
-        await createRoomContainers();
-        addRemainingUsers();
-        await connectRemainingParticipants(BASE_URL);
+        const token = await attemptLoginOrRegister(config.baseUrl, config.auth.username, config.auth.password);
+        if (!token) throw new Error('Authentication failed');
 
-        // Wait for initial baseline metrics
-        console.log('Collecting baseline metrics...');
-        await wait(5000);
+        console.log('Creating rooms...');
+        const roomIds = await Promise.all(
+            Array.from({ length: config.rooms.count }, (_, i) => setupRoom(token, i))
+        );
 
-        await simulateParticipants();
+        console.log('Connecting participants...');
+        await Promise.all(roomIds.filter(Boolean).map(connectParticipants));
 
-        console.log('Waiting for system to stabilize...');
-        await wait(5000); // 5 second delay
-        
-        await generateExecutionData();
-        console.log('All tasks completed successfully!');
+        console.log('Retrieving baseline metrics...');
+        await new Promise(resolve => setTimeout(resolve, 10000)); // Baseline metrics
+
+        console.log('Starting simulation across all rooms...');
+        await simulate();
+
+        console.log('Simulation complete. Waiting for system stabilization...');
+        await new Promise(resolve => setTimeout(resolve, 10000)); // System stabilization
+
+        console.log('All simulations finished, generating final report...');
+        const folderName = await generateReport();
+        console.log(`Metrics report generated in ${folderName.outputDir}`);
+
+        console.log('All done!');
     } catch (error) {
         console.error('Error:', error.message);
+    } finally {
+        cleanup();
     }
 }
 
-// Graceful shutdown handlers
-process.on('SIGINT', () => {
-    console.log('Process interrupted (Ctrl+C).');
-    disconnectParticipants();
-    process.exit(0);
-});
-
-process.on('exit', disconnectParticipants);
-
-process.on('uncaughtException', err => {
-    console.error('Uncaught Exception:', err);
-    disconnectParticipants();
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    disconnectParticipants();
-    process.exit(1);
+['SIGINT', 'exit', 'uncaughtException', 'unhandledRejection'].forEach(event => {
+    process.on(event, cleanup);
 });
 
 main();

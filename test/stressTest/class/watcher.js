@@ -39,14 +39,12 @@ export class Watcher extends RoomParticipant {
         }
 
         this.checkRessourceInterval = setInterval(() => this.checkRessource(), intervalMs);
-        console.log(`Started resource checking for room ${this.roomName}.`);
     }
 
     stopCheckingResources() {
         if (this.checkRessourceInterval) {
             clearInterval(this.checkRessourceInterval);
             this.checkRessourceInterval = null;
-            console.log(`Stopped resource checking for room ${this.roomName}.`);
         }
     }
 
