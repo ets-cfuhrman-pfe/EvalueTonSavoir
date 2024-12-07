@@ -1,9 +1,8 @@
-# Use the Node base image
+# Use the Node base image 
 FROM node:18 AS quizroom
 
-ARG PORT=4500
-ENV PORT=${PORT}
-ENV ROOM_ID=${ROOM_ID}
+ENV PORT=4500
+ENV ROOM_ID=000000
 
 # Create a working directory
 WORKDIR /usr/src/app
@@ -14,6 +13,10 @@ RUN npm install
 
 # Copy the rest of the source code to the container
 COPY . .
+
+# Ensure healthcheck.sh has execution permissions
+COPY healthcheck.sh /usr/src/app/healthcheck.sh
+RUN chmod +x /usr/src/app/healthcheck.sh
 
 # Build the TypeScript code
 RUN npm run build
