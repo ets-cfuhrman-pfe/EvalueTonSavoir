@@ -61,6 +61,7 @@ RUN echo 'load_module modules/ngx_http_js_module.so;' > /tmp/nginx.conf && \
 COPY templates/default.conf /etc/nginx/templates/
 COPY njs/main.js /etc/nginx/njs/
 COPY entrypoint.sh /entrypoint.sh
+RUN dos2unix /entrypoint.sh
 
 ENV PORT=80 \
     FRONTEND_HOST=frontend \
