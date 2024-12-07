@@ -9,6 +9,7 @@ FROM alpine:3.19
 # Install gettext for envsubst and other dependencies
 RUN apk add --no-cache \
     gettext \
+    curl \
     nginx-mod-http-js \
     nginx-mod-http-keyval \
     pcre2 \
@@ -79,6 +80,9 @@ RUN chmod +x /entrypoint.sh && \
 
 # Switch to nginx user
 USER nginx
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget -q --spider http://0.0.0.0:${PORT}/health || exit 1
 
 # Start Nginx using entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
