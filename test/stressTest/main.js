@@ -9,13 +9,13 @@ import generateMetricsReport from './utility/metrics_generator.js';
 dotenv.config();
 
 const config = {
-    baseUrl: process.env.BASE_URL || 'http://msevignyl.duckdns.org',
+    baseUrl: process.env.BASE_URL || 'http://localhost',
     auth: {
         username: process.env.USER_EMAIL || 'admin@admin.com',
         password: process.env.USER_PASSWORD || 'admin'
     },
     rooms: {
-        count: parseInt(process.env.NUMBER_ROOMS || '5'),
+        count: parseInt(process.env.NUMBER_ROOMS || '2'),
         usersPerRoom: parseInt(process.env.USERS_PER_ROOM || '60'),
         batchSize: 5,
         batchDelay: 250
@@ -178,8 +178,6 @@ async function main() {
     } catch (error) {
         metrics.logError('main', error);
         console.error('Error:', error.message);
-    } finally {
-        cleanup();
     }
 }
 

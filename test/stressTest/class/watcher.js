@@ -22,6 +22,7 @@ export class Watcher extends RoomParticipant {
             try {
                 this.socket.emit("get-usage");
                 this.socket.once("usage-data", (data) => {
+                    //console.log(`Watcher ${this.username} received data:`, data);
                     this.roomRessourcesData.push({ timestamp: Date.now(), ...data });
                 });
             } catch (error) {
