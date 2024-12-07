@@ -46,10 +46,52 @@ class DockerRoomProvider extends BaseRoomProvider {
     }
   }
 
+  async checkAndPullImage(imageName) {
+    try {
+      const images = await this.docker.listImages({ all: true });
+      //console.log('Images disponibles:', images.map(img => ({
+      //  RepoTags: img.RepoTags || [],
+      //  Id: img.Id
+      //})));
+  
+      const imageExists = images.some(img => {
+        const tags = img.RepoTags || [];
+        return tags.includes(imageName) || 
+               tags.includes(`${imageName}:latest`) ||
+               img.Id.includes(imageName);
+      });
+  
+      if (!imageExists) {
+        console.log(`L'image ${imageName} n'a pas été trouvée localement, tentative de téléchargement...`);
+        try {
+          await this.docker.pull(imageName);
+          console.log(`L'image ${imageName} a été téléchargée avec succès`);
+        } catch (pullError) {
+          const localImages = await this.docker.listImages({ all: true });
+          const foundLocally = localImages.some(img => 
+            (img.RepoTags || []).includes(imageName) || 
+            (img.RepoTags || []).includes(`${imageName}:latest`)
+          );
+  
+          if (!foundLocally) {
+            throw new Error(`Impossible de trouver ou de télécharger l'image ${imageName}: ${pullError.message}`);
+          } else {
+            console.log(`L'image ${imageName} a été trouvée localement après vérification supplémentaire`);
+          }
+        }
+      } else {
+        console.log(`L'image ${imageName} a été trouvée localement`);
+      }
+    } catch (error) {
+      throw new Error(`Une erreur est survenue lors de la vérification/téléchargement de l'image ${imageName}: ${error.message}`);
+    }
+  }
+
   async createRoom(roomId, options) {
     const container_name = `room_${roomId}`;
 
     try {
+      await this.checkAndPullImage(this.quiz_docker_image);
       const containerConfig = {
         Image: this.quiz_docker_image,
         name: container_name,
