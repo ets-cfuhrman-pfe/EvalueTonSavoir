@@ -2,7 +2,7 @@ import { attemptLoginOrRegister, createRoomContainer } from './utility/apiServic
 import { Student } from './class/student.js';
 import { Teacher } from './class/teacher.js';
 import { Watcher } from './class/watcher.js';
-import { TestMetrics } from './utility/test_metrics.js';
+import { TestMetrics } from './class/metrics.js';
 import dotenv from 'dotenv';
 import generateMetricsReport from './utility/metrics_generator.js';
 
