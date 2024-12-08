@@ -55,6 +55,8 @@ services:
     container_name: quizroom
     ports:
       - "4500:4500"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - quiz_network
     restart: always

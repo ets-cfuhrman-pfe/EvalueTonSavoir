@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import os from "os";
+import Docker from 'dockerode';
 import fs from 'fs';
 
 const MAX_USERS_PER_ROOM = 60;
@@ -113,171 +113,116 @@ export const setupWebsocket = (io: Server): void => {
       socket.to(roomName).emit("message-sent-student", { message });
     });
 
+    interface ContainerStats {
+      containerId: string;
+      containerName: string;
+      memoryUsedMB: number | null;
+      memoryUsedPercentage: number | null;
+      cpuUsedPercentage: number | null;
+      error?: string;
+    }
+
     class ContainerMetrics {
-      private totalSystemMemory = os.totalmem();
-      private cgroupv2 = this.isCgroupV2();
-      private lastCPUUsage = 0;
-      private lastCPUTime = Date.now();
+      private docker: Docker;
+      private containerName: string;
 
-      private isCgroupV2(): boolean {
-        return fs.existsSync('/sys/fs/cgroup/cgroup.controllers');
+      private bytesToMB(bytes: number): number {
+        return Math.round(bytes / (1024 * 1024));
       }
 
-      private readCgroupFile(filepath: string): string {
-        try {
-          return fs.readFileSync(filepath, 'utf-8').trim();
-        } catch (error) {
-          console.debug(`Could not read ${filepath}`);
-          return '';
-        }
+      constructor() {
+        this.docker = new Docker({
+          socketPath: process.platform === 'win32' ? '//./pipe/docker_engine' : '/var/run/docker.sock'
+        });
+        this.containerName = `room_${process.env.ROOM_ID}`;
       }
 
-      private getCgroupCPUUsage(): number {
-        try {
-          if (this.cgroupv2) {
-            const usage = this.readCgroupFile('/sys/fs/cgroup/cpu.stat');
-            const usageMatch = usage.match(/usage_usec\s+(\d+)/);
-            if (usageMatch) {
-              const currentUsage = Number(usageMatch[1]) / 1000000;
-              const currentTime = Date.now();
-              const cpuDelta = currentUsage - this.lastCPUUsage;
-              const timeDelta = (currentTime - this.lastCPUTime) / 1000;
-              
-              this.lastCPUUsage = currentUsage;
-              this.lastCPUTime = currentTime;
-              
-              return (cpuDelta / timeDelta) * 100;
-            }
-          }
-    
-          const cgroupV1Paths = [
-            '/sys/fs/cgroup/cpu/cpuacct.usage',
-            '/sys/fs/cgroup/cpuacct/cpuacct.usage',
-            '/sys/fs/cgroup/cpu,cpuacct/cpuacct.usage'
-          ];
-    
-          for (const path of cgroupV1Paths) {
-            const usage = this.readCgroupFile(path);
-            if (usage) {
-              const currentUsage = Number(usage) / 1000000000;
-              const currentTime = Date.now();
-              const cpuDelta = currentUsage - this.lastCPUUsage;
-              const timeDelta = (currentTime - this.lastCPUTime) / 1000;
-              
-              this.lastCPUUsage = currentUsage;
-              this.lastCPUTime = currentTime;
-              
-              return (cpuDelta / timeDelta) * 100;
-            }
-          }
-    
-          return this.getFallbackCPUUsage();
-        } catch (error) {
-          return this.getFallbackCPUUsage();
-        }
+      private async getContainerNetworks(containerId: string): Promise<string[]> {
+        const container = this.docker.getContainer(containerId);
+        const info = await container.inspect();
+        return Object.keys(info.NetworkSettings.Networks);
       }
 
-      private getFallbackCPUUsage(): number {
+      public async getAllContainerStats(): Promise<ContainerStats[]> {
         try {
-          const cpus = os.cpus();
-          return cpus.reduce((acc, cpu) => {
-            const total = Object.values(cpu.times).reduce((a, b) => a + b);
-            const idle = cpu.times.idle;
-            return acc + ((total - idle) / total) * 100;
-          }, 0) / cpus.length;
-        } catch (error) {
-          console.error('Error getting fallback CPU usage:', error);
-          return 0;
-        }
-      }
+          // First get our container to find its networks
+          const ourContainer = await this.docker.listContainers({
+            all: true,
+            filters: { name: [this.containerName] }
+          });
 
-      private getCgroupMemoryUsage(): { used: number; limit: number } | null {
-        try {
-          // First get process memory as baseline
-          const processMemory = process.memoryUsage();
-          const baselineMemory = processMemory.rss;
-
-          if (this.cgroupv2) {
-            const memUsage = Number(this.readCgroupFile('/sys/fs/cgroup/memory.current'));
-            if (!isNaN(memUsage) && memUsage > 0) {
-              return {
-                used: Math.max(baselineMemory, memUsage),
-                limit: this.totalSystemMemory
-              };
-            }
+          if (!ourContainer.length) {
+            throw new Error(`Container ${this.containerName} not found`);
           }
 
-          // Try cgroup v1
-          const v1Paths = {
-            usage: '/sys/fs/cgroup/memory/memory.usage_in_bytes',
-            limit: '/sys/fs/cgroup/memory/memory.limit_in_bytes'
-          };
+          const ourNetworks = await this.getContainerNetworks(ourContainer[0].Id);
 
-          const memoryUsage = Number(this.readCgroupFile(v1Paths.usage));
-          if (!isNaN(memoryUsage) && memoryUsage > 0) {
-            return {
-              used: Math.max(baselineMemory, memoryUsage),
-              limit: this.totalSystemMemory
-            };
-          }
+          // Get all containers
+          const allContainers = await this.docker.listContainers();
 
-          // Fallback to process memory
-          return {
-            used: baselineMemory,
-            limit: this.totalSystemMemory
-          };
-
+          // Get stats for containers on the same networks
+          const containerStats = await Promise.all(
+            allContainers.map(async (container): Promise<ContainerStats | null> => {
+              try {
+                const containerNetworks = await this.getContainerNetworks(container.Id);
+                // Check if container shares any network with our container
+                if (!containerNetworks.some(network => ourNetworks.includes(network))) {
+                  return null;
+                }
+          
+                const stats = await this.docker.getContainer(container.Id).stats({ stream: false });
+          
+                const memoryStats = {
+                  usage: stats.memory_stats.usage,
+                  limit: stats.memory_stats.limit || 0,
+                  percent: stats.memory_stats.limit ? (stats.memory_stats.usage / stats.memory_stats.limit) * 100 : 0
+                };
+          
+                const cpuDelta = stats.cpu_stats?.cpu_usage?.total_usage - (stats.precpu_stats?.cpu_usage?.total_usage || 0);
+                const systemDelta = stats.cpu_stats?.system_cpu_usage - (stats.precpu_stats?.system_cpu_usage || 0);
+                const cpuPercent = systemDelta > 0 ? (cpuDelta / systemDelta) * (stats.cpu_stats?.online_cpus || 1) * 100 : 0;
+          
+                return {
+                  containerId: container.Id,
+                  containerName: container.Names[0].replace(/^\//, ''),
+                  memoryUsedMB: this.bytesToMB(memoryStats.usage),
+                  memoryUsedPercentage: memoryStats.percent,
+                  cpuUsedPercentage: cpuPercent
+                };
+              } catch (error) {
+                return {
+                  containerId: container.Id,
+                  containerName: container.Names[0].replace(/^\//, ''),
+                  memoryUsedMB: null,
+                  memoryUsedPercentage: null,
+                  cpuUsedPercentage: null,
+                  error: error instanceof Error ? error.message : String(error)
+                };
+              }
+            })
+          );
+          
+          // Change the filter to use proper type predicate
+          return containerStats.filter((stats): stats is ContainerStats => stats !== null);
         } catch (error) {
-          console.debug('Error reading cgroup memory:', error);
-          return null;
-        }
-      }
-
-      public getMetrics() {
-        try {
-          const mbFactor = 1024 * 1024;
-          let memoryData = this.getCgroupMemoryUsage();
-
-          if (!memoryData) {
-            const processMemory = process.memoryUsage();
-            memoryData = {
-              used: processMemory.rss,
-              limit: this.totalSystemMemory
-            };
-          }
-
-          const memoryUsedMB = memoryData.used / mbFactor;
-          const memoryTotalMB = memoryData.limit / mbFactor;
-          const memoryPercentage = (memoryData.used / memoryData.limit) * 100;
-
-          console.debug(`
-            Memory Usage: ${memoryUsedMB.toFixed(2)} MB
-            Memory Total: ${memoryTotalMB.toFixed(2)} MB
-            Memory %: ${memoryPercentage.toFixed(2)}%
-          `);
-
-          return {
-            memoryUsedMB: memoryUsedMB.toFixed(2),
-            memoryUsedPercentage: memoryPercentage.toFixed(2),
-            cpuUsedPercentage: this.getCgroupCPUUsage().toFixed(2)
-          };
-        } catch (error) {
-          console.error("Error getting metrics:", error);
-          return {
-            memoryUsedMB: "0",
-            memoryUsedPercentage: "0",
-            cpuUsedPercentage: "0"
-          };
+          console.error('Stats error:', error);
+          return [{
+            containerId: 'unknown',
+            containerName: 'unknown',
+            memoryUsedMB: null,
+            memoryUsedPercentage: null,
+            cpuUsedPercentage: null,
+            error: error instanceof Error ? error.message : String(error)
+          }];
         }
       }
     }
 
-    // Usage in WebSocket setup
     const containerMetrics = new ContainerMetrics();
 
-    socket.on("get-usage", () => {
+    socket.on("get-usage", async () => {
       try {
-        const usageData = containerMetrics.getMetrics();
+        const usageData = await containerMetrics.getAllContainerStats();
         socket.emit("usage-data", usageData);
       } catch (error) {
         socket.emit("error", { message: "Failed to retrieve usage data" });

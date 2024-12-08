@@ -15,21 +15,22 @@ const config = {
         password: process.env.USER_PASSWORD || 'admin'
     },
     rooms: {
-        count: parseInt(process.env.NUMBER_ROOMS || '2'),
+        count: parseInt(process.env.NUMBER_ROOMS || '15'),
         usersPerRoom: parseInt(process.env.USERS_PER_ROOM || '60'),
-        batchSize: 5,
-        batchDelay: 250
+        batchSize: parseInt(process.env.BATCH_SIZE || 5),
+        batchDelay: parseInt(process.env.BATCH_DELAY || 250)
     },
     simulation: {
-        maxMessages: parseInt(process.env.MAX_MESSAGES || '20'),
+        maxMessages: parseInt(process.env.MAX_MESSAGES_ROUND || '20'),
         messageInterval: parseInt(process.env.CONVERSATION_INTERVAL || '1000'),
-        responseTimeout: 5000
+        responseTimeout: parseInt(process.env.MESSAGE_RESPONSE_TIMEOUT || 5000)
     }
 };
 
 const rooms = new Map();
 const metrics = new TestMetrics();
 
+// Changes to setupRoom function
 async function setupRoom(token, index) {
     try {
         const room = await createRoomContainer(config.baseUrl, token);
@@ -37,8 +38,9 @@ async function setupRoom(token, index) {
         metrics.roomsCreated++;
 
         const teacher = new Teacher(`teacher_${index}`, room.id);
-        const watcher = new Watcher(`watcher_${index}`, room.id);
-        
+        // Only create watcher for first room (index 0)
+        const watcher = index === 0 ? new Watcher(`watcher_${index}`, room.id) : null;
+
         await Promise.all([
             teacher.connectToRoom(config.baseUrl)
                 .then(() => metrics.usersConnected++)
@@ -47,16 +49,24 @@ async function setupRoom(token, index) {
                     metrics.logError('teacherConnection', err);
                     console.warn(`Teacher ${index} connection failed:`, err.message);
                 }),
-            watcher.connectToRoom(config.baseUrl)
-                .then(() => metrics.usersConnected++)
-                .catch(err => {
-                    metrics.userConnectionsFailed++;
-                    metrics.logError('watcherConnection', err);
-                    console.warn(`Watcher ${index} connection failed:`, err.message);
-                })
+            // Only connect watcher if it exists
+            ...(watcher ? [
+                watcher.connectToRoom(config.baseUrl)
+                    .then(() => metrics.usersConnected++)
+                    .catch(err => {
+                        metrics.userConnectionsFailed++;
+                        metrics.logError('watcherConnection', err);
+                        console.warn(`Watcher ${index} connection failed:`, err.message);
+                    })
+            ] : [])
         ]);
 
-        const students = Array.from({ length: config.rooms.usersPerRoom - 2 },
+        // Adjust number of students based on whether room has a watcher
+        const studentCount = watcher ?
+            config.rooms.usersPerRoom - 2 : // Room with watcher: subtract teacher and watcher
+            config.rooms.usersPerRoom - 1;  // Rooms without watcher: subtract only teacher
+
+        const students = Array.from({ length: studentCount },
             (_, i) => new Student(`student_${index}_${i}`, room.id));
 
         rooms.set(room.id, { teacher, watcher, students });
@@ -115,7 +125,7 @@ async function simulate() {
                             }
                         }, 100);
                     }),
-                    new Promise((_, reject) => 
+                    new Promise((_, reject) =>
                         setTimeout(() => reject(new Error('Response timeout')), config.simulation.responseTimeout)
                     )
                 ]);
@@ -133,13 +143,14 @@ async function simulate() {
 }
 
 async function generateReport() {
-    const data = Object.fromEntries(
-        Array.from(rooms.entries()).map(([id, { watcher }]) => [
-            id,
-            watcher.roomRessourcesData
-        ])
-    );
-    return generateMetricsReport(data,metrics);
+    const watcherRoom = Array.from(rooms.entries()).find(([_, room]) => room.watcher);
+    if (!watcherRoom) {
+        throw new Error('No watcher found in any room');
+    }
+    const data = {
+        [watcherRoom[0]]: watcherRoom[1].watcher.roomRessourcesData
+    };
+    return generateMetricsReport(data, metrics);
 }
 
 function cleanup() {
@@ -178,6 +189,8 @@ async function main() {
     } catch (error) {
         metrics.logError('main', error);
         console.error('Error:', error.message);
+    } finally {
+        cleanup();
     }
 }
 

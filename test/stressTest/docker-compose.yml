@@ -7,16 +7,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: stress-test
-    networks:
-      - quiz_network
+    network_mode: host
     env_file:
       - .env
-    ports:
-      - "9229:9229"
+    volumes:
+      - ./output:/app/output
     tty: true
     stdin_open: true
-    #command: node --inspect=0.0.0.0:9229 main.js
-       
-networks:
-  quiz_network:
-    driver: bridge

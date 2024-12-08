@@ -8,6 +8,8 @@ services:
         - PORT=${PORT:-4500}
     ports:
       - "${PORT:-4500}:${PORT:-4500}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - PORT=${PORT:-4500}
       - ROOM_ID=${ROOM_ID}

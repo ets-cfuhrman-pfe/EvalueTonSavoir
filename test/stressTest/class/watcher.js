@@ -22,18 +22,34 @@ export class Watcher extends RoomParticipant {
             try {
                 this.socket.emit("get-usage");
                 this.socket.once("usage-data", (data) => {
-                    //console.log(`Watcher ${this.username} received data:`, data);
-                    this.roomRessourcesData.push({ timestamp: Date.now(), ...data });
+                    const timestamp = Date.now();
+                    // Store each container's metrics separately with timestamp
+                    data.forEach(containerStat => {
+                        const existingData = this.roomRessourcesData.find(d => d.containerId === containerStat.containerId);
+                        if (existingData) {
+                            existingData.metrics.push({
+                                timestamp,
+                                ...containerStat
+                            });
+                        } else {
+                            this.roomRessourcesData.push({
+                                containerId: containerStat.containerId,
+                                containerName: containerStat.containerName,
+                                metrics: [{
+                                    timestamp,
+                                    ...containerStat
+                                }]
+                            });
+                        }
+                    });
                 });
             } catch (error) {
                 console.warn(`Error capturing metrics for room ${this.roomName}:`, error.message);
             }
-        } else {
-            console.warn(`Socket not connected for room ${this.roomName}`);
         }
     }
 
-    startCheckingResources(intervalMs = 250) {
+    startCheckingResources(intervalMs = 500) {
         if (this.checkRessourceInterval) {
             console.warn(`Resource checking is already running for room ${this.roomName}.`);
             return;

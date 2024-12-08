@@ -99,7 +99,10 @@ class DockerRoomProvider extends BaseRoomProvider {
           NetworkMode: this.docker_network,
           RestartPolicy: {
             Name: 'unless-stopped'
-          }
+          },
+          Binds: [
+            '/var/run/docker.sock:/var/run/docker.sock'
+          ]
         },
         Env: [
           `ROOM_ID=${roomId}`,
