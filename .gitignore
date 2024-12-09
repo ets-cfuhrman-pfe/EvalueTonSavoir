@@ -131,3 +131,11 @@ dist
 db-backup/
 
 .venv
+
+# Opentofu state
+opentofu/*/.terraform
+opentofu/*/.terraform.lock*
+opentofu/*/terraform.tfstate*
+opentofu/*/terraform.tfvars
+# Opentofu auth config
+opentofu/auth_config.json
