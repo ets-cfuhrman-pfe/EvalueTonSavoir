@@ -1,4 +1,6 @@
 import { Server, Socket } from "socket.io";
+import Docker from 'dockerode';
+import fs from 'fs';
 
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
@@ -19,10 +21,11 @@ export const setupWebsocket = (io: Server): void => {
 
     socket.on("create-room", (sentRoomName) => {
       // Ensure sentRoomName is a string before applying toUpperCase()
-      const roomName = (typeof sentRoomName === "string" && sentRoomName.trim() !== "") 
-        ? sentRoomName.toUpperCase() 
+      const roomName = (typeof sentRoomName === "string" && sentRoomName.trim() !== "")
+        ? sentRoomName.toUpperCase()
         : generateRoomName();
-    
+
+      console.log(`Created room with name: ${roomName}`);
       if (!io.sockets.adapter.rooms.get(roomName)) {
         socket.join(roomName);
         socket.emit("create-success", roomName);
@@ -96,9 +99,137 @@ export const setupWebsocket = (io: Server): void => {
     socket.on("error", (error) => {
       console.error("WebSocket server error:", error);
     });
+
+
+    // Stress Testing
+
+    socket.on("message-from-teacher", ({ roomName, message }: { roomName: string; message: string }) => {
+      console.log(`Message reçu dans la salle ${roomName} : ${message}`);
+      socket.to(roomName).emit("message-sent-teacher", { message });
+    });
+
+    socket.on("message-from-student", ({ roomName, message }: { roomName: string; message: string }) => {
+      console.log(`Message reçu dans la salle ${roomName} : ${message}`);
+      socket.to(roomName).emit("message-sent-student", { message });
+    });
+
+    interface ContainerStats {
+      containerId: string;
+      containerName: string;
+      memoryUsedMB: number | null;
+      memoryUsedPercentage: number | null;
+      cpuUsedPercentage: number | null;
+      error?: string;
+    }
+
+    class ContainerMetrics {
+      private docker: Docker;
+      private containerName: string;
+
+      private bytesToMB(bytes: number): number {
+        return Math.round(bytes / (1024 * 1024));
+      }
+
+      constructor() {
+        this.docker = new Docker({
+          socketPath: process.platform === 'win32' ? '//./pipe/docker_engine' : '/var/run/docker.sock'
+        });
+        this.containerName = `room_${process.env.ROOM_ID}`;
+      }
+
+      private async getContainerNetworks(containerId: string): Promise<string[]> {
+        const container = this.docker.getContainer(containerId);
+        const info = await container.inspect();
+        return Object.keys(info.NetworkSettings.Networks);
+      }
+
+      public async getAllContainerStats(): Promise<ContainerStats[]> {
+        try {
+          // First get our container to find its networks
+          const ourContainer = await this.docker.listContainers({
+            all: true,
+            filters: { name: [this.containerName] }
+          });
+
+          if (!ourContainer.length) {
+            throw new Error(`Container ${this.containerName} not found`);
+          }
+
+          const ourNetworks = await this.getContainerNetworks(ourContainer[0].Id);
+
+          // Get all containers
+          const allContainers = await this.docker.listContainers();
+
+          // Get stats for containers on the same networks
+          const containerStats = await Promise.all(
+            allContainers.map(async (container): Promise<ContainerStats | null> => {
+              try {
+                const containerNetworks = await this.getContainerNetworks(container.Id);
+                // Check if container shares any network with our container
+                if (!containerNetworks.some(network => ourNetworks.includes(network))) {
+                  return null;
+                }
+          
+                const stats = await this.docker.getContainer(container.Id).stats({ stream: false });
+          
+                const memoryStats = {
+                  usage: stats.memory_stats.usage,
+                  limit: stats.memory_stats.limit || 0,
+                  percent: stats.memory_stats.limit ? (stats.memory_stats.usage / stats.memory_stats.limit) * 100 : 0
+                };
+          
+                const cpuDelta = stats.cpu_stats?.cpu_usage?.total_usage - (stats.precpu_stats?.cpu_usage?.total_usage || 0);
+                const systemDelta = stats.cpu_stats?.system_cpu_usage - (stats.precpu_stats?.system_cpu_usage || 0);
+                const cpuPercent = systemDelta > 0 ? (cpuDelta / systemDelta) * (stats.cpu_stats?.online_cpus || 1) * 100 : 0;
+          
+                return {
+                  containerId: container.Id,
+                  containerName: container.Names[0].replace(/^\//, ''),
+                  memoryUsedMB: this.bytesToMB(memoryStats.usage),
+                  memoryUsedPercentage: memoryStats.percent,
+                  cpuUsedPercentage: cpuPercent
+                };
+              } catch (error) {
+                return {
+                  containerId: container.Id,
+                  containerName: container.Names[0].replace(/^\//, ''),
+                  memoryUsedMB: null,
+                  memoryUsedPercentage: null,
+                  cpuUsedPercentage: null,
+                  error: error instanceof Error ? error.message : String(error)
+                };
+              }
+            })
+          );
+          
+          // Change the filter to use proper type predicate
+          return containerStats.filter((stats): stats is ContainerStats => stats !== null);
+        } catch (error) {
+          console.error('Stats error:', error);
+          return [{
+            containerId: 'unknown',
+            containerName: 'unknown',
+            memoryUsedMB: null,
+            memoryUsedPercentage: null,
+            cpuUsedPercentage: null,
+            error: error instanceof Error ? error.message : String(error)
+          }];
+        }
+      }
+    }
+
+    const containerMetrics = new ContainerMetrics();
+
+    socket.on("get-usage", async () => {
+      try {
+        const usageData = await containerMetrics.getAllContainerStats();
+        socket.emit("usage-data", usageData);
+      } catch (error) {
+        socket.emit("error", { message: "Failed to retrieve usage data" });
+      }
+    });
+
   });
-
-
 
   const generateRoomName = (length = 6): string => {
     const characters = "0123456789";

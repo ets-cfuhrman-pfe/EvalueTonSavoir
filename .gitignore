@@ -131,3 +131,5 @@ dist
 db-backup/
 
 .venv
+deployments
+/test/stressTest/output

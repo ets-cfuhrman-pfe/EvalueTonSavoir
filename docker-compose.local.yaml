@@ -3,21 +3,29 @@ version: '3'
 services: 
 
   frontend:
+    container_name: frontend
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: frontend
     ports:
       - "5173:5173"
     networks:
       - quiz_network
     restart: always
-
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$${PORT} || exit 1"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
+    
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: backend
+    networks:
+      - quiz_network
     ports:
       - "3000:3000"
     volumes:
@@ -30,12 +38,15 @@ services:
       SENDER_EMAIL: infoevaluetonsavoir@gmail.com
       EMAIL_PSW: 'vvml wmfr dkzb vjzb'
       JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
-      FRONTEND_URL: "http://localhost:5173"
     depends_on:
-      - mongo
-    networks:
-      - quiz_network
-    restart: always
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$${PORT}/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
 
   quizroom: # Forces image to update
     build:
@@ -44,11 +55,17 @@ services:
     container_name: quizroom
     ports:
       - "4500:4500"
-    depends_on:
-      - backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - quiz_network
     restart: always
+    healthcheck:
+      test: ["CMD", "/usr/src/app/healthcheck.sh"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
 
   nginx:
     build:
@@ -58,11 +75,25 @@ services:
     ports: 
       - "80:80"
     depends_on:
-       - backend
-       - frontend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - quiz_network
     restart: always
+    #environment:
+    #  - PORT=8000
+    #  - FRONTEND_HOST=frontend
+    #  - FRONTEND_PORT=5173
+    #  - BACKEND_HOST=backend
+    #  - BACKEND_PORT=3000
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider http://0.0.0.0:$${PORT}/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      start_period: 5s
+      retries: 6
 
   mongo:
     image: mongo
@@ -75,6 +106,12 @@ services:
     networks:
       - quiz_network
     restart: always
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   watchtower:
     image: containrrr/watchtower

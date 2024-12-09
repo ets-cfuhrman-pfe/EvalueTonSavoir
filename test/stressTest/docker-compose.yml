@@ -1,0 +1,16 @@
+version: '3'
+
+services: 
+
+  stress-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stress-test
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+    tty: true
+    stdin_open: true

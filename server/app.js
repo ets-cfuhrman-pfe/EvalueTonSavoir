@@ -47,6 +47,7 @@ const folderRouter = require('./routers/folders.js');
 const quizRouter = require('./routers/quiz.js');
 const imagesRouter = require('./routers/images.js');
 const roomRouter = require('./routers/rooms.js');
+const healthRouter = require('./routers/health.js');
 
 // Setup environment
 dotenv.config();
@@ -71,6 +72,7 @@ app.use('/api/folder', folderRouter);
 app.use('/api/quiz', quizRouter);
 app.use('/api/image', imagesRouter);
 app.use('/api/room', roomRouter);
+app.use('/health', healthRouter);
 
 app.use(errorHandler);
 
