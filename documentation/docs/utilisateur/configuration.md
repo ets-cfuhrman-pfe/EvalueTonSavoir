@@ -1,5 +1,6 @@
 > [!NOTE]
-> Chaque projet contient un fichier `.env.example` fournissant des exemples de configuration. Assurez-vous de consulter ce fichier pour vous inspirer des paramètres nécessaires à votre configuration.
+> Chaque projet contient un fichier `.env.example` fournissant des exemples de configuration.
+> Assurez-vous de consulter ce fichier pour vous inspirer des paramètres nécessaires à votre configuration.
 
 > [!NOTE]
 > Ce sont toutes les options de configuration. N'hésitez pas à ouvrir une PR si vous en voyez qui manquent.
@@ -30,7 +31,7 @@
 | `PORT` | Numero de port sur lequel la NGINX écoute | http://localhost:80 | oui|
 | `FRONTEND_HOST` | Url relié au Frontend | http://localhost |oui
 | `FRONTEND_PORT` | Port relié au Frontend | http://localhost:5173 | oui|
-| `BACKEND_HOST` | Url relié au  Backend | http://localhost |oui
+| `BACKEND_HOST` | Url relié au Backend | http://localhost |oui
 | `BACKEND_PORT` | Port relié au Backend | http://localhost:3000 | oui|
 
 ## Options de Configuration de la salle de Quiz

@@ -1,9 +1,11 @@
 
 ## Introduction
 
-Nous avons choisi d'exécuter les composantes de cette application avec Docker, car cela simplifie le processus de gestion des processus d'application.
+Nous avons choisi d'exécuter les composantes de cette application avec Docker, car cela simplifie le processus de 
+gestion des processus d'application.
 
-Voici un diagramme de déploiement expliquant la relation des composantes et comment les images Docker sont créées et déployées dans un serveur.
+Voici un diagramme de déploiement expliquant la relation des composantes et comment les images Docker sont créées et 
+déployées dans un serveur.
 
 ```plantuml
 @startuml
@@ -70,9 +72,11 @@ Les STI nous a fourni un serveur avec les spécifications suivantes :
 - HDD : 100 Go
 - Certificat SSL
 
-Les STI ont déjà effectué la configuration initiale de la machine selon leurs normes de mise en place d'un serveur pour assurer la bonne maintenance et sécurité au sein de leur infrastructure. Cette configuration inclut un utilisateur non root.
+Les STI ont déjà effectué la configuration initiale de la machine selon leurs normes de mise en place d'un serveur pour 
+assurer la bonne maintenance et sécurité au sein de leur infrastructure. Cette configuration inclut un utilisateur non root.
 
-Vous aurez également besoin d'un compte Docker Hub, ou vous pouvez simplement créer une PR sur le projet principal et elle sera déployée automatiquement.
+Vous aurez également besoin d'un compte Docker Hub, ou vous pouvez simplement créer une PR sur le projet principal et 
+elle sera déployée automatiquement.
 
 ## Étape 1 - Installation de Docker
 
@@ -207,7 +211,9 @@ curl -SL https://raw.githubusercontent.com/ets-cfuhrman-pfe/EvalueTonSavoir/main
 ```
 
 > [!NOTE]
-> Avant de continuer, veuillez noter qu'il est crucial de mettre à jour les variables d'environnement dans le script, car les valeurs actuelles sont des modèles génériques. Assurez-vous de personnaliser ces variables selon les besoins spécifiques de votre environnement avant d'exécuter le script.
+> Avant de continuer, veuillez noter qu'il est crucial de mettre à jour les variables d'environnement dans le script, 
+> car les valeurs actuelles sont des modèles génériques. Assurez-vous de personnaliser ces variables selon les besoins 
+> spécifiques de votre environnement avant d'exécuter le script.
 
 Avec le fichier docker-compose.yml en place, vous pouvez maintenant exécuter Docker Compose pour démarrer votre environnement :
 ```

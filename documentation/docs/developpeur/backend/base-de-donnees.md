@@ -1,5 +1,5 @@
 # Type de base de données
-La base de données est une mongoDB
+La base de données est une MongoDB.
 
 # Collections disponibles
 * Files : Ceci est la collection qui contient les différents quiz et leurs questions.
