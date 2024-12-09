@@ -9,15 +9,7 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_storage_share" "backend_storage_share" {
-  name                 = var.backend_volume_share_name
-  storage_account_name = azurerm_storage_account.storage_account.name
-  quota                = 1
-
-  depends_on = [azurerm_storage_account.storage_account]
-}
-
-resource "azurerm_storage_share" "router_storage_share" {
-  name                 = var.router_volume_share_name
+  name                 = var.backend_storage_share_name
   storage_account_name = azurerm_storage_account.storage_account.name
   quota                = 1
 
@@ -35,18 +27,48 @@ resource "null_resource" "upload_file" {
     EOT
   }
 
-  provisioner "local-exec" {
-    command = <<EOT
-      az storage file upload \
-        --account-name ${azurerm_storage_account.storage_account.name} \
-        --share-name ${azurerm_storage_share.router_storage_share.name} \
-        --source ../default.conf \
-        --path default.conf
-    EOT
+  depends_on = [azurerm_storage_share.backend_storage_share]
+}
+
+locals {
+  # Get the current timestamp (UTC)
+  current_timestamp = timestamp()
+  start_time = local.current_timestamp
+  expiry_time = timeadd(local.current_timestamp, "1h")
+}
+
+data "azurerm_storage_account_sas" "storage_access" {
+  connection_string = azurerm_storage_account.storage_account.primary_connection_string
+  signed_version    = "2022-11-02"
+
+  services {
+    file  = true
+    blob  = false
+    queue = false
+    table = false
   }
 
-  depends_on = [
-    azurerm_storage_share.backend_storage_share,
-    azurerm_storage_share.router_storage_share
-  ]
+  resource_types {
+    object    = true
+    container = false
+    service   = false
+  }
+
+  permissions {
+    read    = true
+    write   = false
+    delete  = false
+    list    = true
+    add     = false
+    create  = false
+    update  = false
+    process = false
+    tag     = false
+    filter  = false
+  }
+
+  start                = local.start_time
+  expiry               = local.expiry_time
+
+  depends_on = [null_resource.upload_file]
 }

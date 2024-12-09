@@ -10,6 +10,15 @@ https://opentofu.org/docs/intro/install/
 
 https://learn.microsoft.com/en-us/cli/azure/install-azure-cli#install
 
+### Se connecter à Azure et récupérer l'id de l'abonnement Azure
+
+Pour se connecter à Azure, faites la commande suivante
+
+`az login`
+
+Avec cette commande, vous allez sélectionner un abonnement Azure. Copiez l'id de l'abonnement, vous en aurez besoin
+dans l'étape suivant.
+
 ### Modifier les configurations
 
 Créer un fichier **terraform.tfvars** sur la base du fichier **terraform.tfvars.example** dans le répertoire **azure**.
@@ -18,12 +27,8 @@ Toutes les variables, leur description et leur valeur par défaut sont disponibl
 
 Créer un fichier **auth_config.json** sur la base du fichier **auth_config.json.example** dans le répertoire **opentofu**.
 
-Modifier le fichier **default.conf** afin de pointer vers le bon url pour le backend et le frontend.
-L'url du frontend est défini comme suit: http://\<container_group_app_dns>.\<location>.azurecontainer.io:\<frontend_port>".
-L'url du backend est défini comme suit: http://\<container_group_app_dns>.\<location>.azurecontainer.io:\<backend_port>".
-Location est sans espace et en minuscule.
-Par défaut, l'url du frontend est http://evaluetonsavoir-app.canadacentral.azurecontainer.io:5173.
-Par défaut, l'url du backend est http://evaluetonsavoir-app.canadacentral.azurecontainer.io:3000.
+L'url est défini comme suit: http://<container_group_app_dns>.<location>.cloudapp.azure.com.
+Par défaut, l'url est http://evaluetonsavoir.canadacentral.cloudapp.azure.com/
 
 ### Lancer le déploiement
 

@@ -1,9 +1,16 @@
 resource "azurerm_cosmosdb_account" "cosmosdb_account" {
-  name                = var.cosmosdb_account_name
-  resource_group_name = azurerm_resource_group.resource_group.name
-  location            = azurerm_resource_group.resource_group.location
-  offer_type          = "Standard"
-  kind                = "MongoDB"
+  name                  = var.cosmosdb_account_name
+  resource_group_name   = azurerm_resource_group.resource_group.name
+  location              = azurerm_resource_group.resource_group.location
+  offer_type            = "Standard"
+  kind                  = "MongoDB"
+  mongo_server_version  = "7.0"
+
+  is_virtual_network_filter_enabled     = true
+
+  virtual_network_rule {
+    id = azurerm_subnet.subnet.id
+  }
 
   capabilities {
     name = "EnableMongo"

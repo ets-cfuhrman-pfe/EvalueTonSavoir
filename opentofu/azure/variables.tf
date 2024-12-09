@@ -1,55 +1,12 @@
+variable "subscription_id" {
+  description = "The azure subscription id"
+  type        = string
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group"
   type        = string
   default     = "evaluetonsavoir"
-}
-
-variable "container_group_app_name" {
-  description = "The name of the app container group"
-  type        = string
-  default     = "evaluetonsavoir-app"
-}
-
-variable "container_group_app_dns" {
-  description = "The dns name of the app container group"
-  type        = string
-  default     = "evaluetonsavoir-app"
-}
-
-variable "container_group_router_name" {
-  description = "The name of the router container group"
-  type        = string
-  default     = "evaluetonsavoir"
-}
-
-variable "container_group_router_dns" {
-  description = "The dns name of the router container group"
-  type        = string
-  default     = "evaluetonsavoir"
-}
-
-variable "container_group_os" {
-  description = "The os type of the container group"
-  type        = string
-  default     = "Linux"
-}
-
-variable "image_registry_server" {
-  description = "The image registry server"
-  type        = string
-  default     = "index.docker.io"
-}
-
-variable "image_registry_user" {
-  description = "The image registry username"
-  type        = string
-  default     = "username"
-}
-
-variable "image_registry_password" {
-  description = "The image registry password"
-  type        = string
-  default     = "password"
 }
 
 variable "location" {
@@ -58,58 +15,10 @@ variable "location" {
   default     = "Canada Central"
 }
 
-variable "frontend_image" {
-  description = "Docker image for the frontend"
-  type        = string
-  default     = "fuhrmanator/evaluetonsavoir-frontend:latest"
-}
-
-variable "frontend_image_name" {
-  description = "Docker image name for the frontend"
-  type        = string
-  default     = "frontend"
-}
-
-variable "frontend_image_cpu" {
-  description = "Docker image cpu for the frontend"
-  type        = string
-  default     = "1"
-}
-
-variable "frontend_image_memory" {
-  description = "Docker image memory for the frontend"
-  type        = string
-  default     = "2"
-}
-
 variable "frontend_port" {
   description = "The frontend port"
   type        = number
   default     = 5173
-}
-
-variable "backend_image" {
-  description = "Docker image for the backend"
-  type        = string
-  default     = "fuhrmanator/evaluetonsavoir-backend:latest"
-}
-
-variable "backend_image_name" {
-  description = "Docker image name for the backend"
-  type        = string
-  default     = "backend"
-}
-
-variable "backend_image_cpu" {
-  description = "Docker image cpu for the backend"
-  type        = string
-  default     = "1"
-}
-
-variable "backend_image_memory" {
-  description = "Docker image memory for the backend"
-  type        = string
-  default     = "2"
 }
 
 variable "backend_port" {
@@ -133,7 +42,6 @@ variable "backend_use_auth_student" {
 variable "backend_session_secret" {
   description = "The backend session secret"
   type        = string
-  default     = "secret"
 }
 
 variable "backend_email_service" {
@@ -145,70 +53,19 @@ variable "backend_email_service" {
 variable "backend_email_sender" {
   description = "The email address used to send email"
   type        = string
-  default     = "mail@mail.com"
 }
 
 variable "backend_email_password" {
   description = "The email password"
   type        = string
-  default     = "password"
 }
 
 variable "backend_jwt_secret" {
   description = "The secret used to sign the jwt"
   type        = string
-  default     = "secret"
 }
 
-variable "router_image" {
-  description = "Docker image for the router"
-  type        = string
-  default     = "nginx:alpine"
-}
-
-variable "router_image_name" {
-  description = "Docker image name for the router"
-  type        = string
-  default     = "nginx"
-}
-
-variable "router_image_cpu" {
-  description = "Docker image cpu for the router"
-  type        = string
-  default     = "1"
-}
-
-variable "router_image_memory" {
-  description = "Docker image memory for the router"
-  type        = string
-  default     = "2"
-}
-
-variable "router_port" {
-  description = "The router port"
-  type        = number
-  default     = 80
-}
-
-variable "router_volume_mount_path" {
-  description = "The router volume mount path"
-  type        = string
-  default     = "/etc/nginx/conf.d"
-}
-
-variable "router_volume_share_name" {
-  description = "The router volume share name"
-  type        = string
-  default     = "nginx-config-share"
-}
-
-variable "backend_volume_mount_path" {
-  description = "The backend volume mount path"
-  type        = string
-  default     = "/usr/src/app/serveur/config/auth"
-}
-
-variable "backend_volume_share_name" {
+variable "backend_storage_share_name" {
   description = "The backend volume share name"
   type        = string
   default     = "auth-config-share"
@@ -230,4 +87,128 @@ variable "cosmosdb_account_name" {
   description = "The name of the cosmosdb account"
   type        = string
   default     = "evaluetonsavoircosmosdb"
+}
+
+variable "vnet_name" {
+  description = "The name of the virtual network"
+  type        = string
+  default     = "evaluetonsavoirVnet"
+}
+
+variable "subnet_name" {
+  description = "The name of the subnet"
+  type        = string
+  default     = "evaluetonsavoirSubnet"
+}
+
+variable "public_ip_name" {
+  description = "The name of the public ip"
+  type        = string
+  default     = "evaluetonsavoirPublicIp"
+}
+
+variable "nsg_name" {
+  description = "The name of the network security group"
+  type        = string
+  default     = "evaluetonsavoirnsg"
+}
+
+variable "nsg_ssh_ip_range" {
+  description = "The ip range that can access to the port 22 using the network security group"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "nsg_http_ip_range" {
+  description = "The ip range that can access to the port 80 using the network security group"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "nsg_https_ip_range" {
+  description = "The ip range that can access to the port 443 using the network security group"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "network_interface_name" {
+  description = "The name of the network interface"
+  type        = string
+  default     = "evaluetonsavoirNetworkInterface"
+}
+
+variable "dns" {
+  description = "The dns of the public ip"
+  type        = string
+  default     = "evaluetonsavoir"
+}
+
+variable "vm_name" {
+  description = "The name of the virtual machine"
+  type        = string
+  default     = "evaluetonsavoir"
+}
+
+variable "vm_size" {
+  description = "The size of the virtual machine"
+  type        = string
+  default     = "Standard_B2s"
+}
+
+variable "vm_user" {
+  description = "The username of the virtual machine"
+  type        = string
+}
+
+variable "vm_password" {
+  description = "The password of the virtual machine"
+  type        = string
+}
+
+variable "vm_os_disk_name" {
+  description = "The name of the os disk of the virtual machine"
+  type        = string
+  default     = "evaluetonsavoirOsDisk"
+}
+
+variable "vm_os_disk_type" {
+  description = "The type of the os disk of the virtual machine"
+  type        = string
+  default     = "Standard_LRS"
+}
+
+variable "vm_image_publisher" {
+  description = "The publisher of the image of the virtual machine"
+  type        = string
+  default     = "Canonical"
+}
+
+variable "vm_image_offer" {
+  description = "The id of the image of the virtual machine"
+  type        = string
+  default     = "0001-com-ubuntu-server-jammy"
+}
+
+variable "vm_image_plan" {
+  description = "The plan of the image of the virtual machine"
+  type        = string
+  default     = "22_04-lts"
+}
+
+variable "vm_image_version" {
+  description = "The version of the image of the virtual machine"
+  type        = string
+  default     = "latest"
+}
+
+variable "docker_compose_url" {
+  description = "The url from where the docker compose file is downloaded"
+  type        = string
+  default     = "https://raw.githubusercontent.com/ets-cfuhrman-pfe/EvalueTonSavoir/refs/heads/main/opentofu/docker-compose.yaml"
+}
+
+variable "quizroom_image" {
+  description = "The image of the quiz room"
+  type        = string
+  default     = "ghrc.io/fuhrmanator/evaluetonsavoir-quizroom:latest"
 }
