@@ -8,9 +8,18 @@ services:
       dockerfile: Dockerfile
     container_name: stress-test
     network_mode: host
-    env_file:
-      - .env
+    #environment:
+    #  - BASE_URL=http://127.0.0.1
+    #  - USER_EMAIL=admin@admin.com
+    #  - USER_PASSWORD=admin
+    #  - NUMBER_ROOMS=5
+    #  - USERS_PER_ROOM=60
+    #  - MAX_MESSAGES_ROUND=20
+    #  - CONVERSATION_INTERVAL=1000
+    #  - MESSAGE_RESPONSE_TIMEOUT=5000
+    #  - BATCH_DELAY=1000
+    #  - BATCH_SIZE=10
+    #env_file:
+    #  - .env
     volumes:
       - ./output:/app/output
-    tty: true
-    stdin_open: true

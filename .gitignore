@@ -130,6 +130,7 @@ dist
 .pnp.*
 db-backup/
 
+.env
 .venv
 deployments
 /test/stressTest/output

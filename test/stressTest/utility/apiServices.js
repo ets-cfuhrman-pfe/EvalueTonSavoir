@@ -42,17 +42,20 @@ async function register(baseUrl, email, password) {
 
 // Attempts to log in a user, or registers and logs in if the login fails.
 export async function attemptLoginOrRegister(baseUrl, username, password) {
+  console.log(`Authenticating user with server : ${baseUrl}, username: ${username}, password: ${password}`);
   try {
     return await login(baseUrl, username, password);
   } catch (loginError) {
-    console.log(`Login failed for ${username}. Attempting registration...`);
-    try {
-      await register(baseUrl, username, password);
-      return await login(baseUrl, username, password);
-    } catch (registerError) {
-      console.error(`Registration and login failed for ${username}:`, registerError.message);
-      return null;
-    }
+    console.error(`Login failed for ${username}:`, loginError.message);
+  }
+
+  console.log(`Login failed for ${username}. Attempting registration...`);
+  try {
+    await register(baseUrl, username, password);
+    return await login(baseUrl, username, password);
+  } catch (registerError) {
+    console.error(`Registration and login failed for ${username}:`, registerError.message);
+    return null;
   }
 }
 
