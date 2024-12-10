@@ -39,3 +39,23 @@ Pour déployer à l'aide de OpenTofu, il suffit de suivre les étapes du fichier
 Le déploiement avec **OpenTofu** simplifie la gestion des éléments nécessaires pour déployer le projet
 **ÉvalueTonSavoir**. dans l'infonuagique. Avec cette méthode, vous pouvez déployer rapidement et facilement 
 l'application dans un environnement infonuagique.
+
+## Diagramme de sequence
+
+```plantuml
+@startuml
+
+actor Administrator
+participant "Control Machine" as control_machine
+participant "Azure" as azure
+
+Administrator -> control_machine: "Se connecte à Azure"
+Administrator -> control_machine: "Lancer le déploiement avec OpenTofu"
+control_machine -> azure: "Crée les éléments réseaux"
+control_machine -> azure: "Crée la base de données"
+control_machine -> azure: "Crée la machine virtuelle qui exécute l'application" 
+control_machine <- azure: "OpenTofu retourne le résultat (success/échec)"
+Administrator <- control_machine: "OpenTofu retourne le résultat (success/échec)"
+
+@enduml
+```
