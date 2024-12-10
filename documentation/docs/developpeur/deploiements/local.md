@@ -11,14 +11,15 @@
    git clone https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir.git
    ```
 
-## Étape 1 - démarrage du backend
+## Étape 1 - Démarrage du backend
 
 1. Naviguez vers le répertoire du projet en utilisant la commande suivante :
    ```
    cd .\EvalueTonSavoir\server\
    ```
 
-2. Assurez-vous de créer le fichier .env et d'y ajouter les paramètres appropriés. Vous pouvez vous inspirer du fichier .env.example pour connaître les paramètres nécessaires.
+2. Assurez-vous de créer le fichier .env et d'y ajouter les paramètres appropriés. Vous pouvez vous inspirer du fichier 
+.env.example pour connaître les paramètres nécessaires.
    
    [[Voir ici la documentation des configurations|Configurations]]
 
@@ -44,7 +45,8 @@
 > Assurez-vous que le backend est en cours d'exécution avant de démarrer le frontend. \
 > Notez également l'URL du serveur pour le fichier `.env`.
 
-2. Assurez-vous de créer le fichier .env et d'y ajouter les paramètres appropriés. Vous pouvez vous inspirer du fichier .env.example pour connaître les paramètres nécessaires.
+2. Assurez-vous de créer le fichier .env et d'y ajouter les paramètres appropriés. Vous pouvez vous inspirer du fichier 
+.env.example pour connaître les paramètres nécessaires.
    
    [[Voir ici la documentation des configurations|Configurations]]
 

@@ -1,4 +1,4 @@
-# Documentation de Déploiement avec Ansible
+# Documentation de déploiement avec Ansible
 
 Ce guide explique comment utiliser **Ansible** pour déployer facilement le projet **ÉvalueTonSavoir**.
 
@@ -42,14 +42,14 @@ ansible-playbook -i inventory.ini deploy.yml
 ```
 
 ### Structure des fichiers utilisés
-- **`inventory.ini`** : Définit les cibles du déploiement. Par défaut, il est configuré pour un déploiement local.
+- **`inventory.ini`** : Défini les cibles du déploiement. Par défaut, il est configuré pour un déploiement local.
 - **`deploy.yml`** : Playbook contenant les instructions pour installer, configurer et déployer l'application.
 
 ### Étapes effectuées par Ansible
 1. **Installation des dépendances** :
    - Vérifie et installe Docker si nécessaire.
 2. **Démarrage des services** :
-   - Télécharge le fichier `docker-compose.yaml` depuis le dépôt.
+   - Télécharge le fichier `docker-compose.yaml` depuis le dépôt Github.
    - Lance les services définis avec Docker Compose.
 3. **Vérification des conteneurs** :
    - Vérifie que les conteneurs sont en cours d'exécution et fonctionnent correctement.
@@ -72,4 +72,6 @@ Un code de réponse `200 OK` indiquera que le déploiement est réussi.
 
 ## Résumé
 
-Le déploiement avec **Ansible** simplifie la gestion des configurations et l'installation des dépendances nécessaires pour le projet **ÉvalueTonSavoir**. Avec cette méthode, vous pouvez déployer rapidement l'application dans un environnement local tout en assurant une configuration cohérente.
+Le déploiement avec **Ansible** simplifie la gestion des configurations et l'installation des dépendances nécessaires 
+pour le projet **ÉvalueTonSavoir**. Avec cette méthode, vous pouvez déployer rapidement l'application dans un 
+environnement local tout en assurant une configuration cohérente.

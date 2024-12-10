@@ -1,22 +1,24 @@
 # Structure haut niveau
 
 ## But du projet
-ÉvalueTonSavoir a été créer dû aux gros coûts des versions entreprises des logiciels similaires tels que Socrative et Kahoot. Le bût principal est d’être capable d’avoir une plateforme auto-hébergée et bien intégrée dans les systèmes déjà présents des établissements scolaire.
+ÉvalueTonSavoir a été créé dû aux coûts importants des versions entreprises des logiciels similaires tels que Socrative et 
+Kahoot. Le but principal est d’être capable d’avoir une plateforme auto-hébergée et bien intégrée dans les systèmes 
+déjà présents des établissements scolaire.
 
 ## Requis
 
-Le but du projet étant un outils gratuis/libre afin d'améliorer l'apprentissage, celui-ci a les bûts suivants :
+Le but du projet est d'avoir un outil gratuit et libre afin d'améliorer l'apprentissage avec les fonctionnalités suivantes :
 
-- Permettre aux personnels enseignant de créer des tests
-- Permettre aux enseignant de collecter les résultats des tests
-- Permettre aux étudiants de prendre ces tests
+- Permettre aux personnel enseignant de créer des quizs
+- Permettre aux enseignant de collecter les résultats des quizs
+- Permettre aux étudiants de faire ces quizs
 - Permettre aux étudiants d'avoir une rétroaction
 
 Afin de limiter le niveau de difficulté d'intégration du personnel enseignant:
 
 - L'utilisation du format [`GIFT`](https://docs.moodle.org/405/en/GIFT_format) déja présent dans moodle doit être utilisé
 - Le personnel et les étudiants doivent être capable de s'authentifier avec le portail de l'école
-- Le démarage du quiz doit se faire de facon rapide et éfficace.
+- Le démarrage du quiz doit se faire de façon rapide et efficace.
 
 Afin de faciliter le déploiement de masse : 
 
@@ -59,13 +61,16 @@ Frontend --up-> Nginx
 
 ### Details techniques
 
-Le tableau ci-dessus est simplifié grandement car toutes les composantes sont individuelles. Ce qui veux dire qu'une toutes les parties pouraient être déployé sur un serveur différent et tout de même fonctionner, permettant de distribuer la charge de travail facilement.
+Le tableau ci-dessus est simplifié grandement car toutes les composantes sont individuelles. Ce qui veut dire que chacune
+des parties pouraient être déployées sur un serveur différent et tout de même fonctionner. Ceci permettrai de distribuer
+la charge de travail facilement entre plusieurs serveurs.
 
-Le proxy Nginx permet de camoufler la séparation du backend et frontend en réunissant les deux parties sous la même url. Il a aussi la tache de diriger les appels de sockets vers leurs machine interne dans le provider.
+Le proxy Nginx permet de camoufler la séparation du backend et frontend en réunissant les deux parties sous la même url. 
+Il a aussi la tâche de diriger les appels de sockets vers leur machine interne dans le provider.
 
-Le frontend déssert la partie visuel de l'application.
+Le frontend dessert la partie visuelle de l'application.
 
-Le backend s'occupe de tous les services tel quel : 
+Le backend s'occupe de tout les services suivants : 
 
 - La gestion des utilisateurs
 - La gestion des quizs
