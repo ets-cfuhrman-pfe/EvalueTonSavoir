@@ -11,8 +11,8 @@ theme:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default 
-      primary: deep purple
-      accent: purple
+      primary: red
+      accent: pink
       toggle:
         icon: material/brightness-7
         name: Mode sombre
@@ -20,8 +20,8 @@ theme:
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: purple
+      primary: red
+      accent: pink
       toggle:
         icon: material/brightness-4
         name: Mode clair
@@ -53,8 +53,8 @@ plugins:
       puml_url: !ENV [PUMLURL,'http://localhost:8080'] # dev
       puml_keyword: plantuml
       theme:
-        light: material/deep-purple-light
-        dark: material/deep-purple-dark
+        light: material/red-light
+        dark: material/red-dark
   - swagger-ui-tag:
       docExpansion: "list"
       tryItOutEnabled: false
