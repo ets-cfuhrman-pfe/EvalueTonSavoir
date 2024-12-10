@@ -9,7 +9,7 @@ import generateMetricsReport from './utility/metrics_generator.js';
 dotenv.config();
 
 const config = {
-    baseUrl: process.env.BASE_URL || 'http://127.0.0.1',
+    baseUrl: process.env.BASE_URL || 'http://host.docker.internal',
     auth: {
         username: process.env.USER_EMAIL || 'admin@admin.com',
         password: process.env.USER_PASSWORD || 'admin'

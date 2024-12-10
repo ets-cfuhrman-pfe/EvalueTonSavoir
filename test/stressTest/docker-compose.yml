@@ -7,9 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: stress-test
-    network_mode: host
     #environment:
-    #  - BASE_URL=http://127.0.0.1
+    #  - BASE_URL=http://host.docker.internal
     #  - USER_EMAIL=admin@admin.com
     #  - USER_PASSWORD=admin
     #  - NUMBER_ROOMS=5
@@ -19,7 +18,9 @@ services:
     #  - MESSAGE_RESPONSE_TIMEOUT=5000
     #  - BATCH_DELAY=1000
     #  - BATCH_SIZE=10
-    #env_file:
-    #  - .env
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./output:/app/output
