@@ -52,7 +52,7 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
 
-const configureServer = (httpServer) => {
+const configureServer = (httpServer, isDev) => {
   return new Server(httpServer, {
     path: "/socket.io",
     cors: {
