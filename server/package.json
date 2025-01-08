@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "start": "node app.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js",
+    "dev": "cross-env DEBUG=socket.io:* NODE_ENV=development nodemon app.js",
     "test": "jest --colors"
   },
   "keywords": [],

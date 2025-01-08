@@ -1,6 +1,7 @@
 // Import API
 const express = require("express");
 const http = require("http");
+const https = require("https");
 const dotenv = require('dotenv');
 
 // Import Sockets
@@ -43,6 +44,7 @@ const imagesRouter = require('./routers/images.js');
 
 // Setup environment
 dotenv.config();
+const isDev = process.env.NODE_ENV === 'development';
 const errorHandler = require("./middleware/errorHandler.js");
 
 // Start app
@@ -50,7 +52,7 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
 
-const configureServer = (httpServer, isDev) => {
+const configureServer = (httpServer) => {
   return new Server(httpServer, {
     path: "/socket.io",
     cors: {
@@ -63,18 +65,29 @@ const configureServer = (httpServer, isDev) => {
 };
 
 // Start sockets (depending on the dev or prod environment)
-let server = http.createServer(app);
-let isDev = process.env.NODE_ENV === 'development';
+const server = http.createServer(app);
 
 console.log(`Environnement: ${process.env.NODE_ENV} (${isDev ? 'dev' : 'prod'})`);
 
 const io = configureServer(server);
-console.log(`server.io configured: ${io.secure ? 'secure' : 'not secure'}`);
+console.log(`Server configured with cors.origin: ${io.opts.cors.origin} and secure: ${io.opts.secure}`);
 
 setupWebsocket(io);
 console.log(`Websocket setup with on() listeners.`);
 
+// const io = socketIo(server, {
+//   cors: {
+//     origin: '*', //process.env.FRONTEND_URL, // will be set in .env or Dockerfile
+//     methods: ['GET', 'POST'],
+//   },
+// });
+
+
 app.use(cors());
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -98,6 +111,23 @@ async function start() {
   server.listen(port, () => {
     console.log(`Serveur écoutant sur le port ${port}`);
   });
+
+  // if (isDev) {
+  //   // HTTP for development
+  //   http.createServer(app).listen(port, () => {
+  //     console.log(`Serveur en développement écoutant sur le port ${port} (HTTP)`);
+  //   });
+  // } else {
+  //   // HTTPS for production
+  //   const sslOptions = {
+  //     key: fs.readFileSync(path.resolve(__dirname, "path_to_ssl_key.pem")),
+  //     cert: fs.readFileSync(path.resolve(__dirname, "path_to_ssl_cert.pem")),
+  //   };
+  //   https.createServer(sslOptions, app).listen(443, () => {
+  //     console.log(`Serveur en production écoutant sur le port 443 (HTTPS)`);
+  //   });
+  // }
 }
 
 start();
+

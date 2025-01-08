@@ -5,11 +5,11 @@ import { ENV_VARIABLES } from '../../constants';
 
 jest.mock('socket.io-client');
 
-// jest.mock('../../constants', () => ({
-//     ENV_VARIABLES: {
-//         VITE_BACKEND_SOCKET_URL: 'https://ets-glitch-backend.glitch.me/'
-//     }
-// }));
+jest.mock('../../constants', () => ({
+    ENV_VARIABLES: {
+        VITE_BACKEND_SOCKET_URL: 'https://ets-glitch-backend.glitch.me/'
+    }
+}));
 
 describe('WebSocketService', () => {
     let mockSocket: Partial<Socket>;
