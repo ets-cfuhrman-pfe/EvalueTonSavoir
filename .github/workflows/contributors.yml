@@ -1,0 +1,36 @@
+name: Add contributors
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  contributors-readme:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: BobAnkh/add-contributors@master
+      with:
+        CONTRIBUTOR: '### collaborateurs'
+        COLUMN_PER_ROW: '6'
+        ACCESS_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        IMG_WIDTH: '100'
+        FONT_SIZE: '14'
+        PATH: '/README.md'
+        COMMIT_MESSAGE: 'docs(README): update contributors readme'
+        AVATAR_SHAPE: 'round'
+        
+  contributor-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: minicli/action-contributors@v3.3
+        name: "Update a projects CONTRIBUTORS file"
+        env:
+          CONTRIB_REPOSITORY: 'ets-cfuhrman-pfe/EvalueTonSavoir'
+          CONTRIB_OUTPUT_FILE: 'CONTRIBUTORS.md'
+      - name: Commit changes
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: 'CONTRIBUTORS.md'
+          commit-msg: Update Contributors
+          github-token: ${{ secrets.GITHUB_TOKEN }}
