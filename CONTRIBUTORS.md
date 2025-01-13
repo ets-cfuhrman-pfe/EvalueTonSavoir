@@ -1,29 +1,12 @@
-# Top Contributors: minicli/minicli
+# Top Contributors: ets-cfuhrman-pfe/EvalueTonSavoir
 Shout out to our top contributors!
 
-- [erikaheidi](https://github.com/erikaheidi)
-- [WendellAdriel](https://github.com/WendellAdriel)
-- [JustSteveKing](https://github.com/JustSteveKing)
-- [lotfio](https://github.com/lotfio)
-- [AbdelrhmanSaid](https://github.com/AbdelrhmanSaid)
-- [syntaxseed](https://github.com/syntaxseed)
-- [devatreides](https://github.com/devatreides)
-- [szepeviktor](https://github.com/szepeviktor)
-- [tal7aouy](https://github.com/tal7aouy)
-- [wandersonwhcr](https://github.com/wandersonwhcr)
-- [tfrommen](https://github.com/tfrommen)
-- [ScullWM](https://github.com/ScullWM)
-- [NickSdot](https://github.com/NickSdot)
-- [alexkart](https://github.com/alexkart)
-- [EFabrizioGC](https://github.com/EFabrizioGC)
-- [flug](https://github.com/flug)
-- [MauricioFauth](https://github.com/MauricioFauth)
-- [rodrigoaramburu](https://github.com/rodrigoaramburu)
-- [mrpc](https://github.com/mrpc)
-- [peter279k](https://github.com/peter279k)
-- [theoboldalex](https://github.com/theoboldalex)
-- [thinkverse](https://github.com/thinkverse)
-- [zaghadon](https://github.com/zaghadon)
+- [fuhrmanator](https://github.com/fuhrmanator)
+- [louis-antoine-etsmtl](https://github.com/louis-antoine-etsmtl)
+- [samyw10](https://github.com/samyw10)
+- [JubaAzul](https://github.com/JubaAzul)
+- [gab9281](https://github.com/gab9281)
+- [valkyrie1](https://github.com/valkyrie1)
 
 
-_Last updated: Mon, 13 Jan 25 18:13:39 +0000_
+_Last updated: Mon, 13 Jan 25 18:17:50 +0000_
