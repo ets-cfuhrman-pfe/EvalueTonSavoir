@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  add-contributors:
+  contributors-readme:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -19,3 +19,18 @@ jobs:
         PATH: '/README.md'
         COMMIT_MESSAGE: 'docs(README): update contributors'
         AVATAR_SHAPE: 'round'
+        
+  contributor-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: minicli/action-contributors@v3.3
+        name: "Update a projects CONTRIBUTORS file"
+        env:
+          CONTRIB_REPOSITORY: 'minicli/minicli'
+          CONTRIB_OUTPUT_FILE: 'CONTRIBUTORS.md'
+      - name: Commit changes
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: 'CONTRIBUTORS.md'
+          commit-msg: Update Contributors
+          github-token: ${{ secrets.GITHUB_TOKEN }}
