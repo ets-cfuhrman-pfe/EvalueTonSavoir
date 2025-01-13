@@ -1,0 +1,1019 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MultipleChoice snapshot test 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;Sample Stem&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idY6sLQS" name="idYcbBS3PT"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idY6sLQS"&gt;
+            Choice 1
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="ida41-A1" name="idYcbBS3PT"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="ida41-A1"&gt;
+            Choice 2
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;InCorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with 2 images using markdown text format 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title with Image&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;&lt;img src="https://via.placeholder.com/150" alt = "Sample Image"/&gt;&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idRndLXH" name="id41Q3iM9t"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idRndLXH"&gt;
+            Choice 1
+
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="id9so1y3" name="id41Q3iM9t"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="id9so1y3"&gt;
+            Choice 2
+
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Incorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idyhlQbI" name="id41Q3iM9t"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idyhlQbI"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image" /&gt;
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Image Feedback&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback with Image
+&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;Sample Stem&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idOkvGfv" name="idG7FzhlwG"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idOkvGfv"&gt;
+            Choice 1
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idWc4Fdg" name="idG7FzhlwG"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idWc4Fdg"&gt;
+            Choice 2
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;InCorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with image 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title with Image&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;Sample Stem with Image&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idtg_4sy" name="idtYfkT0sj"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idtg_4sy"&gt;
+            Choice 1
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idsl9DOz" name="idtYfkT0sj"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idsl9DOz"&gt;
+            Choice 2
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Incorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idPEStwV" name="idtYfkT0sj"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idPEStwV"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image" /&gt;
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Image Feedback&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback with Image&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with image using markdown text format 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title with Image&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;Sample Stem with Image
+&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idfcMRhV" name="idIpMjpvV3"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idfcMRhV"&gt;
+            Choice 1
+
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idS15bbw" name="idIpMjpvV3"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idS15bbw"&gt;
+            Choice 2
+
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Incorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="id5hwUQu" name="idIpMjpvV3"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="id5hwUQu"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image" /&gt;
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Image Feedback&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback with Image
+&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with katex 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;&lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block"&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;&lt;annotation encoding="application/x-tex"&gt;\\frac{zzz}{yyy}&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.988em;vertical-align:-0.8804em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:1.1076em;"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.04398em;"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8804em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="id_8Kbh1" name="idwLkHBxIV"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="id_8Kbh1"&gt;
+            Choice 1
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idmmZ__M" name="idwLkHBxIV"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idmmZ__M"&gt;
+            Choice 2
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
+
+exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
+<DocumentFragment>
+  &lt;section style="
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 0%, 100%);
+  border: solid hsl(0, 0%, 100%) 2px;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+"&gt;
+  &lt;div style="
+  display: flex;
+  font-weight: bold;
+"&gt;
+    &lt;span&gt;
+      &lt;span style="
+  color: #5271FF;
+  "&gt;Sample Title&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;span style="
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+ margin-bottom: 10px;"&gt;
+      &lt;span style="
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-radius: 4px;
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(180, 15%, 41%);
+"&gt;Choix multiple&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;p style="
+  color: hsl(0, 0%, 0%);
+"&gt;&lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block"&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;&lt;annotation encoding="application/x-tex"&gt;\\frac{zzz}{yyy}&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.988em;vertical-align:-0.8804em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:1.1076em;"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.04398em;"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8804em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;span style="
+  color: hsl(0, 0%, 0%);
+"&gt;Choisir une réponse:&lt;/span&gt;
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idmhYkGR" name="id7uMk4tB5"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+      color: hsl(134, 31%, 32%);
+      background-color: hsl(134, 68%, 95%);
+    "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idmhYkGR"&gt;
+            Choice 1
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 1em;
+    color: hsl(120, 39%, 54%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;Correct!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        
+        &lt;div class='multiple-choice-answers-container'&gt;
+          &lt;input class="gift-input" type="radio" id="idvT6Xg7" name="id7uMk4tB5"&gt;
+          &lt;span style="
+      box-shadow: 0px 1px 1px hsl(0, 0%, 74%);
+      border-radius: 3px;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      padding-top: 0.05rem;
+      padding-bottom: 0.05rem;
+     
+    color: hsl(35, 51%, 33%);
+    background-color: hsl(36, 84%, 93%);
+  "&gt;1%&lt;/span&gt;
+            &lt;label style="
+          display: inline-block;
+          padding: 0.2em 0 0.2em 0;
+         
+  color: hsl(0, 0%, 0%);
+" for="idvT6Xg7"&gt;
+            Choice 2
+            &lt;/label&gt;
+          &lt;svg style="
+  vertical-align: text-bottom;
+  display: inline-block;
+  margin-left: 0.1rem;
+  margin-right: 0.2rem;
+ 
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
+          &lt;span style="
+      color: hsl(180, 15%, 41%);
+    "&gt;InCorrect!&lt;/span&gt;
+          &lt;/input&gt;
+        &lt;/div&gt;
+        &lt;div style="
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: hsl(36, 84%, 93%) 1px solid;
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+"&gt;
+        &lt;p&gt;Sample Global Feedback&lt;/p&gt;
+      &lt;/div&gt;&lt;/section&gt;
+</DocumentFragment>
+`;
