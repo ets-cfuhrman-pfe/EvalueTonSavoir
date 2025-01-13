@@ -25,3 +25,5 @@ Actuellement, il n'y a pas de modèle établi pour les contributions. Si vous co
 ## License
 
 EvalueTonSavoir is open-sourced and licensed under the [MIT License](/LICENSE).
+
+### collaborateurs
