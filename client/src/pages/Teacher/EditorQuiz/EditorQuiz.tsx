@@ -40,6 +40,7 @@ const QuizForm: React.FC = () => {
     };
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
     const scrollToImagesSection = (event: { preventDefault: () => void; }) => {
         event.preventDefault();
@@ -48,6 +49,26 @@ const QuizForm: React.FC = () => {
             section.scrollIntoView({ behavior: 'smooth' });
         }
     };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollButton(true);
+            } else {
+                setShowScrollButton(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -295,6 +316,11 @@ const QuizForm: React.FC = () => {
 
                     <GiftCheatSheet />
 
+                {showScrollButton && (
+                <button onClick={scrollToTop} style={scrollToTopButtonStyle}>
+                    ↑
+                </button>
+            )}
                 </div>
 
                 <div className='preview'>
@@ -310,6 +336,21 @@ const QuizForm: React.FC = () => {
 
         </div>
     );
+};
+
+// CSS for the Scroll-to-Top Button
+const scrollToTopButtonStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '40px',
+    right: '50px',
+    padding: '10px 20px',
+    fontSize: '16px',
+    borderRadius: '5px',
+    backgroundColor: '#5271ff',
+    border: 'none',
+    color: 'white',
+    cursor: 'pointer',
+    zIndex: 1000,
 };
 
 export default QuizForm;
