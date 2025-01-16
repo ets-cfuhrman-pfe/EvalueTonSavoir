@@ -1,0 +1,96 @@
+{
+  "id": "test-realm",
+  "realm": "EvalueTonSavoir",
+  "enabled": true,
+  "users": [
+    {
+      "username": "teacher",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "teacher123",
+          "temporary": false
+        }
+      ],
+      "groups": ["teachers"]
+    },
+    {
+      "username": "student",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "student123",
+          "temporary": false
+        }
+      ],
+      "groups": ["students"]
+    }
+  ],
+  "groups": [
+    {
+      "name": "teachers",
+      "attributes": {
+        "role": ["teacher"]
+      }
+    },
+    {
+      "name": "students",
+      "attributes": {
+        "role": ["student"]
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "teacher",
+        "description": "Teacher role"
+      },
+      {
+        "name": "student",
+        "description": "Student role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "evaluetonsavoir-client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "your-secret-key-123",
+      "redirectUris": ["http://localhost:5173/*","http://localhost/*"],
+      "webOrigins": ["http://localhost:5173","http://localhost/"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "group",
+      "description": "Group scope for access control",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "group mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "group",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "group",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": ["group"]
+}
