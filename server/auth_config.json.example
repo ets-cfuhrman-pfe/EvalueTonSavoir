@@ -3,27 +3,14 @@
         "passportjs":
         [
             {
-                "gmatte": {
-                    "type": "oauth",
-                    "OAUTH_AUTHORIZATION_URL": "https://auth.gmatte.xyz/application/o/authorize/",
-                    "OAUTH_TOKEN_URL": "https://auth.gmatte.xyz/application/o/token/",
-                    "OAUTH_USERINFO_URL": "https://auth.gmatte.xyz/application/o/userinfo/",
-                    "OAUTH_CLIENT_ID": "clientID",
-                    "OAUTH_CLIENT_SECRET": "clientSecret",
-                    "OAUTH_ADD_SCOPE": "groups",
-                    "OAUTH_ROLE_TEACHER_VALUE": "groups_evaluetonsavoir-prof",
-                    "OAUTH_ROLE_STUDENT_VALUE": "groups_evaluetonsavoir"
-                }
-            },
-            {
-                "oidc_gmatte": {
+                "oidc_local": {
                     "type": "oidc",
-                    "OIDC_CONFIG_URL": "https://auth.gmatte.xyz/application/o/evaluetonsavoir/.well-known/openid-configuration",
-                    "OIDC_CLIENT_ID": "clientID",
-                    "OIDC_CLIENT_SECRET": "clientSecret",
-                    "OIDC_ADD_SCOPE": "groups",
-                    "OIDC_ROLE_TEACHER_VALUE": "groups_evaluetonsavoir-prof",
-                    "OIDC_ROLE_STUDENT_VALUE": "groups_evaluetonsavoir"
+                    "OIDC_CONFIG_URL": "http://localhost:8080/realms/EvalueTonSavoir/.well-known/openid-configuration",
+                    "OIDC_CLIENT_ID": "evaluetonsavoir-client",
+                    "OIDC_CLIENT_SECRET": "your-secret-key-123",
+                    "OIDC_ADD_SCOPE": "group",
+                    "OIDC_ROLE_TEACHER_VALUE": "teachers",
+                    "OIDC_ROLE_STUDENT_VALUE": "students"
                 }
             }
         ],
