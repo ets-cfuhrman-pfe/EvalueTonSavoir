@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
-import textType from '../../GiftTemplate/templates/TextType';
+import textType, { formatLatex } from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
 import DOMPurify from 'dompurify';
 
@@ -40,7 +40,7 @@ const NumericalQuestion: React.FC<Props> = (props) => {
             {showAnswer ? (
                 <>
                     <div className="correct-answer-text mb-2">{correctAnswer}</div>
-                    {globalFeedback && <div className="global-feedback mb-2">{globalFeedback}</div>}
+                    {globalFeedback && <div className="global-feedback mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(globalFeedback))}}></div>}
                 </>
             ) : (
                 <>
@@ -56,7 +56,7 @@ const NumericalQuestion: React.FC<Props> = (props) => {
                         />
                     </div>
                     {globalFeedback && showAnswer && (
-                        <div className="global-feedback mb-2">{globalFeedback}</div>
+                        <div className="global-feedback mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(globalFeedback))}}></div>
                     )}
                     {handleOnSubmitAnswer && (
                         <Button

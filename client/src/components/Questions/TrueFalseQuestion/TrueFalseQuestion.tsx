@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
-import textType from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
+import textType, { formatLatex } from '../../GiftTemplate/templates/TextType';
 import DOMPurify from 'dompurify';
 
 interface Props {
@@ -51,7 +51,7 @@ const TrueFalseQuestion: React.FC<Props> = (props) => {
                 </Button>
             </div>
             {globalFeedback && showAnswer && (
-                <div className="global-feedback mb-2">{globalFeedback}</div>
+                <div className="global-feedback mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(globalFeedback))}}></div>
             )}
             {!showAnswer && handleOnSubmitAnswer && (
                 <Button

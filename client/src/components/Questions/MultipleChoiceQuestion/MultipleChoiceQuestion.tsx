@@ -72,7 +72,7 @@ const MultipleChoiceQuestion: React.FC<Props> = (props) => {
                 })}
             </div>
             {globalFeedback && showAnswer && (
-                <div className="global-feedback mb-2">{globalFeedback}</div>
+                <div className="global-feedback mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(globalFeedback))}}></div>
             )}
             
             {!showAnswer && handleOnSubmitAnswer && (

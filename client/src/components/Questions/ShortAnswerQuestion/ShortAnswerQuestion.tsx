@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
-import textType from '../../GiftTemplate/templates/TextType';
 import { TextFormat } from '../../GiftTemplate/templates/types';
+import textType, { formatLatex } from '../../GiftTemplate/templates/TextType';
 import DOMPurify from 'dompurify';
 
 type Choices = {
@@ -40,7 +40,7 @@ const ShortAnswerQuestion: React.FC<Props> = (props) => {
                             </div>
                         ))}
                     </div>
-                    {globalFeedback && <div className="global-feedback mb-2">{globalFeedback}</div>}
+                    {globalFeedback && <div className="global-feedback mb-2"dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(globalFeedback))}}></div>}
                 </>
             ) : (
                 <>
