@@ -1,0 +1,7 @@
+subscription_id             = "subscription_id"
+backend_session_secret      = "secret"
+backend_email_sender        = "mail@mail.com"
+backend_email_password      = "password"
+backend_jwt_secret          = "jwt_secret"
+vm_user                     = "username"
+vm_password                 = "password"

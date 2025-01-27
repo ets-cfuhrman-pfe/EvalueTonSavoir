@@ -5,7 +5,8 @@ const { setupWebsocket } = require("../socket/socket");
 
 process.env.NODE_ENV = "test";
 
-const BACKEND_PORT = 4400;
+// pick a random port number for testing
+const BACKEND_PORT = Math.ceil(Math.random() * 1000 + 3000);
 const BACKEND_URL = "http://localhost";
 
 const BACKEND_API = `${BACKEND_URL}:${BACKEND_PORT}`;

@@ -145,6 +145,78 @@ class ApiService {
         return localStorage.removeItem("jwt");
     }
 
+
+    //Socket Route
+
+    /**
+    * Creates a new room.
+    * @returns The room object if successful
+    * @returns An error string if unsuccessful
+    */
+    public async createRoom(): Promise<any> {
+        try {
+            const url: string = this.constructRequestUrl(`/room`);
+            const headers = this.constructRequestHeaders();
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+            });
+
+            if (!response.ok) {
+                throw new Error(`La création de la salle a échoué. Status: ${response.status}`);
+            }
+
+            const room = await response.json();
+            return room;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (error instanceof Error) {
+                return error.message || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+
+    /**
+    * Deletes a room by its name.
+    * @param roomName - The name of the room to delete.
+    * @returns true if successful
+    * @returns An error string if unsuccessful
+    */
+    public async deleteRoom(roomName: string): Promise<any> {
+        try {
+            if (!roomName) {
+                throw new Error(`Le nom de la salle est requis.`);
+            }
+
+            const url = this.constructRequestUrl(`/room/${roomName}`);
+            const headers = this.constructRequestHeaders();
+            fetch(url, {
+                method: 'DELETE',
+                headers: headers,
+            });
+
+            return true;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (error instanceof Error) {
+                return error.message || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+
+
+
     // User Routes
 
     /**
@@ -328,7 +400,7 @@ public async login(email: string, password: string): Promise<any> {
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
             if (result.status !== 200) {
-                throw new Error(`La supression du compte a échoué. Status: ${result.status}`);
+                throw new Error(`La suppression du compte a échoué. Status: ${result.status}`);
             }
 
             return true;
@@ -384,6 +456,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+
     /**
      * @returns folder array if successful 
      * @returns A error string if unsuccessful,
@@ -410,7 +483,8 @@ public async login(email: string, password: string): Promise<any> {
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const url = err.config?.url || 'URL inconnue';
+                return data?.error || `Erreur serveur inconnue lors de la requête (${url}).`;
             }
 
             return `Une erreur inattendue s'est produite.`

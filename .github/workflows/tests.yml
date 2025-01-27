@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies and Run Tests
+        run: |
+          npm ci
+          npm test
+        working-directory: ${{ matrix.directory }}
+
+    strategy:
+      matrix:
+        directory: [client, server]

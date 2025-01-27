@@ -1,17 +1,25 @@
-const db = require('../config/db.js')
 const { ObjectId } = require('mongodb');
+const { generateUniqueTitle } = require('./utils');
 
 class Quiz {
 
+    constructor(db) {
+        // console.log("Quiz constructor: db", db)
+        this.db = db;
+    }
+
     async create(title, content, folderId, userId) {
-        await db.connect()
-        const conn = db.getConnection();
+        console.log(`quizzes: create title: ${title}, folderId: ${folderId}, userId: ${userId}`);
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
         const existingQuiz = await quizCollection.findOne({ title: title, folderId: folderId, userId: userId })
 
-        if (existingQuiz) return null;
+        if (existingQuiz) {
+            throw new Error(`Quiz already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
+        }
 
         const newQuiz = {
             folderId: folderId,
@@ -23,74 +31,87 @@ class Quiz {
         }
 
         const result = await quizCollection.insertOne(newQuiz);
+        console.log("quizzes: create insertOne result", result);
 
         return result.insertedId;
     }
 
     async getOwner(quizId) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
-        const quiz = await quizCollection.findOne({ _id: new ObjectId(quizId) });
+        const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });
 
         return quiz.userId;
     }
 
     async getContent(quizId) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
+        
         const quizCollection = conn.collection('files');
 
-        const quiz = await quizCollection.findOne({ _id: new ObjectId(quizId) });
+        const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });
 
         return quiz;
     }
 
     async delete(quizId) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
-        const result = await quizCollection.deleteOne({ _id: new ObjectId(quizId) });
+        const result = await quizCollection.deleteOne({ _id: ObjectId.createFromHexString(quizId) });
 
         if (result.deletedCount != 1) return false;
 
         return true;
     }
     async deleteQuizzesByFolderId(folderId) {
-        await db.connect();
-        const conn = db.getConnection();
+        await this.db.connect();
+        const conn = this.db.getConnection();
 
         const quizzesCollection = conn.collection('files');
 
         // Delete all quizzes with the specified folderId
-        await quizzesCollection.deleteMany({ folderId: folderId });
+        const result = await quizzesCollection.deleteMany({ folderId: folderId });
+        return result.deletedCount > 0;
     }
 
     async update(quizId, newTitle, newContent) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
-        const result = await quizCollection.updateOne({ _id: new ObjectId(quizId) }, { $set: { title: newTitle, content: newContent } });
-        //Ne fonctionne pas si rien n'est chngé dans le quiz 
-        //if (result.modifiedCount != 1) return false;
+        const result = await quizCollection.updateOne(
+            { _id: ObjectId.createFromHexString(quizId) },
+            { 
+                $set: {
+                    title: newTitle, 
+                    content: newContent, 
+                    updated_at: new Date() 
+                } 
+            }
+        );
 
-        return true
+        return result.modifiedCount === 1;
     }
 
     async move(quizId, newFolderId) {
-        await db.connect()
-        const conn = db.getConnection();
+        await this.db.connect()
+        const conn = this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
-        const result = await quizCollection.updateOne({ _id: new ObjectId(quizId) }, { $set: { folderId: newFolderId } });
+        const result = await quizCollection.updateOne(
+            { _id: ObjectId.createFromHexString(quizId) }, 
+            { $set: { folderId: newFolderId } }
+        );
 
         if (result.modifiedCount != 1) return false;
 
@@ -98,29 +119,31 @@ class Quiz {
     }
 
     async duplicate(quizId, userId) {
-        
-        const sourceQuiz = await this.getContent(quizId);
-        
-        let newQuizTitle = `${sourceQuiz.title}-copy`;
-        let counter = 1;        
-        while (await this.quizExists(newQuizTitle, userId)) {
-            newQuizTitle = `${sourceQuiz.title}-copy(${counter})`;
-            counter++;
+        const conn = this.db.getConnection();
+        const quizCollection = conn.collection('files');
+
+        const sourceQuiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId), userId: userId });
+        if (!sourceQuiz) {
+            throw new Error('Quiz not found for quizId: ' + quizId);
         }
-        //console.log(newQuizTitle);
-        const newQuizId = await this.create(newQuizTitle, sourceQuiz.content,sourceQuiz.folderId, userId);
+
+        // Use the utility function to generate a unique title
+        const newQuizTitle = await generateUniqueTitle(sourceQuiz.title, async (title) => {
+            return await quizCollection.findOne({ title: title, folderId: sourceQuiz.folderId, userId: userId });
+        });
+
+        const newQuizId = await this.create(newQuizTitle, sourceQuiz.content, sourceQuiz.folderId, userId);
 
         if (!newQuizId) {
-            throw new Error('Failed to create a duplicate quiz.');
+            throw new Error('Failed to create duplicate quiz');
         }
 
         return newQuizId;
-
     }
 
     async quizExists(title, userId) {
-        await db.connect();
-        const conn = db.getConnection();
+        await this.db.connect();
+        const conn = this.db.getConnection();
     
         const filesCollection = conn.collection('files');           
         const existingFolder = await filesCollection.findOne({ title: title, userId: userId });        
@@ -130,4 +153,4 @@ class Quiz {
 
 }
 
-module.exports = new Quiz;
+module.exports = Quiz;

@@ -1,0 +1,146 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+      "title": "Room API"
+    },
+    "servers":[
+        {
+            "url": "http://localhost",
+            "description": "Via Docker"
+        },
+        {
+            "url": "http://localhost:3000",
+            "description": "Via npm"
+        }
+    ],
+    "security": [
+      {
+          "bearerAuth": []
+      }
+  ],
+    "paths": {
+      "/api/room": {
+        "get": {
+          "summary": "Get all rooms",
+          "description": "Returns a list of rooms",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Create a new room",
+          "description": "Creates a new room, returns the created room",
+          "responses": {
+            "200": {
+              "description": "Created",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Room"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/room/{roomId}": {
+        "get": {
+          "summary": "Get a room by id",
+          "description": "Returns a room by id",
+          "parameters": [
+            {
+              "name": "roomId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Room"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "summary": "Delete a room by id",
+          "description": "Deletes a room by id",
+          "parameters": [
+            {
+              "name": "roomId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        }
+    },
+      "schemas": {
+        "Room": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "default": "autoincrement"
+            },
+            "name": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "nbStudents": {
+              "type": "integer",
+              "default": 0
+            },
+            "mustBeCleaned": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "host"
+          ]
+        }
+      }
+    }
+  }

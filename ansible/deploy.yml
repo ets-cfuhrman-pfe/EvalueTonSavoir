@@ -1,0 +1,38 @@
+---
+  - name: Déployer des services avec Docker Compose
+    hosts: local
+    tasks:
+  
+      - name: Télécharger Docker
+        ansible.builtin.package:
+            name: docker-compose
+            state: present
+  
+      - name: Vérifier l'installation de Docker Compose plugin
+        ansible.builtin.command:
+          cmd: docker compose version
+          
+      - name: Commencer le service docker
+        ansible.builtin.service:
+            name: docker
+            state: started
+            enabled: yes
+          
+      - name: Telecharger le fichier docker-compose
+        ansible.builtin.get_url:
+            url: https://raw.githubusercontent.com/ets-cfuhrman-pfe/EvalueTonSavoir/refs/heads/main/docker-compose.yaml
+            dest: ./docker-compose.yaml
+            
+      - name: Lancer Docker Compose
+        ansible.builtin.shell:
+          docker-compose up -d
+        become: true
+
+      - name: Vérification des services Docker
+        ansible.builtin.command:
+          cmd: docker ps
+        register: docker_ps_output
+  
+      - name: Afficher l'état des conteneurs Docker
+        ansible.builtin.debug:
+          msg: "{{ docker_ps_output.stdout }}"

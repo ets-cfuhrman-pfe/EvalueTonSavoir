@@ -1,0 +1,35 @@
+{
+    auth: {
+        passportjs: [
+            {
+                provider1: {
+                    type: "oauth",
+                    OAUTH_AUTHORIZATION_URL: "https://www.testurl.com/oauth2/authorize",
+                    OAUTH_TOKEN_URL: "https://www.testurl.com/oauth2/token",
+                    OAUTH_USERINFO_URL: "https://www.testurl.com/oauth2/userinfo/",
+                    OAUTH_CLIENT_ID: "your_oauth_client_id",
+                    OAUTH_CLIENT_SECRET: "your_oauth_client_secret",
+                    OAUTH_ADD_SCOPE: "scopes",
+                    OAUTH_ROLE_TEACHER_VALUE: "teacher-claim-value",
+                    OAUTH_ROLE_STUDENT_VALUE: "student-claim-value",
+                },
+            },
+            {
+                provider2: {
+                    type: "oidc",
+                    OIDC_CLIENT_ID: "your_oidc_client_id",
+                    OIDC_CLIENT_SECRET: "your_oidc_client_secret",
+                    OIDC_CONFIG_URL: "https://your-issuer.com",
+                    OIDC_ADD_SCOPE: "groups",
+                    OIDC_ROLE_TEACHER_VALUE: "teacher-claim-value",
+                    OIDC_ROLE_STUDENT_VALUE: "student-claim-value",
+                },
+            },
+        ],
+        "simpleauth": {
+            enabled: true,
+            name: "provider3",
+            SESSION_SECRET: "your_session_secret",
+        },
+    },
+}

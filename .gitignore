@@ -73,7 +73,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+server/.env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -128,3 +128,17 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+db-backup/
+
+**/.env
+.venv
+deployments
+/test/stressTest/output
+
+# Opentofu state
+opentofu/*/.terraform
+opentofu/*/.terraform.lock*
+opentofu/*/terraform.tfstate*
+opentofu/*/terraform.tfvars
+# Opentofu auth config
+opentofu/auth_config.json

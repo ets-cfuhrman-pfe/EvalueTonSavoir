@@ -44,7 +44,7 @@ describe('WebSocketService', () => {
 
     test('createRoom should emit create-room event', () => {
         WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
-        WebsocketService.createRoom();
+        WebsocketService.createRoom('test');
         expect(mockSocket.emit).toHaveBeenCalledWith('create-room');
     });
 
