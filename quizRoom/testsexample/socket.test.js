@@ -1,6 +1,7 @@
 const http = require("http");
 const { Server } = require("socket.io");
 const Client = require("socket.io-client");
+//will need to mock socket
 const { setupWebsocket } = require("../socket");
 
 process.env.NODE_ENV = "test";
