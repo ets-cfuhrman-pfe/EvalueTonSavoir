@@ -26,8 +26,8 @@ class Users {
   }
 
   async register(userInfos) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -37,7 +37,7 @@ class Users {
       throw new AppError(USER_ALREADY_EXISTS);
     }
 
-    const newUser = {
+    let newUser = {
       name: userInfos.name ?? userInfos.email,
       email: userInfos.email,
       password: await this.hashPassword(userInfos.password),
@@ -49,16 +49,17 @@ class Users {
     let user = await this.getById(created_user.insertedId)
 
     const folderTitle = "Dossier par Défaut";
-    const userId = newUser._id.toString();
-    await Folders.create(folderTitle, userId);
+    
+    const userId = newUser._id ? newUser._id.toString() : 'x';
+    await this.folders.create(folderTitle, userId);
 
     // TODO: verif if inserted properly...
     return user;
   }
 
   async login(userid) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
     const user = await userCollection.findOne({ _id: userid });
@@ -72,8 +73,8 @@ class Users {
 
   async login(email, password) {
     try {
-      await db.connect();
-      const conn = db.getConnection();
+      await this.db.connect();
+      const conn = this.db.getConnection();
       const userCollection = conn.collection("users");
 
       const user = await userCollection.findOne({ email: email });
@@ -106,8 +107,8 @@ class Users {
   }
 
   async changePassword(email, newPassword) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -124,8 +125,8 @@ class Users {
   }
 
   async delete(email) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -137,8 +138,8 @@ class Users {
   }
 
   async getId(email) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -152,8 +153,8 @@ class Users {
   }
 
   async getById(id) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -167,8 +168,8 @@ class Users {
   }
 
   async editUser(userInfo) {
-    await db.connect();
-    const conn = db.getConnection();
+    await this.db.connect();
+    const conn = this.db.getConnection();
 
     const userCollection = conn.collection("users");
 

@@ -30,7 +30,7 @@ const mockConfig = {
         },
       },
     ],
-    "simple-login": {
+    "simpleauth": {
       enabled: true,
       name: "provider3",
       SESSION_SECRET: "your_session_secret",

@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsc",
-    "dev": "ts-node app.ts"
+    "dev": "ts-node app.ts",
+    "test": "jest --colors"
   },
   "keywords": [],
   "author": "",
@@ -15,13 +16,25 @@
     "@types/dockerode": "^3.3.32",
     "@types/express": "^5.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "jest-mock": "^29.7.0",
+    "supertest": "^6.3.4"
   },
   "dependencies": {
     "dockerode": "^4.0.2",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "http": "^0.0.1-security",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.7.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.js?(x)",
+      "**/?(*.)+(spec|test).js?(x)"
+    ]
   }
 }
