@@ -4,21 +4,18 @@
 
 | Étape jalon                                       | Date       |
 | :------------------------------------------------ | :--------- |
-| Début de l'itération                              | 2024/01/08 |
-| Première rencontre avec les promoteurs            | 2024/01/09 |
-| Démo de l'application et révision des user cases  | 2024/01/27 |
-| Fin de l'itération                                | 2024/01/28 |
+| Début de l'itération                              | 2025/01/28 |
+| Première rencontre avec les promoteurs            | 2025/01/28 |
+| Démo de l'application et révision des user cases  | 2025/02/10 |
+| Fin de l'itération                                | 2025/02/11 |
 
 ## Objectifs clés
 
 Les objectifs clés de cette itération sont les suivants:
 
--   Intégration des changements de l'itération 2-3-4 de l'équipe précédente
-    -   Intégration du SSO 
-    -   Intégration du déploiement avec Opentofu et Ansible
-    -   Intégration de la dockerisation des salles de quiz
-    -   Intégration de la documentation avec Mkdocs
--   Comparaison des produits compétiteurs
+-   Intégration d'élément UX
+-   Intégration des IT2-IT3-IT4 de l'équipe précédente dans main
+-   Intégration de ...
 
 
 ## Affectations d'éléments de travail
@@ -34,33 +31,33 @@ Les objectifs clés de cette itération sont les suivants:
 
 | Problème                                                                                                                               | Notes                                                                                                                                                                                                                                         |
 | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|Beaucoup de rattrapage à faire sur le travail fait de l'équipe précédente |                                                                                                                                                                    |
-| Problème de communication avec les clients ainsi que les professeurs-superviseurs          |                                                                                                               |
+||                                                                                                                                                                    |
+|           |                                                                                                               |
 
 ## Critères d'évaluation
 
 > Une brève description de la façon d'évaluer si les objectifs (définis plus haut) de haut niveau ont été atteints.
 > Vos critères d'évaluation doivent être objectifs (aucun membre de l'équipe ne peut avoir une opinion divergente) et quantifiables (sauf pour ceux évalués par l'auxiliaire d'enseignement). En voici des exemples:
 
--   Les 3 itérations sont fusionné sur une même branche et l'application fonctionne correctement
--   Une présentation claire de plusieurs différences entre EvalueTonSavoir et les compétiteurs est fait lors de la démo
+-   À remplir 
+-   À remplir 
 
 ## Évaluation
 
 | Résumé             |                                                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Cible d'évaluation | Itération                                                                                                                          |
-| Date d'évaluation  | 2024/01/28                                                                                                                        |
+| Date d'évaluation  | 2025/02/11                                                                                                                        |
 | Participants       | **Équipe** : Philippe Côté, Nouhaila Aater, Ana Lucia Munteanu, Kendrick Chan Hing Wah, Edwin Stanley Lopez Andino <br> **professeur** : Christopher Fuhrman et Alexandra Nemery |
-| État du projet     | 🟡                                                                                                                                 |
+| État du projet     | 🟡🟢                                                                                                                                 |
 
 ### Éléments de travail: prévus vs réalisés
 
-La fusion des deux branches a été fait, mais pas merge sur main. Les compétiteurs ont été comparé et révisé pour voir qu'elle amélioration nous pourrions faire à ÉvalueTonSavoir. 
+À remplir 
 ### Évaluation par rapport aux résultats selon les critères d'évaluation
 
-Une bonne partie des critères ont été atteint.
+À remplir 
 
 ## Autres préoccupations et écarts
 
-Manque de communication et de rencontre avec les professeurs-superviseurs ainsi qu'une rencontre avec les clients pour connaitre leurs besoins et priorités.
+À remplir 
