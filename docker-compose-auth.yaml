@@ -1,6 +1,6 @@
 version: '3'
 
-services:
+services: 
 
   frontend:
     build:
@@ -60,7 +60,7 @@ services:
       - mongodb_data:/data/db
     restart: always
 
-  # Ce conteneur cherche des mises à jour à 5h du matin
+  # Ce conteneur assure que l'application est à jour en allant chercher s'il y a des mises à jours à chaque heure
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -73,19 +73,6 @@ services:
       - WATCHTOWER_INCLUDE_RESTARTING=true
       - WATCHTOWER_SCHEDULE=0 0 5 * * * # At 5 am everyday
     restart: always
-
-  watchtower-once:
-    image: containrrr/watchtower
-    container_name: watchtower-once
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --run-once
-    environment:
-      - TZ=America/Montreal
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_DEBUG=true
-      - WATCHTOWER_INCLUDE_RESTARTING=true
-    restart: "no"
 
   keycloak:
     container_name: keycloak
