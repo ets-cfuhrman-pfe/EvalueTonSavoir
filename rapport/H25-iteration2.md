@@ -1,4 +1,4 @@
-# Plan d'itération 1
+# Plan d'itération 2
 
 ## Étapes jalons
 
@@ -13,19 +13,24 @@
 
 Les objectifs clés de cette itération sont les suivants:
 
--   Intégration d'élément UX
--   Intégration des IT2-IT3-IT4 de l'équipe précédente dans main
--   Intégration de ...
+-   Avoir une rencontre pour discuter des cas d'utilisation avec les clients
+-   Démontrer des maquettes UX 
+-   Démontrer le SSO fonctionnel en production
+-   Démontrer la fonctionnalité d'importer un Quiz en PDF
+-   Démontrer un exemple d'affichage de pourcentage entre chaque question
+-   Démontrer la fonction de copier/coller une question en utilisant le bouton
+
 
 
 ## Affectations d'éléments de travail
 
 | Nom / Description              | Priorité | [Taille estimée (points)](#commentEstimer 'Comment estimer?') | Assigné à (nom) | Documents de référence                                                                          |
 | ------------------------------ | -------: | ------------------------------------------------------------: | --------------- | ----------------------------------------------------------------------------------------------- |
-| Intégration itération 2 |        1 |                                                             4 | Edwin            ||
-| Intégration itération 3 et 4 |  1|                                                        3 | Kendrick            ||
-| Comparaison des compétiteurs |   1|                                      2| Ana         |                                                 |
-| Plan de projet               |   2|                                      3| Philippe et Nouhaila           |                                                 |
+| SSO fonctionnel |        1 |                                                             4 | Edwin            ||
+| Maquettes figma |  2|                                                        3 | Ana            ||
+| Fonction Quiz à PDF |   2|                                      2| Philippe         |                                                 |
+| Fonction copier/coller d'un template de question             |   2|                                      2| Nouhaila         |                                                 |
+| Affichage d'un pourcentage de participation et de bonne réponse               |   3|                                      4| Kendrick    |                                                 |
 
 ## Problèmes principaux rencontrés
 
@@ -39,8 +44,9 @@ Les objectifs clés de cette itération sont les suivants:
 > Une brève description de la façon d'évaluer si les objectifs (définis plus haut) de haut niveau ont été atteints.
 > Vos critères d'évaluation doivent être objectifs (aucun membre de l'équipe ne peut avoir une opinion divergente) et quantifiables (sauf pour ceux évalués par l'auxiliaire d'enseignement). En voici des exemples:
 
--   À remplir 
--   À remplir 
+-   Un main fonctionnel avec les changements de l'équipe précédente
+-   Être capable d'exporter un Quiz en PDF sans avoir les rétroactions
+-   Le bouton copier/coller fonctionne pour les templates de questions lors de la création d'un quiz
 
 ## Évaluation
 

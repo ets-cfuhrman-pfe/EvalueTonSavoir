@@ -52,7 +52,7 @@ Les objectifs clés de cette itération sont les suivants:
 | Cible d'évaluation | Itération                                                                                                                          |
 | Date d'évaluation  | 2025/01/28                                                                                                                        |
 | Participants       | **Équipe** : Philippe Côté, Nouhaila Aater, Ana Lucia Munteanu, Kendrick Chan Hing Wah, Edwin Stanley Lopez Andino <br> **professeur** : Christopher Fuhrman et Alexandra Nemery |
-| État du projet     | 🟡                                                                                                                                 |
+| État du projet     | 🟢                                                                                                                                 |
 
 ### Éléments de travail: prévus vs réalisés
 
