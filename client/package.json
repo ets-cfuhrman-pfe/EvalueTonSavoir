@@ -55,7 +55,7 @@
         "@types/react-latex": "^2.0.3",
         "@typescript-eslint/eslint-plugin": "^8.5.0",
         "@typescript-eslint/parser": "^8.5.0",
-        "@vitejs/plugin-react-swc": "^3.3.2",
+        "@vitejs/plugin-react-swc": "^3.7.2",
         "eslint": "^9.18.0",
         "eslint-plugin-react": "^7.37.3",
         "eslint-plugin-react-hooks": "^5.1.0-rc-206df66e-20240912",

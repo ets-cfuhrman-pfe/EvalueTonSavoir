@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react-swc';
 import pluginChecker from 'vite-plugin-checker';
 import EnvironmentPlugin from 'vite-plugin-environment';
 
+console.log("⚡ Vite config is being loaded!");
+
 // Filter out environment variables with invalid identifiers
 const filteredEnv = Object.keys(process.env).reduce((acc, key) => {
     // Only include environment variables with valid JavaScript identifiers
@@ -27,13 +29,15 @@ export default defineConfig({
       },
     preview: {
         port: 5173,
-        strictPort: true
+        strictPort: true,
+        allowedHosts: ['frontend', 'localhost'],
     },
     server: {
         port: 5173,
         strictPort: true,
         host: true,
         origin: "http://0.0.0.0:5173",
+        allowedHosts: ['frontend', 'localhost'],
     },
     build: {
         sourcemap: true, // Enable source maps
