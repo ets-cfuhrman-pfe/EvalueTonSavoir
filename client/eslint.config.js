@@ -60,7 +60,7 @@ export default [
             // Jest configurations
             "jest/valid-expect": ["error", { "alwaysAwait": true }],
             "jest/prefer-to-have-length": "warn",
-            "jest/no-disabled-tests": "warn",
+            "jest/no-disabled-tests": "off",
             "jest/no-focused-tests": "error",
             "jest/no-identical-title": "error",
 
