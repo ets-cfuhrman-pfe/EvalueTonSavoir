@@ -16,5 +16,18 @@
 		"jest.disabledWorkspaceFolders": [
 			"EvalueTonSavoir"
 		]
-	}
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true
+	},
+	"eslint.validate": [
+		"javascript",
+		"typescript",
+		"javascriptreact",
+		"typescriptreact"
+	],
+	// use the same eslint config as `npx eslint`
+	"eslint.experimental.useFlatConfig": true,
+	"eslint.nodePath": "./node_modules"
+  
 }
