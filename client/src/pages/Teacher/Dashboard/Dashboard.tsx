@@ -196,8 +196,7 @@ const Dashboard: React.FC = () => {
                 // questions[i] = QuestionService.ignoreImgTags(questions[i]);
                 const parsedItem = parse(questions[i]);
                 Template(parsedItem[0]);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (error) {
+            } catch (_error) {
                 return false;
             }
         }

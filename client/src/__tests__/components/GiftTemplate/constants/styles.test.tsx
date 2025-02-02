@@ -28,7 +28,7 @@ function convertStylesToObject(styles: string): React.CSSProperties {
     styles.split(';').forEach((style) => {
         const [property, value] = style.split(':');
         if (property && value) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (styleObject as any)[property.trim()] = value.trim();
         }
     });
