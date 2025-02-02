@@ -196,7 +196,8 @@ const Dashboard: React.FC = () => {
                 // questions[i] = QuestionService.ignoreImgTags(questions[i]);
                 const parsedItem = parse(questions[i]);
                 Template(parsedItem[0]);
-            } catch (_error) {
+            } catch (error) {
+                console.error('Error parsing question:', error);
                 return false;
             }
         }

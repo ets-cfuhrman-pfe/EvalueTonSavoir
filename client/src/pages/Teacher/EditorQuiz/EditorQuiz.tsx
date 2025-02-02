@@ -182,8 +182,8 @@ const QuizForm: React.FC = () => {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
-        } catch (_error) {
-            window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
+        } catch (error) {
+            window.alert(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`)
 
         }
     };
