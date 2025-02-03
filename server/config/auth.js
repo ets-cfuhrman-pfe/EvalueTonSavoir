@@ -16,7 +16,8 @@ class AuthConfig {
       this.config = JSON.parse(configData);
     } catch (error) {
       console.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mit de fichier de configuration.");
-      this.config = {}
+      this.config = {};
+      throw error;
     }
     return this.config
   }

@@ -2,7 +2,6 @@ var OAuth2Strategy = require('passport-oauth2')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var users = require('../../../models/users')
 var { hasNestedValue } = require('../../../utils')
-var jwt = require('../../../middleware/jwtToken')
 
 class PassportOAuth {
     constructor(passportjs, auth_name) {

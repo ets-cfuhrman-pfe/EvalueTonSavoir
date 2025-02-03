@@ -1,4 +1,4 @@
-const request = require("supertest");
+
 const AuthConfig = require("../config/auth.js");
 const AuthManager = require("../auth/auth-manager.js");
 
@@ -115,7 +115,7 @@ describe(
     expressMock.get = () => {}
 
     let authConfigInstance;
-    let logSpy;
+    let authmanagerInstance;
 
     // Initialisez l'instance avec la configuration mockée
     beforeAll(() => {
@@ -158,6 +158,7 @@ describe(
       };
       authConfigInstance.loadConfigTest(validModule); // On injecte la configuration mockée
       authmanagerInstance = new AuthManager(expressMock,authConfigInstance.config);
+      authmanagerInstance.getUserModel();
       expect(logSpy).toHaveBeenCalledTimes(0);
       logSpy.mockClear();
     });
@@ -200,7 +201,7 @@ describe(
           };
         authConfigInstance.loadConfigTest(validModuleInvalidProvider); // On injecte la configuration mockée
         authmanagerInstance = new AuthManager(expressMock,authConfigInstance.config);
-        expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(logSpy).toHaveBeenCalledTimes(4);
         logSpy.mockClear();
       });  
   })

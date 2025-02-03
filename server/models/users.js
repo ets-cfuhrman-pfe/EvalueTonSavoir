@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const AppError = require("../middleware/AppError.js");
 const { USER_ALREADY_EXISTS } = require("../constants/errorCodes");
-const Folders = require("../models/folders.js");
 
 class Users {
   
@@ -67,7 +66,7 @@ class Users {
 
     return user;
   }
-
+/*
   async login(email, password) {
     try {
       await this.db.connect();
@@ -96,7 +95,7 @@ class Users {
       throw error; 
     }
   }
-
+*/
   async resetPassword(email) {
     const newPassword = this.generatePassword();
 

@@ -19,7 +19,7 @@ class AuthUserAssociation {
       const collection = conn.collection('authUserAssociation');
       const provider_id = await authProvider.getId(provider_name)
 
-      const userAssociation = await collection.findOne({ authProvider_id: provider_id,auth_id,auth_id });
+      const userAssociation = await collection.findOne({ authProvider_id: provider_id, auth_id: auth_id });
       return userAssociation
     }
 

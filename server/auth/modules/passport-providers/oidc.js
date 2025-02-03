@@ -2,7 +2,6 @@ var OpenIDConnectStrategy = require('passport-openidconnect')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var users = require('../../../models/users')
 var { hasNestedValue } = require('../../../utils')
-var jwt = require('../../../middleware/jwtToken')
 
 class PassportOpenIDConnect {
     constructor(passportjs, auth_name) {
@@ -15,7 +14,8 @@ class PassportOpenIDConnect {
             const config = await fetch(provider.OIDC_CONFIG_URL)
             return await config.json()
         } catch (error) {
-            console.error(`Les informations de connexions de la connexion OIDC ${name} n'ont pu être chargées.`)
+            console.error(`Les informations de connexions de la connexion OIDC ${name} n'ont pu être chargées.`);
+            console.error(`Error: ${error} `);
         }
     }
 
@@ -70,10 +70,11 @@ class PassportOpenIDConnect {
 
                     user_account.name = received_user.name
                     user_account.roles = received_user.roles
-                    await users.editUser(user_account)
+                    await users.editUser(user_account);
 
                     return done(null, user_account);
                 } catch (error) {
+                    console.error(`Error: ${error} `);
                 }
             }));
 

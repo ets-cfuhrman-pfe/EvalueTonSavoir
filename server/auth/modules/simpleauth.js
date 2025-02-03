@@ -15,12 +15,13 @@ class SimpleAuth {
 
     async registerAuth(expressapp) {
         try {
-            expressapp.post(`${this.endpoint}/register`, (req, res, next) => this.register(this, req, res));
-            expressapp.post(`${this.endpoint}/login`, (req, res, next) => this.authenticate(this, req, res));
-            expressapp.post(`${this.endpoint}/reset-password`, (req, res, next) => this.resetPassword(this, req, res));
-            expressapp.post(`${this.endpoint}/change-password`, jwt.authenticate, (req, res, next) => this.changePassword(this, req, res));
+            expressapp.post(`${this.endpoint}/register`, (req, res) => this.register(this, req, res));
+            expressapp.post(`${this.endpoint}/login`, (req, res, next) => this.authenticate(this, req, res, next));
+            expressapp.post(`${this.endpoint}/reset-password`, (req, res, next) => this.resetPassword(this, req, res, next));
+            expressapp.post(`${this.endpoint}/change-password`, jwt.authenticate, (req, res, next) => this.changePassword(this, req, res, next));
         } catch (error) {
-            console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`)
+            console.error(`La connexion ${name} de type ${this.providers.type} n'as pu être chargé.`);
+            console.error(`Error: ${error} `);
         }
     }
 

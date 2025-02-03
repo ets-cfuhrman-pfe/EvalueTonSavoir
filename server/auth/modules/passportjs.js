@@ -24,7 +24,8 @@ class PassportJs{
                     this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider)
                     authprovider.create(auth_id)
                 } catch(error){
-                    console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`)
+                    console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`);
+                    console.error(`Error: ${error} `);
                 }
             }
         }
@@ -45,7 +46,8 @@ class PassportJs{
             this.registeredProviders[providerType]= new Provider(this,auth_id)
             console.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`)
         } catch(error){
-            console.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`)
+            console.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`);
+            console.error(`Error: ${error} `);
         }
     }
 
