@@ -1,5 +1,5 @@
 // TrueFalseQuestion.test.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { render, fireEvent, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
@@ -9,20 +9,31 @@ import { parse, TrueFalseQuestion } from 'gift-pegjs';
 describe('TrueFalseQuestion Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
     const sampleStem = 'Sample True False Question';
-    const trueFalseQuestion = 
+    const trueFalseQuestion =
         parse(`${sampleStem}{T}`)[0] as TrueFalseQuestion;
 
-    const sampleProps = {
-        question: trueFalseQuestion,
-        handleOnSubmitAnswer: mockHandleSubmitAnswer,
-        showAnswer: false
+
+    const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
+        const [showAnswerState, setShowAnswerState] = useState(showAnswer);
+
+        const handleOnSubmitAnswer = (answer: boolean) => {
+            mockHandleSubmitAnswer(answer);
+            setShowAnswerState(true);
+        };
+
+        return (
+            <MemoryRouter>
+                <TrueFalseQuestionDisplay
+                    question={trueFalseQuestion}
+                    handleOnSubmitAnswer={handleOnSubmitAnswer}
+                    showAnswer={showAnswerState}
+                />
+            </MemoryRouter>
+        );
     };
 
     beforeEach(() => {
-        render(
-            <MemoryRouter>
-                <TrueFalseQuestionDisplay {...sampleProps} />
-            </MemoryRouter>);
+        render(<TestWrapper showAnswer={false} />);
     });
 
     it('renders correctly', () => {
@@ -73,4 +84,50 @@ describe('TrueFalseQuestion Component', () => {
 
         expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(false);
     });
+
+
+        it('should show ✅ next to the correct answer and ❌ next to the wrong answers when showAnswer is true', async () => {
+            const choiceButton = screen.getByText('Vrai').closest('button');
+            if (!choiceButton) throw new Error('T button not found');
+    
+            // Click on choiceButton
+            act(() => {
+                fireEvent.click(choiceButton);
+            });
+    
+            const button = screen.getByText("Répondre");
+    
+            act(() => {
+                fireEvent.click(button);
+            });
+    
+            // Wait for the DOM to update
+                const correctAnswer = screen.getByText("Vrai").closest('button');
+                expect(correctAnswer).toBeInTheDocument();
+                expect(correctAnswer?.textContent).toContain('✅');
+    
+                const wrongAnswer1 = screen.getByText("Faux").closest('button');
+                expect(wrongAnswer1).toBeInTheDocument();
+                expect(wrongAnswer1?.textContent).toContain('❌');
+        });
+    
+        it('should not show ✅ or ❌ when repondre button is not clicked', async () => {
+            const choiceButton = screen.getByText('Vrai').closest('button');
+            if (!choiceButton) throw new Error('Choice button not found');
+    
+            // Click on choiceButton
+            act(() => {
+                fireEvent.click(choiceButton);
+            });
+    
+            // Check for correct answer
+            const correctAnswer = screen.getByText("Vrai").closest('button');
+            expect(correctAnswer).toBeInTheDocument();
+            expect(correctAnswer?.textContent).not.toContain('✅');
+    
+            // Check for wrong answers
+            const wrongAnswer1 = screen.getByText("Faux");
+            expect(wrongAnswer1).toBeInTheDocument();
+            expect(wrongAnswer1?.textContent).not.toContain('❌');
+        });
 });

@@ -22,7 +22,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
 
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
-    const correctAnswer = question.isTrue === answer;
     return (
         <div className="question-container">
             <div className="question content">
@@ -34,7 +33,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     onClick={() => !showAnswer && setAnswer(true)}
                     fullWidth
                 >
-                    {showAnswer && (correctAnswer ? '✅' : '❌')}
+                    {showAnswer? (<div> {(question.isTrue ? '✅' : '❌')}</div>):``}                    
                     <div className={`circle ${selectedTrue}`}>V</div>
                     <div className={`answer-text ${selectedTrue}`}>Vrai</div>
                 </Button>
@@ -43,7 +42,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     onClick={() => !showAnswer && setAnswer(false)}
                     fullWidth
                 >
-                    {showAnswer && (!correctAnswer ? '✅' : '❌')}
+                    {showAnswer? (<div> {(!question.isTrue ? '✅' : '❌')}</div>):``}                    
                     <div className={`circle ${selectedFalse}`}>F</div>
                     <div className={`answer-text ${selectedFalse}`}>Faux</div>
                 </Button>

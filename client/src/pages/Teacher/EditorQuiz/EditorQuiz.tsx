@@ -61,6 +61,14 @@ const QuizForm: React.FC = () => {
         };
     }, []);
 
+    const scrollToImagesSection = (event: { preventDefault: () => void; }) => {
+        event.preventDefault();
+        const section = document.getElementById('images-section');
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             const userFolders = await ApiService.getUserFolders();
@@ -277,10 +285,18 @@ const QuizForm: React.FC = () => {
                         </div>
 
                         <h4>Mes images :</h4>
-
                         <div>
-                            <div>(Cliquez sur un lien pour le copier)</div>
-                            <ul>
+                                <div>
+                                <div style={{ display: "inline" }}>(Voir section </div>
+                                    <a href="#images-section"style={{ textDecoration: "none" }} onClick={scrollToImagesSection}>
+                                        <u><em><h4 style={{ display: "inline" }}> 9. Images </h4></em></u>
+                                    </a>
+                                <div style={{ display: "inline" }}> ci-dessous</div>
+                                <div style={{ display: "inline" }}>)</div>
+                                <br />
+                                <em> - Cliquez sur un lien pour le copier</em>
+                                </div>                            
+                                <ul>
                                 {imageLinks.map((link, index) => {
                                     const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
                                     return (

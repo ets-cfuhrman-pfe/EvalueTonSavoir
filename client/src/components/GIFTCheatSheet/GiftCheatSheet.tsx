@@ -153,7 +153,7 @@ const GiftCheatSheet: React.FC = () => {
                 </pre>
             </div>
 
-            <div className="question-type">
+            <div className="question-type" id="images-section">
                 <h4> 9. Images </h4>
                 <p>Il est possible d&apos;insérer une image dans une question, une réponse (choix multiple) et dans une rétroaction. D&apos;abord, <strong>le format de l&apos;élément doit être [markdown]</strong>. Ensuite utilisez la syntaxe suivante&nbsp;:</p>
                 <pre>
@@ -185,8 +185,7 @@ const GiftCheatSheet: React.FC = () => {
                     Attention: l&apos;ancienne fonctionnalité avec les balises <code>{'<img>'}</code> n&apos;est plus
                     supportée.
                 </p>
-            </div>
-
+                </div>
             <div className="question-type">
                 <h4> 10. Informations supplémentaires </h4>
                 <p>

@@ -12,10 +12,9 @@ interface Props {
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-  
     const { question, showAnswer, handleOnSubmitAnswer } = props;
     const [answer, setAnswer] = useState<string>();
-
+    
     useEffect(() => {
         setAnswer(undefined);
     }, [question]);
@@ -23,7 +22,6 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const handleOnClickAnswer = (choice: string) => {
         setAnswer(choice);
     };
-
 
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
@@ -37,25 +35,23 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">
-                                <Button
+                            <Button
                                 variant="text"
                                 className="button-wrapper"
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
-                            >
-                                {choice.formattedFeedback === null &&
-                                    showAnswer &&
-                                    (choice.isCorrect ? '✅' : '❌')}
+                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
+                                {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
+                                :``}
                                 <div className={`circle ${selected}`}>{alphabet[i]}</div>
                                 <div className={`answer-text ${selected}`}>
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedText) }} />
                                 </div>
-                            </Button>
-                            {choice.formattedFeedback && showAnswer && (
+                                {choice.formattedFeedback && showAnswer && (
                                 <div className="feedback-container mb-1 mt-1/2">
-                                    {choice.isCorrect ? '✅' : '❌'}
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
                                 </div>
                             )}
+                            </Button>
+
                         </div>
                     );
                 })}
