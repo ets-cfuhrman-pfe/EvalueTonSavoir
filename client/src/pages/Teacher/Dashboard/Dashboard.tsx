@@ -27,7 +27,6 @@ import {
 import {
     Search,
     DeleteOutline,
-    FileDownload,
     Add,
     Upload,
     FolderCopy,
@@ -36,6 +35,7 @@ import {
     Share,
     // DriveFileMove
 } from '@mui/icons-material';
+import DownloadQuizModal from 'src/components/DownloadQuizModal/DownloadQuizModal';
 
 // Create a custom-styled Card component
 const CustomCard = styled(Card)({
@@ -196,7 +196,7 @@ const Dashboard: React.FC = () => {
                 // questions[i] = QuestionService.ignoreImgTags(questions[i]);
                 const parsedItem = parse(questions[i]);
                 Template(parsedItem[0]);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
                 return false;
             }
@@ -205,63 +205,22 @@ const Dashboard: React.FC = () => {
         return true;
     };
 
-    const downloadTxtFile = async (quiz: QuizType) => {
-
-        try {
-            const selectedQuiz = await ApiService.getQuiz(quiz._id) as QuizType;
-            //quizzes.find((quiz) => quiz._id === quiz._id);
-
-            if (!selectedQuiz) {
-                throw new Error('Selected quiz not found');
-            }
-
-            //const { title, content } = selectedQuiz;
-            let quizContent = "";
-            const title = selectedQuiz.title;
-            console.log(selectedQuiz.content);
-            selectedQuiz.content.forEach((question, qIndex) => {
-                const formattedQuestion = question.trim();
-                // console.log(formattedQuestion);
-                if (formattedQuestion !== '') {
-                    quizContent += formattedQuestion + '\n';
-                    if (qIndex !== selectedQuiz.content.length - 1) {
-                        quizContent += '\n';
-                    }
-                }
-            });
-
-            if (!validateQuiz(selectedQuiz.content)) {
-                window.alert('Attention! Ce quiz contient des questions invalides selon le format GIFT.');
-            }
-            const blob = new Blob([quizContent], { type: 'text/plain' });
-            const a = document.createElement('a');
-            const filename = title;
-            a.download = `${filename}.gift`;
-            a.href = window.URL.createObjectURL(blob);
-            a.click();
-
-
-        } catch (error) {
-            console.error('Error exporting selected quiz:', error);
-        }
-    };
-
     const handleCreateFolder = async () => {
         try {
             const folderTitle = prompt('Titre du dossier');
             if (folderTitle) {
                 await ApiService.createFolder(folderTitle);
                 const userFolders = await ApiService.getUserFolders();
-                setFolders(userFolders as FolderType[]);                
+                setFolders(userFolders as FolderType[]);
                 const newlyCreatedFolder = userFolders[userFolders.length - 1] as FolderType;
                 setSelectedFolderId(newlyCreatedFolder._id);
-                
+
             }
         } catch (error) {
             console.error('Error creating folder:', error);
         }
     };
-  
+
     const handleDeleteFolder = async () => {
 
         try {
@@ -299,7 +258,7 @@ const Dashboard: React.FC = () => {
                 const renamedFolderId = selectedFolderId;
                 const result = await ApiService.renameFolder(selectedFolderId, newTitle);
 
-                if (result !== true )  {
+                if (result !== true) {
                     window.alert(`Une erreur est survenue: ${result}`);
                     return;
                 }
@@ -481,12 +440,9 @@ const Dashboard: React.FC = () => {
                                     </div>
 
                                     <div className='actions'>
-                                        <Tooltip title="Télécharger quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => downloadTxtFile(quiz)}
-                                            > <FileDownload /> </IconButton>
-                                        </Tooltip>
+                                        <div className="dashboard">
+                                                    <DownloadQuizModal quiz={quiz} />
+                                        </div>
 
                                         <Tooltip title="Modifier quiz" placement="top">
                                             <IconButton
