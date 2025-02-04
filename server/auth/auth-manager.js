@@ -2,10 +2,9 @@ const fs = require('fs');
 const AuthConfig = require('../config/auth.js');
 const jwt = require('../middleware/jwtToken.js');
 const emailer = require('../config/email.js');
-const MISSING_REQUIRED_PARAMETER = {
-    message: 'Paramètre requis manquant.',
-    code: 400
-};
+const { MISSING_REQUIRED_PARAMETER } = require('../constants/errorCodes.js');
+const AppError = require('../middleware/AppError.js');
+
 class AuthManager{
     constructor(expressapp,configs=null,userModel){
         this.modules = []
@@ -59,7 +58,7 @@ class AuthManager{
 
     async register(userInfos){
         if (!userInfos.email || !userInfos.password) {
-            throw MISSING_REQUIRED_PARAMETER;
+            throw new AppError(MISSING_REQUIRED_PARAMETER);
         }
         const user = await this.simpleregister.register(userInfos);
         emailer.registerConfirmation(user.email)
