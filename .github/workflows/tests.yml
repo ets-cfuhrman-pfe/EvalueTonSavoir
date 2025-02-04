@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+env:
+  MONGO_URI: mongodb://localhost:27017
+  MONGO_DATABASE: evaluetonsavoir
+
 jobs:
   lint-and-tests:
     strategy:
