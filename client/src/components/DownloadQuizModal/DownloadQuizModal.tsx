@@ -69,17 +69,9 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             doc.setFontSize(16);
 
             selectedQuiz.content.forEach((question, index) => {
-                let formattedQuestion = question.trim();
-
-
-                if (!withAnswers) {
-                    formattedQuestion = formattedQuestion.replace(/::.*?::/g, '')
-                                                        .replace(/\/\/.*$/gm, '')
-                                                        .replace(/#[^\n]*/g, '')
-                                                        .replace(/=/g, '')
-                                                        .replace(/~/g, '')
-                                                        .replace(/\{(.*?)\}/g, '{$1}');
-                }
+                const formattedQuestion = withAnswers
+                    ? question
+                    : question.replace(/\{[^}]+\}/g, '');
 
                 const wrappedText = doc.splitTextToSize(`${index + 1}. ${formattedQuestion}`, 180);
 
