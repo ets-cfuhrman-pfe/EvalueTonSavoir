@@ -1,7 +1,9 @@
-var OpenIDConnectStrategy = require('passport-openidconnect')
-var authUserAssoc = require('../../../models/authUserAssociation')
-var users = require('../../../models/users')
-var { hasNestedValue } = require('../../../utils')
+var OpenIDConnectStrategy = require('passport-openidconnect');
+var authUserAssoc = require('../../../models/authUserAssociation');
+var users = require('../../../models/users');
+var { hasNestedValue } = require('../../../utils');
+const { MISSING_OIDC_PARAMETER } = require('../../../constants/errorCodes.js');
+const AppError = require('../../../middleware/AppError.js');
 
 class PassportOpenIDConnect {
     constructor(passportjs, auth_name) {
@@ -14,8 +16,8 @@ class PassportOpenIDConnect {
             const config = await fetch(provider.OIDC_CONFIG_URL)
             return await config.json()
         } catch (error) {
-            console.error(`Les informations de connexions de la connexion OIDC ${name} n'ont pu être chargées.`);
             console.error(`Error: ${error} `);
+            throw new AppError(MISSING_OIDC_PARAMETER(name));
         }
     }
 
