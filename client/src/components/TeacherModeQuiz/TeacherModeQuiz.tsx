@@ -23,8 +23,22 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-    const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [feedbackMessage, setFeedbackMessage] = useState<React.ReactNode>('');
+    
+    const renderFeedbackMessage = (answer: string) => {
 
+        if(answer === 'true' || answer === 'false'){
+        return (<span>
+            <strong>Votre réponse est: </strong>{answer==="true" ? 'Vrai' : 'Faux'}
+            </span>)
+        }
+        else{
+        return (
+            <span>
+                <strong>Votre réponse est: </strong>{answer.toString()}
+            </span>
+        );}
+    };
     useEffect(() => {
         setIsAnswerSubmitted(false);
     }, [questionInfos]);
@@ -32,7 +46,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
-        setFeedbackMessage(`Votre réponse est "${answer.toString()}".`);
+        setFeedbackMessage(renderFeedbackMessage(answer.toString()));
         setIsFeedbackDialogOpen(true);
     };
 
@@ -74,7 +88,17 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
             >
                 <DialogTitle>Rétroaction</DialogTitle>
                 <DialogContent>
+                    <div style={{
+                            wordWrap: 'break-word',
+                            whiteSpace: 'pre-wrap',
+                            maxHeight: '400px',
+                            overflowY: 'auto',
+                        }}>
                     {feedbackMessage}
+                    <div style={{ textAlign: 'left', fontWeight: 'bold', marginTop: '10px'}}
+                    >Question : </div>                    
+                    </div>
+                    
                 <QuestionComponent
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
