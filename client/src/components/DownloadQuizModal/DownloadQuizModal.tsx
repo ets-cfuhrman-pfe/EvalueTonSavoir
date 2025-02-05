@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { Dialog, DialogTitle, DialogActions, Button, Tooltip, IconButton } from '@mui/material';
 import { FileDownload } from '@mui/icons-material';
 
@@ -6,6 +7,10 @@ import { QuizType } from '../../Types/QuizType';
 import ApiService from '../../services/ApiService';
 
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { parse } from 'gift-pegjs';
+import DOMPurify from 'dompurify';
+import Template, { ErrorTemplate } from '../GiftTemplate/templates';
 
 interface DownloadQuizModalProps {
     quiz: QuizType;
@@ -59,32 +64,86 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             const selectedQuiz = await ApiService.getQuiz(quiz._id) as QuizType;
             if (!selectedQuiz) throw new Error('Quiz not found');
 
-            const doc = new jsPDF();
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(25);
-            doc.text(selectedQuiz.title, 10, 15);
 
-            let yPosition = 40;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(16);
+            let previewHTML = '';
+            selectedQuiz.content.forEach((giftQuestion) => {
+                try {
+                    const question = parse(giftQuestion);
 
-            selectedQuiz.content.forEach((question, index) => {
-                const formattedQuestion = withAnswers
-                    ? question
-                    : question.replace(/\{[^}]+\}/g, '');
-
-                const wrappedText = doc.splitTextToSize(`${index + 1}. ${formattedQuestion}`, 180);
-
-                doc.text(wrappedText, 10, yPosition);
-
-                yPosition += wrappedText.length * 10;
+                    previewHTML += Template(question[0], {
+                        preview: true,
+                        theme: 'light',
+                    });
+                } catch (error) {
+                    if (error instanceof Error) {
+                        previewHTML += ErrorTemplate(giftQuestion + '\n' + error.message);
+                    } else {
+                        previewHTML += ErrorTemplate(giftQuestion + '\n' + 'Erreur inconnue');
+                    }
+                }
             });
+
+            if (!withAnswers) {
+                const svgRegex = /<svg[^>]*>([\s\S]*?)<\/svg>/gi;
+                previewHTML = previewHTML.replace(svgRegex, '');
+                const placeholderRegex = /(placeholder=")[^"]*(")/gi;
+                previewHTML = previewHTML.replace(placeholderRegex, '$1$2');
+                const feedbackContainerRegex = /<(div|span)[^>]*class="feedback-container"[^>]*>[\s\S]*?<\/div>/gi;
+                previewHTML = previewHTML.replace(feedbackContainerRegex, '');
+                const answerClassRegex = /<(div|span)[^>]*class="[^"]*answer[^"]*"[^>]*>[\s\S]*?<\/\1>/gi;
+                previewHTML = previewHTML.replace(answerClassRegex, '');
+                const bonneReponseRegex = /<p[^>]*>[^<]*bonne réponse[^<]*<\/p>/gi;
+                previewHTML = previewHTML.replace(bonneReponseRegex, '');
+                const AllAnswersFieldRegex = /<(p|span)[^>]*>\s*Réponse:\s*<\/\1>\s*<input[^>]*>/gi
+                previewHTML = previewHTML.replace(AllAnswersFieldRegex, '');
+
+            }
+
+            const sanitizedHTML = DOMPurify.sanitize(previewHTML);
+
+            console.log('previewHTML:', sanitizedHTML);
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = sanitizedHTML;
+            document.body.appendChild(tempDiv);
+
+            const canvas = await html2canvas(tempDiv, { scale: 2 });
+
+            document.body.removeChild(tempDiv);
+
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.width;
+            const pageHeight = pdf.internal.pageSize.height;
+            const margin = 10;
+            const imgWidth = pageWidth - 2 * margin;
+            
+            let yOffset = 0;
+
+            while (yOffset < canvas.height) {
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = Math.min(canvas.height - yOffset, (pageHeight - 2 * margin) * (canvas.width / imgWidth));
+
+                const pageCtx = pageCanvas.getContext('2d');
+                if (pageCtx) {
+                    pageCtx.drawImage(canvas, 0, yOffset, canvas.width, pageCanvas.height, 0, 0, pageCanvas.width, pageCanvas.height);
+                }
+
+                const pageImgData = pageCanvas.toDataURL('image/png');
+
+               if (yOffset > 0) pdf.addPage();
+
+                pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, (pageCanvas.height * imgWidth) / pageCanvas.width);
+
+                yOffset += pageCanvas.height;
+            }
+
 
             const filename = withAnswers
                 ? `${selectedQuiz.title}_avec_reponses.pdf`
                 : `${selectedQuiz.title}_sans_reponses.pdf`;
 
-            doc.save(filename);
+            pdf.save(filename);
         } catch (error) {
             console.error('Error exporting quiz as PDF:', error);
         }
