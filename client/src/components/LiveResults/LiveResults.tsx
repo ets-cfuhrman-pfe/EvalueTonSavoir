@@ -370,7 +370,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                                 }
                                             >
                                                 {showCorrectAnswers ? (
-                                                    <div>{formatLatex(answerText)}</div>
+                                                    <div dangerouslySetInnerHTML={{ __html: formatLatex(answerText) }}></div>
                                                 ) : isCorrect ? (
                                                     <FontAwesomeIcon icon={faCheck} />
                                                 ) : (
