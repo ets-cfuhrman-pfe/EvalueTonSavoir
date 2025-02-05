@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 import { QuestionType } from '../../Types/QuestionType';
+import DOMPurify from 'dompurify';
 
 import './liveResult.css';
 import {
@@ -370,7 +371,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                                 }
                                             >
                                                 {showCorrectAnswers ? (
-                                                    <div dangerouslySetInnerHTML={{ __html: formatLatex(answerText) }}></div>
+                                                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatLatex(answerText)) }}></div>
                                                 ) : isCorrect ? (
                                                     <FontAwesomeIcon icon={faCheck} />
                                                 ) : (
