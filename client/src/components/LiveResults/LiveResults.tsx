@@ -7,6 +7,7 @@ import { QuestionType } from '../../Types/QuestionType';
 
 import './liveResult.css';
 import {
+    Button,
     FormControlLabel,
     FormGroup,
     Paper,
@@ -45,6 +46,36 @@ interface LiveResultsProps {
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
+    const [showFullAnswer, setShowFullAnswer] = useState(false);
+    const [selectedAnswer, setSelectedAnswer] = useState('');
+
+    const handleShowAnswer = (answer: string) => {
+        setSelectedAnswer(answer);
+        setShowFullAnswer(true);
+    };
+
+    const renderAnswerCell = (answer: string) => {
+        if (!answer) return null;
+        const shortAnswer = answer.length > 20 ? answer.slice(0, 20) : answer;
+
+        return (
+            <>
+                <span>{shortAnswer}</span>
+                {answer.length > 20 && (
+                    <button onClick={() => handleShowAnswer(answer)}
+                    style={{
+                        backgroundColor: '#D3D3D3', // Darker background color
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.1rem 0.4rem',
+                        cursor: 'pointer',
+                        marginLeft: '0.5rem'
+                    }}>...</button>
+                )}
+            </>
+        );
+    };
     // const [students, setStudents] = useState<StudentType[]>(initialStudents);
     // const [studentResultsMap, setStudentResultsMap] = useState<Map<string, StudentResult>>(new Map());
 
@@ -265,6 +296,8 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
     // }
 
     return (
+
+        
         <div>
             <div className="action-bar mb-1">
                 <div className="text-2xl text-bold">Résultats du quiz</div>
@@ -304,6 +337,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                 </TableCell>
                                 {Array.from({ length: maxQuestions }, (_, index) => (
                                     <TableCell
+                                    
                                         key={index}
                                         sx={{
                                             textAlign: 'center',
@@ -351,9 +385,9 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                         );
                                         const answerText = answer ? answer.answer.toString() : '';
                                         const isCorrect = answer ? answer.isCorrect : false;
-
                                         return (
                                             <TableCell
+                                            style={{ maxWidth: '65px'}}
                                                 key={index}
                                                 sx={{
                                                     textAlign: 'center',
@@ -370,7 +404,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                                 }
                                             >
                                                 {showCorrectAnswers ? (
-                                                    <div>{formatLatex(answerText)}</div>
+                                                    <div>{renderAnswerCell(formatLatex(answerText))}</div>
                                                 ) : isCorrect ? (
                                                     <FontAwesomeIcon icon={faCheck} />
                                                 ) : (
@@ -435,7 +469,60 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                         </TableFooter>
                     </Table>
                 </TableContainer>
-            </div>
+            </div>                  
+            {showFullAnswer && (
+    <div
+    onClick={() => setShowFullAnswer(false)}
+    style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.3)',
+        zIndex: 9999,}}>
+    <dialog
+         open
+         onClick={(e) => e.stopPropagation()} 
+        style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            border: 'none',
+            padding: '1rem',
+            background: '#fff',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+            minWidth: '300px',
+            minHeight: '200px',
+        }}
+    >
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                maxWidth: '600px',
+                wordWrap: 'break-word',
+            }}
+        >            
+       <p style={{ margin: 0 }}>{selectedAnswer}</p>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setShowFullAnswer(false)}
+                sx={{
+                    position: 'absolute',
+                    bottom: '1rem',
+                    right: '1rem',
+                }}
+            >
+                Fermer
+            </Button>
+        </div>
+    </dialog>
+    </div>
+)}
         </div>
     );
 };
