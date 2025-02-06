@@ -4,7 +4,7 @@ import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
-export function formatLatex(text: string): string {
+function formatLatex(text: string): string {
     return text
         .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
