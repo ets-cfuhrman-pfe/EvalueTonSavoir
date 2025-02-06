@@ -26,8 +26,11 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     const [feedbackMessage, setFeedbackMessage] = useState('');
 
     useEffect(() => {
+        // Close the feedback dialog when the question changes
+        handleFeedbackDialogClose();
         setIsAnswerSubmitted(false);
-    }, [questionInfos]);
+        
+    }, [questionInfos.question]);
 
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
