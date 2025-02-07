@@ -12,6 +12,7 @@ import {
 import { StudentType } from '../../Types/StudentType';
 import LiveResultsTable from './LiveResultsTable';
 
+
 interface LiveResultsProps {
     socket: Socket | null;
     questions: QuestionType[];
