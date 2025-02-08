@@ -114,6 +114,45 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
         return correctAnswers;
     };
 
+    const totalParticipation: number = useMemo(() => {
+        let classTotal = 0;
+
+        students.forEach((student) => {
+            classTotal += getTotalAnswers(student);
+        });
+
+        return (classTotal / (students.length * maxQuestions)) * 100;
+    }, [students]);
+    
+    const getTotalAnswers = (student: StudentType): number => {
+        if (student.answers.length === 0) {
+            return 0;
+        }
+
+        const uniqueQuestions = new Set();
+        let answers = 0;
+
+        for (const answer of student.answers) {
+            const { idQuestion } = answer;
+
+            if (!uniqueQuestions.has(idQuestion)) {
+                uniqueQuestions.add(idQuestion);
+                answers++;
+            }
+        }
+        return answers;
+    };
+
+    const getParticipationPerQuestion = (index: number): number => {
+        return (
+            (students.filter((student) =>
+                student.answers.some(
+                    (answer) =>
+                        parseInt(answer.idQuestion.toString()) === index + 1)
+            ).length / students.length) * 100
+        );
+    };
+
     return (
         <div>
             <div className="action-bar mb-1">
@@ -315,6 +354,41 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                     }}
                                 >
                                     {students.length > 0 ? `${totalCorrectAnswers.toFixed()}` : '-'}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow sx={{ backgroundColor: '#d3d3d34f' }}>
+                                <TableCell className="sticky-column" sx={{ color: 'black' }}>
+                                    <div className="text-base text-bold">% réussite</div>
+                                </TableCell>
+                                {Array.from({ length: maxQuestions }, (_, index) => (
+                                    <TableCell
+                                        key={index}
+                                        sx={{
+                                            textAlign: 'center',
+                                            borderStyle: 'solid',
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(224, 224, 224, 1)',
+                                            fontWeight: 'bold',
+                                            color: 'rgba(0, 0, 0)'
+                                        }}
+                                    >
+                                        {students.length > 0
+                                            ? `${getParticipationPerQuestion(index).toFixed()} %`
+                                            : '-'}
+                                    </TableCell>
+                                ))}
+                                <TableCell
+                                    sx={{
+                                        textAlign: 'center',
+                                        borderStyle: 'solid',
+                                        borderWidth: 1,
+                                        borderColor: 'rgba(224, 224, 224, 1)',
+                                        fontWeight: 'bold',
+                                        fontSize: '1rem',
+                                        color: 'rgba(0, 0, 0)'
+                                    }}
+                                >
+                                    {students.length > 0 ? `${totalParticipation.toFixed()} %` : '-'}
                                 </TableCell>
                             </TableRow>
                         </TableFooter>
