@@ -81,6 +81,39 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
         );
     };
 
+    const totalCorrectAnswers: number = useMemo(() => {
+        let classTotal = 0;
+
+        students.forEach((student) => {
+            classTotal += getTotalCorrectAnswers(student);
+        });
+
+        return classTotal;
+    }, [students]);
+    
+    const getTotalCorrectAnswers = (student: StudentType): number => {
+        if (student.answers.length === 0) {
+            return 0;
+        }
+
+        const uniqueQuestions = new Set();
+        let correctAnswers = 0;
+
+        for (const answer of student.answers) {
+            const { idQuestion, isCorrect } = answer;
+
+            if (!uniqueQuestions.has(idQuestion)) {
+                uniqueQuestions.add(idQuestion);
+
+                if (isCorrect) {
+                    correctAnswers++;
+                }
+            }
+        }
+
+        return correctAnswers;
+    };
+
     return (
         <div>
             <div className="action-bar mb-1">
@@ -247,6 +280,41 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                                     }}
                                 >
                                     {students.length > 0 ? `${classAverage.toFixed()} %` : '-'}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow sx={{ backgroundColor: '#d3d3d34f' }}>
+                                <TableCell className="sticky-column" sx={{ color: 'black' }}>
+                                    <div className="text-base text-bold">Bonnes réponses</div>
+                                </TableCell>
+                                {Array.from({ length: maxQuestions }, (_, index) => (
+                                    <TableCell
+                                        key={index}
+                                        sx={{
+                                            textAlign: 'center',
+                                            borderStyle: 'solid',
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(224, 224, 224, 1)',
+                                            fontWeight: 'bold',
+                                            color: 'rgba(0, 0, 0)'
+                                        }}
+                                    >
+                                        {students.length > 0
+                                            ? `${getTotalCorrectAnswersPerQuestion(index).toFixed()}`
+                                            : '-'}
+                                    </TableCell>
+                                ))}
+                                <TableCell
+                                    sx={{
+                                        textAlign: 'center',
+                                        borderStyle: 'solid',
+                                        borderWidth: 1,
+                                        borderColor: 'rgba(224, 224, 224, 1)',
+                                        fontWeight: 'bold',
+                                        fontSize: '1rem',
+                                        color: 'rgba(0, 0, 0)'
+                                    }}
+                                >
+                                    {students.length > 0 ? `${totalCorrectAnswers.toFixed()}` : '-'}
                                 </TableCell>
                             </TableRow>
                         </TableFooter>
