@@ -1,10 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import * as React from 'react';
 import './header.css';
 import { Button } from '@mui/material';
 
 interface HeaderProps {
-    isLoggedIn: boolean;
+    isLoggedIn: () => boolean;
     handleLogout: () => void;
 }
 
@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                 onClick={() => navigate('/')}
             />
 
-            {isLoggedIn && (
+            {isLoggedIn() && (
                 <Button
                     variant="outlined"
                     color="primary"
@@ -31,14 +31,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                 >
                     Logout
                 </Button>
-            )}
-
-            {!isLoggedIn && (
-                <div className="auth-selection-btn">
-                    <Link to="/login">
-                        <button className="auth-btn">Connexion</button>
-                    </Link>
-                </div>
             )}
         </div>
     );

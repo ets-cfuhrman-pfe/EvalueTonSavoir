@@ -39,25 +39,17 @@ module.exports.images = imagesControllerInstance;
 const userRouter = require('./routers/users.js');
 const folderRouter = require('./routers/folders.js');
 const quizRouter = require('./routers/quiz.js');
-const imagesRouter = require('./routers/images.js')
-const AuthManager = require('./auth/auth-manager.js')
-const authRouter = require('./routers/auth.js')
+const imagesRouter = require('./routers/images.js');
 
 // Setup environment
 dotenv.config();
-
-// Setup urls from configs
-const use_ports = (process.env['USE_PORTS'] || 'false').toLowerCase() == "true"
-process.env['FRONTEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['FRONTEND_PORT']}`:"")
-process.env['BACKEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['PORT']}`:"")
-
+const isDev = process.env.NODE_ENV === 'development';
 const errorHandler = require("./middleware/errorHandler.js");
 
 // Start app
 const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
-let isDev = process.env.NODE_ENV === 'development';
 
 const configureServer = (httpServer, isDev) => {
   console.log(`Configuring server with isDev: ${isDev}`);
@@ -92,19 +84,7 @@ app.use('/api/user', userRouter);
 app.use('/api/folder', folderRouter);
 app.use('/api/quiz', quizRouter);
 app.use('/api/image', imagesRouter);
-app.use('/api/auth', authRouter);
 
-// Add Auths methods
-const session = require('express-session');
-app.use(session({
-  secret: process.env['SESSION_Secret'],
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
-
-let authManager = new AuthManager(app,null,userModel);
-authManager.getUserModel();
 app.use(errorHandler);
 
 // Start server
