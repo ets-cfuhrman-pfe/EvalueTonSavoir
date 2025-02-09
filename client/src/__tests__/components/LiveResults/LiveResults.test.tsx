@@ -104,7 +104,8 @@ test('calculates and displays the correct student grades', () => {
     // Check if the student grades are calculated and displayed correctly
     mockStudents.forEach((student) => {
         const grade = student.answers.filter(answer => answer.isCorrect).length / mockQuestions.length * 100;
-        expect(screen.getByText(`${grade.toFixed()} %`)).toBeInTheDocument();
+        let foundArray = screen.queryAllByText(`${grade.toFixed()} %`);
+        expect(foundArray[0]).toBeInTheDocument();
     });
 });
 
@@ -137,6 +138,67 @@ test('calculates and displays the class average', () => {
         return element.closest('td')?.classList.contains('MuiTableCell-footer');
     });
     expect(classAverageElement).toBeInTheDocument();
+});
+
+test('calculates and displays the total correct answers', () => {
+    render(
+        <LiveResults
+            socket={mockSocket}
+            questions={mockQuestions}
+            showSelectedQuestion={jest.fn()}
+            quizMode="teacher"
+            students={mockStudents}
+        />
+    );
+
+    // Toggle the display of usernames
+    const toggleUsernamesSwitch = screen.getByLabelText('Afficher les noms');
+
+    // Toggle the display of usernames back
+    fireEvent.click(toggleUsernamesSwitch);
+    
+    // Calculate the class average
+    const totalCorrectAnswers = mockStudents.reduce((total, student) => {
+        return total + (student.answers.filter(answer => answer.isCorrect).length);
+    }, 0);
+
+    // Check if the class average is displayed correctly
+    const classTotalElements = screen.getAllByText(`${totalCorrectAnswers.toFixed()}`);
+    const classAverageElement = classTotalElements.find((element) => {
+        return element.closest('td')?.classList.contains('MuiTableCell-footer');
+    });
+    expect(classAverageElement).toBeInTheDocument();
+});
+
+test('calculates and displays the total participation', () => {
+    render(
+        <LiveResults
+            socket={mockSocket}
+            questions={mockQuestions}
+            showSelectedQuestion={jest.fn()}
+            quizMode="teacher"
+            students={mockStudents}
+        />
+    );
+
+    // Toggle the display of usernames
+    const toggleUsernamesSwitch = screen.getByLabelText('Afficher les noms');
+
+    // Toggle the display of usernames back
+    fireEvent.click(toggleUsernamesSwitch);
+    
+    // Calculate the class average
+    const totalGrades = mockStudents.reduce((total, student) => {
+        return total + (student.answers.filter(answer => answer.isCorrect).length / mockQuestions.length * 100);
+    }, 0);
+    const totalParticipation = totalGrades / mockStudents.length;
+
+    // Check if the class average is displayed correctly
+    const totalElements = screen.getAllByText(`${totalParticipation.toFixed()} %`);
+    const allTotalElement = totalElements.find((element) => {
+        return element.closest('td')?.classList.contains('MuiTableCell-footer');
+    });
+    expect(allTotalElement).toBeInTheDocument();
 });
 
 test('displays the correct answers per question', () => {
