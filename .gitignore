@@ -129,3 +129,62 @@ dist
 .yarn/install-state.gz
 .pnp.*
 db-backup/
+
+# Node.js / React (évite de versionner les dépendances)
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log
+.DS_Store
+
+# Dossier de sortie du build (React/Vite/Webpack)
+dist/
+build/
+
+# Fichiers environnement (ne pas exposer tes variables sensibles)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Visual Studio & VS Code (évite les fichiers temporaires et caches)
+.vscode/
+.vs/
+*.code-workspace
+*.suo
+*.user
+*.cache
+*.log
+
+# Fichiers spécifiques de Visual Studio
+FileContentIndex/
+*.vsidx
+.vsconfig
+slnx.sqlite
+VSWorkspaceState.json
+ProjectSettings.json
+DocumentLayout*.json
+
+# Logs et fichiers temporaires
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorer les fichiers de tests/jest
+coverage/
+*.test.js
+*.test.ts
+*.test.tsx
+jest.config.js
+
+# Ignorer les fichiers de dépendances frontend (si utilisés)
+.bower_components/
+jspm_packages/
+
+# Cache TypeScript et fichiers de sortie (évite les fichiers générés)
+*.tsbuildinfo
+*.tscache
+*.d.ts

@@ -1,11 +1,9 @@
-// ManageRoom.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer } from "gift-pegjs/typeGuards";
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
-// import { QuestionService } from '../../../services/QuestionService';
 import webSocketService, { AnswerReceptionFromBackendType } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
@@ -18,14 +16,12 @@ import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 import { Refresh, Error } from '@mui/icons-material';
 import StudentWaitPage from 'src/components/StudentWaitPage/StudentWaitPage';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
-//import QuestionNavigation from 'src/components/QuestionNavigation/QuestionNavigation';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
-    const [roomName, setRoomName] = useState<string>('');
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
     const quizId = useParams<{ id: string }>();
@@ -35,30 +31,39 @@ const ManageRoom: React.FC = () => {
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState(false);
-    
+    const [isSocketConnected, setIsSocketConnected] = useState(false);
+
+
     useEffect(() => {
         if (quizId.id) {
             const fetchquiz = async () => {
+                try {
+                    const quiz = await ApiService.getQuiz(quizId.id as string);
 
-                const quiz = await ApiService.getQuiz(quizId.id as string);
+                    if (!quiz) {
+                        window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+                        console.error('Quiz not found for id:', quizId.id);
+                        navigate('/teacher/dashboard');
+                        return;
+                    }
 
-                if (!quiz) {
-                    window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
-                    console.error('Quiz not found for id:', quizId.id);
+                    if ((quiz as QuizType).roomId) {
+                        setQuiz(quiz as QuizType);
+
+                        if (!socket) {
+                            console.log('Initializing WebSocket connection...');
+                            initializeWebSocketConnection((quiz as QuizType).roomId);
+                        }
+                    } else {
+                        console.error('Quiz data is not valid, roomId is missing.');
+                        navigate('/teacher/dashboard');
+                    }
+
+                } catch (error) {
+                    console.error('Failed to load quiz:', error);
+                    setConnectingError('Erreur de chargement du quiz');
                     navigate('/teacher/dashboard');
-                    return;
                 }
-
-                setQuiz(quiz as QuizType);
-
-                if (!socket) {
-                    console.log(`no socket in ManageRoom, creating one.`);
-                    createWebSocketRoom();
-                }
-
-                // return () => {
-                //     webSocketService.disconnect();
-                // };
             };
 
             fetchquiz();
@@ -72,74 +77,83 @@ const ManageRoom: React.FC = () => {
     }, [quizId]);
 
     const disconnectWebSocket = () => {
-        if (socket) {
-            webSocketService.endQuiz(roomName);
+        if (socket && quiz) {
+            webSocketService.endQuiz(quiz.roomId);
             webSocketService.disconnect();
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
             setStudents(new Array<StudentType>());
-            setRoomName('');
         }
     };
 
-    const createWebSocketRoom = () => {
-        console.log('Creating WebSocket room...');
-        setConnectingError('');
+
+    const initializeWebSocketConnection = (roomId: string) => {
+        console.log('Initializing WebSocket for room:', roomId);
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        console.log('Socket connection status:', webSocketService.isConnected());
 
         socket.on('connect', () => {
-            webSocketService.createRoom();
+            console.log('WebSocket connected, joining room:', roomId);
+            setIsSocketConnected(true);
+            webSocketService.joinRoom(roomId, 'Teacher');
         });
+
         socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
-            console.error('ManageRoom: WebSocket connection error:', error);
+            console.error('Connection error:', error);
         });
-        socket.on('create-success', (roomName: string) => {
-            setRoomName(roomName);
-        });
-        socket.on('create-failure', () => {
-            console.log('Error creating room.');
-        });
+
         socket.on('user-joined', (student: StudentType) => {
             console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
 
             setStudents((prevStudents) => [...prevStudents, student]);
 
-            if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(roomName, currentQuestion);
-            } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+            if (quiz && socket.connected) {
+                if (quizMode === 'teacher') {
+                    webSocketService.nextQuestion(quiz.roomId, currentQuestion);
+                } else if (quizMode === 'student') {
+                    webSocketService.launchStudentModeQuiz(quiz.roomId, quizQuestions);
+                }
+            } else {
+                console.error("Quiz data is not available or Socket is not connected.");
             }
         });
+
         socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
+            setIsSocketConnected(false);
         });
+
         socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
             setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        });
+        socket.on('disconnect', () => {
+            console.log('WebSocket disconnected');
+            setIsSocketConnected(false);
         });
         setSocket(socket);
     };
 
     useEffect(() => {
         // This is here to make sure the correct value is sent when user join
-        if (socket) {
-            console.log(`Listening for user-joined in room ${roomName}`);
+        if (socket && quiz?.roomId) {
+            console.log(`Listening for user-joined in room ${quiz.roomId}`);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             socket.on('user-joined', (_student: StudentType) => {
                 if (quizMode === 'teacher') {
-                    webSocketService.nextQuestion(roomName, currentQuestion);
+                    webSocketService.nextQuestion(quiz.roomId, currentQuestion);
+
                 } else if (quizMode === 'student') {
-                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+                    webSocketService.launchStudentModeQuiz(quiz.roomId, quizQuestions);
                 }
             });
         }
-
         if (socket) {
             // handle the case where user submits an answer
-            console.log(`Listening for submit-answer-room in room ${roomName}`);
+            console.log(`Listening for submit-answer-room in room ${quiz?.roomId}`);
             socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
                 const { answer, idQuestion, idUser, username } = answerData;
                 console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
@@ -189,70 +203,6 @@ const ManageRoom: React.FC = () => {
 
     }, [socket, currentQuestion, quizQuestions]);
 
-    // useEffect(() => {
-    //     if (socket) {
-    //         const submitAnswerHandler = (answerData: answerSubmissionType) => {
-    //             const { answer, idQuestion, username } = answerData;
-    //             console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
-
-    //             // print the list of current student names
-    //             console.log('Current students:');
-    //             students.forEach((student) => {
-    //                 console.log(student.name);
-    //             });
-
-    //             // Update the students state using the functional form of setStudents
-    //             setStudents((prevStudents) => {
-    //                 let foundStudent = false;
-    //                 const updatedStudents = prevStudents.map((student) => {
-    //                     if (student.id === username) {
-    //                         foundStudent = true;
-    //                         const updatedAnswers = student.answers.map((ans) => {
-    //                             const newAnswer: Answer = { answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!), idQuestion };
-    //                             console.log(`Updating answer for ${student.name} for question ${idQuestion} to ${answer}`);
-    //                             return (ans.idQuestion === idQuestion ? { ...ans, newAnswer } : ans);
-    //                         }
-    //                         );
-    //                         return { ...student, answers: updatedAnswers };
-    //                     }
-    //                     return student;
-    //                 });
-    //                 if (!foundStudent) {
-    //                     console.log(`Student ${username} not found in the list of students in LiveResults`);
-    //                 }
-    //                 return updatedStudents;
-    //             });
-
-
-    //             // make a copy of the students array so we can update it
-    //             // const updatedStudents = [...students];
-
-    //             // const student = updatedStudents.find((student) => student.id === idUser);
-    //             // if (!student) {
-    //             //     // this is a bad thing if an answer was submitted but the student isn't in the list
-    //             //     console.log(`Student ${idUser} not found in the list of students in LiveResults`);
-    //             //     return;
-    //             // }
-
-    //             // const isCorrect = checkIfIsCorrect(answer, idQuestion);
-    //             // const newAnswer: Answer = { answer, isCorrect, idQuestion };
-    //             // student.answers.push(newAnswer);
-    //             // // print list of answers
-    //             // console.log('Answers:');
-    //             // student.answers.forEach((answer) => {
-    //             //     console.log(answer.answer);
-    //             // });
-    //             // setStudents(updatedStudents); // update the state
-    //         };
-
-    //         socket.on('submit-answer', submitAnswerHandler);
-    //         return () => {
-    //             socket.off('submit-answer');
-    //         };
-    //     }
-    // }, [socket]);
-
-
     const nextQuestion = () => {
         if (!quizQuestions || !currentQuestion || !quiz?.content) return;
 
@@ -261,7 +211,7 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion(roomName, quizQuestions[nextQuestionIndex]);
+        webSocketService.nextQuestion(quiz.roomId, quizQuestions[nextQuestionIndex]);
     };
 
     const previousQuestion = () => {
@@ -271,7 +221,7 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion(roomName, quizQuestions[prevQuestionIndex]);
+        webSocketService.nextQuestion(quiz.roomId, quizQuestions[prevQuestionIndex]);
     };
 
     const initializeQuizQuestion = () => {
@@ -291,37 +241,37 @@ const ManageRoom: React.FC = () => {
 
     const launchTeacherMode = () => {
         const quizQuestions = initializeQuizQuestion();
-        console.log('launchTeacherMode - quizQuestions:', quizQuestions);
-
-        if (!quizQuestions) {
-            console.log('Error launching quiz (launchTeacherMode). No questions found.');
-            return;
+        if (quizQuestions && quiz?.roomId) {
+            setCurrentQuestion(quizQuestions[0]);
+            webSocketService.nextQuestion(quiz.roomId, quizQuestions[0]);
         }
-
-        setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion(roomName, quizQuestions[0]);
     };
 
     const launchStudentMode = () => {
         const quizQuestions = initializeQuizQuestion();
-        console.log('launchStudentMode - quizQuestions:', quizQuestions);
-
-        if (!quizQuestions) {
-            console.log('Error launching quiz (launchStudentMode). No questions found.');
-            return;
+        if (quizQuestions && quiz?.roomId) {
+            setQuizQuestions(quizQuestions);
+            webSocketService.launchStudentModeQuiz(quiz.roomId, quizQuestions);
         }
-        setQuizQuestions(quizQuestions);
-        webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
     };
 
-    const launchQuiz = () => {
-        if (!socket || !roomName || !quiz?.content || quiz?.content.length === 0) {
-            // TODO: This error happens when token expires! Need to handle it properly
-            console.log(`Error launching quiz. socket: ${socket}, roomName: ${roomName}, quiz: ${quiz}`);
-            setQuizStarted(true);
-
+    const launchQuiz = async () => {
+        if (!isSocketConnected) {
+            console.log("Waiting for socket connection...");
+            window.alert("En attente de la connexion au serveur... Veuillez réessayer dans quelques secondes.");
             return;
         }
+
+        if (!quiz?.roomId) {
+            console.error("Room ID is missing.");
+            return;
+        }
+
+        if (!quiz?.content || quiz.content.length === 0) {
+            console.error("Quiz content is missing or empty.");
+            return;
+        }
+
         switch (quizMode) {
             case 'student':
                 setQuizStarted(true);
@@ -329,7 +279,9 @@ const ManageRoom: React.FC = () => {
             case 'teacher':
                 setQuizStarted(true);
                 return launchTeacherMode();
-                
+            default:
+                console.error("Invalid quiz mode.");
+                return;
         }
     };
 
@@ -338,7 +290,7 @@ const ManageRoom: React.FC = () => {
             setCurrentQuestion(quizQuestions[questionIndex]);
 
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(roomName, quizQuestions[questionIndex]);
+                webSocketService.nextQuestion(quiz.roomId, quizQuestions[questionIndex]);
             }
         }
     };
@@ -403,11 +355,11 @@ const ManageRoom: React.FC = () => {
     }
 
 
-    if (!roomName) {
+    if (!quiz || !quiz?.roomId) {
         return (
             <div className="center">
                 {!connectingError ? (
-                    <LoadingCircle text="Veuillez attendre la connexion au serveur..." />
+                    <LoadingCircle text="Chargement du quiz..." />
                 ) : (
                     <div className="center-v-align">
                         <Error sx={{ padding: 0 }} />
@@ -415,7 +367,13 @@ const ManageRoom: React.FC = () => {
                         <Button
                             variant="contained"
                             startIcon={<Refresh />}
-                            onClick={createWebSocketRoom}
+                            onClick={() => {
+                                if (quiz?.roomId) {
+                                    initializeWebSocketConnection(quiz.roomId);
+                                } else {
+                                    console.error("Room ID is not available");
+                                }
+                            }}
                         >
                             Reconnecter
                         </Button>
@@ -439,7 +397,7 @@ const ManageRoom: React.FC = () => {
 
                 <div className='headerContent' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                        <div className='title'>Salle: {roomName}</div>
+                        <div className='title'>Salle: {quiz?.roomId}</div>
                     </div>
                     {quizStarted && (
                         <div className='userCount subtitle smallText' style={{ display: 'flex', alignItems: 'center' }}>
@@ -526,6 +484,7 @@ const ManageRoom: React.FC = () => {
                         students={students}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
+                        isSocketConnected={isSocketConnected}
                     />
 
                 )}

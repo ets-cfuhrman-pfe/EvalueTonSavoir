@@ -1,4 +1,3 @@
-// QuizType.tsx
 export interface QuizType {
     _id: string;
     folderId: string;
@@ -6,6 +5,7 @@ export interface QuizType {
     userId: string;
     title: string;
     content: string[];
+    roomId: string;
     created_at: Date;
     updated_at: Date;
 }

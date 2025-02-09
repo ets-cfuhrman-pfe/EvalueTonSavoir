@@ -1,8 +1,9 @@
 class AppError extends Error {
-    constructor (errorCode) {
-        super(errorCode.message)
-        this.statusCode = errorCode.code;
-        this.isOperational = true; // Optional: to distinguish operational errors from programming errors
+    constructor(errorCode = { message: "Something went wrong", code: 500 }) {
+        super(errorCode.message);
+        this.statusCode = errorCode.code || 500;
+        this.isOperational = true;
+        Error.captureStackTrace(this, this.constructor);
     }
 }
 

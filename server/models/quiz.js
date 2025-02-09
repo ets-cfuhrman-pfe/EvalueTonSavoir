@@ -2,20 +2,21 @@ const { ObjectId } = require('mongodb');
 const { generateUniqueTitle } = require('./utils');
 
 class Quiz {
-
     constructor(db) {
-        // console.log("Quiz constructor: db", db)
         this.db = db;
     }
 
-    async create(title, content, folderId, userId) {
-        // console.log(`quizzes: create title: ${title}, folderId: ${folderId}, userId: ${userId}`);
+
+    async create(title, content, folderId, userId, roomId) {
         await this.db.connect()
         const conn = this.db.getConnection();
-
         const quizCollection = conn.collection('files');
 
-        const existingQuiz = await quizCollection.findOne({ title: title, folderId: folderId, userId: userId })
+        const existingQuiz = await quizCollection.findOne({
+            title: title,
+            folderId: folderId,
+            userId: userId
+        });
 
         if (existingQuiz) {
             throw new Error(`Quiz already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
@@ -26,13 +27,12 @@ class Quiz {
             userId: userId,
             title: title,
             content: content,
+            roomId: roomId,
             created_at: new Date(),
             updated_at: new Date()
         }
 
         const result = await quizCollection.insertOne(newQuiz);
-        // console.log("quizzes: create insertOne result", result);
-
         return result.insertedId;
     }
 
@@ -56,6 +56,14 @@ class Quiz {
         const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });
 
         return quiz;
+    }
+
+    async getRoomID(quizId) {
+        await this.db.connect()
+        const conn = this.db.getConnection();
+        const quizCollection = conn.collection('files');
+        const quiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId) });
+        return quiz.roomId;
     }
 
     async delete(quizId) {
@@ -89,12 +97,12 @@ class Quiz {
 
         const result = await quizCollection.updateOne(
             { _id: ObjectId.createFromHexString(quizId) },
-            { 
+            {
                 $set: {
-                    title: newTitle, 
-                    content: newContent, 
-                    updated_at: new Date() 
-                } 
+                    title: newTitle,
+                    content: newContent,
+                    updated_at: new Date()
+                }
             }
         );
 
@@ -108,7 +116,7 @@ class Quiz {
         const quizCollection = conn.collection('files');
 
         const result = await quizCollection.updateOne(
-            { _id: ObjectId.createFromHexString(quizId) }, 
+            { _id: ObjectId.createFromHexString(quizId) },
             { $set: { folderId: newFolderId } }
         );
 
@@ -143,13 +151,12 @@ class Quiz {
     async quizExists(title, userId) {
         await this.db.connect();
         const conn = this.db.getConnection();
-    
-        const filesCollection = conn.collection('files');           
-        const existingFolder = await filesCollection.findOne({ title: title, userId: userId });        
-        
+
+        const filesCollection = conn.collection('files');
+        const existingFolder = await filesCollection.findOne({ title: title, userId: userId });
+
         return existingFolder !== null;
     }
-
 }
 
 module.exports = Quiz;

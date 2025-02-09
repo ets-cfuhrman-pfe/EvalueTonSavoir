@@ -10,9 +10,10 @@ interface Props {
     students: StudentType[];
     launchQuiz: () => void;
     setQuizMode: (mode: 'student' | 'teacher') => void;
+    isSocketConnected?: boolean;
 }
 
-const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode }) => {
+const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode, isSocketConnected = true }) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     return (
@@ -25,7 +26,7 @@ const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode })
                     fullWidth
                     sx={{ fontWeight: 600, fontSize: 20 }}
                 >
-                    Lancer
+                    {isSocketConnected ? 'Lancer' : 'En attente de connexion...'}
                 </Button> 
             </div>
 

@@ -10,6 +10,7 @@ if (!quizzes) {
 
 router.post("/create", jwt.authenticate, asyncHandler(quizzes.create));
 router.get("/get/:quizId", jwt.authenticate, asyncHandler(asyncHandler(quizzes.get)));
+router.get('/getRoomID/:quizId', jwt.authenticate, asyncHandler(quizzes.getRoomID));
 router.delete("/delete/:quizId", jwt.authenticate, asyncHandler(quizzes.delete));
 router.put("/update", jwt.authenticate, asyncHandler(quizzes.update));
 router.put("/move", jwt.authenticate, asyncHandler(quizzes.move));
