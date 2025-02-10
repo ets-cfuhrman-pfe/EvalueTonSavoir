@@ -75,8 +75,14 @@ Fonctionnalité copier-coller était déjà fonctionnelle.
 
 ### Évaluation par rapport aux résultats selon les critères d'évaluation
 
-À remplir 
+Nous avons eu des bon retours sur le travaille global.
+Branche main est encore fonctionelle, la branche avec tout nos merge est disponible.
+La fonctionnalité du PDF et la façcon de l'utiliser est accepté.
+Bouton copier/coller était déjà fonctionelle
+Le taux de participation a été bien reçu, les commentaires sont surtout au niveau du UI, taux de particpation au haut de la page.
+Le fonction d'ajouter des indices est à retravailler, les indices devrait être affiché du côté étudiant et enseignant.
+
 
 ## Autres préoccupations et écarts
 
-À remplir 
+L'intégration du SSO en production est plus compliqué
