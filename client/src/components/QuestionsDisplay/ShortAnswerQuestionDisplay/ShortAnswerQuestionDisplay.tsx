@@ -8,16 +8,27 @@ interface Props {
     question: ShortAnswerQuestion;
     handleOnSubmitAnswer?: (answer: string) => void;
     showAnswer?: boolean;
+    isTeacher?: boolean;
 }
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, isTeacher} = props;
     const [answer, setAnswer] = useState<string>();
 
+    const cleanHtml = (html: string): string => {
+        if (isTeacher) {
+            return html.replace(/<details>.*?<\/details>/gs, '');
+        }
+        return html;
+    };
+    const getCleanStem = (): string => {
+        const rawHtml = FormattedTextTemplate(question.formattedStem);
+        return cleanHtml(rawHtml);
+    };
     return (
         <div className="question-wrapper">
             <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: getCleanStem() }} />
             </div>
             {showAnswer ? (
                 <>

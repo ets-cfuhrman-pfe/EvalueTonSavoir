@@ -19,13 +19,74 @@ const GiftCheatSheet: React.FC = () => {
                 console.error('Erreur lors de la copie dans le presse-papiers : ', error);
             });
     };
-    
 
-    const QuestionVraiFaux = "2+2 \\= 4 ? {T}\n// Utilisez les valeurs {T}, {F}, {TRUE} \net {FALSE}.";
-    const QuestionChoixMul = "Quelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Bonne réponse!\n}\n// La bonne réponse est Ottawa";
-    const QuestionChoixMulMany = "Quelles villes trouve-t-on au Canada? { \n~ %33.3% Montréal \n ~ %33.3% Ottawa \n ~ %33.3% Vancouver \n ~ %-100% New York \n ~ %-100% Paris \n#### La bonne réponse est Montréal, Ottawa et Vancouver \n}\n// Utilisez tilde (signe de vague) pour toutes les réponses.\n// On doit indiquer le pourcentage de chaque réponse.";
-    const QuestionCourte ="Avec quoi ouvre-t-on une porte? { \n= clé \n= clef \n}\n// Permet de fournir plusieurs bonnes réponses.\n// Note: La casse n'est pas prise en compte.";
-    const QuestionNum ="// Question de plage mathématique. \n Quel est un nombre de 1 à 5 ? {\n#3:2\n}\n \n// Plage mathématique spécifiée avec des points de fin d'intervalle. \n Quel est un nombre de 1 à 5 ? {\n#1..5\n} \n\n// Réponses numériques multiples avec crédit partiel et commentaires.\nQuand est né Ulysses S. Grant ? {\n# =1822:0 # Correct ! Crédit complet. \n=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.\n}";
+
+    const QuestionVraiFaux = `Le soleil se lève à l'ouest. 
+<details>
+  <summary>Indice</summary>
+  <p>La réponse est faux!</p>
+</details>
+{FALSE}
+`;
+
+    const QuestionChoixMul = `<details>
+  <summary>Indice</summary>
+  <p>La capitale du Canada est située au sud de l'Ontario.</p>
+</details>
+Quelle ville est la capitale du Canada ? {
+~ Toronto
+~ Montréal
+= Ottawa #Bonne réponse !
+}`;
+    const QuestionChoixMulMany = `<details>
+  <summary>Indice</summary>
+  <p>Les villes du Canada sont toutes situées dans des provinces du pays.</p>
+</details>
+Quelles villes trouve-t-on au Canada? { 
+~ %33.3% Montréal 
+~ %33.3% Ottawa 
+~ %33.3% Vancouver 
+~ %-100% New York 
+~ %-100% Paris 
+#### La bonne réponse est Montréal, Ottawa et Vancouver
+}`;
+    const QuestionCourte = `<details>
+  <summary>Indice</summary>
+  <p>Une clé ou une clef permet d'ouvrir une porte.</p>
+</details>
+Avec quoi ouvre-t-on une porte? { 
+= clé 
+= clef 
+}
+`;
+    const QuestionNum = `// Question de plage mathématique.
+<details>
+  <summary>Indice</summary>
+  <p>Le nombre doit être compris entre 1 et 5.</p>
+</details>
+Quel est un nombre de 1 à 5 ? {
+#3:2
+}
+
+// Plage mathématique spécifiée avec des points de fin d'intervalle.
+<details>
+  <summary>Indice</summary>
+  <p>Tout nombre entre 1 et 5 est correct.</p>
+</details>
+Quel est un nombre de 1 à 5 ? {
+#1..5
+}
+
+// Réponses numériques multiples avec crédit partiel et commentaires.
+<details>
+  <summary>Indice</summary>
+  <p>Il est né au 19ᵉ siècle.</p>
+</details>
+Quand est né Ulysses S. Grant ? {
+# =1822:0 # Correct ! Crédit complet. 
+=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.
+}
+`;
     return (
         <div className="gift-cheat-sheet">
             <h2 className="subtitle">Informations pratiques sur l&apos;éditeur</h2>
@@ -85,7 +146,7 @@ const GiftCheatSheet: React.FC = () => {
                         {
                             QuestionNum
                         }
-                    </code>                    
+                    </code>
                 </pre>
                 <button onClick={() => copyToClipboard(QuestionNum)}>Copier</button>
             </div>
@@ -185,7 +246,7 @@ const GiftCheatSheet: React.FC = () => {
                     Attention: l&apos;ancienne fonctionnalité avec les balises <code>{'<img>'}</code> n&apos;est plus
                     supportée.
                 </p>
-                </div>
+            </div>
             <div className="question-type">
                 <h4> 10. Informations supplémentaires </h4>
                 <p>
@@ -199,6 +260,6 @@ const GiftCheatSheet: React.FC = () => {
             </div>
         </div>
     );
-};  
+};
 
 export default GiftCheatSheet;
