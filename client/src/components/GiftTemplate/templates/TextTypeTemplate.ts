@@ -5,13 +5,22 @@ import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
 function formatLatex(text: string): string {
-    return text
+    let renderedText = '';
+
+    try {
+    renderedText = text
         .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
         .replace(/\\\[(.*?)\\\]/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\\\((.*?)\\\)/g, (_, inner) =>
             katex.renderToString(inner, { displayMode: false })
         );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+        renderedText = text;
+    }
+
+    return renderedText;
 }
 
 /**
