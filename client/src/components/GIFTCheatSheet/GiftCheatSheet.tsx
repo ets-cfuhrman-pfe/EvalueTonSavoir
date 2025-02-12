@@ -21,11 +21,11 @@ const GiftCheatSheet: React.FC = () => {
     };
     
 
-    const QuestionVraiFaux = "2+2 \\= 4 ? {T}\n// Utilisez les valeurs {T}, {F}, {TRUE} \net {FALSE}.";
-    const QuestionChoixMul = "Quelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Bonne réponse!\n}\n// La bonne réponse est Ottawa";
-    const QuestionChoixMulMany = "Quelles villes trouve-t-on au Canada? { \n~ %33.3% Montréal \n ~ %33.3% Ottawa \n ~ %33.3% Vancouver \n ~ %-100% New York \n ~ %-100% Paris \n#### La bonne réponse est Montréal, Ottawa et Vancouver \n}\n// Utilisez tilde (signe de vague) pour toutes les réponses.\n// On doit indiquer le pourcentage de chaque réponse.";
-    const QuestionCourte ="Avec quoi ouvre-t-on une porte? { \n= clé \n= clef \n}\n// Permet de fournir plusieurs bonnes réponses.\n// Note: La casse n'est pas prise en compte.";
-    const QuestionNum ="// Question de plage mathématique. \n Quel est un nombre de 1 à 5 ? {\n#3:2\n}\n \n// Plage mathématique spécifiée avec des points de fin d'intervalle. \n Quel est un nombre de 1 à 5 ? {\n#1..5\n} \n\n// Réponses numériques multiples avec crédit partiel et commentaires.\nQuand est né Ulysses S. Grant ? {\n# =1822:0 # Correct ! Crédit complet. \n=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.\n}";
+    const QuestionVraiFaux = "::Titre:: \n 2+2 \\= 4 ? {T}  //Utilisez les valeurs {T}, {F}, {TRUE} et {FALSE}.";
+    const QuestionChoixMul = "::Titre:: \nQuelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Rétroaction spécifique.\n}  // Commentaire non visible (au besoin)";
+    const QuestionChoixMulMany = "::Titre:: \n Quelles villes trouve-t-on au Canada? { \n~ %33.3% Montréal \n ~ %33.3% Ottawa \n ~ %33.3% Vancouver \n ~ %-100% New York \n ~ %-100% Paris \n#### Rétroaction globale de la question. \n}  // Utilisez tilde (signe de vague) pour toutes les réponses. // On doit indiquer le pourcentage de chaque réponse.";
+    const QuestionCourte ="::Titre:: \n Avec quoi ouvre-t-on une porte? { \n= clé \n= clef \n} // Permet de fournir plusieurs bonnes réponses. // Note: La casse n'est pas prise en compte.";
+    const QuestionNum ="// Question de plage mathématique. \n ::Titre:: \nQuel est un nombre de 1 à 5 ? {\n#3:2\n}\n \n// Plage mathématique spécifiée avec des points de fin d'intervalle. \n ::Titre:: \n Quel est un nombre de 1 à 5 ? {\n#1..5\n} \n\n// Réponses numériques multiples avec crédit partiel et commentaires.\n::Titre::\nQuand est né Ulysses S. Grant ? {\n# =1822:0 # Correct ! Crédit complet. \n=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.\n}";
     return (
         <div className="gift-cheat-sheet">
             <h2 className="subtitle">Informations pratiques sur l&apos;éditeur</h2>
