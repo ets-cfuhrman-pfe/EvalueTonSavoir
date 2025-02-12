@@ -68,6 +68,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                 <QuestionComponent
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
+                    isTeacher={true}
                 />
             )}
 
@@ -82,6 +83,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={true}
+                    isTeacher={true} 
                     />
                 </DialogContent>
                 <DialogActions>

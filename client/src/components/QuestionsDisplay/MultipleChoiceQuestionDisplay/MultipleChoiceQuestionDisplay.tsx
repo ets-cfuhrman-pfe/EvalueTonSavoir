@@ -9,11 +9,23 @@ interface Props {
     question: MultipleChoiceQuestion;
     handleOnSubmitAnswer?: (answer: string) => void;
     showAnswer?: boolean;
+    isTeacher?: boolean;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, isTeacher } = props;
     const [answer, setAnswer] = useState<string>();
+
+    const cleanHtml = (html: string): string => {
+        if (isTeacher) {
+            return html.replace(/<details>.*?<\/details>/gs, '');
+        }
+        return html;
+    };
+    const getCleanStem = (): string => {
+        const rawHtml = FormattedTextTemplate(question.formattedStem);
+        return cleanHtml(rawHtml);
+    };
     
     useEffect(() => {
         setAnswer(undefined);
@@ -28,7 +40,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     return (
         <div className="question-container">
             <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: getCleanStem() }} />
             </div>
             <div className="choices-wrapper mb-1">
                 {question.choices.map((choice, i) => {

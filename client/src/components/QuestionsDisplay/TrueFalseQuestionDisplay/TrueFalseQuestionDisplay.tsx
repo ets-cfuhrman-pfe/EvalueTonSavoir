@@ -9,13 +9,24 @@ interface Props {
     question: TrueFalseQuestion;
     handleOnSubmitAnswer?: (answer: boolean) => void;
     showAnswer?: boolean;
+    isTeacher?: boolean;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, isTeacher } =
         props;
     const [answer, setAnswer] = useState<boolean | undefined>(undefined);
 
+    const cleanHtml = (html: string): string => {
+        if (isTeacher) {
+            return html.replace(/<details>.*?<\/details>/gs, '');
+        }
+        return html;
+    };
+    const getCleanStem = (): string => {
+        const rawHtml = FormattedTextTemplate(question.formattedStem);
+        return cleanHtml(rawHtml);
+    };
     useEffect(() => {
         setAnswer(undefined);
     }, [question]);
@@ -25,7 +36,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     return (
         <div className="question-container">
             <div className="question content">
-            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: getCleanStem() }} />
             </div>
             <div className="choices-wrapper mb-1">
                 <Button

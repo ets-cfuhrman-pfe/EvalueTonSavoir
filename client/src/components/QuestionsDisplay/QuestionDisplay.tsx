@@ -11,11 +11,13 @@ interface QuestionProps {
     question: Question;
     handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
+    isTeacher?: boolean;
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    isTeacher
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
@@ -30,6 +32,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    isTeacher={isTeacher} 
                 />
             );
             break;
@@ -39,6 +42,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    isTeacher={isTeacher} 
                 />
             );
             break;
@@ -50,6 +54,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            isTeacher={isTeacher} 
                         />
                     );
                 } else {
@@ -58,6 +63,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            isTeacher={isTeacher} 
                         />
                     );
                 }
@@ -69,6 +75,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    isTeacher={isTeacher} 
                 />
             );
             break;

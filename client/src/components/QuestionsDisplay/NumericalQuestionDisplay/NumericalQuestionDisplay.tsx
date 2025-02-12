@@ -10,16 +10,28 @@ interface Props {
     question: NumericalQuestion;
     handleOnSubmitAnswer?: (answer: number) => void;
     showAnswer?: boolean;
+    isTeacher?: boolean;
 }
 
 const NumericalQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, isTeacher } =
         props;
 
     const [answer, setAnswer] = useState<number>();
 
     const correctAnswers = question.choices;
     let correctAnswer = '';
+
+    const cleanHtml = (html: string): string => {
+        if (isTeacher) {
+            return html.replace(/<details>.*?<\/details>/gs, '');
+        }
+        return html;
+    };
+    const getCleanStem = (): string => {
+        const rawHtml = FormattedTextTemplate(question.formattedStem);
+        return cleanHtml(rawHtml);
+    };
 
     //const isSingleAnswer = correctAnswers.length === 1;
 
@@ -40,7 +52,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     return (
         <div className="question-wrapper">
             <div>
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: getCleanStem() }} />
             </div>
             {showAnswer ? (
                 <>
