@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { StudentType } from 'src/Types/StudentType';
-import LiveResultsTable from 'src/components/LiveResults/LiveResultsTable';
+import LiveResultsTable from 'src/components/LiveResults/LiveResultsTable/LiveResultsTable';
 import { QuestionType } from 'src/Types/QuestionType';
 import { BaseQuestion, parse } from 'gift-pegjs';
 

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { QuestionType } from '../../Types/QuestionType';
-
 import './liveResult.css';
 import {
     FormControlLabel,
@@ -10,7 +9,7 @@ import {
     Switch,
 } from '@mui/material';
 import { StudentType } from '../../Types/StudentType';
-import LiveResultsTable from './LiveResultsTable';
+import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
 
 
 interface LiveResultsProps {
@@ -21,12 +20,11 @@ interface LiveResultsProps {
     students: StudentType[]
 }
 
-
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
 
-
+    
     return (
         <div>
             <div className="action-bar mb-1">
@@ -58,13 +56,13 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
             </div>
 
             <div className="table-container">
-            <LiveResultsTable
-                students={students}
-                questions={questions}
-                showCorrectAnswers={showCorrectAnswers}
-                showSelectedQuestion={showSelectedQuestion}
-                showUsernames={showUsernames}
-            />
+                <LiveResultsTable
+                    students={students}
+                    questions={questions}
+                    showCorrectAnswers={showCorrectAnswers}
+                    showSelectedQuestion={showSelectedQuestion}
+                    showUsernames={showUsernames}
+                />
             </div>
         </div>
     );
