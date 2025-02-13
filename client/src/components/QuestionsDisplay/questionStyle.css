@@ -27,7 +27,6 @@
 }
 
 .question-wrapper .katex {
-    display: block;
     text-align: center;
 }
 
@@ -120,9 +119,9 @@
 }
 
 .feedback-container {
-    margin-left: 1.1rem;
-    display: inline-flex !important; /* override the parent */
+    display: inline-block !important; /* override the parent */
     align-items: center;
+    margin-left: 1.1rem;
     position: relative;
     padding: 0 0.5rem;
     background-color: hsl(43, 100%, 94%);
