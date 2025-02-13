@@ -9,8 +9,8 @@ import {
     Switch,
 } from '@mui/material';
 import { StudentType } from '../../Types/StudentType';
-import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
 
+import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
 
 interface LiveResultsProps {
     socket: Socket | null;
@@ -20,11 +20,11 @@ interface LiveResultsProps {
     students: StudentType[]
 }
 
+
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
 
-    
     return (
         <div>
             <div className="action-bar mb-1">
@@ -56,6 +56,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
             </div>
 
             <div className="table-container">
+
                 <LiveResultsTable
                     students={students}
                     questions={questions}

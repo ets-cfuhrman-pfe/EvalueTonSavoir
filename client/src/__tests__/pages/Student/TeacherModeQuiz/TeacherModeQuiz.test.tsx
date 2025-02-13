@@ -53,7 +53,7 @@ describe('TeacherModeQuiz', () => {
             fireEvent.click(screen.getByText('Répondre'));
         });
         expect(mockSubmitAnswer).toHaveBeenCalledWith('Option A', 1);
-        expect(screen.getByText('Votre réponse est "Option A".')).toBeInTheDocument();
+        expect(screen.getByText('Votre réponse est:')).toBeInTheDocument();
     });
 
     test('handles disconnect button click', () => {

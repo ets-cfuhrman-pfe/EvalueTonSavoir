@@ -5,6 +5,7 @@ import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
 function formatLatex(text: string): string {
+
     let renderedText = '';
 
     try {

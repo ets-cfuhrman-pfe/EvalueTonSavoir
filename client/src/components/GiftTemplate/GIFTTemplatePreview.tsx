@@ -74,6 +74,7 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
                 <div className="error">{error}</div>
             ) : isPreviewReady ? (
                 <div data-testid="preview-container">
+
                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: items }) }}></div>
                 </div>
             ) : (
