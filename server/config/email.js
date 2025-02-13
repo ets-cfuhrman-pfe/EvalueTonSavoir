@@ -35,12 +35,12 @@ class Emailer {
         });
     }
 
-    quizShare(email, link) {
+    questionnaireShare(email, link) {
         this.transporter.sendMail({
             from: this.senderEmail,
             to: email,
-            subject: 'Un quiz vous a été transféré !',
-            text: 'Veuillez suivre ce lien pour ajouter ce quiz à votre compte. '+ link 
+            subject: 'Un questionnaire vous a été transféré !',
+            text: 'Veuillez suivre ce lien pour ajouter ce questionnaire à votre compte. '+ link 
         });
     }
 

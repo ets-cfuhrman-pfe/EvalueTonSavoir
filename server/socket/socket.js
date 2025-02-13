@@ -76,8 +76,8 @@ const setupWebsocket = (io) => {
       socket.to(roomName).emit("launch-student-mode", questions);
     });
 
-    socket.on("end-quiz", ({ roomName }) => {
-      socket.to(roomName).emit("end-quiz");
+    socket.on("end-questionnaire", ({ roomName }) => {
+      socket.to(roomName).emit("end-questionnaire");
     });
 
     socket.on("message", (data) => {

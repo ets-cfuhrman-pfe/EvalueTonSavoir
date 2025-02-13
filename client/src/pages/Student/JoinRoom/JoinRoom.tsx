@@ -53,7 +53,7 @@ const JoinRoom: React.FC = () => {
             setQuestions(questions);
             setQuestion(questions[0]);
         });
-        socket.on('end-quiz', () => {
+        socket.on('end-questionnaire', () => {
             disconnect();
         });
         socket.on('join-failure', (message) => {

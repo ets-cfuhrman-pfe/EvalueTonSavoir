@@ -66,7 +66,7 @@ class WebSocketService {
 
     endQuiz(roomName: string) {
         if (this.socket) {
-            this.socket.emit('end-quiz', { roomName });
+            this.socket.emit('end-questionnaire', { roomName });
         }
     }
 

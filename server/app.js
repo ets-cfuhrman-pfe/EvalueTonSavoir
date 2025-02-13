@@ -10,10 +10,10 @@ const { Server } = require("socket.io");
 // instantiate the db
 const db = require('./config/db.js');
 // instantiate the models
-const quiz = require('./models/quiz.js');
-const quizModel = new quiz(db);
+const questionnaires = require('./models/questionnaires.js');
+const questionnaireModel = new questionnaires(db);
 const folders = require('./models/folders.js');
-const foldersModel = new folders(db, quizModel);
+const foldersModel = new folders(db, questionnaireModel);
 const users = require('./models/users.js');
 const userModel = new users(db, foldersModel);
 const images = require('./models/images.js');
@@ -24,21 +24,21 @@ const usersController = require('./controllers/users.js');
 const usersControllerInstance = new usersController(userModel);
 const foldersController = require('./controllers/folders.js');
 const foldersControllerInstance = new foldersController(foldersModel);
-const quizController = require('./controllers/quiz.js');
-const quizControllerInstance = new quizController(quizModel, foldersModel);
+const questionnaireController = require('./controllers/questionnaire.js');
+const questionnaireControllerInstance = new questionnaireController(questionnaireModel, foldersModel);
 const imagesController = require('./controllers/images.js');
 const imagesControllerInstance = new imagesController(imageModel);
 
 // export the controllers
 module.exports.users = usersControllerInstance;
 module.exports.folders = foldersControllerInstance;
-module.exports.quizzes = quizControllerInstance;
+module.exports.questionnaires = questionnaireControllerInstance;
 module.exports.images = imagesControllerInstance;
 
 //import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
 const folderRouter = require('./routers/folders.js');
-const quizRouter = require('./routers/quiz.js');
+const questionnaireRouter = require('./routers/questionnaires.js');
 const imagesRouter = require('./routers/images.js');
 
 // Setup environment
@@ -82,7 +82,7 @@ app.use(bodyParser.json());
 // Create routes
 app.use('/api/user', userRouter);
 app.use('/api/folder', folderRouter);
-app.use('/api/quiz', quizRouter);
+app.use('/api/questionnaire', questionnaireRouter);
 app.use('/api/image', imagesRouter);
 
 app.use(errorHandler);

@@ -38,36 +38,36 @@ exports.IMAGE_NOT_FOUND = {
     code: 404
 }
 
-exports.QUIZ_NOT_FOUND = {
-    message: 'Aucun quiz portant cet identifiant n\'a été trouvé.',
+exports.QUESTIONNAIRE_NOT_FOUND = {
+    message: 'Aucun questionnaire portant cet identifiant n\'a été trouvé.',
     code: 404
 }
-exports.QUIZ_ALREADY_EXISTS = {
-    message: 'Le quiz existe déjà.',
+exports.QUESTIONNAIRE_ALREADY_EXISTS = {
+    message: 'Le questionnaire existe déjà.',
     code: 400
 }
-exports.UPDATE_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors de la mise à jour du quiz.',
+exports.UPDATE_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors de la mise à jour du questionnaire.',
     code: 400
 }
-exports.DELETE_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors de la suppression du quiz.',
+exports.DELETE_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors de la suppression du questionnaire.',
     code: 400
 }
-exports.GETTING_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors de la récupération du quiz.',
+exports.GETTING_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors de la récupération du questionnaire.',
     code: 400
 }
-exports.MOVING_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors du déplacement du quiz.',
+exports.MOVING_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors du déplacement du questionnaire.',
     code: 400
 }
-exports.DUPLICATE_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors de la duplication du quiz.',
+exports.DUPLICATE_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors de la duplication du questionnaire.',
     code: 400
 }
-exports.COPY_QUIZ_ERROR = {
-    message: 'Une erreur s\'est produite lors de la copie du quiz.',
+exports.COPY_QUESTIONNAIRE_ERROR = {
+    message: 'Une erreur s\'est produite lors de la copie du questionnaire.',
     code: 400
 }
 
