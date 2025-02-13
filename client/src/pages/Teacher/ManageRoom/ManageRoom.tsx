@@ -8,6 +8,7 @@ import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 // import { QuestionService } from '../../../services/QuestionService';
 import webSocketService, { AnswerReceptionFromBackendType } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
+import GroupIcon from '@mui/icons-material/Group';
 
 import './manageRoom.css';
 import { ENV_VARIABLES } from 'src/constants';
@@ -33,7 +34,8 @@ const ManageRoom: React.FC = () => {
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
-
+    const [quizStarted, setQuizStarted] = useState(false);
+    
     useEffect(() => {
         if (quizId.id) {
             const fetchquiz = async () => {
@@ -145,7 +147,7 @@ const ManageRoom: React.FC = () => {
                     console.log('Quiz questions not found (cannot update answers without them).');
                     return;
                 }
-    
+
                 // Update the students state using the functional form of setStudents
                 setStudents((prevStudents) => {
                     // print the list of current student names
@@ -153,7 +155,7 @@ const ManageRoom: React.FC = () => {
                     prevStudents.forEach((student) => {
                         console.log(student.name);
                     });
-    
+
                     let foundStudent = false;
                     const updatedStudents = prevStudents.map((student) => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
@@ -173,7 +175,7 @@ const ManageRoom: React.FC = () => {
                                 updatedAnswers = [...student.answers, newAnswer];
                             }
                             return { ...student, answers: updatedAnswers };
-                                    }
+                        }
                         return student;
                     });
                     if (!foundStudent) {
@@ -316,13 +318,18 @@ const ManageRoom: React.FC = () => {
         if (!socket || !roomName || !quiz?.content || quiz?.content.length === 0) {
             // TODO: This error happens when token expires! Need to handle it properly
             console.log(`Error launching quiz. socket: ${socket}, roomName: ${roomName}, quiz: ${quiz}`);
+            setQuizStarted(true);
+
             return;
         }
         switch (quizMode) {
             case 'student':
+                setQuizStarted(true);
                 return launchStudentMode();
             case 'teacher':
+                setQuizStarted(true);
                 return launchTeacherMode();
+                
         }
     };
 
@@ -427,9 +434,19 @@ const ManageRoom: React.FC = () => {
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter?`} />
 
-                <div className='centerTitle'>
-                    <div className='title'>Salle: {roomName}</div>
-                    <div className='userCount subtitle'>Utilisateurs: {students.length}/60</div>
+
+
+
+                <div className='headerContent' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                        <div className='title'>Salle: {roomName}</div>
+                    </div>
+                    {quizStarted && (
+                        <div className='userCount subtitle smallText' style={{ display: 'flex', alignItems: 'center' }}>
+                            <GroupIcon style={{ marginRight: '5px' }} />
+                            {students.length}/60
+                        </div>
+                    )}
                 </div>
 
                 <div className='dumb'></div>
@@ -441,8 +458,12 @@ const ManageRoom: React.FC = () => {
                 {quizQuestions ? (
 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
+                        {!isNaN(Number(currentQuestion?.question.id)) && (
+                            <strong className='number of questions'>
+                                Question {Number(currentQuestion?.question.id)}/{quizQuestions?.length}
+                            </strong>
+                        )}
 
                         {quizMode === 'teacher' && (
 
@@ -479,23 +500,23 @@ const ManageRoom: React.FC = () => {
                         </div>
 
                         {quizMode === 'teacher' && (
-                        <div className="questionNavigationButtons" style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div className="previousQuestionButton">
-                                <Button onClick={previousQuestion} 
-                                variant="contained" 
-                                disabled={Number(currentQuestion?.question.id) <= 1}>
-                                    Question précédente
-                                </Button>
-                            </div>
-                            <div className="nextQuestionButton">
-                                <Button onClick={nextQuestion} 
-                                variant="contained" 
-                                disabled={Number(currentQuestion?.question.id) >=quizQuestions.length}
-                                >
-                                    Prochaine question
-                                </Button>
-                            </div>
-                        </div> )}
+                            <div className="questionNavigationButtons" style={{ display: 'flex', justifyContent: 'center' }}>
+                                <div className="previousQuestionButton">
+                                    <Button onClick={previousQuestion}
+                                        variant="contained"
+                                        disabled={Number(currentQuestion?.question.id) <= 1}>
+                                        Question précédente
+                                    </Button>
+                                </div>
+                                <div className="nextQuestionButton">
+                                    <Button onClick={nextQuestion}
+                                        variant="contained"
+                                        disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
+                                    >
+                                        Prochaine question
+                                    </Button>
+                                </div>
+                            </div>)}
 
                     </div>
 

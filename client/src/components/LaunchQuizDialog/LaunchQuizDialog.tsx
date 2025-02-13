@@ -47,10 +47,10 @@ const LaunchQuizDialog: React.FC<Props> = ({ open, handleOnClose, launchQuiz, se
 
             <DialogActions>
                 <Button variant="outlined" onClick={handleOnClose}>
-                    Annuler
+                    <div>Annuler</div>
                 </Button>
                 <Button variant="contained" onClick={launchQuiz}>
-                    Lancer
+                    <div>Lancer</div>
                 </Button>
             </DialogActions>
         </Dialog>
