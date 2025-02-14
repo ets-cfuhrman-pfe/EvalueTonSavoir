@@ -26,6 +26,8 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
 
     return (
+
+        
         <div>
             <div className="action-bar mb-1">
                 <div className="text-2xl text-bold">Résultats du quiz</div>
