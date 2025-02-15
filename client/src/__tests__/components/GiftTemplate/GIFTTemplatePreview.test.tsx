@@ -3,49 +3,87 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview';
 
+const validQuestions = [
+  '::TFTitle::[markdown]Troo statement {TRUE}',
+  '::SATitle::[markdown]What is the answer? {=ShortAnswerOne =ShortAnswerTwo}',
+  '::MCQTitle::[markdown]MultiChoice question? {=MQAnswerOne ~MQAnswerTwo#feedback####Gen feedback}',
+];
+
+const unsupportedQuestions = [
+  '::Title::[markdown]Essay {}',
+  '::Title::[markdown]Matching {}',
+  '::Title::[markdown]Description',
+  '$CATEGORY a/b/c'
+];
+
 describe('GIFTTemplatePreview Component', () => {
   test('renders error message when questions contain invalid syntax', () => {
-    render(<GIFTTemplatePreview questions={['Invalid GIFT syntax']} />);
-    const errorMessage = screen.findByText(/Erreur inconnue/i, {}, { timeout: 5000 });
-    expect(errorMessage).resolves.toBeInTheDocument();
-  });
-  test('renders preview when valid questions are provided', () => {
-    const questions = [
-      'Question 1 { A | B | C }',
-      'Question 2 { D | E | F }',
-    ];
-    render(<GIFTTemplatePreview questions={questions} />);
+    render(<GIFTTemplatePreview questions={['T{']} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
+    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
+    expect(errorMessage).toBeInTheDocument();
   });
+
+  test('renders preview when valid questions are provided, including answers, has no errors', () => {
+    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={false} />);
+    const previewContainer = screen.getByTestId('preview-container');
+    expect(previewContainer).toBeInTheDocument();
+    // Check that all question titles are rendered inside the previewContainer
+    validQuestions.forEach((question) => {
+      const title = question.split('::')[1].split('::')[0];
+      expect(previewContainer).toHaveTextContent(title);
+    });
+    // There should be no errors
+    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
+    expect(errorMessage).not.toBeInTheDocument();
+    // Check that some stems and answers are rendered inside the previewContainer
+    expect(previewContainer).toHaveTextContent('Troo statement');
+    expect(previewContainer).toHaveTextContent('What is the answer?');
+    expect(previewContainer).toHaveTextContent('MultiChoice question?');
+    expect(previewContainer).toHaveTextContent('Vrai');
+    // short answers are stored in a textbox
+    const answerInputElements = screen.getAllByRole('textbox');
+    const giftInputElements = answerInputElements.filter(element => element.classList.contains('gift-input'));
+
+    expect(giftInputElements).toHaveLength(1);
+    expect(giftInputElements[0]).toHaveAttribute('placeholder', 'ShortAnswerOne, ShortAnswerTwo');
+
+    // Check for correct answer icon just after MQAnswerOne
+    const mqAnswerOneElement = screen.getByText('MQAnswerOne');
+    const correctAnswerIcon = mqAnswerOneElement.parentElement?.querySelector('[data-testid="correct-icon"]');
+    expect(correctAnswerIcon).toBeInTheDocument();
+
+    // Check for incorrect answer icon just after MQAnswerTwo
+    const mqAnswerTwoElement = screen.getByText('MQAnswerTwo');
+    const incorrectAnswerIcon = mqAnswerTwoElement.parentElement?.querySelector('[data-testid="incorrect-icon"]');
+    expect(incorrectAnswerIcon).toBeInTheDocument();
+ });
+
   test('hides answers when hideAnswers prop is true', () => {
-    const questions = [
-      'Question 1 { A | B | C }',
-      'Question 2 { D | E | F }',
-    ];
-    render(<GIFTTemplatePreview questions={questions} hideAnswers />);
+    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={true} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
+    expect(previewContainer).toHaveTextContent('Troo statement');
+    expect(previewContainer).toHaveTextContent('What is the answer?');
+    expect(previewContainer).toHaveTextContent('MultiChoice question?');
+    expect(previewContainer).toHaveTextContent('Vrai');
+    expect(previewContainer).not.toHaveTextContent('ShortAnswerOne');
+    expect(previewContainer).not.toHaveTextContent('ShortAnswerTwo');
+    // shouldn't have correct/incorrect icons
+    const correctAnswerIcon = screen.queryByTestId('correct-icon');
+    expect(correctAnswerIcon).not.toBeInTheDocument();
+    const incorrectAnswerIcon = screen.queryByTestId('incorrect-icon');
+    expect(incorrectAnswerIcon).not.toBeInTheDocument();
   });
-  // it('renders images correctly', () => {
-  //   const questions = [
-  //     'Question 1',
-  //     '<img src="image1.jpg" alt="Image 1">',
-  //     'Question 2',
-  //     '<img src="image2.jpg" alt="Image 2">',
-  //   ];
-  //   const { getByAltText } = render(<GIFTTemplatePreview questions={questions} />);
-  //   const image1 = getByAltText('Image 1');
-  //   const image2 = getByAltText('Image 2');
-  //   expect(image1).toBeInTheDocument();
-  //   expect(image2).toBeInTheDocument();
-  // });
-  // it('renders non-images correctly', () => {
-  //   const questions = ['Question 1', 'Question 2'];
-  //   const { queryByAltText } = render(<GIFTTemplatePreview questions={questions} />);
-  //   const image1 = queryByAltText('Image 1');
-  //   const image2 = queryByAltText('Image 2');
-  //   expect(image1).toBeNull();
-  //   expect(image2).toBeNull();
-  // });
+
+  test('should indicate in the preview that unsupported GIFT questions are not supported', () => {
+    render(<GIFTTemplatePreview questions={unsupportedQuestions} hideAnswers />);
+    const previewContainer = screen.getByTestId('preview-container');
+    expect(previewContainer).toBeInTheDocument();
+    // find all unsupported errors (should be 4)
+    const unsupportedMessages = previewContainer.querySelectorAll('div[label="error-message"]');
+    expect(unsupportedMessages).toHaveLength(4);
+  });
+
 });
