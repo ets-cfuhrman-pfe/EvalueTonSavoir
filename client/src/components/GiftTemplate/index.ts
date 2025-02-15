@@ -18,11 +18,11 @@ What is the capital of Canada? {=Canada -> Ottawa =Italy -> Rome =Japan -> Tokyo
 
 
 const items = multiple.map((item) => Template(item, { theme: 'dark' })).join('');
-const errorItemDark = ErrorTemplate('Hello');
+const errorItemDark = ErrorTemplate('Hello', 'Error');
 
 const lightItems = multiple.map((item) => Template(item, { theme: 'light' })).join('');
 
-const errorItem = ErrorTemplate('Hello');
+const errorItem = ErrorTemplate('Hello', 'Error');
 
 const app = document.getElementById('app');
 if (app) app.innerHTML = items + errorItemDark + lightItems + errorItem;
