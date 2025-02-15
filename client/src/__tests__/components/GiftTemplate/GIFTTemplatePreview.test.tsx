@@ -17,7 +17,7 @@ const unsupportedQuestions = [
 ];
 
 describe('GIFTTemplatePreview Component', () => {
-  test('renders error message when questions contain invalid syntax', () => {
+  it('renders error message when questions contain invalid syntax', () => {
     render(<GIFTTemplatePreview questions={['T{']} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe('GIFTTemplatePreview Component', () => {
     expect(errorMessage).toBeInTheDocument();
   });
 
-  test('renders preview when valid questions are provided, including answers, has no errors', () => {
+  it('renders preview when valid questions are provided, including answers, has no errors', () => {
     render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('GIFTTemplatePreview Component', () => {
     expect(incorrectAnswerIcon).toBeInTheDocument();
  });
 
-  test('hides answers when hideAnswers prop is true', () => {
+ it('hides answers when hideAnswers prop is true', () => {
     render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={true} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
@@ -77,8 +77,8 @@ describe('GIFTTemplatePreview Component', () => {
     expect(incorrectAnswerIcon).not.toBeInTheDocument();
   });
 
-  test('should indicate in the preview that unsupported GIFT questions are not supported', () => {
-    render(<GIFTTemplatePreview questions={unsupportedQuestions} hideAnswers />);
+  it('should indicate in the preview that unsupported GIFT questions are not supported', () => {
+    render(<GIFTTemplatePreview questions={unsupportedQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
     // find all unsupported errors (should be 4)
