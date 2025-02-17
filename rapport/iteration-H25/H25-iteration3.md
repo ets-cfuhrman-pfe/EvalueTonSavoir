@@ -13,13 +13,11 @@
 
 Les objectifs clés de cette itération sont les suivants:
 
--   Démontrer des maquettes pour la création d'équation facile, modernisation de l'interface de la page professeur et le tableau des résultats en temps réel. 
 -   Démontrer le SSO fonctionnel en production
--   Démontrer la fonctionnalité d'exporter un Quiz en PDF
 -   Démontrer un exemple d'affichage de pourcentage entre chaque question
--   Démontrer la fonction de copier/coller une question en utilisant le bouton
--   Démontrer l'ajout d'indices aux questions
--   Démontrer la fonctionnalité d'avoir un code permanent pour les salles de quiz
+-   Démontrer la fonctionnalité d'avoir un code permanent pour les salles de quiz fonctionnel en production 
+-   Démontrer la fonctionnalité d'avoir un code QR pour accéder aux salles de quiz
+-   Démontrer la gestion des images
 
 
 
@@ -27,15 +25,20 @@ Les objectifs clés de cette itération sont les suivants:
 
 | Nom / Description              | Priorité | [Taille estimée (points)](#commentEstimer 'Comment estimer?') | Assigné à (nom) | Documents de référence                                                                          |
 | ------------------------------ | -------: | ------------------------------------------------------------: | --------------- | ----------------------------------------------------------------------------------------------- |
-| SSO en production |        1 |                                                             4 | Edwin            ||
-| Maquette figma pour création d'équation facile |  1|                                                        1 | Ana            ||
-| Maquette figma pour modernisation de la page professeur |  2|                                                        1 | Ana            ||
-| Maquette figma du tableau des résultats en temps réel |  2|                                                        1 | Ana            ||
-| Fonction Quiz à PDF |   2|                                      2| Philippe         |                                                 |
-| Ajout d'indices aux questions          |   1|                                      1| Nouhaila         |   
-| Code permanent pour les salles          |   2|                                      1| Nouhaila         |                                                 |
-| Affichage d'un pourcentage de participation et de bonne réponse               |   3|                                      3| Kendrick    |                                                 |
-
+|  Démontrer le SSO fonctionnel en production |        1 |                                                             4 | Edwin            ||
+|  Page admin- Gérer les rôles des utilisateurs (administrateurs, professeurs, étudiants).  |        3 |                                                             3 | Edwin            ||
+| Gestion des images         |   2|                                      3| Edwin         |   
+| Démontrer un exemple d'affichage de pourcentage entre chaque question |  1|                                                        3 | Kendrick            ||
+| Démontrer la fonctionnalité d'avoir un code permanent pour les salles de quiz fonctionnel en production |  1|                                                        4 | Nouhaila            ||
+| Démontrer la fonctionnalité d'avoir un code QR pour accéder aux salles de quiz |   2|                                      2| Nouhaila         |                                                 |
+| Maquette figma  |  2|                                                        2 | Ana            ||
+| Documentation|  2|                                                        2 | Ana            ||
+| Création d'un quiz auquel les étudiants pourront répondre si l'application est jugée satisfaisante|  2|                                                        1 | Ana            ||
+| Amélioration du look and feel de l'application|  2|                                                        1 | Ana            ||
+| Partager un quiz en mode édition|  2|                                                        3 | Philippe            ||
+| En tant que prof que j'ai pas besoin d'échappement de mes équation en Latex/Solution automatique pour échappement ( j'ai besoin de plus d'informations mais ça avait l'air prioritaire )|  2|                                                        3 | Philippe            ||
+| En tant que professeur je veux entrer mon gift question par question au lieu d'un gros GIFT pour un seul quiz|  2|                                                        3 | Philippe            ||
+| Élargir l'interface de l'édition pour prendre toute l'écran|  2|                                                        1 | Philippe            ||
 ## Problèmes principaux rencontrés
 
 | Problème                                                                                                                               | Notes                                                                                                                                                                                                                                         |
