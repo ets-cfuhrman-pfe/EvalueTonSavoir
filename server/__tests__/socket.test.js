@@ -154,11 +154,11 @@ describe("websocket server", () => {
     });
   });
 
-  test("should end quiz", (done) => {
-    teacherSocket.emit("end-quiz", {
+  test("should end questionnaire", (done) => {
+    teacherSocket.emit("end-questionnaire", {
       roomName: "ROOM1",
     });
-    studentSocket.on("end-quiz", () => {
+    studentSocket.on("end-questionnaire", () => {
       done();
     });
   });

@@ -63,12 +63,12 @@ describe('WebSocketService', () => {
         });
     });
 
-    test('endQuiz should emit end-quiz event with correct parameters', () => {
+    test('endQuiz should emit end-questionnaire event with correct parameters', () => {
         const roomName = 'testRoom';
 
         mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
         WebsocketService.endQuiz(roomName);
-        expect(mockSocket.emit).toHaveBeenCalledWith('end-quiz', { roomName });
+        expect(mockSocket.emit).toHaveBeenCalledWith('end-questionnaire', { roomName });
     });
 
     test('joinRoom should emit join-room event with correct parameters', () => {

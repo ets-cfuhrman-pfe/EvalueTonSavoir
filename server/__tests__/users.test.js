@@ -1,6 +1,6 @@
 const Users = require('../models/users');
 const bcrypt = require('bcrypt');
-const Quizzes = require('../models/quiz');
+const Questionnaires = require('../models/questionnaires');
 const Folders = require('../models/folders');
 const { ObjectId } = require('mongodb');
 
@@ -26,8 +26,8 @@ describe('Users', () => {
             deleteOne: jest.fn(),
         };
 
-        const quizModel = new Quizzes(db);
-        const foldersModel = new Folders(db, quizModel);
+        const questionnaireModel = new Questionnaires(db);
+        const foldersModel = new Folders(db, questionnaireModel);
 
         users = new Users(db, foldersModel);
     });
