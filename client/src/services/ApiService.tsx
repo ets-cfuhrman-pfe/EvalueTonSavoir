@@ -514,6 +514,38 @@ class ApiService {
         }
     }
 
+    public async createRoom(title: string): Promise<ApiResponse> {
+        try {
+            if (!title) {
+                throw new Error(`Le titre de la salle est requis.`);
+            }
+    
+            const url: string = this.constructRequestUrl(`room/create`);
+            const headers = this.constructRequestHeaders();
+            const body = { title };
+    
+            const result: AxiosResponse = await axios.post(url, body, { headers: headers });
+    
+            if (result.status !== 200) {
+                throw new Error(`La création de la salle a échoué. Status: ${result.status}`);
+            }
+    
+            // Return room ID from response data
+            return result.data.roomId;
+    
+        } catch (error) {
+            console.log("Error details: ", error);
+    
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la création de la salle.';
+            }
+    
+            return `Une erreur inattendue s'est produite lors de la création de la salle.`
+        }
+    }
+
     // Quiz Routes
 
     /**

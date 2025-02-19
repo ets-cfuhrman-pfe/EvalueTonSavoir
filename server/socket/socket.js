@@ -23,25 +23,25 @@ const setupWebsocket = (io) => {
       totalConnections
     );
 
-    socket.on("create-room", (sentRoomName) => {
-      if (sentRoomName) {
-        const roomName = sentRoomName.toUpperCase();
-        if (!io.sockets.adapter.rooms.get(roomName)) {
+    socket.on("create-room", (roomId) => {
+  if (roomId) {
+      const roomName = roomId;
+      if (!io.sockets.adapter.rooms.get(roomName)) {
           socket.join(roomName);
           socket.emit("create-success", roomName);
-        } else {
-          socket.emit("create-failure");
-        }
       } else {
-        const roomName = generateRoomName();
-        if (!io.sockets.adapter.rooms.get(roomName)) {
+          socket.emit("create-failure");
+      }
+  } else {
+      const roomName = generateRoomName();
+      if (!io.sockets.adapter.rooms.get(roomName)) {
           socket.join(roomName);
           socket.emit("create-success", roomName);
-        } else {
+      } else {
           socket.emit("create-failure");
-        }
       }
-    });
+  }
+});
 
     socket.on("join-room", ({ enteredRoomName, username }) => {
       if (io.sockets.adapter.rooms.has(enteredRoomName)) {
@@ -110,16 +110,6 @@ const setupWebsocket = (io) => {
     });
   });
 
-  const generateRoomName = (length = 6) => {
-    const characters = "0123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
-    }
-    return result;
-  };
 };
 
 module.exports = { setupWebsocket };
