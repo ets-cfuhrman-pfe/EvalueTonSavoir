@@ -1,4 +1,3 @@
-// ManageRoom.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
@@ -9,13 +8,11 @@ import {
     isHighLowNumericalAnswer
 } from 'gift-pegjs/typeGuards';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
-// import { QuestionService } from '../../../services/QuestionService';
 import webSocketService, {
     AnswerReceptionFromBackendType
 } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
-
 import './manageRoom.css';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
@@ -23,12 +20,12 @@ import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 import { Refresh, Error } from '@mui/icons-material';
 import StudentWaitPage from 'src/components/StudentWaitPage/StudentWaitPage';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
-//import QuestionNavigation from 'src/components/QuestionNavigation/QuestionNavigation';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { RoomType } from 'src/Types/RoomType';
-import { Button, Tooltip, NativeSelect } from '@mui/material';
+import { Button, NativeSelect } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -44,6 +41,8 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     const [rooms, setRooms] = useState<RoomType[]>([]);
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
+    const [openDialog, setOpenDialog] = useState(false);
+    const [newRoomTitle, setNewRoomTitle] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -65,24 +64,30 @@ const ManageRoom: React.FC = () => {
     };
 
     useEffect(() => {
-        // Mettre à jour roomName quand une salle est sélectionnée
         if (selectedRoomId && rooms.length > 0) {
             const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
             setRoomName(selectedRoom ? selectedRoom.title : '');
         } else {
-            setRoomName(''); // Réinitialiser si aucune salle sélectionnée
+            setRoomName('');
         }
-    }, [selectedRoomId, rooms]); // Déclenché quand la sélection ou la liste change
+    }, [selectedRoomId, rooms]);
+
+    const handleDialogClose = () => {
+        setOpenDialog(false);
+    };
 
     const handleCreateRoom = async () => {
+        setOpenDialog(true);
+    };
+    const handleSubmitRoom = async () => {
         try {
-            const roomTitle = prompt('Veuillez saisir le titre de la nouvelle salle');
-            if (roomTitle) {
-                await ApiService.createRoom(roomTitle);
+            if (newRoomTitle) {
+                await ApiService.createRoom(newRoomTitle);
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
                 const newlyCreatedRoom = userRooms[userRooms.length - 1] as RoomType;
                 setSelectedRoomId(newlyCreatedRoom._id);
+                setOpenDialog(false);
             }
         } catch (error) {
             console.error('Error creating Room:', error);
@@ -472,7 +477,6 @@ const ManageRoom: React.FC = () => {
 
                 <div className="dumb"></div>
             </div>
-            {/* bloc Room */}
             <div className="room">
                 <div className="select">
                     <NativeSelect
@@ -492,22 +496,44 @@ const ManageRoom: React.FC = () => {
                 </div>
 
                 <div className="actions" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Tooltip title="Ajouter une nouvelle salle" placement="top">
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleCreateRoom}
-                            style={{
-                                width: 'auto',
-                                marginLeft: '30px',
-                                height: '40px',
-                                padding: '0 20px'
-                            }}
-                        >
-                            Ajouter une nouvelle salle
-                        </Button>
-                    </Tooltip>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleCreateRoom}
+                        style={{
+                            width: 'auto',
+                            marginLeft: '30px',
+                            height: '40px',
+                            padding: '0 20px'
+                        }}
+                    >
+                        Ajouter une nouvelle salle
+                    </Button>
                 </div>
+
+                {/* Dialog pour créer une salle */}
+                <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+                    <DialogTitle>Créer une nouvelle salle</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Titre de la salle"
+                            type="text"
+                            fullWidth
+                            value={newRoomTitle}
+                            onChange={(e) => setNewRoomTitle(e.target.value)}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleDialogClose} color="secondary">
+                            Annuler
+                        </Button>
+                        <Button onClick={handleSubmitRoom} color="primary">
+                            Créer
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
 
             {/* the following breaks the css (if 'room' classes are nested) */}
