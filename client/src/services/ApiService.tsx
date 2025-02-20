@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import { FolderType } from 'src/Types/FolderType';
 import { QuizType } from 'src/Types/QuizType';
+import { RoomType } from 'src/Types/RoomType';
 import { ENV_VARIABLES } from 'src/constants';
 
 type ApiResponse = boolean | string;
@@ -378,6 +379,171 @@ class ApiService {
         }
     }
 
+    //ROOM routes
+
+    public async getUserRooms(): Promise<RoomType[] | string> {
+        try {
+            const url: string = this.constructRequestUrl(`/room/getUserRooms`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention des salles utilisateur a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.data.map((room: RoomType) => ({ _id: room._id, title: room.title }));
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const url = err.config?.url || 'URL inconnue';
+                return data?.error || `Erreur serveur inconnue lors de la requête (${url}).`;
+            }
+
+            return `Une erreur inattendue s'est produite.`
+        }
+    }
+
+
+
+    public async getRoomTitleByUserId(userId: string): Promise<string[] | string> {
+        try {
+            if (!userId) {
+                throw new Error(`L'ID utilisateur est requis.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/room/getRoomTitleByUserId/${userId}`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention des titres des salles a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.titles;
+        } catch (error) {
+            console.log("Error details: ", error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+    public async getRoomTitle(roomId: string): Promise<string | string> {
+        try {
+            if (!roomId) {
+                throw new Error(`L'ID de la salle est requis.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/room/getRoomTitle/${roomId}`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention du titre de la salle a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.title;
+        } catch (error) {
+            console.log("Error details: ", error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+    public async createRoom(title: string): Promise<string | string> {
+        try {
+            if (!title) {
+                throw new Error(`Le titre de la salle est requis.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/room/create`);
+            const headers = this.constructRequestHeaders();
+            const body = { title };
+
+            const result: AxiosResponse = await axios.post(url, body, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La création de la salle a échoué. Status: ${result.status}`);
+            }
+
+            return `Salle créée avec succès. ID de la salle: ${result.data.roomId}`;
+        } catch (error) {
+            console.log("Error details: ", error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la création de la salle.';
+            }
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+    public async deleteRoom(roomId: string): Promise<string | string> {
+        try {
+            if (!roomId) {
+                throw new Error(`L'ID de la salle est requis.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/room/delete/${roomId}`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.delete(url, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La suppression de la salle a échoué. Status: ${result.status}`);
+            }
+
+            return `Salle supprimée avec succès.`;
+        } catch (error) {
+            console.log("Error details: ", error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la suppression de la salle.';
+            }
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+    public async renameRoom(roomId: string, newTitle: string): Promise<string | string> {
+        try {
+            if (!roomId || !newTitle) {
+                throw new Error(`L'ID de la salle et le nouveau titre sont requis.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/room/rename`);
+            const headers = this.constructRequestHeaders();
+            const body = { roomId, newTitle };
+
+            const result: AxiosResponse = await axios.put(url, body, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La mise à jour du titre de la salle a échoué. Status: ${result.status}`);
+            }
+
+            return `Titre de la salle mis à jour avec succès.`;
+        } catch (error) {
+            console.log("Error details: ", error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la mise à jour du titre.';
+            }
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
     /**
      * @returns true if successful 
      * @returns A error string if unsuccessful,
@@ -513,39 +679,7 @@ class ApiService {
             return `Une erreur inattendue s'est produite.`
         }
     }
-
-    public async createRoom(title: string): Promise<ApiResponse> {
-        try {
-            if (!title) {
-                throw new Error(`Le titre de la salle est requis.`);
-            }
     
-            const url: string = this.constructRequestUrl(`room/create`);
-            const headers = this.constructRequestHeaders();
-            const body = { title };
-    
-            const result: AxiosResponse = await axios.post(url, body, { headers: headers });
-    
-            if (result.status !== 200) {
-                throw new Error(`La création de la salle a échoué. Status: ${result.status}`);
-            }
-    
-            // Return room ID from response data
-            return result.data.roomId;
-    
-        } catch (error) {
-            console.log("Error details: ", error);
-    
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la création de la salle.';
-            }
-    
-            return `Une erreur inattendue s'est produite lors de la création de la salle.`
-        }
-    }
-
     // Quiz Routes
 
     /**

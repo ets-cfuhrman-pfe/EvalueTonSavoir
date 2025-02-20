@@ -211,19 +211,16 @@ create = async (req, res, next) => {
         try {
             const { userId } = req.params;
 
-            // V�rification que l'userId est valide
             if (!userId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
 
-            // R�cup�rer les salles de l'utilisateur
             const rooms = await this.rooms.getUserRooms(userId);
 
             if (!rooms || rooms.length === 0) {
                 throw new AppError(ROOM_NOT_FOUND);
             }
 
-            // Extraire uniquement les titres des salles
             const roomTitles = rooms.map(room => room.title);
 
             return res.status(200).json({
