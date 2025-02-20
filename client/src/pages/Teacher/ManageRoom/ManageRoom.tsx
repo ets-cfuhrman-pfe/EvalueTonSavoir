@@ -28,8 +28,7 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { RoomType } from 'src/Types/RoomType';
-import { IconButton, Button, Tooltip, NativeSelect } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Button, Tooltip, NativeSelect } from '@mui/material';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -43,7 +42,7 @@ const ManageRoom: React.FC = () => {
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState(false);
-    const [rooms, setFolders] = useState<RoomType[]>([]);
+    const [rooms, setRooms] = useState<RoomType[]>([]);
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     useEffect(() => {
@@ -52,9 +51,9 @@ const ManageRoom: React.FC = () => {
                 navigate('/teacher/login');
                 return;
             } else {
-                const userFolders = await ApiService.getUserRooms();
+                const userRooms = await ApiService.getUserRooms();
 
-                setFolders(userFolders as RoomType[]);
+                setRooms(userRooms as RoomType[]);
             }
         };
 
@@ -63,6 +62,31 @@ const ManageRoom: React.FC = () => {
 
     const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedRoomId(event.target.value);
+    };
+
+    useEffect(() => {
+        // Mettre à jour roomName quand une salle est sélectionnée
+        if (selectedRoomId && rooms.length > 0) {
+            const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
+            setRoomName(selectedRoom ? selectedRoom.title : '');
+        } else {
+            setRoomName(''); // Réinitialiser si aucune salle sélectionnée
+        }
+    }, [selectedRoomId, rooms]); // Déclenché quand la sélection ou la liste change
+
+    const handleCreateRoom = async () => {
+        try {
+            const roomTitle = prompt('Veuillez saisir le titre de la nouvelle salle');
+            if (roomTitle) {
+                await ApiService.createRoom(roomTitle);
+                const userRooms = await ApiService.getUserRooms();
+                setRooms(userRooms as RoomType[]);
+                const newlyCreatedRoom = userRooms[userRooms.length - 1] as RoomType;
+                setSelectedRoomId(newlyCreatedRoom._id);
+            }
+        } catch (error) {
+            console.error('Error creating Room:', error);
+        }
     };
 
     useEffect(() => {
@@ -459,7 +483,7 @@ const ManageRoom: React.FC = () => {
                     >
                         <option value=""> Sélectionner une salle </option>
                         {rooms.map((room: RoomType) => (
-                            <option value={room.title} key={room.title}>
+                            <option value={room._id} key={room._id}>
                                 {' '}
                                 {room.title}{' '}
                             </option>
@@ -467,11 +491,21 @@ const ManageRoom: React.FC = () => {
                     </NativeSelect>
                 </div>
 
-                <div className="actions">
-                    <Tooltip title="Créer la salle" placement="top">
-                        <IconButton color="primary" onClick={createWebSocketRoom}>
-                            <Add />
-                        </IconButton>
+                <div className="actions" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Tooltip title="Ajouter une nouvelle salle" placement="top">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCreateRoom}
+                            style={{
+                                width: 'auto',
+                                marginLeft: '30px',
+                                height: '40px',
+                                padding: '0 20px'
+                            }}
+                        >
+                            Ajouter une nouvelle salle
+                        </Button>
                     </Tooltip>
                 </div>
             </div>
