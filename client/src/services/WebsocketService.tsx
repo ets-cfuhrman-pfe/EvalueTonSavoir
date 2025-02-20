@@ -46,9 +46,10 @@ class WebSocketService {
         }
     }
 
-    createRoom() {
+    createRoom(roomName: string) {
         if (this.socket) {
-            this.socket.emit('create-room');
+            const nameToSend = roomName;
+            this.socket.emit('create-room', nameToSend); 
         }
     }
 

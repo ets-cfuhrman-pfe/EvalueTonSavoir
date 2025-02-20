@@ -3,10 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
-import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer } from "gift-pegjs/typeGuards";
+import {
+    isSimpleNumericalAnswer,
+    isRangeNumericalAnswer,
+    isHighLowNumericalAnswer
+} from 'gift-pegjs/typeGuards';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 // import { QuestionService } from '../../../services/QuestionService';
-import webSocketService, { AnswerReceptionFromBackendType } from '../../../services/WebsocketService';
+import webSocketService, {
+    AnswerReceptionFromBackendType
+} from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
 
@@ -22,16 +28,8 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { RoomType } from 'src/Types/RoomType';
-import {
-    IconButton,
-    Button,
-    Tooltip,
-    NativeSelect,
-} from '@mui/material';
-import {
-    Add
-} from '@mui/icons-material';
-
+import { IconButton, Button, Tooltip, NativeSelect } from '@mui/material';
+import { Add } from '@mui/icons-material';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -51,15 +49,13 @@ const ManageRoom: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (!ApiService.isLoggedIn()) {
-                navigate("/teacher/login");
+                navigate('/teacher/login');
                 return;
-            }
-            else {
+            } else {
                 const userFolders = await ApiService.getUserRooms();
 
                 setFolders(userFolders as RoomType[]);
             }
-
         };
 
         fetchData();
@@ -69,30 +65,15 @@ const ManageRoom: React.FC = () => {
         setSelectedRoomId(event.target.value);
     };
 
-    const handleCreateRoom = async () => {
-        try {
-            const roomTitle = prompt('Titre de la salle');
-            if (roomTitle) {
-                await ApiService.createFolder(roomTitle);
-                const userFolders = await ApiService.getUserFolders();
-                setFolders(userFolders as RoomType[]);                
-                const newlyCreatedFolder = userFolders[userFolders.length - 1] as RoomType;
-                setSelectedRoomId(newlyCreatedFolder._id);
-                
-            }
-        } catch (error) {
-            console.error('Error creating folder:', error);
-        }
-    };
-    
     useEffect(() => {
         if (quizId.id) {
             const fetchquiz = async () => {
-
                 const quiz = await ApiService.getQuiz(quizId.id as string);
 
                 if (!quiz) {
-                    window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+                    window.alert(
+                        `Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                    );
                     console.error('Quiz not found for id:', quizId.id);
                     navigate('/teacher/dashboard');
                     return;
@@ -111,9 +92,10 @@ const ManageRoom: React.FC = () => {
             };
 
             fetchquiz();
-
         } else {
-            window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+            window.alert(
+                `Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`
+            );
             console.error('Quiz not found for id:', quizId.id);
             navigate('/teacher/dashboard');
             return;
@@ -138,9 +120,8 @@ const ManageRoom: React.FC = () => {
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
 
         socket.on('connect', () => {
-            webSocketService.createRoom();
+            webSocketService.createRoom(selectedRoomId);
             console.error('socket.on(connect:)');
-
         });
         socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
@@ -149,7 +130,6 @@ const ManageRoom: React.FC = () => {
         socket.on('create-success', (roomName: string) => {
             setRoomName(roomName);
             console.error('create-success', roomName);
-
         });
         socket.on('create-failure', () => {
             console.log('Error creating room.');
@@ -195,7 +175,9 @@ const ManageRoom: React.FC = () => {
             console.log(`Listening for submit-answer-room in room ${roomName}`);
             socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
                 const { answer, idQuestion, idUser, username } = answerData;
-                console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
+                console.log(
+                    `Received answer from ${username} for question ${idQuestion}: ${answer}`
+                );
                 if (!quizQuestions) {
                     console.log('Quiz questions not found (cannot update answers without them).');
                     return;
@@ -214,17 +196,33 @@ const ManageRoom: React.FC = () => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
                         if (student.id === idUser) {
                             foundStudent = true;
-                            const existingAnswer = student.answers.find((ans) => ans.idQuestion === idQuestion);
+                            const existingAnswer = student.answers.find(
+                                (ans) => ans.idQuestion === idQuestion
+                            );
                             let updatedAnswers: Answer[] = [];
                             if (existingAnswer) {
                                 // Update the existing answer
                                 updatedAnswers = student.answers.map((ans) => {
                                     console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
-                                    return (ans.idQuestion === idQuestion ? { ...ans, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) } : ans);
+                                    return ans.idQuestion === idQuestion
+                                        ? {
+                                              ...ans,
+                                              answer,
+                                              isCorrect: checkIfIsCorrect(
+                                                  answer,
+                                                  idQuestion,
+                                                  quizQuestions!
+                                              )
+                                          }
+                                        : ans;
                                 });
                             } else {
                                 // Add a new answer
-                                const newAnswer = { idQuestion, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) };
+                                const newAnswer = {
+                                    idQuestion,
+                                    answer,
+                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
+                                };
                                 updatedAnswers = [...student.answers, newAnswer];
                             }
                             return { ...student, answers: updatedAnswers };
@@ -239,7 +237,6 @@ const ManageRoom: React.FC = () => {
             });
             setSocket(socket);
         }
-
     }, [socket, currentQuestion, quizQuestions]);
 
     const nextQuestion = () => {
@@ -306,7 +303,9 @@ const ManageRoom: React.FC = () => {
     const launchQuiz = () => {
         if (!socket || !roomName || !quiz?.content || quiz?.content.length === 0) {
             // TODO: This error happens when token expires! Need to handle it properly
-            console.log(`Error launching quiz. socket: ${socket}, roomName: ${roomName}, quiz: ${quiz}`);
+            console.log(
+                `Error launching quiz. socket: ${socket}, roomName: ${roomName}, quiz: ${quiz}`
+            );
             setQuizStarted(true);
 
             return;
@@ -318,7 +317,6 @@ const ManageRoom: React.FC = () => {
             case 'teacher':
                 setQuizStarted(true);
                 return launchTeacherMode();
-                
         }
     };
 
@@ -337,7 +335,11 @@ const ManageRoom: React.FC = () => {
         navigate('/teacher/dashboard');
     };
 
-    function checkIfIsCorrect(answer: string | number | boolean, idQuestion: number, questions: QuestionType[]): boolean {
+    function checkIfIsCorrect(
+        answer: string | number | boolean,
+        idQuestion: number,
+        questions: QuestionType[]
+    ): boolean {
         const questionInfo = questions.find((q) =>
             q.question.id ? q.question.id === idQuestion.toString() : false
         ) as QuestionType | undefined;
@@ -360,8 +362,7 @@ const ManageRoom: React.FC = () => {
                     const answerNumber = parseFloat(answerText);
                     if (!isNaN(answerNumber)) {
                         return (
-                            answerNumber <= choice.numberHigh &&
-                            answerNumber >= choice.numberLow
+                            answerNumber <= choice.numberHigh && answerNumber >= choice.numberLow
                         );
                     }
                 }
@@ -391,7 +392,6 @@ const ManageRoom: React.FC = () => {
         return false;
     }
 
-
     if (!roomName) {
         return (
             <div className="center">
@@ -415,34 +415,42 @@ const ManageRoom: React.FC = () => {
     }
 
     return (
-        <div className='room'>
-            <div className='roomHeader'>
-    
+        <div className="room">
+            <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
-                    message={`Êtes-vous sûr de vouloir quitter?`} />
+                    message={`Êtes-vous sûr de vouloir quitter?`}
+                />
 
-
-
-    
-                <div className='headerContent' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div
+                    className="headerContent"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%'
+                    }}
+                >
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                        <div className='title'>Salle: {roomName}</div>
+                        <div className="title">Salle: {roomName}</div>
                     </div>
                     {quizStarted && (
-                        <div className='userCount subtitle smallText' style={{ display: 'flex', alignItems: 'center' }}>
+                        <div
+                            className="userCount subtitle smallText"
+                            style={{ display: 'flex', alignItems: 'center' }}
+                        >
                             <GroupIcon style={{ marginRight: '5px' }} />
                             {students.length}/60
                         </div>
                     )}
                 </div>
-    
-                <div className='dumb'></div>
+
+                <div className="dumb"></div>
             </div>
             {/* bloc Room */}
-            <div className='room'>
-                <div className='select'>
+            <div className="room">
+                <div className="select">
                     <NativeSelect
                         id="select-room"
                         color="primary"
@@ -451,34 +459,36 @@ const ManageRoom: React.FC = () => {
                     >
                         <option value=""> Sélectionner une salle </option>
                         {rooms.map((room: RoomType) => (
-                            <option value={room._id} key={room._id}> {room.title} </option>
+                            <option value={room.title} key={room.title}>
+                                {' '}
+                                {room.title}{' '}
+                            </option>
                         ))}
                     </NativeSelect>
                 </div>
-    
-                <div className='actions'>
-                    <Tooltip title="Ajouter room" placement="top">
-                        <IconButton color="primary" onClick={handleCreateRoom}>
+
+                <div className="actions">
+                    <Tooltip title="Créer la salle" placement="top">
+                        <IconButton color="primary" onClick={createWebSocketRoom}>
                             <Add />
                         </IconButton>
                     </Tooltip>
                 </div>
             </div>
-            {/* the following breaks the css (if 'room' classes are nested) */}
-            <div className=''>
 
+            {/* the following breaks the css (if 'room' classes are nested) */}
+            <div className="">
                 {quizQuestions ? (
-                    
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
                         {!isNaN(Number(currentQuestion?.question.id)) && (
-                            <strong className='number of questions'>
-                                Question {Number(currentQuestion?.question.id)}/{quizQuestions?.length}
+                            <strong className="number of questions">
+                                Question {Number(currentQuestion?.question.id)}/
+                                {quizQuestions?.length}
                             </strong>
                         )}
-    
-                        {quizMode === 'teacher' && (
 
+                        {quizMode === 'teacher' && (
                             <div className="mb-1">
                                 {/* <QuestionNavigation
                                     currentQuestionId={Number(currentQuestion?.question.id)}
@@ -487,12 +497,10 @@ const ManageRoom: React.FC = () => {
                                     nextQuestion={nextQuestion}
                                 /> */}
                             </div>
-
                         )}
-    
+
                         <div className="mb-2 flex-column-wrapper">
                             <div className="preview-and-result-container">
-
                                 {currentQuestion && (
                                     <QuestionDisplay
                                         showAnswer={false}
@@ -507,39 +515,44 @@ const ManageRoom: React.FC = () => {
                                     showSelectedQuestion={showSelectedQuestion}
                                     students={students}
                                 ></LiveResultsComponent>
-
                             </div>
                         </div>
-    
+
                         {quizMode === 'teacher' && (
-                            <div className="questionNavigationButtons" style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div
+                                className="questionNavigationButtons"
+                                style={{ display: 'flex', justifyContent: 'center' }}
+                            >
                                 <div className="previousQuestionButton">
-                                    <Button onClick={previousQuestion}
+                                    <Button
+                                        onClick={previousQuestion}
                                         variant="contained"
-                                        disabled={Number(currentQuestion?.question.id) <= 1}>
+                                        disabled={Number(currentQuestion?.question.id) <= 1}
+                                    >
                                         Question précédente
                                     </Button>
                                 </div>
                                 <div className="nextQuestionButton">
-                                    <Button onClick={nextQuestion}
+                                    <Button
+                                        onClick={nextQuestion}
                                         variant="contained"
-                                        disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
+                                        disabled={
+                                            Number(currentQuestion?.question.id) >=
+                                            quizQuestions.length
+                                        }
                                     >
                                         Prochaine question
                                     </Button>
                                 </div>
-                            </div>)}
-
+                            </div>
+                        )}
                     </div>
-
                 ) : (
-
                     <StudentWaitPage
                         students={students}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
                     />
-
                 )}
             </div>
         </div>
