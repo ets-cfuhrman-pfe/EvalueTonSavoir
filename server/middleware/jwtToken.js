@@ -7,8 +7,8 @@ dotenv.config();
 
 class Token {
 
-    create(email, userId) {
-        return jwt.sign({ email, userId }, process.env.JWT_SECRET);
+    create(email, userId, roles) {
+        return jwt.sign({ email, userId, roles }, process.env.JWT_SECRET);
     }
 
     authenticate(req, res, next) {
@@ -25,11 +25,11 @@ class Token {
 
                 req.user = payload;
             });
-        
+
         } catch (error) {
             return next(error);
         }
-        
+
         return next();
     }
 }

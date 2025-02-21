@@ -12,6 +12,13 @@ exports.MISSING_REQUIRED_PARAMETER = {
     code: 400
 }
 
+exports.MISSING_OIDC_PARAMETER = (name) => {
+    return {
+        message: `Les informations de connexions de la connexion OIDC ${name} n'ont pu être chargées.`,
+        code: 400
+    }
+}
+
 exports.USER_ALREADY_EXISTS = {
     message: 'L\'utilisateur existe déjà.',
     code: 400

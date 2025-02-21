@@ -1,0 +1,23 @@
+.provider-btn {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    color: black;
+    margin: 4px 0 4px 0;
+}
+
+.provider-btn:hover {
+    background-color: #dbdbdb;
+    border: 1px solid #ccc;
+    color: black;
+    margin: 4px 0 4px 0;
+}
+
+.button-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}

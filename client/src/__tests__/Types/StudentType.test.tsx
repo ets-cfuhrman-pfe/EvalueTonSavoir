@@ -12,6 +12,6 @@ describe('StudentType', () => {
 
         expect(user.name).toBe('Student');
         expect(user.id).toBe('123');
-        expect(user.answers.length).toBe(0);
+        expect(user.answers).toHaveLength(0);
     });
 });
