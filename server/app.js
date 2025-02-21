@@ -18,6 +18,10 @@ const users = require('./models/users.js');
 const userModel = new users(db, foldersModel);
 const images = require('./models/images.js');
 const imageModel = new images(db);
+const students = require('./models/students.js');
+const studentModel = new students();
+const answers = require('./models/answers.js');
+const answersModel = new answers();
 
 // instantiate the controllers
 const usersController = require('./controllers/users.js');
@@ -28,18 +32,26 @@ const questionnaireController = require('./controllers/questionnaires.js');
 const questionnaireControllerInstance = new questionnaireController(questionnaireModel, foldersModel);
 const imagesController = require('./controllers/images.js');
 const imagesControllerInstance = new imagesController(imageModel);
+const studentsController = require('./controllers/students.js');
+const studentsControllerInstance = new studentsController(studentModel);
+const answersController = require('./controllers/answers.js');
+const answersControllerInstance = new answersController(answersModel);
 
 // export the controllers
 module.exports.users = usersControllerInstance;
 module.exports.folders = foldersControllerInstance;
 module.exports.questionnaires = questionnaireControllerInstance;
 module.exports.images = imagesControllerInstance;
+module.exports.students = studentsControllerInstance;
+module.exports.answers = answersControllerInstance;
 
 //import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
 const folderRouter = require('./routers/folders.js');
 const questionnaireRouter = require('./routers/questionnaires.js');
 const imagesRouter = require('./routers/images.js');
+const studentsRouter = require('./routers/students.js');
+const answersRouter = require('./routers/answers.js');
 
 // Setup environment
 dotenv.config();
@@ -84,6 +96,8 @@ app.use('/api/user', userRouter);
 app.use('/api/folder', folderRouter);
 app.use('/api/questionnaire', questionnaireRouter);
 app.use('/api/image', imagesRouter);
+app.use('/api/students', studentsRouter);
+app.use('/api/answers', answersRouter);
 
 app.use(errorHandler);
 

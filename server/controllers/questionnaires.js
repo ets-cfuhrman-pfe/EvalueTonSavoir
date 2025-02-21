@@ -3,7 +3,7 @@ const emailer = require('../config/email.js');
 const AppError = require('../middleware/AppError.js');
 const { MISSING_REQUIRED_PARAMETER, NOT_IMPLEMENTED, QUESTIONNAIRE_NOT_FOUND, FOLDER_NOT_FOUND, QUESTIONNAIRE_ALREADY_EXISTS, GETTING_QUESTIONNAIRE_ERROR, DELETE_QUESTIONNAIRE_ERROR, UPDATE_QUESTIONNAIRE_ERROR, MOVING_QUESTIONNAIRE_ERROR } = require('../constants/errorCodes.js');
 
-class QuestionnaireController {
+class QuestionnairesController {
 
     constructor(questionnaireModel, foldersModel) {
         this.questionnaires = questionnaireModel;
@@ -314,4 +314,4 @@ class QuestionnaireController {
 
 }
 
-module.exports = QuestionnaireController;
+module.exports = QuestionnairesController;
