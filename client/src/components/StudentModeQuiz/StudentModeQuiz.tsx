@@ -12,7 +12,7 @@ import { Question } from 'gift-pegjs';
 
 interface StudentModeQuizProps {
     questions: QuestionType[];
-    submitAnswer: (_answer: string | number | boolean, _idQuestion: number) => void;
+    submitAnswer: (answer: string | number | boolean, idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
 

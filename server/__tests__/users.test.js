@@ -32,7 +32,7 @@ describe('Users', () => {
         users = new Users(db, foldersModel);
     });
 
-    it.skip('should register a new user', async () => {
+    it('should register a new user', async () => {
         db.collection().findOne.mockResolvedValue(null); // No user found
         db.collection().insertOne.mockResolvedValue({ insertedId: new ObjectId() });
         bcrypt.hash.mockResolvedValue('hashedPassword');

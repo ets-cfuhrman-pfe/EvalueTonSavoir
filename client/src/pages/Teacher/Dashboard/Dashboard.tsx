@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (!ApiService.isLoggedIn()) {
-                navigate("/login");
+                navigate("/teacher/login");
                 return;
             }
             else {
@@ -196,8 +196,8 @@ const Dashboard: React.FC = () => {
                 // questions[i] = QuestionService.ignoreImgTags(questions[i]);
                 const parsedItem = parse(questions[i]);
                 Template(parsedItem[0]);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
-                console.error('Error parsing question:', error);
                 return false;
             }
         }
