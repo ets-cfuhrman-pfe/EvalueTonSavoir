@@ -6,20 +6,32 @@ import {
     MultipleChoiceQuestion as MultipleChoiceType,
     NumericalQuestion as NumericalType,
     ShortAnswerQuestion as ShortAnswerType,
-    // Essay as EssayType,
+    // EssayQuestion as EssayType,
     TrueFalseQuestion as TrueFalseType,
     // MatchingQuestion as MatchingType,
 } from 'gift-pegjs';
 import { DisplayOptions } from './types';
-import DescriptionTemplate from './DescriptionTemplate';
-import EssayTemplate from './EssayTemplate';
-import MatchingTemplate from './MatchingTemplate';
+// import DescriptionTemplate from './DescriptionTemplate';
+// import EssayTemplate from './EssayTemplate';
+// import MatchingTemplate from './MatchingTemplate';
 import MultipleChoiceTemplate from './MultipleChoiceTemplate';
 import NumericalTemplate from './NumericalTemplate';
 import ShortAnswerTemplate from './ShortAnswerTemplate';
 import TrueFalseTemplate from './TrueFalseTemplate';
 import Error from './ErrorTemplate';
-import CategoryTemplate from './CategoryTemplate';
+// import CategoryTemplate from './CategoryTemplate';
+
+export class UnsupportedQuestionTypeError extends globalThis.Error {
+    constructor(type: string) {
+        const userFriendlyType = (type === 'Essay') ? 'Réponse longue (Essay)' 
+                            : (type === 'Matching') ? 'Association (Matching)' 
+                            : (type === 'Category') ? 'Catégorie (Category)' 
+                            : type;
+        super(`Les questions du type ${userFriendlyType} ne sont pas supportées.`);
+        this.name = 'UnsupportedQuestionTypeError';
+    }
+}
+
 
 export const state: DisplayOptions = { preview: true, theme: 'light' };
 
@@ -54,23 +66,21 @@ export default function Template(
         // case 'Matching':
         //     return Matching({ ...(keys as MatchingType) });
         default:
-            // TODO: throw error for unsupported question types?
-            // throw new Error(`Unsupported question type: ${type}`);
-            return ``;
-    }
+            // convert type to human-readable string
+            throw new UnsupportedQuestionTypeError(type);  }
 }
 
-export function ErrorTemplate(text: string, options?: Partial<DisplayOptions>): string {
+export function ErrorTemplate(questionText: string, errorText: string, options?: Partial<DisplayOptions>): string {
     Object.assign(state, options);
 
-    return Error(text);
+    return Error(questionText, errorText);
 }
 
 export {
-    CategoryTemplate,
-    DescriptionTemplate as Description,
-    EssayTemplate as Essay,
-    MatchingTemplate as Matching,
+    // CategoryTemplate,
+    // DescriptionTemplate as Description,
+    // EssayTemplate as Essay,
+    // MatchingTemplate as Matching,
     MultipleChoiceTemplate as MultipleChoice,
     NumericalTemplate as Numerical,
     ShortAnswerTemplate as ShortAnswer,
