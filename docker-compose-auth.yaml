@@ -1,0 +1,96 @@
+version: '3'
+
+services: 
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    restart: always
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      MONGO_URI: "mongodb://mongo:27017/evaluetonsavoir"
+      MONGO_DATABASE: evaluetonsavoir
+      EMAIL_SERVICE: gmail
+      SENDER_EMAIL: infoevaluetonsavoir@gmail.com
+      EMAIL_PSW: 'vvml wmfr dkzb vjzb'
+      JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
+      SESSION_Secret: 'lookMomImQuizzing'
+      SITE_URL: http://localhost
+      FRONTEND_PORT: 5173
+      USE_PORTS: false
+      AUTHENTICATED_ROOMS: false
+    volumes:
+      - ./server/auth_config.json:/usr/src/app/serveur/config/auth_config.json
+    depends_on:
+      - mongo
+      - keycloak
+    restart: always
+
+  # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
+  nginx:
+    image: fuhrmanator/evaluetonsavoir-routeur:latest
+    container_name: nginx
+    ports: 
+      - "80:80"
+    depends_on:
+       - backend
+       - frontend
+    restart: always
+
+  # Ce conteneur est la base de données principale pour l'application
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    tty: true
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+
+  # Ce conteneur assure que l'application est à jour en allant chercher s'il y a des mises à jours à chaque heure
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=America/Montreal
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_DEBUG=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_SCHEDULE=0 0 5 * * * # At 5 am everyday
+    restart: always
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_HEALTH_ENABLED: 'true'
+      KC_FEATURES: preview
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./oauth-tester/config.json:/opt/keycloak/data/import/realm-config.json
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname-strict=false
+
+volumes:
+  mongodb_data:
+    external: false
