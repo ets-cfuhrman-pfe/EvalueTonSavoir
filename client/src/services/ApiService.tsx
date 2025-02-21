@@ -556,14 +556,14 @@ class ApiService {
      * @returns quiz if successful 
      * @returns A error string if unsuccessful,
      */
-    public async getQuiz(quizId: string): Promise<QuizType | string> {
+    public async getQuiz(questionnaireId: string): Promise<QuizType | string> {
         try {
 
-            if (!quizId) {
+            if (!questionnaireId) {
                 throw new Error(`Le quizId est requis.`);
             }
 
-            const url: string = this.constructRequestUrl(`/quiz/get/${quizId}`);
+            const url: string = this.constructRequestUrl(`/questionnaire/get/${questionnaireId}`);
             const headers = this.constructRequestHeaders();
 
             const result: AxiosResponse = await axios.get(url, { headers: headers });

@@ -28,7 +28,7 @@ const ManageRoom: React.FC = () => {
     const [roomName, setRoomName] = useState<string>('');
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const quizId = useParams<{ id: string }>();
+    const questionnaireId = useParams<{ id: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -37,14 +37,14 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     
     useEffect(() => {
-        if (quizId.id) {
+        if (questionnaireId.id) {
             const fetchquiz = async () => {
 
-                const quiz = await ApiService.getQuiz(quizId.id as string);
+                const quiz = await ApiService.getQuiz(questionnaireId.id as string);
 
                 if (!quiz) {
-                    window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
-                    console.error('Quiz not found for id:', quizId.id);
+                    window.alert(`Une erreur est survenue.\n Le questionnaire ${questionnaireId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+                    console.error('Questionnaire not found for id:', questionnaireId.id);
                     navigate('/teacher/dashboard');
                     return;
                 }
@@ -64,12 +64,12 @@ const ManageRoom: React.FC = () => {
             fetchquiz();
 
         } else {
-            window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
-            console.error('Quiz not found for id:', quizId.id);
+            window.alert(`Une erreur est survenue.\n Le questionnaire ${questionnaireId} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+            console.error('Questionnaire not found for id:', questionnaireId.id);
             navigate('/teacher/dashboard');
             return;
         }
-    }, [quizId]);
+    }, [questionnaireId]);
 
     const disconnectWebSocket = () => {
         if (socket) {

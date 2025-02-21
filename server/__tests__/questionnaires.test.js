@@ -1,9 +1,9 @@
 const { ObjectId } = require('mongodb');
-const Quizzes = require('../models/quiz'); // Adjust the path as necessary
+const Questionnaires = require('../models/questionnaires'); // Adjust the path as necessary
 
-describe('Quizzes', () => {
+describe('Questionnaires', () => {
     let db;
-    let quizzes;
+    let questionnaires;
     let collection;
 
     beforeEach(() => {
@@ -28,14 +28,14 @@ describe('Quizzes', () => {
             }),
         };
 
-        // Initialize the Quiz model with the mocked db
-        quizzes = new Quizzes(db);
+        // Initialize the Questionnaire model with the mocked db
+        questionnaires = new Questionnaires(db);
     });
 
     describe('create', () => {
-        it('should create a new quiz if it does not exist', async () => {
-            const title = 'Test Quiz';
-            const content = 'This is a test quiz.';
+        it('should create a new questionnaire if it does not exist', async () => {
+            const title = 'Test Questionnaire';
+            const content = 'This is a test questionnaire.';
             const folderId = '507f1f77bcf86cd799439011';
             const userId = '12345';
 
@@ -43,7 +43,7 @@ describe('Quizzes', () => {
             collection.findOne.mockResolvedValue(null);
             collection.insertOne.mockResolvedValue({ insertedId: new ObjectId() });
 
-            const result = await quizzes.create(title, content, folderId, userId);
+            const result = await questionnaires.create(title, content, folderId, userId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
@@ -59,104 +59,104 @@ describe('Quizzes', () => {
             expect(result).not.toBeNull();
         });
 
-        it('should throw exception if the quiz already exists', async () => {
-            const title = 'Test Quiz';
-            const content = 'This is a test quiz.';
+        it('should throw exception if the questionnaire already exists', async () => {
+            const title = 'Test Questionnaire';
+            const content = 'This is a test questionnaire.';
             const folderId = '507f1f77bcf86cd799439011';
             const userId = '12345';
 
             // Mock the database response
             collection.findOne.mockResolvedValue({ title });
 
-            await expect(quizzes.create(title, content, folderId, userId)).rejects.toThrow(`Quiz already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
+            await expect(questionnaires.create(title, content, folderId, userId)).rejects.toThrow(`Questionnaire already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
         });
     });
 
     describe('getOwner', () => {
-        it('should return the owner of the quiz', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should return the owner of the questionnaire', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
 
             // Mock the database response
             collection.findOne.mockResolvedValue({ userId });
 
-            const result = await quizzes.getOwner(quizId);
+            const result = await questionnaires.getOwner(questionnaireId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
-            expect(collection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(quizId) });
+            expect(collection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(questionnaireId) });
             expect(result).toBe(userId);
         });
     });
 
     describe('getContent', () => {
-        it('should return the content of the quiz', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const content = 'This is a test quiz.';
+        it('should return the content of the questionnaire', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
+            const content = 'This is a test questionnaire.';
 
             // Mock the database response
             collection.findOne.mockResolvedValue({ content });
 
-            const result = await quizzes.getContent(quizId);
+            const result = await questionnaires.getContent(questionnaireId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
-            expect(collection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(quizId) });
+            expect(collection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(questionnaireId) });
             expect(result).toEqual({ content });
         });
     });
 
     describe('delete', () => {
-        it('should delete the quiz', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should delete the questionnaire', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
 
             // Mock the database response
             collection.deleteOne.mockResolvedValue({deletedCount: 1});
 
-            await quizzes.delete(quizId);
+            await questionnaires.delete(questionnaireId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
-            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(quizId) });
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(questionnaireId) });
         });
     
-        it('should return false if the quiz does not exist', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should return false if the questionnaire does not exist', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
     
             // Mock the database response
             collection.deleteOne.mockResolvedValue({deletedCount: 0});
     
-            const result = await quizzes.delete(quizId);
+            const result = await questionnaires.delete(questionnaireId);
     
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
-            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(quizId) });
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(questionnaireId) });
             expect(result).toBe(false);
         });
     });
 
-    // deleteQuizzesByFolderId
-    describe('deleteQuizzesByFolderId', () => {
-        it('should delete all quizzes in a folder', async () => {
+    // deleteQuestionnairesByFolderId
+    describe('deleteQuestionnairesByFolderId', () => {
+        it('should delete all questionnaires in a folder', async () => {
             const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
 
             // Mock the database response
             collection.deleteMany.mockResolvedValue({deletedCount: 2});
 
-            await quizzes.deleteQuizzesByFolderId(folderId);
+            await questionnaires.deleteQuestionnairesByFolderId(folderId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(collection.deleteMany).toHaveBeenCalledWith({ folderId });
         });
 
-        it('should return false if no quizzes are deleted', async () => {
+        it('should return false if no questionnaires are deleted', async () => {
             const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
 
             // Mock the database response
             collection.deleteMany.mockResolvedValue({deletedCount: 0});
 
-            const result = await quizzes.deleteQuizzesByFolderId(folderId);
+            const result = await questionnaires.deleteQuestionnairesByFolderId(folderId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
@@ -167,38 +167,38 @@ describe('Quizzes', () => {
 
     // update
     describe('update', () => {
-        it('should update the title and content of the quiz', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'Updated Quiz';
-            const newContent = 'This is an updated quiz.';
+        it('should update the title and content of the questionnaire', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
+            const newTitle = 'Updated Questionnaire';
+            const newContent = 'This is an updated questionnaire.';
 
             // Mock the database response
             collection.updateOne.mockResolvedValue({modifiedCount: 1});
 
-            await quizzes.update(quizId, newTitle, newContent);
+            await questionnaires.update(questionnaireId, newTitle, newContent);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(collection.updateOne).toHaveBeenCalledWith(
-                { _id: ObjectId.createFromHexString(quizId) },
+                { _id: ObjectId.createFromHexString(questionnaireId) },
                 { $set: { title: newTitle, content: newContent, updated_at: expect.any(Date) } }
             );
         });
 
-        it('should return false if the quiz does not exist', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'Updated Quiz';
-            const newContent = 'This is an updated quiz.';
+        it('should return false if the questionnaire does not exist', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
+            const newTitle = 'Updated Questionnaire';
+            const newContent = 'This is an updated questionnaire.';
 
             // Mock the database response
             collection.updateOne.mockResolvedValue({modifiedCount: 0});
 
-            const result = await quizzes.update(quizId, newTitle, newContent);
+            const result = await questionnaires.update(questionnaireId, newTitle, newContent);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(collection.updateOne).toHaveBeenCalledWith(
-                { _id: ObjectId.createFromHexString(quizId) },
+                { _id: ObjectId.createFromHexString(questionnaireId) },
                 { $set: { title: newTitle, content: newContent, updated_at: expect.any(Date) } }
             );
             expect(result).toBe(false);
@@ -207,36 +207,36 @@ describe('Quizzes', () => {
 
     // move
     describe('move', () => {
-        it('should move the quiz to a new folder', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should move the questionnaire to a new folder', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const newFolderId = '507f1f77bcf86cd799439011';
 
             // Mock the database response
             collection.updateOne.mockResolvedValue({modifiedCount: 1});
 
-            await quizzes.move(quizId, newFolderId);
+            await questionnaires.move(questionnaireId, newFolderId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(collection.updateOne).toHaveBeenCalledWith(
-                { _id: ObjectId.createFromHexString(quizId) },
+                { _id: ObjectId.createFromHexString(questionnaireId) },
                 { $set: { folderId: newFolderId } }
             );
         });
 
-        it('should return false if the quiz does not exist', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should return false if the questionnaire does not exist', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const newFolderId = '507f1f77bcf86cd799439011';
 
             // Mock the database response
             collection.updateOne.mockResolvedValue({modifiedCount: 0});
 
-            const result = await quizzes.move(quizId, newFolderId);
+            const result = await questionnaires.move(questionnaireId, newFolderId);
 
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(collection.updateOne).toHaveBeenCalledWith(
-                { _id: ObjectId.createFromHexString(quizId) },
+                { _id: ObjectId.createFromHexString(questionnaireId) },
                 { $set: { folderId: newFolderId } }
             );
             expect(result).toBe(false);
@@ -246,102 +246,102 @@ describe('Quizzes', () => {
     // duplicate
     describe('duplicate', () => {
     
-        it('should duplicate the quiz and return the new quiz ID', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should duplicate the questionnaire and return the new questionnaire ID', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
-            const newQuizId = ObjectId.createFromTime(Math.floor(Date.now() / 1000)); // Corrected ObjectId creation
-            const sourceQuiz = {
-                title: 'Test Quiz',
-                content: 'This is a test quiz.',
+            const newQuestionnaireId = ObjectId.createFromTime(Math.floor(Date.now() / 1000)); // Corrected ObjectId creation
+            const sourceQuestionnaire = {
+                title: 'Test Questionnaire',
+                content: 'This is a test questionnaire.',
             };
     
-            const createMock = jest.spyOn(quizzes, 'create').mockResolvedValue(newQuizId);
+            const createMock = jest.spyOn(questionnaires, 'create').mockResolvedValue(newQuestionnaireId);
             // mock the findOne method
             jest.spyOn(collection, 'findOne')
-                .mockResolvedValueOnce(sourceQuiz) // source quiz exists
+                .mockResolvedValueOnce(sourceQuestionnaire) // source questionnaire exists
                 .mockResolvedValueOnce(null); // new name is not found
 
-            const result = await quizzes.duplicate(quizId, userId);
+            const result = await questionnaires.duplicate(questionnaireId, userId);
     
-            expect(result).toBe(newQuizId);
+            expect(result).toBe(newQuestionnaireId);
     
             // Ensure mocks were called correctly
             expect(createMock).toHaveBeenCalledWith(
-                sourceQuiz.title + ' (1)',
-                sourceQuiz.content,
+                sourceQuestionnaire.title + ' (1)',
+                sourceQuestionnaire.content,
                 undefined,
                 userId
             );
         });
 
-        // Add test case for quizExists (name with number in parentheses)
-        it('should create a new title if the quiz title already exists and ends with " (1)"', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        // Add test case for questionnaireExists (name with number in parentheses)
+        it('should create a new title if the questionnaire title already exists and ends with " (1)"', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
-            const newQuizId = ObjectId.createFromTime(Math.floor(Date.now() / 1000));
-            const sourceQuiz = {
-                title: 'Test Quiz (1)',
-                content: 'This is a test quiz.',
+            const newQuestionanireId = ObjectId.createFromTime(Math.floor(Date.now() / 1000));
+            const sourceQuestionnaire = {
+                title: 'Test Questionnaire (1)',
+                content: 'This is a test questionnaire.',
             };
     
-            const createMock = jest.spyOn(quizzes, 'create').mockResolvedValue(newQuizId);
+            const createMock = jest.spyOn(questionnaires, 'create').mockResolvedValue(newQuestionanireId);
             // mock the findOne method
             jest.spyOn(collection, 'findOne')
-                .mockResolvedValueOnce(sourceQuiz) // source quiz exists
+                .mockResolvedValueOnce(sourceQuestionnaire) // source questionnaire exists
                 .mockResolvedValueOnce(null); // new name is not found
     
-            const result = await quizzes.duplicate(quizId, userId);
+            const result = await questionnaires.duplicate(questionnaireId, userId);
     
-            expect(result).toBe(newQuizId);
+            expect(result).toBe(newQuestionanireId);
     
             // Ensure mocks were called correctly
             expect(createMock).toHaveBeenCalledWith(
-                'Test Quiz (2)',
-                sourceQuiz.content,
+                'Test Questionnaire (2)',
+                sourceQuestionnaire.content,
                 undefined,
                 userId
             );
         });
 
         // test case for duplication of "C (1)" but "C (2)" already exists, so it should create "C (3)"
-        it('should create a new title if the quiz title already exists and ends with " (n)" but the incremented n also exists', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should create a new title if the questionnaire title already exists and ends with " (n)" but the incremented n also exists', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
-            const newQuizId = ObjectId.createFromTime(Math.floor(Date.now() / 1000));
-            const sourceQuiz = {
-                title: 'Test Quiz (1)',
-                content: 'This is a test quiz.',
+            const newQuestionnaireId = ObjectId.createFromTime(Math.floor(Date.now() / 1000));
+            const sourceQuestionnaire = {
+                title: 'Test Questionnaire (1)',
+                content: 'This is a test questionnaire.',
             };
     
-            const createMock = jest.spyOn(quizzes, 'create').mockResolvedValue(newQuizId);
+            const createMock = jest.spyOn(questionnaires, 'create').mockResolvedValue(newQuestionnaireId);
 
             // mock the findOne method
             jest.spyOn(collection, 'findOne')
-                .mockResolvedValueOnce(sourceQuiz) // source quiz exists
-                .mockResolvedValueOnce({ title: 'Test Quiz (2)' }) // new name collision
+                .mockResolvedValueOnce(sourceQuestionnaire) // source questionnaire exists
+                .mockResolvedValueOnce({ title: 'Test Questionnaire (2)' }) // new name collision
                 .mockResolvedValueOnce(null); // final new name is not found
     
-            const result = await quizzes.duplicate(quizId, userId);
+            const result = await questionnaires.duplicate(questionnaireId, userId);
     
-            expect(result).toBe(newQuizId);
+            expect(result).toBe(newQuestionnaireId);
     
             // Ensure mocks were called correctly
             expect(createMock).toHaveBeenCalledWith(
-                'Test Quiz (3)',
-                sourceQuiz.content,
+                'Test Questionnaire (3)',
+                sourceQuestionnaire.content,
                 undefined,
                 userId
             );
         });
         
-        it('should throw an error if the quiz does not exist', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+        it('should throw an error if the questionnaire does not exist', async () => {
+            const questionnaireId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
     
             // Mock the response from getContent
-            jest.spyOn(quizzes, 'getContent').mockResolvedValue(null);
+            jest.spyOn(questionnaires, 'getContent').mockResolvedValue(null);
     
-            await expect(quizzes.duplicate(quizId, userId)).rejects.toThrow();
+            await expect(questionnaires.duplicate(questionnaireId, userId)).rejects.toThrow();
         });
     });
 });
