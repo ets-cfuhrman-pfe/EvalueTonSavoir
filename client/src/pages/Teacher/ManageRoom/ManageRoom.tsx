@@ -189,7 +189,7 @@ const ManageRoom: React.FC = () => {
                 setConnectingError(errorMessage);
                 console.error('Erreur création salle:', errorMessage);
             });
-            
+
             socket.on('user-joined', (student: StudentType) => {
                 console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
                 
@@ -200,6 +200,16 @@ const ManageRoom: React.FC = () => {
                 } else if (quizMode === 'student') {
                     webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
                 }
+            });
+
+            socket.on('join-failure', (message) => {
+                setConnectingError(message);
+                setSocket(null);
+            });
+
+            socket.on('user-disconnected', (userId: string) => {
+                console.log(`Student left: id = ${userId}`);
+                setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
             });
         };
     
