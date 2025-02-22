@@ -254,8 +254,6 @@ describe('Rooms', () => {
 
         it('should return false if room does not exist', async () => {
             const title = 'Nonexistent Room';
-            const userId = '12345';
-
             // Mock the database response
             collection.findOne.mockResolvedValue(null);
 

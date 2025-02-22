@@ -243,7 +243,6 @@ const ManageRoom: React.FC = () => {
             console.log(`Listening for user-joined in room ${roomName}`);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             socket.on('user-joined', (_student: StudentType) => {
-                console.log("📢 Nouvel étudiant ajouté:", _student);
                 if (quizMode === 'teacher') {
                     webSocketService.nextQuestion(roomName, currentQuestion);
                 } else if (quizMode === 'student') {
