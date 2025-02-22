@@ -1,4 +1,3 @@
-// WebSocketService.tsx
 import { io, Socket } from 'socket.io-client';
 
 // Must (manually) sync these types to server/socket/socket.js
@@ -48,8 +47,7 @@ class WebSocketService {
 
     createRoom(roomName: string) {
         if (this.socket) {
-            const nameToSend = roomName;
-            this.socket.emit('create-room', nameToSend); 
+            this.socket.emit('create-room', roomName); 
         }
     }
 

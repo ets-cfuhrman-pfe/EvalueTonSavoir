@@ -43,34 +43,35 @@ const ManageRoom: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
     const [openDialog, setOpenDialog] = useState(false);
     const [newRoomTitle, setNewRoomTitle] = useState('');
+    const [isRoomSelectionVisible, setIsRoomSelectionVisible] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             if (!ApiService.isLoggedIn()) {
                 navigate('/teacher/login');
                 return;
-            } else {
-                const userRooms = await ApiService.getUserRooms();
-
-                setRooms(userRooms as RoomType[]);
             }
+
+            const userRooms = await ApiService.getUserRooms();
+            setRooms(userRooms as RoomType[]);
         };
 
         fetchData();
     }, []);
 
     const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedRoomId(event.target.value);
+        const roomId = event.target.value;
+        setSelectedRoomId(roomId);
+
+        const selectedRoom = rooms.find((room) => room._id === roomId);
+        setRoomName(selectedRoom?.title || '');
     };
 
     useEffect(() => {
-        if (selectedRoomId && rooms.length > 0) {
-            const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
-            setRoomName(selectedRoom ? selectedRoom.title : '');
-        } else {
-            setRoomName('');
+        if (rooms.length > 0 && !selectedRoomId) {
+            setSelectedRoomId(rooms[0]._id);
         }
-    }, [selectedRoomId, rooms]);
+    }, [rooms]);
 
     const handleDialogClose = () => {
         setOpenDialog(false);
@@ -81,16 +82,21 @@ const ManageRoom: React.FC = () => {
     };
     const handleSubmitRoom = async () => {
         try {
-            if (newRoomTitle) {
-                await ApiService.createRoom(newRoomTitle);
-                const userRooms = await ApiService.getUserRooms();
-                setRooms(userRooms as RoomType[]);
-                const newlyCreatedRoom = userRooms[userRooms.length - 1] as RoomType;
-                setSelectedRoomId(newlyCreatedRoom._id);
+            if (newRoomTitle.trim()) {
+                const createdRoom = await ApiService.createRoom(newRoomTitle);
+
+                const updatedRooms = await ApiService.getUserRooms();
+                setRooms(updatedRooms as RoomType[]);
+
+                if (createdRoom && createdRoom) {
+                    setSelectedRoomId(createdRoom);
+                    setRoomName(createdRoom);
+                }
                 setOpenDialog(false);
+                setNewRoomTitle('');
             }
         } catch (error) {
-            console.error('Error creating Room:', error);
+            console.error('Error creating Room::', error);
         }
     };
 
@@ -131,6 +137,25 @@ const ManageRoom: React.FC = () => {
         }
     }, [quizId]);
 
+    useEffect(() => {
+        if (rooms.length > 0 && !selectedRoomId) {
+            setSelectedRoomId(rooms[0].title);
+        }
+    }, [rooms]);
+
+    useEffect(() => {
+        if (!newRoomTitle && !selectedRoomId) {
+            setConnectingError('Aucun nom de salle sélectionné ou créé.');
+        }
+    }, [newRoomTitle, selectedRoomId]);
+
+    useEffect(() => {
+        if (selectedRoomId && selectedRoomId.trim() !== '') {
+            console.log(`Sélection d'une nouvelle salle: ${selectedRoomId}`);
+            createWebSocketRoom();
+        }
+    }, [selectedRoomId]);
+
     const disconnectWebSocket = () => {
         if (socket) {
             webSocketService.endQuiz(roomName);
@@ -146,42 +171,34 @@ const ManageRoom: React.FC = () => {
     const createWebSocketRoom = () => {
         console.log('Creating WebSocket room...');
         setConnectingError('');
+
+        const targetRoom = rooms.find((room) => room._id === selectedRoomId) || rooms[0];
+        if (!targetRoom) {
+            setConnectingError('Aucune salle disponible');
+            return;
+        }
+
+        console.log('Création WebSocket pour:', targetRoom.title);
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
 
         socket.on('connect', () => {
-            webSocketService.createRoom(selectedRoomId);
-            console.error('socket.on(connect:)');
+            webSocketService.createRoom(targetRoom.title);
+            setRoomName(targetRoom.title);
         });
         socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
             console.error('ManageRoom: WebSocket connection error:', error);
         });
+
         socket.on('create-success', (roomName: string) => {
+            console.log('create-success', roomName);
             setRoomName(roomName);
-            console.error('create-success', roomName);
         });
+
         socket.on('create-failure', () => {
             console.log('Error creating room.');
         });
-        socket.on('user-joined', (student: StudentType) => {
-            console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
 
-            setStudents((prevStudents) => [...prevStudents, student]);
-
-            if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(roomName, currentQuestion);
-            } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-            }
-        });
-        socket.on('join-failure', (message) => {
-            setConnectingError(message);
-            setSocket(null);
-        });
-        socket.on('user-disconnected', (userId: string) => {
-            console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-        });
         setSocket(socket);
     };
 
@@ -477,64 +494,69 @@ const ManageRoom: React.FC = () => {
 
                 <div className="dumb"></div>
             </div>
-            <div className="room">
-                <div className="select">
-                    <NativeSelect
-                        id="select-room"
-                        color="primary"
-                        value={selectedRoomId}
-                        onChange={handleSelectRoom}
-                    >
-                        <option value=""> Sélectionner une salle </option>
-                        {rooms.map((room: RoomType) => (
-                            <option value={room._id} key={room._id}>
-                                {' '}
-                                {room.title}{' '}
-                            </option>
-                        ))}
-                    </NativeSelect>
-                </div>
+            {isRoomSelectionVisible && (
+                <div className="roomSelection">
+                    <div className="select">
+                        <NativeSelect
+                            id="select-room"
+                            color="primary"
+                            value={selectedRoomId}
+                            onChange={handleSelectRoom}
+                        >
+                            <option value=""> Sélectionner une salle </option>
+                            {rooms.map((room: RoomType) => (
+                                <option value={room._id} key={room._id}>
+                                    {' '}
+                                    {room.title}
+                                </option>
+                            ))}
+                        </NativeSelect>
+                    </div>
 
-                <div className="actions" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleCreateRoom}
-                        style={{
-                            width: 'auto',
-                            marginLeft: '30px',
-                            height: '40px',
-                            padding: '0 20px'
-                        }}
+                    <div
+                        className="actions"
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
-                        Ajouter une nouvelle salle
-                    </Button>
-                </div>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCreateRoom}
+                            style={{
+                                width: 'auto',
+                                marginLeft: '30px',
+                                height: '40px',
+                                padding: '0 20px'
+                            }}
+                        >
+                            Ajouter une nouvelle salle
+                        </Button>
+                    </div>
 
-                {/* Dialog pour créer une salle */}
-                <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-                    <DialogTitle>Créer une nouvelle salle</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            label="Titre de la salle"
-                            type="text"
-                            fullWidth
-                            value={newRoomTitle}
-                            onChange={(e) => setNewRoomTitle(e.target.value)}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleDialogClose} color="secondary">
-                            Annuler
-                        </Button>
-                        <Button onClick={handleSubmitRoom} color="primary">
-                            Créer
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </div>
+                    {/* Dialog pour créer une salle */}
+                    <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+                        <DialogTitle>Créer une nouvelle salle</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="Titre de la salle"
+                                type="text"
+                                fullWidth
+                                value={newRoomTitle}
+                                onChange={(e) => setNewRoomTitle(e.target.value)}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDialogClose} color="secondary">
+                                Annuler
+                            </Button>
+                            <Button onClick={handleSubmitRoom} color="primary">
+                                Créer
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </div>
+            )}
 
             {/* the following breaks the css (if 'room' classes are nested) */}
             <div className="">
@@ -612,6 +634,7 @@ const ManageRoom: React.FC = () => {
                         students={students}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
+                        setIsRoomSelectionVisible={setIsRoomSelectionVisible}
                     />
                 )}
             </div>

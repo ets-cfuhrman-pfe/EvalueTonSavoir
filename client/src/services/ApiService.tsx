@@ -391,7 +391,7 @@ class ApiService {
             if (result.status !== 200) {
                 throw new Error(`L'obtention des salles utilisateur a échoué. Status: ${result.status}`);
             }
-
+           
             return result.data.data.map((room: RoomType) => ({ _id: room._id, title: room.title }));
 
         } catch (error) {
