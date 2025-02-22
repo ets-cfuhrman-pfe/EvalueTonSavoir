@@ -88,9 +88,8 @@ const ManageRoom: React.FC = () => {
                 const updatedRooms = await ApiService.getUserRooms();
                 setRooms(updatedRooms as RoomType[]);
 
-                if (createdRoom && createdRoom) {
+                if (createdRoom) {
                     setSelectedRoomId(createdRoom);
-                    setRoomName(createdRoom);
                 }
                 setOpenDialog(false);
                 setNewRoomTitle('');
@@ -171,35 +170,49 @@ const ManageRoom: React.FC = () => {
     const createWebSocketRoom = () => {
         console.log('Creating WebSocket room...');
         setConnectingError('');
-
-        const targetRoom = rooms.find((room) => room._id === selectedRoomId) || rooms[0];
-        if (!targetRoom) {
-            setConnectingError('Aucune salle disponible');
-            return;
+    
+        const handleRoomCreation = (socket: Socket, roomToCreate?: string) => {
+            socket.on('connect', () => {
+                if (roomToCreate) {
+                    webSocketService.createRoom(roomToCreate);
+                } else {
+                    socket.emit("create-room");
+                }
+            });
+    
+            socket.on('create-success', (createdRoomName: string) => {
+                console.log('Salle créée/jointe:', createdRoomName);
+                setRoomName(createdRoomName);
+            });
+    
+            socket.on('create-failure', (errorMessage: string) => {
+                setConnectingError(errorMessage);
+                console.error('Erreur création salle:', errorMessage);
+            });
+        };
+    
+        if (rooms.length === 0) {
+            console.log('Tentative de création de salle automatique...');
+            const newSocket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+            handleRoomCreation(newSocket);
+            setSocket(newSocket);
+        } else {
+            const targetRoom = rooms.find((room) => room._id === selectedRoomId) || rooms[0];
+            if (!targetRoom) {
+                setConnectingError('Aucune salle disponible');
+                return;
+            }
+    
+            console.log('Utilisation de la salle:', targetRoom.title);
+            const newSocket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+            handleRoomCreation(newSocket, targetRoom.title);
+            setSocket(newSocket);
         }
-
-        console.log('Création WebSocket pour:', targetRoom.title);
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
-
-        socket.on('connect', () => {
-            webSocketService.createRoom(targetRoom.title);
-            setRoomName(targetRoom.title);
+    
+        socket?.on('connect_error', (error) => {
+            setConnectingError('Erreur de connexion au serveur...');
+            console.error('Connection error:', error);
         });
-        socket.on('connect_error', (error) => {
-            setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
-            console.error('ManageRoom: WebSocket connection error:', error);
-        });
-
-        socket.on('create-success', (roomName: string) => {
-            console.log('create-success', roomName);
-            setRoomName(roomName);
-        });
-
-        socket.on('create-failure', () => {
-            console.log('Error creating room.');
-        });
-
-        setSocket(socket);
     };
 
     useEffect(() => {
