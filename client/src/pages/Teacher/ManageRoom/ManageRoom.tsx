@@ -189,6 +189,18 @@ const ManageRoom: React.FC = () => {
                 setConnectingError(errorMessage);
                 console.error('Erreur création salle:', errorMessage);
             });
+            
+            socket.on('user-joined', (student: StudentType) => {
+                console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
+                
+                setStudents((prevStudents) => [...prevStudents, student]);
+                
+                if (quizMode === 'teacher') {
+                    webSocketService.nextQuestion(roomName, currentQuestion);
+                } else if (quizMode === 'student') {
+                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+                }
+            });
         };
     
         if (rooms.length === 0) {
@@ -208,7 +220,7 @@ const ManageRoom: React.FC = () => {
             handleRoomCreation(newSocket, targetRoom.title);
             setSocket(newSocket);
         }
-    
+
         socket?.on('connect_error', (error) => {
             setConnectingError('Erreur de connexion au serveur...');
             console.error('Connection error:', error);
@@ -221,6 +233,7 @@ const ManageRoom: React.FC = () => {
             console.log(`Listening for user-joined in room ${roomName}`);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             socket.on('user-joined', (_student: StudentType) => {
+                console.log("📢 Nouvel étudiant ajouté:", _student);
                 if (quizMode === 'teacher') {
                     webSocketService.nextQuestion(roomName, currentQuestion);
                 } else if (quizMode === 'student') {
