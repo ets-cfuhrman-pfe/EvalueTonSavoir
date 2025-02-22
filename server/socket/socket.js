@@ -24,29 +24,51 @@ const setupWebsocket = (io) => {
     );
 
     socket.on("create-room", (sentRoomName) => {
+      console.log(`Demande de création de salle avec le nom : ${sentRoomName}`);
+
       if (sentRoomName) {
         const roomName = sentRoomName.toUpperCase();
         if (!io.sockets.adapter.rooms.get(roomName)) {
           socket.join(roomName);
           socket.emit("create-success", roomName);
+          console.log(`Salle créée avec succès : ${roomName}`);
         } else {
-          socket.emit("create-failure");
+          socket.emit("create-failure", `La salle ${roomName} existe déjà.`);
+          console.log(`Échec de création : ${roomName} existe déjà`);
         }
       } else {
         const roomName = generateRoomName();
+        console.log(`Génération d'une salle aléatoire : ${roomName}`);
         if (!io.sockets.adapter.rooms.get(roomName)) {
           socket.join(roomName);
           socket.emit("create-success", roomName);
+          console.log(`Salle créée avec succès : ${roomName}`);
         } else {
-          socket.emit("create-failure");
+          socket.emit(
+            "create-failure",
+            "Échec de création de la salle aléatoire"
+          );
+          console.log(`Échec de création de la salle aléatoire`);
         }
       }
+      console.log(
+        "Salles existantes après la tentative de création : ",
+        Array.from(io.sockets.adapter.rooms.keys())
+      );
     });
 
     socket.on("join-room", ({ enteredRoomName, username }) => {
-      if (io.sockets.adapter.rooms.has(enteredRoomName)) {
-        const clientsInRoom =
-          io.sockets.adapter.rooms.get(enteredRoomName).size;
+      const roomToCheck = enteredRoomName.toUpperCase();
+      console.log(
+        `Requête de connexion : salle="${roomToCheck}", utilisateur="${username}"`
+      );
+      console.log(
+        "Salles existantes :",
+        Array.from(io.sockets.adapter.rooms.keys())
+      );
+
+      if (io.sockets.adapter.rooms.has(roomToCheck)) {
+        const clientsInRoom = io.sockets.adapter.rooms.get(roomToCheck).size;
 
         if (clientsInRoom <= MAX_USERS_PER_ROOM) {
           const newStudent = {
@@ -54,10 +76,8 @@ const setupWebsocket = (io) => {
             name: username,
             answers: [],
           };
-          socket.join(enteredRoomName);
-          socket
-            .to(enteredRoomName)
-            .emit("user-joined", newStudent);
+          socket.join(roomToCheck);
+          socket.to(roomToCheck).emit("user-joined", newStudent);
           socket.emit("join-success");
         } else {
           socket.emit("join-failure", "La salle est remplie");

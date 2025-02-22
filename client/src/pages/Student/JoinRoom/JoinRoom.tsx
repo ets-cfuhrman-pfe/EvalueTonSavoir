@@ -60,6 +60,8 @@ const JoinRoom: React.FC = () => {
             console.log('Failed to join the room.');
             setConnectionError(`Erreur de connexion : ${message}`);
             setIsConnecting(false);
+            setRoomName(''); // Réinitialise le nom de la salle
+            setUsername(''); // Réinitialise le nom d'utilisateur
         });
         socket.on('connect_error', (error) => {
             switch (error.message) {
@@ -96,6 +98,8 @@ const JoinRoom: React.FC = () => {
         }
 
         if (username && roomName) {
+            console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
+
             webSocketService.joinRoom(roomName, username);
         }
     };
@@ -160,12 +164,12 @@ const JoinRoom: React.FC = () => {
                     error={connectionError}>
 
                     <TextField
-                        type="number"
-                        label="Numéro de la salle"
+                        type="text"
+                        label="Nom de la salle"
                         variant="outlined"
                         value={roomName}
                         onChange={(e) => setRoomName(e.target.value)}
-                        placeholder="Numéro de la salle"
+                        placeholder="Nom de la salle"
                         sx={{ marginBottom: '1rem' }}
                         fullWidth
                     />

@@ -10,22 +10,28 @@ interface Props {
     students: StudentType[];
     launchQuiz: () => void;
     setQuizMode: (mode: 'student' | 'teacher') => void;
+    setIsRoomSelectionVisible: (visible: boolean) => void;
 }
 
-const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode }) => {
+const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode, setIsRoomSelectionVisible }) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const handleLaunchClick = () => {
+        setIsDialogOpen(true);
+        setIsRoomSelectionVisible(false);
+    };
 
     return (
         <div className="wait">
             <div className='button'>
                 <Button
                     variant="contained"
-                    onClick={() => setIsDialogOpen(true)}
+                    onClick={handleLaunchClick}
                     startIcon={<PlayArrow />}
                     fullWidth
                     sx={{ fontWeight: 600, fontSize: 20 }}
                 >
-                    Lancer
+                    Lancer 
                 </Button> 
             </div>
 
