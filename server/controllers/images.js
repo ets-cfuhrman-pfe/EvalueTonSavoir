@@ -50,6 +50,23 @@ class ImagesController {
         }
     };
 
+    //TODO TEST
+    getAll = async (req, res, next) => {
+        try {
+
+            const images = await this.images.getAll();
+    
+            if (!images || images.length === 0) {
+                throw new AppError(IMAGE_NOT_FOUND);
+            }
+            
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(200).json(imagesName);
+        } catch (error) {
+            return next(error);
+        }
+    };
+
 }
 
 module.exports = ImagesController;

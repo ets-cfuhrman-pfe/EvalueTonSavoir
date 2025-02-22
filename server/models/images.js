@@ -42,6 +42,28 @@ class Images {
         };
     }
 
+    //TODO TEST
+    async getAll() {
+        await this.db.connect()
+        const conn = this.db.getConnection();
+
+        const imagesCollection = conn.collection('images');
+
+        const result = await imagesCollection.find({});
+
+        if (!result) return null;
+
+        //TODO latency issues -> images > 20 
+        const imagesName = result.map(image => ({
+            id: image.id,
+            file_name: image.file_name,
+            file_content: Buffer.from(image.file_content, 'base64'),
+            mime_type: image.mime_type
+        }));
+
+        return imagesName;
+    }
+
 }
 
 module.exports = Images;

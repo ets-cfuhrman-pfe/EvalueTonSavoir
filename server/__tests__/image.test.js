@@ -7,6 +7,9 @@
 
 // const BASE_URL = '/image'
 
+const Images = require('../models/images');
+const ObjectId = require('mongodb').ObjectId;
+
 describe.skip("POST /upload", () => {
 
     describe("when the jwt is not sent", () => {
@@ -64,3 +67,83 @@ describe.skip("GET /get", () => {
     })
 
 })
+
+describe('Images', () => {
+    let db;
+    let images;
+    let dbConn;
+    let mockImagesCollection;
+
+    beforeEach(() => {
+        mockImagesCollection = {
+            insertOne: jest.fn().mockResolvedValue({ insertedId: 'image123' }),
+            findOne: jest.fn()
+        };
+
+        dbConn = {
+            collection: jest.fn().mockReturnValue(mockImagesCollection)
+        };
+
+        db = {
+            connect: jest.fn().mockResolvedValue(),
+            getConnection: jest.fn().mockReturnValue(dbConn)
+        };
+
+        images = new Images(db);
+    });
+
+    describe('upload', () => {
+        it('should upload an image and return the inserted ID', async () => {
+            const testFile = { originalname: 'test.png', buffer: Buffer.from('dummydata'), mimetype: 'image/png' };
+            const userId = 'user123';
+
+            const result = await images.upload(testFile, userId);
+
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(dbConn.collection).toHaveBeenCalledWith('images');
+            expect(mockImagesCollection.insertOne).toHaveBeenCalledWith({
+                userId: userId,
+                file_name: 'test.png',
+                file_content: testFile.buffer.toString('base64'),
+                mime_type: 'image/png',
+                created_at: expect.any(Date)
+            });
+            expect(result).toBe('image123');
+        });
+    });
+
+    describe('get', () => {
+        it('should retrieve the image if found', async () => {
+            const imageId = '65d9a8f9b5e8d1a5e6a8c9f0';
+            const testImage = {
+                file_name: 'test.png',
+                file_content: Buffer.from('dummydata').toString('base64'),
+                mime_type: 'image/png'
+            };
+            mockImagesCollection.findOne.mockResolvedValue(testImage);
+
+            const result = await images.get(imageId);
+
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(dbConn.collection).toHaveBeenCalledWith('images');
+            expect(mockImagesCollection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(imageId) });
+            expect(result).toEqual({
+                file_name: 'test.png',
+                file_content: Buffer.from('dummydata'),
+                mime_type: 'image/png'
+            });
+        });
+
+        it('should return null if image is not found', async () => {
+            const imageId = '65d9a8f9b5e8d1a5e6a8c9f0';
+            mockImagesCollection.findOne.mockResolvedValue(null);
+
+            const result = await images.get(imageId);
+
+            expect(result).toBeNull();
+        });
+    });
+});
+
