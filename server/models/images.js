@@ -54,6 +54,16 @@ class Images {
         if (!result) return null;
 
         //TODO latency issues -> images > 20 
+        // USE pagination
+        /*
+            app.get('/images', (req, res) => {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            const images = getImagesFromDatabase(page, limit);
+            res.json(images);
+            });
+        */
         const imagesName = result.map(image => ({
             id: image.id,
             file_name: image.file_name,
