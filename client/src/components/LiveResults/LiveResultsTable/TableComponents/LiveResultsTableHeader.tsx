@@ -1,12 +1,12 @@
-import { TableCell, TableHead, TableRow } from "@mui/material";
 import React from "react";
+import { TableCell, TableHead, TableRow } from "@mui/material";
 
-interface LiveResultsFooterProps {
+interface LiveResultsHeaderProps {
     maxQuestions: number;
     showSelectedQuestion: (index: number) => void;
 }
 
-const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
+const LiveResultsTableHeader: React.FC<LiveResultsHeaderProps> = ({
     maxQuestions,
     showSelectedQuestion,
 }) => {
@@ -47,4 +47,4 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
         </TableHead>
     );
 };
-export default LiveResultsTableFooter;
+export default LiveResultsTableHeader;
