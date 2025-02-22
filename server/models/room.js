@@ -1,9 +1,8 @@
 const ObjectId = require('mongodb').ObjectId;
 
 class Rooms {
-    constructor(db, quizModel) {
+    constructor(db) {
         this.db = db;
-        this.quizModel = quizModel;
     }
 
     async create(title, userId) {
@@ -76,7 +75,6 @@ class Rooms {
         const roomResult = await roomsCollection.deleteOne({ _id: ObjectId.createFromHexString(roomId) });
 
         if (roomResult.deletedCount != 1) return false;
-        await this.quizModel.deleteQuizzesByRoomId(roomId);
 
         return true;
     }

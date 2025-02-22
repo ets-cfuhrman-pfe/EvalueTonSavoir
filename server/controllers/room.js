@@ -8,7 +8,6 @@ class RoomsController {
         this.getRoomTitle = this.getRoomTitle.bind(this);
     }
 
-   // In RoomsController.js
 create = async (req, res, next) => {
     try {
         const { title } = req.body;
@@ -25,7 +24,7 @@ create = async (req, res, next) => {
 
         return res.status(200).json({
             message: 'Room cree avec succes.',
-            roomId: result.insertedId // Ensure result contains the insertedId
+            roomId: result.insertedId
         });
 
     } catch (error) {
@@ -100,7 +99,7 @@ create = async (req, res, next) => {
             }
 
             return res.status(200).json({
-                message: 'Salle supprim� avec succ�s.'
+                message: 'Salle supprimé avec succès.'
             });
 
         } catch (error) {
