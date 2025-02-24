@@ -33,7 +33,7 @@ describe('Rooms', () => {
     // create
     describe('create', () => {
         it('should create a new room and return the new room ID', async () => {
-            const title = 'Test Room';
+            const title = 'test room';
 
             // Mock the database response
             collection.findOne.mockResolvedValue(null);
@@ -50,7 +50,7 @@ describe('Rooms', () => {
 
         // throw an error if userId is undefined
         it('should throw an error if userId is undefined', async () => {
-            const title = 'Test Room';
+            const title = 'test room';
 
             await expect(rooms.create(title, undefined)).rejects.toThrow('Missing required parameter(s)');
 
@@ -58,7 +58,7 @@ describe('Rooms', () => {
         });
 
         it('should throw an error if the room already exists', async () => {
-            const title = 'Existing Room';
+            const title = 'existing room';
             const userId = '66fc70bea1b9e87655cf17c9';
 
             // Mock the database response of a found room
@@ -85,8 +85,8 @@ describe('Rooms', () => {
         it('should return all rooms for a user', async () => {
             const userId = '12345';
             const userRooms = [
-                { title: 'Room 1', userId },
-                { title: 'Room 2', userId },
+                { title: 'room 1', userId },
+                { title: 'room 2', userId },
             ];
 
             // Mock the database response
@@ -124,8 +124,8 @@ describe('Rooms', () => {
         it('should return the content of a room', async () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
             const content = [
-                { title: 'Salle 1', content: [] },
-                { title: 'Salle 2', content: [] },
+                { title: 'salle 1', content: [] },
+                { title: 'salle 2', content: [] },
             ];
 
             // Mock the database response
@@ -188,7 +188,7 @@ describe('Rooms', () => {
     describe('rename', () => {
         it('should rename a room and return true', async () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'New Room Name';
+            const newTitle = 'new room name';
             const userId = '12345';
 
             // Mock the database response
@@ -205,7 +205,7 @@ describe('Rooms', () => {
 
         it('should return false if the room does not exist', async () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'New Room Name';
+            const newTitle = 'new room name';
             const userId = '12345';
 
             // Mock the database response
@@ -221,7 +221,7 @@ describe('Rooms', () => {
 
         it('should throw an error if the new title is already in use', async () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'Existing Room';
+            const newTitle = 'existing room';
             const userId = '12345';
 
             // Mock the database response
@@ -239,7 +239,7 @@ describe('Rooms', () => {
     
     describe('roomExists', () => {
         it('should return true if room exists', async () => {
-            const title = 'Test Room';
+            const title = 'test room';
 
             // Mock the database response
             collection.findOne.mockResolvedValue({ title });
@@ -253,7 +253,7 @@ describe('Rooms', () => {
         });
 
         it('should return false if room does not exist', async () => {
-            const title = 'Nonexistent Room';
+            const title = 'nonexistent room';
             // Mock the database response
             collection.findOne.mockResolvedValue(null);
 
@@ -272,7 +272,7 @@ describe('Rooms', () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
             const room = {
                 _id: new ObjectId(roomId),
-                title: 'Test Room',
+                title: 'test room',
             };
 
             // Mock the database response
