@@ -10,15 +10,13 @@ interface Props {
     students: StudentType[];
     launchQuiz: () => void;
     setQuizMode: (mode: 'student' | 'teacher') => void;
-    setIsRoomSelectionVisible: (visible: boolean) => void;
 }
 
-const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode, setIsRoomSelectionVisible }) => {
+const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode }) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleLaunchClick = () => {
         setIsDialogOpen(true);
-        setIsRoomSelectionVisible(false);
     };
 
     return (

@@ -48,6 +48,8 @@ const JoinRoom: React.FC = () => {
             setQuestion(question);
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
+            console.log('Received launch-student-mode:', questions);
+
             setQuizMode('student');
             setIsWaitingForTeacher(false);
             setQuestions(questions);
@@ -60,8 +62,6 @@ const JoinRoom: React.FC = () => {
             console.log('Failed to join the room.');
             setConnectionError(`Erreur de connexion : ${message}`);
             setIsConnecting(false);
-            setRoomName(''); // Réinitialise le nom de la salle
-            setUsername(''); // Réinitialise le nom d'utilisateur
         });
         socket.on('connect_error', (error) => {
             switch (error.message) {

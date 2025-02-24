@@ -23,13 +23,11 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { RoomType } from 'src/Types/RoomType';
-import { Button, NativeSelect } from '@mui/material';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { useRooms } from '../ManageRoom/RoomContext';
+import { Button } from '@mui/material';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
-    const [roomName, setRoomName] = useState<string>('');
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
     const quizId = useParams<{ id: string }>();
@@ -39,11 +37,9 @@ const ManageRoom: React.FC = () => {
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState(false);
-    const [rooms, setRooms] = useState<RoomType[]>([]);
-    const [selectedRoomId, setSelectedRoomId] = useState<string>('');
-    const [openDialog, setOpenDialog] = useState(false);
-    const [newRoomTitle, setNewRoomTitle] = useState('');
-    const [isRoomSelectionVisible, setIsRoomSelectionVisible] = useState(true);
+    const { selectedRoom } = useRooms();
+    const roomName = selectedRoom?.title || '';
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,53 +47,10 @@ const ManageRoom: React.FC = () => {
                 navigate('/teacher/login');
                 return;
             }
-
-            const userRooms = await ApiService.getUserRooms();
-            setRooms(userRooms as RoomType[]);
         };
 
         fetchData();
     }, []);
-
-    const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const roomId = event.target.value;
-        setSelectedRoomId(roomId);
-
-        const selectedRoom = rooms.find((room) => room._id === roomId);
-        setRoomName(selectedRoom?.title || '');
-    };
-
-    useEffect(() => {
-        if (rooms.length > 0 && !selectedRoomId) {
-            setSelectedRoomId(rooms[0]._id);
-        }
-    }, [rooms]);
-
-    const handleDialogClose = () => {
-        setOpenDialog(false);
-    };
-
-    const handleCreateRoom = async () => {
-        setOpenDialog(true);
-    };
-    const handleSubmitRoom = async () => {
-        try {
-            if (newRoomTitle.trim()) {
-                const createdRoom = await ApiService.createRoom(newRoomTitle);
-
-                const updatedRooms = await ApiService.getUserRooms();
-                setRooms(updatedRooms as RoomType[]);
-
-                if (createdRoom) {
-                    setSelectedRoomId(createdRoom);
-                }
-                setOpenDialog(false);
-                setNewRoomTitle('');
-            }
-        } catch (error) {
-            console.error('Error creating Room::', error);
-        }
-    };
 
     useEffect(() => {
         if (quizId.id) {
@@ -136,25 +89,6 @@ const ManageRoom: React.FC = () => {
         }
     }, [quizId]);
 
-    useEffect(() => {
-        if (rooms.length > 0 && !selectedRoomId) {
-            setSelectedRoomId(rooms[0].title);
-        }
-    }, [rooms]);
-
-    useEffect(() => {
-        if (!newRoomTitle && !selectedRoomId) {
-            setConnectingError('Aucun nom de salle sélectionné ou créé.');
-        }
-    }, [newRoomTitle, selectedRoomId]);
-
-    useEffect(() => {
-        if (selectedRoomId && selectedRoomId.trim() !== '') {
-            console.log(`Sélection d'une nouvelle salle: ${selectedRoomId}`);
-            createWebSocketRoom();
-        }
-    }, [selectedRoomId]);
-
     const disconnectWebSocket = () => {
         if (socket) {
             webSocketService.endQuiz(roomName);
@@ -163,162 +97,117 @@ const ManageRoom: React.FC = () => {
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
             setStudents(new Array<StudentType>());
-            setRoomName('');
         }
     };
 
     const createWebSocketRoom = () => {
         console.log('Creating WebSocket room...');
-        setConnectingError('');
-    
-        const handleRoomCreation = (socket: Socket, roomToCreate?: string) => {
-            socket.on('connect', () => {
-                if (roomToCreate) {
-                    webSocketService.createRoom(roomToCreate);
-                } else {
-                    socket.emit("create-room");
-                }
-            });
-    
-            socket.on('create-success', (createdRoomName: string) => {
-                console.log('Salle créée/jointe:', createdRoomName);
-                setRoomName(createdRoomName);
-            });
-    
-            socket.on('create-failure', (errorMessage: string) => {
-                setConnectingError(errorMessage);
-                console.error('Erreur création salle:', errorMessage);
-            });
 
-            socket.on('user-joined', (student: StudentType) => {
-                console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
-                
-                setStudents((prevStudents) => [...prevStudents, student]);
-                
-                if (quizMode === 'teacher') {
-                    webSocketService.nextQuestion(roomName, currentQuestion);
-                } else if (quizMode === 'student') {
-                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-                }
-            });
+        if (!selectedRoom) {
+          setConnectingError('Aucune salle sélectionnée.');
+          return;
+        }
 
-            socket.on('join-failure', (message) => {
-                setConnectingError(message);
-                setSocket(null);
-            });
+        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        socket.on('connect', () => {
+            webSocketService.createRoom(selectedRoom.title);
+          });
+      
+          socket.on('connect_error', (error) => {
+            setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
+            console.error('ManageRoom: WebSocket connection error:', error);
+          });
+          
+          socket.on('user-joined', (student: StudentType) => {
+            console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
 
-            socket.on('user-disconnected', (userId: string) => {
-                console.log(`Student left: id = ${userId}`);
-                setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-            });
+            setStudents((prevStudents) => [...prevStudents, student]);
+
+            if (quizMode === 'teacher') {
+                webSocketService.nextQuestion(roomName, currentQuestion);
+            } else if (quizMode === 'student') {
+                webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+            }
+        });
+          socket.on('join-failure', (message) => {
+            setConnectingError(message);
+            setSocket(null);
+          });
+      
+          socket.on('user-disconnected', (userId: string) => {
+            console.log(`Student left: id = ${userId}`);
+            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        });
+      
+          setSocket(socket);
         };
-    
-        if (rooms.length === 0) {
-            console.log('Tentative de création de salle automatique...');
-            const newSocket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
-            handleRoomCreation(newSocket);
-            setSocket(newSocket);
-        } else {
-            const targetRoom = rooms.find((room) => room._id === selectedRoomId) || rooms[0];
-            if (!targetRoom) {
-                setConnectingError('Aucune salle disponible');
-                return;
+
+        useEffect(() => {
+            // This is here to make sure the correct value is sent when user join
+            if (socket) {
+                console.log(`Listening for user-joined in room ${roomName}`);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                socket.on('user-joined', (_student: StudentType) => {
+                    if (quizMode === 'teacher') {
+                        webSocketService.nextQuestion(roomName, currentQuestion);
+                    } else if (quizMode === 'student') {
+                        webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+                    }
+                });
             }
     
-            console.log('Utilisation de la salle:', targetRoom.title);
-            const newSocket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
-            handleRoomCreation(newSocket, targetRoom.title);
-            setSocket(newSocket);
-        }
 
-        socket?.on('connect_error', (error) => {
-            setConnectingError('Erreur de connexion au serveur...');
-            console.error('Connection error:', error);
-        });
-    };
-
-    useEffect(() => {
-        // This is here to make sure the correct value is sent when user join
-        if (socket) {
-            console.log(`Listening for user-joined in room ${roomName}`);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            socket.on('user-joined', (_student: StudentType) => {
-                if (quizMode === 'teacher') {
-                    webSocketService.nextQuestion(roomName, currentQuestion);
-                } else if (quizMode === 'student') {
-                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-                }
-            });
-        }
-
-        if (socket) {
-            // handle the case where user submits an answer
-            console.log(`Listening for submit-answer-room in room ${roomName}`);
-            socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
-                const { answer, idQuestion, idUser, username } = answerData;
-                console.log(
-                    `Received answer from ${username} for question ${idQuestion}: ${answer}`
-                );
-                if (!quizQuestions) {
-                    console.log('Quiz questions not found (cannot update answers without them).');
-                    return;
-                }
-
-                // Update the students state using the functional form of setStudents
-                setStudents((prevStudents) => {
-                    // print the list of current student names
-                    console.log('Current students:');
-                    prevStudents.forEach((student) => {
-                        console.log(student.name);
-                    });
-
-                    let foundStudent = false;
-                    const updatedStudents = prevStudents.map((student) => {
-                        console.log(`Comparing ${student.id} to ${idUser}`);
-                        if (student.id === idUser) {
-                            foundStudent = true;
-                            const existingAnswer = student.answers.find(
-                                (ans) => ans.idQuestion === idQuestion
-                            );
-                            let updatedAnswers: Answer[] = [];
-                            if (existingAnswer) {
-                                // Update the existing answer
-                                updatedAnswers = student.answers.map((ans) => {
-                                    console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
-                                    return ans.idQuestion === idQuestion
-                                        ? {
-                                              ...ans,
-                                              answer,
-                                              isCorrect: checkIfIsCorrect(
-                                                  answer,
-                                                  idQuestion,
-                                                  quizQuestions!
-                                              )
-                                          }
-                                        : ans;
-                                });
-                            } else {
-                                // Add a new answer
-                                const newAnswer = {
-                                    idQuestion,
-                                    answer,
-                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
-                                };
-                                updatedAnswers = [...student.answers, newAnswer];
-                            }
-                            return { ...student, answers: updatedAnswers };
-                        }
-                        return student;
-                    });
-                    if (!foundStudent) {
-                        console.log(`Student ${username} not found in the list.`);
+            if (socket) {
+                // handle the case where user submits an answer
+                console.log(`Listening for submit-answer-room in room ${roomName}`);
+                socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
+                    const { answer, idQuestion, idUser, username } = answerData;
+                    console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
+                    if (!quizQuestions) {
+                        console.log('Quiz questions not found (cannot update answers without them).');
+                        return;
                     }
-                    return updatedStudents;
+    
+                    // Update the students state using the functional form of setStudents
+                    setStudents((prevStudents) => {
+                        // print the list of current student names
+                        console.log('Current students:');
+                        prevStudents.forEach((student) => {
+                            console.log(student.name);
+                        });
+    
+                        let foundStudent = false;
+                        const updatedStudents = prevStudents.map((student) => {
+                            console.log(`Comparing ${student.id} to ${idUser}`);
+                            if (student.id === idUser) {
+                                foundStudent = true;
+                                const existingAnswer = student.answers.find((ans) => ans.idQuestion === idQuestion);
+                                let updatedAnswers: Answer[] = [];
+                                if (existingAnswer) {
+                                    // Update the existing answer
+                                    updatedAnswers = student.answers.map((ans) => {
+                                        console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
+                                        return (ans.idQuestion === idQuestion ? { ...ans, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) } : ans);
+                                    });
+                                } else {
+                                    // Add a new answer
+                                    const newAnswer = { idQuestion, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) };
+                                    updatedAnswers = [...student.answers, newAnswer];
+                                }
+                                return { ...student, answers: updatedAnswers };
+                            }
+                            return student;
+                        });
+                        if (!foundStudent) {
+                            console.log(`Student ${username} not found in the list.`);
+                        }
+                        return updatedStudents;
+                    });
                 });
-            });
-            setSocket(socket);
-        }
-    }, [socket, currentQuestion, quizQuestions]);
+                setSocket(socket);
+            }
+    
+        }, [socket, currentQuestion, quizQuestions]);
 
     const nextQuestion = () => {
         if (!quizQuestions || !currentQuestion || !quiz?.content) return;
@@ -497,6 +386,7 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
+            <h1>Salle : {roomName}</h1>
             <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
@@ -513,9 +403,6 @@ const ManageRoom: React.FC = () => {
                         width: '100%'
                     }}
                 >
-                    <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                        <div className="title">Salle: {roomName}</div>
-                    </div>
                     {quizStarted && (
                         <div
                             className="userCount subtitle smallText"
@@ -529,69 +416,7 @@ const ManageRoom: React.FC = () => {
 
                 <div className="dumb"></div>
             </div>
-            {isRoomSelectionVisible && (
-                <div className="roomSelection">
-                    <div className="select">
-                        <NativeSelect
-                            id="select-room"
-                            color="primary"
-                            value={selectedRoomId}
-                            onChange={handleSelectRoom}
-                        >
-                            <option value=""> Sélectionner une salle </option>
-                            {rooms.map((room: RoomType) => (
-                                <option value={room._id} key={room._id}>
-                                    {' '}
-                                    {room.title}
-                                </option>
-                            ))}
-                        </NativeSelect>
-                    </div>
-
-                    <div
-                        className="actions"
-                        style={{ display: 'flex', justifyContent: 'flex-end' }}
-                    >
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleCreateRoom}
-                            style={{
-                                width: 'auto',
-                                marginLeft: '30px',
-                                height: '40px',
-                                padding: '0 20px'
-                            }}
-                        >
-                            Ajouter une nouvelle salle
-                        </Button>
-                    </div>
-
-                    {/* Dialog pour créer une salle */}
-                    <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-                        <DialogTitle>Créer une nouvelle salle</DialogTitle>
-                        <DialogContent>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                label="Titre de la salle"
-                                type="text"
-                                fullWidth
-                                value={newRoomTitle}
-                                onChange={(e) => setNewRoomTitle(e.target.value)}
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleDialogClose} color="secondary">
-                                Annuler
-                            </Button>
-                            <Button onClick={handleSubmitRoom} color="primary">
-                                Créer
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-                </div>
-            )}
+         
 
             {/* the following breaks the css (if 'room' classes are nested) */}
             <div className="">
@@ -669,7 +494,6 @@ const ManageRoom: React.FC = () => {
                         students={students}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
-                        setIsRoomSelectionVisible={setIsRoomSelectionVisible}
                     />
                 )}
             </div>

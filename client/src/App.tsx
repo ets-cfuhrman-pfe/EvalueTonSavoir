@@ -13,6 +13,7 @@ import Register from './pages/Teacher/Register/Register';
 import ResetPassword from './pages/Teacher/ResetPassword/ResetPassword';
 import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
 import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
+import { RoomProvider } from './pages/Teacher/ManageRoom/RoomContext';
 
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
@@ -25,42 +26,42 @@ import ApiService from './services/ApiService';
 
 const handleLogout = () => {
     ApiService.logout();
-}
+};
 
 const isLoggedIn = () => {
     return ApiService.isLoggedIn();
-}
+};
 
 function App() {
     return (
-        <div className="content">
-            
-                <Header
-                isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout}/>
+        <RoomProvider>
+            {' '}
+            <div className="content">
+                <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
 
-            <div className="app">
-                <main>
-                    <Routes>
-                        {/* Page main */}
-                        <Route path="/" element={<Home />} />
+                <div className="app">
+                    <main>
+                        <Routes>
+                            {/* Page main */}
+                            <Route path="/" element={<Home />} />
 
-                        {/* Pages espace enseignant */}
-                        <Route path="/teacher/login" element={<Login />} />
-                        <Route path="/teacher/register" element={<Register />} />
-                        <Route path="/teacher/resetPassword" element={<ResetPassword />} />
-                        <Route path="/teacher/dashboard" element={<Dashboard />} />
-                        <Route path="/teacher/share/:id" element={<Share />} />
-                        <Route path="/teacher/editor-quiz/:id" element={<QuizForm />} />
-                        <Route path="/teacher/manage-room/:id" element={<ManageRoom />} />
+                            {/* Pages espace enseignant */}
+                            <Route path="/teacher/login" element={<Login />} />
+                            <Route path="/teacher/register" element={<Register />} />
+                            <Route path="/teacher/resetPassword" element={<ResetPassword />} />
+                            <Route path="/teacher/dashboard" element={<Dashboard />} />
+                            <Route path="/teacher/share/:id" element={<Share />} />
+                            <Route path="/teacher/editor-quiz/:id" element={<QuizForm />} />
+                            <Route path="/teacher/manage-room/:id" element={<ManageRoom />} />
 
-                        {/* Pages espace étudiant */}
-                        <Route path="/student/join-room" element={<JoinRoom />} />
-                    </Routes>
-                </main>
+                            {/* Pages espace étudiant */}
+                            <Route path="/student/join-room" element={<JoinRoom />} />
+                        </Routes>
+                    </main>
+                </div>
+                <Footer />
             </div>
-                <Footer/>
-        </div>
+        </RoomProvider>
     );
 }
 
