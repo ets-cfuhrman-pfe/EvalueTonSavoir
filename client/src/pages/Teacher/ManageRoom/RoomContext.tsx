@@ -26,7 +26,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedRoom(defaultRoom);  
         localStorage.setItem('selectedRoomId', defaultRoom._id);
       } else {
-        const randomRoomName = `Room-${Math.floor(Math.random() * 10000)}`;
+        const randomRoomName = `Room-${Math.floor(Math.random() * 1000000)}`;
         await createRoom(randomRoomName);
       }
     };

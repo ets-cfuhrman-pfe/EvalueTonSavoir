@@ -16,7 +16,9 @@ class Rooms {
 
         const roomsCollection = conn.collection('rooms');
 
-        const existingRoom = await roomsCollection.findOne({ title: title, userId: userId });
+        const normalizedTitle = title.toLowerCase();
+
+        const existingRoom = await roomsCollection.findOne({ title: normalizedTitle, userId: userId });
 
         if (existingRoom) {
             throw new Error('Room already exists');
@@ -101,7 +103,8 @@ class Rooms {
         const conn = this.db.getConnection();
 
         const roomsCollection = conn.collection('rooms');
-        const existingRoom = await roomsCollection.findOne({ title: title });
+        const normalizedTitle = title.toLowerCase();
+        const existingRoom = await roomsCollection.findOne({ title: normalizedTitle });
         return existingRoom ? true : false;
     }
 
