@@ -38,8 +38,14 @@ const ManageRoom: React.FC = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState(false);
     const { selectedRoom } = useRooms();
-    const roomName = selectedRoom?.title || '';
 
+    const [roomName, setRoomName] = useState<string>(selectedRoom?.title || '');
+
+    useEffect(() => {
+        if (selectedRoom) {
+            setRoomName(selectedRoom.title);
+        }
+    }, [selectedRoom]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -104,21 +110,25 @@ const ManageRoom: React.FC = () => {
         console.log('Creating WebSocket room...');
 
         if (!selectedRoom) {
-          setConnectingError('Aucune salle sélectionnée.');
-          return;
+            setConnectingError('Aucune salle sélectionnée.');
+            return;
         }
 
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
         socket.on('connect', () => {
             webSocketService.createRoom(selectedRoom.title);
-          });
-      
-          socket.on('connect_error', (error) => {
+        });
+
+        socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
             console.error('ManageRoom: WebSocket connection error:', error);
-          });
-          
-          socket.on('user-joined', (student: StudentType) => {
+        });
+
+        socket.on('create-success', (roomName: string) => {
+            setRoomName(roomName);
+        });
+
+        socket.on('user-joined', (student: StudentType) => {
             console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
 
             setStudents((prevStudents) => [...prevStudents, student]);
@@ -129,85 +139,101 @@ const ManageRoom: React.FC = () => {
                 webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
             }
         });
-          socket.on('join-failure', (message) => {
+        socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
-          });
-      
-          socket.on('user-disconnected', (userId: string) => {
+        });
+
+        socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
             setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         });
-      
-          setSocket(socket);
-        };
 
-        useEffect(() => {
-            // This is here to make sure the correct value is sent when user join
-            if (socket) {
-                console.log(`Listening for user-joined in room ${roomName}`);
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                socket.on('user-joined', (_student: StudentType) => {
-                    if (quizMode === 'teacher') {
-                        webSocketService.nextQuestion(roomName, currentQuestion);
-                    } else if (quizMode === 'student') {
-                        webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-                    }
-                });
-            }
-    
+        setSocket(socket);
+    };
 
-            if (socket) {
-                // handle the case where user submits an answer
-                console.log(`Listening for submit-answer-room in room ${roomName}`);
-                socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
-                    const { answer, idQuestion, idUser, username } = answerData;
-                    console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
-                    if (!quizQuestions) {
-                        console.log('Quiz questions not found (cannot update answers without them).');
-                        return;
-                    }
-    
-                    // Update the students state using the functional form of setStudents
-                    setStudents((prevStudents) => {
-                        // print the list of current student names
-                        console.log('Current students:');
-                        prevStudents.forEach((student) => {
-                            console.log(student.name);
-                        });
-    
-                        let foundStudent = false;
-                        const updatedStudents = prevStudents.map((student) => {
-                            console.log(`Comparing ${student.id} to ${idUser}`);
-                            if (student.id === idUser) {
-                                foundStudent = true;
-                                const existingAnswer = student.answers.find((ans) => ans.idQuestion === idQuestion);
-                                let updatedAnswers: Answer[] = [];
-                                if (existingAnswer) {
-                                    // Update the existing answer
-                                    updatedAnswers = student.answers.map((ans) => {
-                                        console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
-                                        return (ans.idQuestion === idQuestion ? { ...ans, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) } : ans);
-                                    });
-                                } else {
-                                    // Add a new answer
-                                    const newAnswer = { idQuestion, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) };
-                                    updatedAnswers = [...student.answers, newAnswer];
-                                }
-                                return { ...student, answers: updatedAnswers };
-                            }
-                            return student;
-                        });
-                        if (!foundStudent) {
-                            console.log(`Student ${username} not found in the list.`);
-                        }
-                        return updatedStudents;
+    useEffect(() => {
+        // This is here to make sure the correct value is sent when user join
+        if (socket) {
+            console.log(`Listening for user-joined in room ${roomName}`);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            socket.on('user-joined', (_student: StudentType) => {
+                if (quizMode === 'teacher') {
+                    webSocketService.nextQuestion(roomName, currentQuestion);
+                } else if (quizMode === 'student') {
+                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+                }
+            });
+        }
+
+        if (socket) {
+            // handle the case where user submits an answer
+            console.log(`Listening for submit-answer-room in room ${roomName}`);
+            socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
+                const { answer, idQuestion, idUser, username } = answerData;
+                console.log(
+                    `Received answer from ${username} for question ${idQuestion}: ${answer}`
+                );
+                if (!quizQuestions) {
+                    console.log('Quiz questions not found (cannot update answers without them).');
+                    return;
+                }
+
+                // Update the students state using the functional form of setStudents
+                setStudents((prevStudents) => {
+                    // print the list of current student names
+                    console.log('Current students:');
+                    prevStudents.forEach((student) => {
+                        console.log(student.name);
                     });
+
+                    let foundStudent = false;
+                    const updatedStudents = prevStudents.map((student) => {
+                        console.log(`Comparing ${student.id} to ${idUser}`);
+                        if (student.id === idUser) {
+                            foundStudent = true;
+                            const existingAnswer = student.answers.find(
+                                (ans) => ans.idQuestion === idQuestion
+                            );
+                            let updatedAnswers: Answer[] = [];
+                            if (existingAnswer) {
+                                // Update the existing answer
+                                updatedAnswers = student.answers.map((ans) => {
+                                    console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
+                                    return ans.idQuestion === idQuestion
+                                        ? {
+                                              ...ans,
+                                              answer,
+                                              isCorrect: checkIfIsCorrect(
+                                                  answer,
+                                                  idQuestion,
+                                                  quizQuestions!
+                                              )
+                                          }
+                                        : ans;
+                                });
+                            } else {
+                                // Add a new answer
+                                const newAnswer = {
+                                    idQuestion,
+                                    answer,
+                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
+                                };
+                                updatedAnswers = [...student.answers, newAnswer];
+                            }
+                            return { ...student, answers: updatedAnswers };
+                        }
+                        return student;
+                    });
+                    if (!foundStudent) {
+                        console.log(`Student ${username} not found in the list.`);
+                    }
+                    return updatedStudents;
                 });
-                setSocket(socket);
-            }
-    
-        }, [socket, currentQuestion, quizQuestions]);
+            });
+            setSocket(socket);
+        }
+    }, [socket, currentQuestion, quizQuestions]);
 
     const nextQuestion = () => {
         if (!quizQuestions || !currentQuestion || !quiz?.content) return;
@@ -416,7 +442,6 @@ const ManageRoom: React.FC = () => {
 
                 <div className="dumb"></div>
             </div>
-         
 
             {/* the following breaks the css (if 'room' classes are nested) */}
             <div className="">
