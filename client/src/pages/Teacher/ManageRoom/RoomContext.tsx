@@ -19,8 +19,18 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const loadRooms = async () => {
       const userRooms = await ApiService.getUserRooms();
-      setRooms(userRooms as RoomType[]);
+      const roomsList = userRooms as RoomType[];
+      setRooms(roomsList);
+      if (roomsList.length > 0) {
+        const defaultRoom = roomsList[1]; // Set the first created room as the selected one
+        setSelectedRoom(defaultRoom);  
+        localStorage.setItem('selectedRoomId', defaultRoom._id);
+      } else {
+        const randomRoomName = `Room-${Math.floor(Math.random() * 10000)}`;
+        await createRoom(randomRoomName);
+      }
     };
+    
     loadRooms();
   }, []);
 

@@ -36,20 +36,6 @@ const setupWebsocket = (io) => {
           socket.emit("create-failure", `La salle ${roomName} existe déjà.`);
           console.log(`Échec de création : ${roomName} existe déjà`);
         }
-      } else {
-        const roomName = generateRoomName();
-        console.log(`Génération d'une salle aléatoire : ${roomName}`);
-        if (!io.sockets.adapter.rooms.get(roomName)) {
-          socket.join(roomName);
-          socket.emit("create-success", roomName);
-          console.log(`Salle créée avec succès : ${roomName}`);
-        } else {
-          socket.emit(
-            "create-failure",
-            "Échec de création de la salle aléatoire"
-          );
-          console.log(`Échec de création de la salle aléatoire`);
-        }
       }
       console.log(
         "Salles existantes après la tentative de création : ",
@@ -129,17 +115,6 @@ const setupWebsocket = (io) => {
       });
     });
   });
-
-  const generateRoomName = (length = 6) => {
-    const characters = "0123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
-    }
-    return result;
-  };
 };
 
 module.exports = { setupWebsocket };
