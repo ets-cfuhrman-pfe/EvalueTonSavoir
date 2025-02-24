@@ -8,6 +8,7 @@ import { QuizType } from 'src/Types/QuizType';
 import webSocketService, { AnswerReceptionFromBackendType } from 'src/services/WebsocketService';
 import ApiService from 'src/services/ApiService';
 import { Socket } from 'socket.io-client';
+import { useRooms } from 'src/pages/Teacher/ManageRoom/RoomContext';
 
 jest.mock('src/services/WebsocketService');
 jest.mock('src/services/ApiService');
@@ -16,6 +17,7 @@ jest.mock('react-router-dom', () => ({
     useNavigate: jest.fn(),
     useParams: jest.fn(),
 }));
+jest.mock('src/pages/Teacher/ManageRoom/RoomContext');
 
 const mockSocket = {
     on: jest.fn(),
@@ -51,6 +53,7 @@ const mockAnswerData: AnswerReceptionFromBackendType = {
 describe('ManageRoom', () => {
     const navigate = jest.fn();
     const useParamsMock = useParams as jest.Mock;
+    const mockSetSelectedRoom = jest.fn();
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -58,6 +61,10 @@ describe('ManageRoom', () => {
         useParamsMock.mockReturnValue({ id: 'test-quiz-id' });
         (ApiService.getQuiz as jest.Mock).mockResolvedValue(mockQuiz);
         (webSocketService.connect as jest.Mock).mockReturnValue(mockSocket);
+        (useRooms as jest.Mock).mockReturnValue({
+            selectedRoom: { id: '1', title: 'Test Room' },
+            setSelectedRoom: mockSetSelectedRoom
+        });
     });
 
     test('prepares to launch quiz and fetches quiz data', async () => {
@@ -68,28 +75,28 @@ describe('ManageRoom', () => {
                 </MemoryRouter>
             );
         });
-
+    
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
-
+    
         await waitFor(() => {
             expect(ApiService.getQuiz).toHaveBeenCalledWith('test-quiz-id');
         });
 
         const launchButton = screen.getByText('Lancer');
         fireEvent.click(launchButton);
-
+    
         const rythmeButton = screen.getByText('Rythme du professeur');
         fireEvent.click(rythmeButton);
-
+    
         const secondLaunchButton = screen.getAllByText('Lancer');
         fireEvent.click(secondLaunchButton[1]);
-
+    
         await waitFor(() => {
             expect(screen.getByText('Test Quiz')).toBeInTheDocument();
-            expect(screen.getByText('Salle: test-room-name')).toBeInTheDocument();
+            expect(screen.getByText(/Salle\s*:\s*Test Room/i)).toBeInTheDocument();
             expect(screen.getByText('0/60')).toBeInTheDocument();
             expect(screen.getByText('Question 1/2')).toBeInTheDocument();
         });
@@ -103,14 +110,14 @@ describe('ManageRoom', () => {
                 </MemoryRouter>
             );
         });
-
+    
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
             createSuccessCallback('test-room-name');
         });
-
+    
         await waitFor(() => {
-            expect(screen.getByText('Salle: test-room-name')).toBeInTheDocument();
+            expect(screen.getByText(/Salle\s*:\s*test-room-name/i)).toBeInTheDocument();
         });
     });
 
@@ -250,4 +257,79 @@ describe('ManageRoom', () => {
             expect(navigate).toHaveBeenCalledWith('/teacher/dashboard');
         });
     });
+
+    test('handles submit-answer-room event', async () => {
+        const consoleSpy = jest.spyOn(console, 'log');
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <ManageRoom />
+                </MemoryRouter>
+            );
+        });
+    
+        await act(async () => {
+            const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
+            createSuccessCallback('test-room-name');
+        });
+    
+        const launchButton = screen.getByText('Lancer');
+        fireEvent.click(launchButton);
+    
+        const rythmeButton = screen.getByText('Rythme du professeur');
+        fireEvent.click(rythmeButton);
+    
+        const secondLaunchButton = screen.getAllByText('Lancer');
+        fireEvent.click(secondLaunchButton[1]);
+    
+        await act(async () => {
+            const userJoinedCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'user-joined')[1];
+            userJoinedCallback(mockStudents[0]);
+        });
+    
+        await act(async () => {
+            const submitAnswerCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'submit-answer-room')[1];
+            submitAnswerCallback(mockAnswerData);
+        });
+    
+        await waitFor(() => {
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Received answer from Student 1 for question 1: Answer1'
+            );
+        });
+    
+        consoleSpy.mockRestore();
+    });
+    
+    test('vide la liste des étudiants après déconnexion', async () => {
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <ManageRoom />
+                </MemoryRouter>
+            );
+        });
+
+        await act(async () => {
+            const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
+            createSuccessCallback('test-room-name');
+        });
+
+        await act(async () => {
+            const userJoinedCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'user-joined')[1];
+            userJoinedCallback(mockStudents[0]);
+        });
+
+        const disconnectButton = screen.getByText('Quitter');
+        fireEvent.click(disconnectButton);
+
+        const confirmButton = screen.getAllByText('Confirmer');
+        fireEvent.click(confirmButton[1]);
+
+        await waitFor(() => {
+            expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
+        });
+    });
+
+   
 });
