@@ -42,10 +42,10 @@ const ManageRoom: React.FC = () => {
     const [roomName, setRoomName] = useState<string>(selectedRoom?.title || '');
 
     useEffect(() => {
-        if (selectedRoom) {
-            setRoomName(selectedRoom.title);
+        if (selectedRoom && !socket) {
+          createWebSocketRoom();
         }
-    }, [selectedRoom]);
+      }, [selectedRoom]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -110,7 +110,7 @@ const ManageRoom: React.FC = () => {
         console.log('Creating WebSocket room...');
 
         if (!selectedRoom) {
-            setConnectingError('Aucune salle sélectionnée.');
+            setConnectingError('Veuillez sélectionner une salle.');
             return;
         }
 

@@ -21,16 +21,31 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       const userRooms = await ApiService.getUserRooms();
       const roomsList = userRooms as RoomType[];
       setRooms(roomsList);
-      if (roomsList.length > 0) {
-        const defaultRoom = roomsList[1]; // Set the first created room as the selected one
-        setSelectedRoom(defaultRoom);  
-        localStorage.setItem('selectedRoomId', defaultRoom._id);
-      } else {
+  
+      const savedRoomId = localStorage.getItem('selectedRoomId');
+      if (savedRoomId) {
+        const savedRoom = roomsList.find(r => r._id === savedRoomId);
+        if (savedRoom) {
+          setSelectedRoom(savedRoom);
+          return;
+        }
+      }
+  
+      if (roomsList.length === 0) {
         const randomRoomName = `Room-${Math.floor(Math.random() * 1000000)}`;
-        await createRoom(randomRoomName);
+        const newRoomId = await ApiService.createRoom(randomRoomName);
+        const newRoom = await ApiService.getRoomContent(newRoomId);
+        setSelectedRoom(newRoom);
+        localStorage.setItem('selectedRoomId', newRoomId);
+        
+        const updatedRooms = await ApiService.getUserRooms();
+        setRooms(updatedRooms as RoomType[]);
+      } else {
+        setSelectedRoom(roomsList[0]);
+        localStorage.setItem('selectedRoomId', roomsList[0]._id);
       }
     };
-    
+  
     loadRooms();
   }, []);
 
@@ -43,12 +58,16 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Créer une salle
   const createRoom = async (title: string) => {
-    const newRoomId = await ApiService.createRoom(title);
+    // Créer la salle et récupérer l'objet complet
+    const newRoom = await ApiService.createRoom(title);
+    
+    // Mettre à jour la liste des salles
     const updatedRooms = await ApiService.getUserRooms();
     setRooms(updatedRooms as RoomType[]);
-    selectRoom(newRoomId);
+    
+    // Sélectionner la nouvelle salle avec son ID
+    selectRoom(newRoom); // Utiliser l'ID de l'objet retourné
   };
-
   return (
     <RoomContext.Provider value={{ rooms, selectedRoom, selectRoom, createRoom }}>
       {children}

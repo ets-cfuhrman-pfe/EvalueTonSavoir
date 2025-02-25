@@ -58,15 +58,18 @@ class Rooms {
     }
 
     async getContent(roomId) {
-        await this.db.connect()
+        await this.db.connect();
         const conn = this.db.getConnection();
-
-        const filesCollection = conn.collection('files');
-
-        const result = await filesCollection.find({ roomId: roomId }).toArray();
+        const roomsCollection = conn.collection('rooms');
+        if (!ObjectId.isValid(roomId)) {
+            return null; // Évite d'envoyer une requête invalide
+        }
+    
+        const result = await roomsCollection.findOne({ _id: new ObjectId(roomId) });
 
         return result;
     }
+    
 
     async delete(roomId) {
         await this.db.connect()

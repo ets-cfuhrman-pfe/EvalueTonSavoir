@@ -64,13 +64,6 @@ class RoomsController {
       if (!roomId) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
-
-      const owner = await this.rooms.getOwner(roomId);
-
-      if (owner != req.user.userId) {
-        throw new AppError(ROOM_NOT_FOUND);
-      }
-
       const content = await this.rooms.getContent(roomId);
 
       if (!content) {

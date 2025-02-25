@@ -408,7 +408,27 @@ class ApiService {
         }
     }
 
-
+    public async getRoomContent(roomId: string): Promise<RoomType> {
+        try {
+          const url = this.constructRequestUrl(`/room/${roomId}`);
+          const headers = this.constructRequestHeaders();
+          
+          const response = await axios.get<{ data: RoomType }>(url, { headers });
+          
+          if (response.status !== 200) {
+            throw new Error(`Failed to get room: ${response.status}`);
+          }
+      
+          return response.data.data;
+          
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            const serverError = error.response?.data?.error;
+            throw new Error(serverError || 'Erreur serveur inconnue');
+          }
+          throw new Error('Erreur réseau');
+        }
+      }
 
     public async getRoomTitleByUserId(userId: string): Promise<string[] | string> {
         try {
