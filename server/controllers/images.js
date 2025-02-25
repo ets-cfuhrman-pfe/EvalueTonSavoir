@@ -50,18 +50,19 @@ class ImagesController {
         }
     };
 
-    //TODO TEST
-    getAll = async (req, res, next) => {
+    getImages = async (req, res, next) => {
         try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
 
-            const images = await this.images.getAll();
+            const imagesBit = await this.images.getImages(page, limit);
     
-            if (!images || images.length === 0) {
+            if (!imagesBit || imagesBit.length === 0) {
                 throw new AppError(IMAGE_NOT_FOUND);
             }
             
             res.setHeader('Content-Type', 'application/json');
-            return res.status(200).json(imagesName);
+            return res.status(200).json(imagesBit);
         } catch (error) {
             return next(error);
         }

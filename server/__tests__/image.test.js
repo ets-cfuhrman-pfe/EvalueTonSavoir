@@ -77,7 +77,8 @@ describe('Images', () => {
     beforeEach(() => {
         mockImagesCollection = {
             insertOne: jest.fn().mockResolvedValue({ insertedId: 'image123' }),
-            findOne: jest.fn()
+            findOne: jest.fn(),
+            find: jest.fn().mockReturnValue({ sort: jest.fn().mockReturnValue([]) })
         };
 
         dbConn = {
@@ -145,5 +146,36 @@ describe('Images', () => {
             expect(result).toBeNull();
         });
     });
-});
 
+    describe('getAll', () => {
+        it('should retrieve a paginated list of images', async () => {
+            const mockImages = [
+                { id: '1', file_name: 'image1.png', file_content: Buffer.from('data1').toString('base64'), mime_type: 'image/png' },
+                { id: '2', file_name: 'image2.png', file_content: Buffer.from('data2').toString('base64'), mime_type: 'image/png' }
+            ];
+            mockImagesCollection.find.mockReturnValue({ sort: jest.fn().mockReturnValue(mockImages) });
+
+            const result = await images.getAll(1, 10);
+
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(dbConn.collection).toHaveBeenCalledWith('images');
+            expect(mockImagesCollection.find).toHaveBeenCalledWith({});
+            expect(result.length).toEqual(mockImages.length);
+            expect(result).toEqual([
+                { id: '1', file_name: 'image1.png', file_content: Buffer.from('data1'), mime_type: 'image/png' },
+                { id: '2', file_name: 'image2.png', file_content: Buffer.from('data2'), mime_type: 'image/png' }
+            ]);
+        });
+
+        it('should return null if not images is not found', async () => {
+            mockImagesCollection.find.mockReturnValue({ sort: jest.fn().mockReturnValue(undefined) });
+            const result = await images.getAll(1, 10);
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(dbConn.collection).toHaveBeenCalledWith('images');
+            expect(mockImagesCollection.find).toHaveBeenCalledWith({});
+            expect(result).toEqual(null);
+        });
+    });
+});
