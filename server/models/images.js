@@ -48,14 +48,15 @@ class Images {
 
         const imagesCollection = conn.collection('images');
 
-        const result = await imagesCollection.find({}).sort({created_at: 1});
+        const result = await imagesCollection.find({}).sort({created_at: 1}).toArray();
 
         if (!result) return null;
 
         const objImages = result.slice((page - 1) * limit, page * limit).map(image => ({
-            id: image.id,
+            id: image._id,
+            user: image.userId,
             file_name: image.file_name,
-            file_content: Buffer.from(image.file_content, 'base64'),
+            file_content: image.file_content.toString('base64'),
             mime_type: image.mime_type
         }));
 
