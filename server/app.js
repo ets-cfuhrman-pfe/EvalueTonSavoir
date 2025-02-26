@@ -22,6 +22,8 @@ const students = require('./models/students.js');
 const studentModel = new students();
 const answers = require('./models/answers.js');
 const answersModel = new answers();
+const quizzes = require('./models/quizzes.js');
+const quizzesModel = new quizzes();
 
 // instantiate the controllers
 const usersController = require('./controllers/users.js');
@@ -36,6 +38,8 @@ const studentsController = require('./controllers/students.js');
 const studentsControllerInstance = new studentsController(studentModel);
 const answersController = require('./controllers/answers.js');
 const answersControllerInstance = new answersController(answersModel);
+const quizzesController = require('./controllers/quizzes.js');
+const quizzesControllerInstance = new quizzesController(quizzesModel);
 
 // export the controllers
 module.exports.users = usersControllerInstance;
@@ -44,6 +48,7 @@ module.exports.questionnaires = questionnaireControllerInstance;
 module.exports.images = imagesControllerInstance;
 module.exports.students = studentsControllerInstance;
 module.exports.answers = answersControllerInstance;
+module.exports.quizzes = quizzesControllerInstance;
 
 //import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
@@ -52,6 +57,7 @@ const questionnaireRouter = require('./routers/questionnaires.js');
 const imagesRouter = require('./routers/images.js');
 const studentsRouter = require('./routers/students.js');
 const answersRouter = require('./routers/answers.js');
+const quizzesRouter = require('./routers/quizzes.js');
 
 // Setup environment
 dotenv.config();
@@ -98,6 +104,7 @@ app.use('/api/questionnaire', questionnaireRouter);
 app.use('/api/image', imagesRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/answers', answersRouter);
+app.use('/api/quizzes', quizzesRouter);
 
 app.use(errorHandler);
 
