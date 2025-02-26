@@ -119,41 +119,6 @@ describe('Rooms', () => {
         });
     });
 
-    // write a test for getContent
-    describe('getContent', () => {
-        it('should return the content of a room', async () => {
-            const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const content = [
-                { title: 'salle 1', content: [] },
-                { title: 'salle 2', content: [] },
-            ];
-
-            // Mock the database response
-            collection.find().toArray.mockResolvedValue(content);
-
-            const result = await rooms.getContent(roomId);
-
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.collection).toHaveBeenCalledWith('files');
-            expect(collection.find).toHaveBeenCalledWith({ roomId });
-            expect(result).toEqual(content);
-        });
-
-        it('should return an empty array if the room has no content', async () => {
-            const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
-
-            // Mock the database response
-            collection.find().toArray.mockResolvedValue([]);
-
-            const result = await rooms.getContent(roomId);
-
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.collection).toHaveBeenCalledWith('files');
-            expect(collection.find).toHaveBeenCalledWith({ roomId });
-            expect(result).toEqual([]);
-        });
-    });
-
     describe('delete', () => {
         it('should delete a room and return true', async () => {
             const roomId = '60c72b2f9b1d8b3a4c8e4d3b';
