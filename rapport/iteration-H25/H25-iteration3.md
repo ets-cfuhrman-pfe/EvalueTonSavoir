@@ -1,13 +1,12 @@
-# Plan d'itération 2
+# Plan d'itération 3
 
 ## Étapes jalons
 
 | Étape jalon                                       | Date       |
 | :------------------------------------------------ | :--------- |
-| Début de l'itération                              | 2025/01/28 |
-| Première rencontre avec les promoteurs            | 2025/01/28 |
-| Démo de l'application et révision des user cases  | 2025/02/10 |
-| Fin de l'itération                                | 2025/02/11 |
+| Début de l'itération                              | 2025/02/12 |
+| Démo de l'application et révision des user cases  | 2025/03/17 |
+| Fin de l'itération                                | 2025/03/18 |
 
 ## Objectifs clés
 
@@ -70,21 +69,12 @@ Les objectifs clés de cette itération sont les suivants:
 
 ### Éléments de travail: prévus vs réalisés
 
-Déploiement du SSO avait été prévu, mais n'a pas pu être réalisé.
-
-Fonctionnalité copier-coller était déjà fonctionnelle.
-
+à remplir
 
 
 ### Évaluation par rapport aux résultats selon les critères d'évaluation
 
-Nous avons eu des bon retours sur le travaille global.
-Branche main est encore fonctionelle, la branche avec tout nos merge est disponible.
-La fonctionnalité du PDF et la façcon de l'utiliser est accepté.
-Bouton copier/coller était déjà fonctionelle
-Le taux de participation a été bien reçu, les commentaires sont surtout au niveau du UI, taux de particpation au haut de la page.
-Le fonction d'ajouter des indices est à retravailler, les indices devrait être affiché du côté étudiant et enseignant.
-
+à remplir
 
 ## Autres préoccupations et écarts
 
