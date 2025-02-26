@@ -3,9 +3,9 @@ const ObjectId = require('mongodb').ObjectId;
 const { generateUniqueTitle } = require('./utils');
 
 class Folders {
-    constructor(db, quizModel) {
+    constructor(db, questionnaireModel) {
         this.db = db;
-        this.quizModel = quizModel;
+        this.questionnaireModel = questionnaireModel;
     }
 
     async create(title, userId) {
@@ -58,7 +58,7 @@ class Folders {
         return folder.userId;
     }
 
-    // finds all quizzes in a folder
+    // finds all questionnaires in a folder
     async getContent(folderId) {
         await this.db.connect()
         const conn = this.db.getConnection();
@@ -79,7 +79,7 @@ class Folders {
         const folderResult = await foldersCollection.deleteOne({ _id: ObjectId.createFromHexString(folderId) });
 
         if (folderResult.deletedCount != 1) return false;
-        await this.quizModel.deleteQuizzesByFolderId(folderId);
+        await this.questionnaireModel.deleteQuestionnairesByFolderId(folderId);
 
         return true;
     }
@@ -124,14 +124,14 @@ class Folders {
             throw new Error('Failed to create duplicate folder');
         }
 
-        // copy the quizzes from source folder to destination folder
+        // copy the questionnaires from source folder to destination folder
         const content = await this.getContent(folderId);
         // console.log("folders.duplicate: found content", content);
-        for (const quiz of content) {
-            // console.log("folders.duplicate: creating quiz (copy)", quiz);
-            const result = await this.quizModel.create(quiz.title, quiz.content, newFolderId.toString(), userId);
+        for (const questionnaire of content) {
+            // console.log("folders.duplicate: creating questionnaire (copy)", questionnaire);
+            const result = await this.questionnaireModel.create(questionnaire.title, questionnaire.content, newFolderId.toString(), userId);
             if (!result) {
-                throw new Error('Failed to create duplicate quiz');
+                throw new Error('Failed to create duplicate questionnaire');
             }
         }
 
@@ -155,8 +155,8 @@ class Folders {
         if (!newFolderId) {
             throw new Error('Failed to create a new folder.');
         }
-        for (const quiz of sourceFolder.content) {
-            await this.quizModel.create(quiz.title, quiz.content, newFolderId, userId);
+        for (const questionnaire of sourceFolder.content) {
+            await this.questionnaireModel.create(questionnaire.title, questionnaire.content, newFolderId, userId);
         }
 
         return newFolderId;

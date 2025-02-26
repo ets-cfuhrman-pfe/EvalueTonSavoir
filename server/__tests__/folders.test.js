@@ -1,12 +1,12 @@
 const Folders = require('../models/folders');
 const ObjectId = require('mongodb').ObjectId;
-const Quizzes = require('../models/quiz');
+const Questionnaires = require('../models/questionnaires');
 
 describe('Folders', () => {
     let folders;
     let db;
     let collection;
-    let quizzes;
+    let questionnaires;
 
     beforeEach(() => {
         jest.clearAllMocks(); // Clear any previous mock calls
@@ -28,8 +28,8 @@ describe('Folders', () => {
             collection: jest.fn().mockReturnValue(collection),
         };        
 
-        quizzes = new Quizzes(db);
-        folders = new Folders(db, quizzes);
+        questionnaires = new Questionnaires(db);
+        folders = new Folders(db, questionnaires);
 
     });
 
@@ -127,8 +127,8 @@ describe('Folders', () => {
         it('should return the content of a folder', async () => {
             const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
             const content = [
-                { title: 'Quiz 1', content: [] },
-                { title: 'Quiz 2', content: [] },
+                { title: 'Questionnaire 1', content: [] },
+                { title: 'Questionnaire 2', content: [] },
             ];
 
             // Mock the database response
@@ -166,8 +166,8 @@ describe('Folders', () => {
             collection.deleteOne.mockResolvedValue({ deletedCount: 1 });
 
 
-            // Mock the folders.quizModel.deleteQuizzesByFolderId()
-            jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockResolvedValue(true);
+            // Mock the folders.questionnaireModel.deleteQuestionnairesByFolderId()
+            jest.spyOn(questionnaires, 'deleteQuestionnairesByFolderId').mockResolvedValue(true);
 
             const result = await folders.delete(folderId);
 
@@ -263,10 +263,10 @@ describe('Folders', () => {
             const createSpy = jest.spyOn(folders, 'create').mockResolvedValue(new ObjectId());
 
             // mock the folder.getContent method
-            jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Quiz 1', content: [] }]);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Questionnaire 1', content: [] }]);
 
-            // Mock the quizzes.create method
-            jest.spyOn(quizzes, 'create').mockResolvedValue(new ObjectId());
+            // Mock the Questionnaires.create method
+            jest.spyOn(questionnaires, 'create').mockResolvedValue(new ObjectId());
 
             const result = await folders.duplicate(folderId, userId);
 
@@ -276,8 +276,8 @@ describe('Folders', () => {
             expect(createSpy).toHaveBeenCalledWith(duplicatedFolder.title, userId);
             // expect the getContent method was called
             expect(folders.getContent).toHaveBeenCalledWith(folderId);
-            // expect the quizzes.create method was called
-            expect(quizzes.create).toHaveBeenCalledWith('Quiz 1', [], expect.any(String), userId);
+            // expect the questionnaires.create method was called
+            expect(questionnaires.create).toHaveBeenCalledWith('Questionnaire 1', [], expect.any(String), userId);
             
             expect(result).toBeDefined();
         });
@@ -333,20 +333,20 @@ describe('Folders', () => {
             const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
             const userId = '12345';
             const newFolderId = new ObjectId();
-            // Mock some quizzes that are in folder.content
+            // Mock some questionnaires that are in folder.content
             const sourceFolder = {
                 title: 'Test Folder',
                 content: [
-                    { title: 'Quiz 1', content: [] },
-                    { title: 'Quiz 2', content: [] },
+                    { title: 'Questionnaire 1', content: [] },
+                    { title: 'Questionnaire 2', content: [] },
                 ],
             };
 
             // Mock the response from getFolderWithContent
             jest.spyOn(folders, 'getFolderWithContent').mockResolvedValue(sourceFolder);
             jest.spyOn(folders, 'create').mockResolvedValue(newFolderId);
-            // Mock the response from Quiz.createQuiz
-            jest.spyOn(quizzes, 'create').mockImplementation(() => {});
+            // Mock the response from Questionnaire.createQuestionnaire
+            jest.spyOn(questionnaires, 'create').mockImplementation(() => {});
 
             const result = await folders.copy(folderId, userId);
 
@@ -384,8 +384,8 @@ describe('Folders', () => {
             };
             const content = {
                 content :  [
-                { title: 'Quiz 1', content: [] },
-                { title: 'Quiz 2', content: [] },
+                { title: 'Questionnaire 1', content: [] },
+                { title: 'Questionnaire 2', content: [] },
             ]};
 
             // Mock the response from getFolderById

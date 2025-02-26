@@ -10,7 +10,8 @@ import { MemoryRouter } from 'react-router-dom';
 // import { mock } from 'node:test';
 
 const mockGiftQuestions = parse(
-    `::Sample Question:: Sample Question {=Option A ~Option B}`);
+    `::Sample Question:: Sample Question {=Option A ~Option B}
+    ::Sample Question 2:: Sample Question 2 {T}`);
 
 
 describe('TeacherModeQuiz', () => {
@@ -56,6 +57,7 @@ describe('TeacherModeQuiz', () => {
         expect(screen.getByText('Votre réponse est:')).toBeInTheDocument();
     });
 
+    
     test('handles disconnect button click', () => {
         act(() => {
             fireEvent.click(screen.getByText('Quitter'));
