@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
     const [folders, setFolders] = useState<FolderType[]>([]);
     const [selectedFolderId, setSelectedFolderId] = useState<string>(''); // Selected folder
     const [rooms, setRooms] = useState<RoomType[]>([]);
-    const [openDialog, setOpenDialog] = useState(false);
+    const [openAddRoomDialog, setOpenAddRoomDialog] = useState(false);
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const { selectedRoom, selectRoom, createRoom } = useRooms();
 
@@ -104,10 +104,21 @@ const Dashboard: React.FC = () => {
         fetchData();
     }, []);
 
-    const handleSubmitRoom = async () => {
+    const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        if (event.target.value === "add-room") {
+            setOpenAddRoomDialog(true);
+        } else {
+            selectRoom(event.target.value);
+        }
+      };
+
+    const handleSubmitCreateRoom = async () => {
         if (newRoomTitle.trim()) {
             await createRoom(newRoomTitle);
-            setOpenDialog(false);
+            // reload the list of rooms
+            const userRooms = await ApiService.getUserRooms();
+            setRooms(userRooms as RoomType[]);
+            setOpenAddRoomDialog(false);
             setNewRoomTitle('');
         }
     };
@@ -379,18 +390,20 @@ const Dashboard: React.FC = () => {
             <div className="title">Tableau de bord</div>
 
             <div className="roomSelection">
+                <label htmlFor="select-room">Sélectionner une salle: </label>
                 <select
                     value={selectedRoom?._id || ''}
-                    onChange={(e) => selectRoom(e.target.value)}
+                    onChange={(e) => handleSelectRoom(e)}
                 >
-                    <option value="">Sélectionner une salle</option>
+                    {/* <option value="">Sélectionner une salle</option> */}
                     {rooms.map((room) => (
                         <option key={room._id} value={room._id}>
                             {room.title}
                         </option>
                     ))}
+                    <option value="add-room">Add Room</option>
                 </select>
-                <button onClick={() => setOpenDialog(true)}>Ajouter une salle</button>
+                {/* <button onClick={() => setOpenDialog(true)}>Ajouter une salle</button> */}
             </div>
 
             {selectedRoom && (
@@ -399,7 +412,7 @@ const Dashboard: React.FC = () => {
                 </div>
             )}
 
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+            <Dialog open={openAddRoomDialog} onClose={() => setOpenAddRoomDialog(false)}>
                 <DialogTitle>Créer une nouvelle salle</DialogTitle>
                 <DialogContent>
                     <TextField
@@ -409,8 +422,8 @@ const Dashboard: React.FC = () => {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
-                    <Button onClick={handleSubmitRoom}>Créer</Button>
+                    <Button onClick={() => setOpenAddRoomDialog(false)}>Annuler</Button>
+                    <Button onClick={handleSubmitCreateRoom}>Créer</Button>
                 </DialogActions>
             </Dialog>
 
