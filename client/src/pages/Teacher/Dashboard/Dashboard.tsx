@@ -91,6 +91,10 @@ const Dashboard: React.FC = () => {
             } else {
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
+                // select the first room if it exists
+                if (userRooms instanceof Array && userRooms.length > 0) {
+                    selectRoom(userRooms[0]._id);
+                }
 
                 const userFolders = await ApiService.getUserFolders();
                 setFolders(userFolders as FolderType[]);
