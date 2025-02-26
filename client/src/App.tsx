@@ -52,7 +52,7 @@ function App() {
                             <Route path="/teacher/dashboard" element={<Dashboard />} />
                             <Route path="/teacher/share/:id" element={<Share />} />
                             <Route path="/teacher/editor-quiz/:id" element={<QuizForm />} />
-                            <Route path="/teacher/manage-room/:id" element={<ManageRoom />} />
+                            <Route path="/teacher/manage-room/:quizId/:roomName" element={<ManageRoom />} />
 
                             {/* Pages espace étudiant */}
                             <Route path="/student/join-room" element={<JoinRoom />} />

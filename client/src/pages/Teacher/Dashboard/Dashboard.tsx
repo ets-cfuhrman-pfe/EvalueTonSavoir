@@ -367,7 +367,12 @@ const Dashboard: React.FC = () => {
     };
 
     const handleLancerQuiz = (quiz: QuizType) => {
-        navigate(`/teacher/manage-room/${quiz._id}`);
+        if (selectedRoom) {
+            navigate(`/teacher/manage-room/${quiz._id}/${selectedRoom.title}`);
+        } else {
+            const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
+            navigate(`/teacher/manage-room/${quiz._id}/${randomSixDigit}`);
+        }    
     };
 
     const handleShareQuiz = async (quiz: QuizType) => {

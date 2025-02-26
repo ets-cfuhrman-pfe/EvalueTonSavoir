@@ -25,12 +25,13 @@ import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { useRooms } from '../ManageRoom/RoomContext';
 import { Button } from '@mui/material';
+// import { use } from 'marked';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const quizId = useParams<{ id: string }>();
+    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -39,7 +40,16 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState(false);
     const { selectedRoom } = useRooms();
 
-    const [roomName, setRoomName] = useState<string>(selectedRoom?.title || '');
+    useEffect(() => {
+        // verify that roomName argument is not null
+        if (!roomName || !quizId) {
+            window.alert(
+                `Une erreur est survenue.\n La salle ou le quiz n'a pas été spécifié.\nVeuillez réessayer plus tard.`
+            );
+            console.error('Room or Quiz not found for name:', roomName);
+            navigate('/teacher/dashboard');
+        }
+    }, [roomName, navigate]);
 
     useEffect(() => {
         if (selectedRoom && !socket) {
@@ -59,15 +69,15 @@ const ManageRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (quizId.id) {
+        if (quizId) {
             const fetchquiz = async () => {
-                const quiz = await ApiService.getQuiz(quizId.id as string);
+                const quiz = await ApiService.getQuiz(quizId);
 
                 if (!quiz) {
                     window.alert(
-                        `Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                        `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
                     );
-                    console.error('Quiz not found for id:', quizId.id);
+                    console.error('Quiz not found for id:', quizId);
                     navigate('/teacher/dashboard');
                     return;
                 }
@@ -87,9 +97,9 @@ const ManageRoom: React.FC = () => {
             fetchquiz();
         } else {
             window.alert(
-                `Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
             );
-            console.error('Quiz not found for id:', quizId.id);
+            console.error('Quiz not found for id:', quizId);
             navigate('/teacher/dashboard');
             return;
         }
@@ -125,7 +135,8 @@ const ManageRoom: React.FC = () => {
         });
 
         socket.on('create-success', (roomName: string) => {
-            setRoomName(roomName);
+            console.log(`Room created: ${roomName}`);
+            // setRoomName(roomName);
         });
 
         socket.on('user-joined', (student: StudentType) => {
