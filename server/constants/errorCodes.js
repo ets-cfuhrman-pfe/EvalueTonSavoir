@@ -103,9 +103,38 @@ exports.COPY_FOLDER_ERROR = {
     message: 'Une erreur s\'est produite lors de la copie du dossier.',
     code: 400
 }
-
-
-
+exports.ROOM_NOT_FOUND = {
+    message: 'Aucune salle portant cet identifiant n\'a été trouvé.',
+    code: 404
+}
+exports.ROOM_ALREADY_EXISTS = {
+    message: 'Une salle avec ce nom existe déjà',
+    code: 409
+};
+exports.UPDATE_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors de la mise à jour de la salle.',
+    code: 400
+}
+exports.DELETE_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors de la suppression de la salle.',
+    code: 400
+}
+exports.GETTING_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors de la récupération de la salle.',
+    code: 400
+}
+exports.MOVING_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors du déplacement de la salle.',
+    code: 400
+}
+exports.DUPLICATE_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors de la duplication de la salle.',
+    code: 400
+}
+exports.COPY_ROOM_ERROR = {
+    message: 'Une erreur s\'est produite lors de la copie de la salle.',
+    code: 400
+}
 
 
 

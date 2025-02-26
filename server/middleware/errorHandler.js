@@ -2,17 +2,28 @@ const AppError = require("./AppError");
 const fs = require('fs');
 
 const errorHandler = (error, req, res, _next) => {
-
+    res.setHeader('Cache-Control', 'no-store');
+  
+    // Debug 
+    console.log("Erreur reçue :", {
+      message: error.message,
+      stack: error.stack,
+      constructor: error.constructor.name,
+      proto: Object.getPrototypeOf(error)
+    });
+  
     if (error instanceof AppError) {
-        logError(error);
-        return res.status(error.statusCode).json({
-            error: error.message
-        });
+      return res.status(error.statusCode).json({
+        message: error.message,
+        code: error.statusCode
+      });
     }
-
-    logError(error.stack);
-    return res.status(505).send("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
-}
+  
+    return res.status(500).json({
+      message: "Erreur technique",
+      code: 500
+    });
+  };
 
 const logError = (error) => {
     const time = new Date();

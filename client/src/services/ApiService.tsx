@@ -482,31 +482,34 @@ class ApiService {
             return `Une erreur inattendue s'est produite.`;
         }
     }
-    public async createRoom(title: string): Promise<string | string> {
+    public async createRoom(title: string): Promise<string> {
         try {
             if (!title) {
-                throw new Error(`Le titre de la salle est requis.`);
+                throw new Error("Le titre de la salle est requis.");
             }
-
+    
             const url: string = this.constructRequestUrl(`/room/create`);
             const headers = this.constructRequestHeaders();
             const body = { title };
-
-            const result: AxiosResponse = await axios.post(url, body, { headers });
-
-            if (result.status !== 200) {
-                throw new Error(`La création de la salle a échoué. Status: ${result.status}`);
-            }
-
+    
+            const result = await axios.post<{ roomId: string }>(url, body, { headers });
             return `Salle créée avec succès. ID de la salle: ${result.data.roomId}`;
+    
         } catch (error) {
-            console.log("Error details: ", error);
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la création de la salle.';
+                
+                const serverMessage = (err.response?.data as { message?: string })?.message 
+                    || (err.response?.data as { error?: string })?.error
+                    || err.message;
+                
+                if (err.response?.status === 409) {
+                    throw new Error(serverMessage);
+                }
+                
+                throw new Error(serverMessage || "Erreur serveur inconnue");
             }
-            return `Une erreur inattendue s'est produite.`;
+            throw error;
         }
     }
 

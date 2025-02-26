@@ -27,7 +27,8 @@ import {
     Tooltip,
     NativeSelect,
     CardContent,
-    styled
+    styled,
+    DialogContentText
 } from '@mui/material';
 import {
     Search,
@@ -62,6 +63,8 @@ const Dashboard: React.FC = () => {
     const [openAddRoomDialog, setOpenAddRoomDialog] = useState(false);
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const { selectedRoom, selectRoom, createRoom } = useRooms();
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showErrorDialog, setShowErrorDialog] = useState(false);
 
     // Filter quizzes based on search term
     // const filteredQuizzes = quizzes.filter(quiz =>
@@ -105,21 +108,25 @@ const Dashboard: React.FC = () => {
     }, []);
 
     const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        if (event.target.value === "add-room") {
+        if (event.target.value === 'add-room') {
             setOpenAddRoomDialog(true);
         } else {
             selectRoom(event.target.value);
         }
-      };
+    };
 
     const handleSubmitCreateRoom = async () => {
         if (newRoomTitle.trim()) {
-            await createRoom(newRoomTitle);
-            // reload the list of rooms
-            const userRooms = await ApiService.getUserRooms();
-            setRooms(userRooms as RoomType[]);
-            setOpenAddRoomDialog(false);
-            setNewRoomTitle('');
+            try {
+                await createRoom(newRoomTitle);
+                const userRooms = await ApiService.getUserRooms();
+                setRooms(userRooms as RoomType[]);
+                setOpenAddRoomDialog(false);
+                setNewRoomTitle('');
+            } catch (error) {
+                setErrorMessage(error instanceof Error ? error.message : "Erreur inconnue");
+                setShowErrorDialog(true);
+            }
         }
     };
 
@@ -391,10 +398,7 @@ const Dashboard: React.FC = () => {
 
             <div className="roomSelection">
                 <label htmlFor="select-room">Sélectionner une salle: </label>
-                <select
-                    value={selectedRoom?._id || ''}
-                    onChange={(e) => handleSelectRoom(e)}
-                >
+                <select value={selectedRoom?._id || ''} onChange={(e) => handleSelectRoom(e)}>
                     {/* <option value="">Sélectionner une salle</option> */}
                     {rooms.map((room) => (
                         <option key={room._id} value={room._id}>
@@ -424,6 +428,15 @@ const Dashboard: React.FC = () => {
                 <DialogActions>
                     <Button onClick={() => setOpenAddRoomDialog(false)}>Annuler</Button>
                     <Button onClick={handleSubmitCreateRoom}>Créer</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
+                <DialogTitle>Erreur</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>{errorMessage}</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowErrorDialog(false)}>Fermer</Button>
                 </DialogActions>
             </Dialog>
 
