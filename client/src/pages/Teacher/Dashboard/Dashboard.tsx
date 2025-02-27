@@ -426,15 +426,17 @@ const Dashboard: React.FC = () => {
             <div className="roomSelection">
                 <label htmlFor="select-room">Sélectionner une salle: </label>
                 <select value={selectedRoom?._id || ''} onChange={(e) => handleSelectRoom(e)}>
-                    {/* <option value="">Sélectionner une salle</option> */}
+                    <option value="" disabled>
+                        -- Sélectionner une salle --
+                    </option>
                     {rooms.map((room) => (
                         <option key={room._id} value={room._id}>
                             {room.title}
                         </option>
                     ))}
-                    <option value="add-room">Add Room</option>
+                    <option value="add-room">Ajouter salle</option>
                 </select>
-                {/* <button onClick={() => setOpenDialog(true)}>Ajouter une salle</button> */}
+
             </div>
 
             {selectedRoom && (
@@ -448,7 +450,7 @@ const Dashboard: React.FC = () => {
                 <DialogContent>
                     <TextField
                         value={newRoomTitle}
-                        onChange={(e) => setNewRoomTitle(e.target.value)}
+                        onChange={(e) => setNewRoomTitle(e.target.value.toUpperCase())}
                         fullWidth
                     />
                 </DialogContent>

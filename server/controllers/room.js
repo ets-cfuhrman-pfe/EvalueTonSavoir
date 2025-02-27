@@ -25,7 +25,7 @@ class RoomsController {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
 
-      const normalizedTitle = title.toLowerCase();
+      const normalizedTitle = title.toUpperCase();
 
       const roomExists = await this.rooms.roomExists(normalizedTitle);
 
