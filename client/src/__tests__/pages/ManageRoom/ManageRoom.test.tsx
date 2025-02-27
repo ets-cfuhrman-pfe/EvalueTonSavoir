@@ -98,7 +98,7 @@ describe('ManageRoom', () => {
             expect(screen.getByText('Test Quiz')).toBeInTheDocument();
     
             const roomHeader = document.querySelector('h1');
-            expect(roomHeader).toHaveTextContent('Salle : Test Room');
+            expect(roomHeader).toHaveTextContent('Salle : TEST ROOM');
     
             expect(screen.getByText('0/60')).toBeInTheDocument();
             expect(screen.getByText('Question 1/2')).toBeInTheDocument();

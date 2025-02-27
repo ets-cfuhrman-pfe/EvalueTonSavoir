@@ -13,7 +13,7 @@ import './dashboard.css';
 import ImportModal from 'src/components/ImportModal/ImportModal';
 //import axios from 'axios';
 import { RoomType } from 'src/Types/RoomType';
-import { useRooms } from '../ManageRoom/RoomContext';
+// import { useRooms } from '../ManageRoom/RoomContext';
 import {
     Dialog,
     DialogActions,
@@ -62,7 +62,8 @@ const Dashboard: React.FC = () => {
     const [rooms, setRooms] = useState<RoomType[]>([]);
     const [openAddRoomDialog, setOpenAddRoomDialog] = useState(false);
     const [newRoomTitle, setNewRoomTitle] = useState('');
-    const { selectedRoom, selectRoom, createRoom } = useRooms();
+    // const { selectedRoom, selectRoom, createRoom } = useRooms();
+    const [selectedRoom, selectRoom] = useState<RoomType>(); // menu
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorDialog, setShowErrorDialog] = useState(false);
 
@@ -96,7 +97,7 @@ const Dashboard: React.FC = () => {
                 setRooms(userRooms as RoomType[]);
                 // select the first room if it exists
                 if (userRooms instanceof Array && userRooms.length > 0) {
-                    selectRoom(userRooms[0]._id);
+                    selectRoom(userRooms[0]);
                 }
 
                 const userFolders = await ApiService.getUserFolders();
@@ -111,11 +112,32 @@ const Dashboard: React.FC = () => {
         if (event.target.value === 'add-room') {
             setOpenAddRoomDialog(true);
         } else {
-            selectRoom(event.target.value);
+            selectRoomByName(event.target.value);
         }
     };
 
-    const handleSubmitCreateRoom = async () => {
+  // Créer une salle
+  const createRoom = async (title: string) => {
+    // Créer la salle et récupérer l'objet complet
+    const newRoom = await ApiService.createRoom(title);
+    
+    // Mettre à jour la liste des salles
+    const updatedRooms = await ApiService.getUserRooms();
+    setRooms(updatedRooms as RoomType[]);
+    
+    // Sélectionner la nouvelle salle avec son ID
+    selectRoomByName(newRoom); // Utiliser l'ID de l'objet retourné
+  };
+
+
+  // Sélectionner une salle
+  const selectRoomByName = (roomId: string) => {
+    const room = rooms.find(r => r._id === roomId);
+    selectRoom(room);
+    localStorage.setItem('selectedRoomId', roomId);
+  };
+
+    const handleCreateRoom = async () => {
         if (newRoomTitle.trim()) {
             try {
                 await createRoom(newRoomTitle);
@@ -432,7 +454,7 @@ const Dashboard: React.FC = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenAddRoomDialog(false)}>Annuler</Button>
-                    <Button onClick={handleSubmitCreateRoom}>Créer</Button>
+                    <Button onClick={handleCreateRoom}>Créer</Button>
                 </DialogActions>
             </Dialog>
             <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
@@ -491,6 +513,7 @@ const Dashboard: React.FC = () => {
                     </Tooltip>
 
                     <Tooltip title="Renommer dossier" placement="top">
+                        <div>
                         <IconButton
                             color="primary"
                             onClick={handleRenameFolder}
@@ -499,9 +522,11 @@ const Dashboard: React.FC = () => {
                             {' '}
                             <Edit />{' '}
                         </IconButton>
+                        </div>
                     </Tooltip>
 
                     <Tooltip title="Dupliquer dossier" placement="top">
+                        <div>
                         <IconButton
                             color="primary"
                             onClick={handleDuplicateFolder}
@@ -510,9 +535,11 @@ const Dashboard: React.FC = () => {
                             {' '}
                             <FolderCopy />{' '}
                         </IconButton>
+                        </div>
                     </Tooltip>
 
                     <Tooltip title="Supprimer dossier" placement="top">
+                        <div>
                         <IconButton
                             aria-label="delete"
                             color="primary"
@@ -522,6 +549,7 @@ const Dashboard: React.FC = () => {
                             {' '}
                             <DeleteOutline />{' '}
                         </IconButton>
+                        </div>
                     </Tooltip>
                 </div>
             </div>
@@ -554,15 +582,17 @@ const Dashboard: React.FC = () => {
                                 <div className="quiz" key={quiz._id}>
                                     <div className="title">
                                         <Tooltip title="Lancer quiz" placement="top">
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() => handleLancerQuiz(quiz)}
-                                                disabled={!validateQuiz(quiz.content)}
-                                            >
-                                                {`${quiz.title} (${quiz.content.length} question${
-                                                    quiz.content.length > 1 ? 's' : ''
-                                                })`}
-                                            </Button>
+                                            <div>
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() => handleLancerQuiz(quiz)}
+                                                    disabled={!validateQuiz(quiz.content)}
+                                                >
+                                                    {`${quiz.title} (${quiz.content.length} question${
+                                                        quiz.content.length > 1 ? 's' : ''
+                                                    })`}
+                                                </Button>
+                                            </div>
                                         </Tooltip>
                                     </div>
 
