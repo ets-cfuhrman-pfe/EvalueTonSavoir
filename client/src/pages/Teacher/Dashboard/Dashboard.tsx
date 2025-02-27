@@ -36,6 +36,7 @@ import {
     Share,
     // DriveFileMove
 } from '@mui/icons-material';
+import ShareQuizModal from 'src/components/ShareQuizModal/ShareQuizModal';
 
 // Create a custom-styled Card component
 const CustomCard = styled(Card)({
@@ -342,26 +343,6 @@ const Dashboard: React.FC = () => {
         navigate(`/teacher/manage-room/${quiz._id}`);
     }
 
-    const handleShareQuiz = async (quiz: QuizType) => {
-        try {
-            const email = prompt(`Veuillez saisir l'email de la personne avec qui vous souhaitez partager ce quiz`, "");
-
-            if (email) {
-                const result = await ApiService.ShareQuiz(quiz._id, email);
-
-                if (!result) {
-                    window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
-                    return;
-                }
-
-                window.alert(`Quiz partagé avec succès!`)
-            }
-
-        } catch (error) {
-            console.error('Erreur lors du partage du quiz:', error);
-        }
-    }
-
 
 
 
@@ -510,12 +491,9 @@ const Dashboard: React.FC = () => {
                                             > <DeleteOutline /> </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Partager quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleShareQuiz(quiz)}
-                                            > <Share /> </IconButton>
-                                        </Tooltip>
+                                        <div className="quiz-share">
+                                                    <ShareQuizModal quiz={quiz} />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
