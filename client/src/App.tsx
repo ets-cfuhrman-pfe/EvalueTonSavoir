@@ -45,10 +45,13 @@ function App() {
                             {/* Page main */}
                             <Route path="/" element={<Home />} />
 
-                            {/* Pages espace enseignant */}
+                            {/* Public routes */}
                             <Route path="/teacher/login" element={<Login />} />
                             <Route path="/teacher/register" element={<Register />} />
                             <Route path="/teacher/resetPassword" element={<ResetPassword />} />
+
+                            {/* Pages espace enseignant */}
+                            
                             <Route path="/teacher/dashboard" element={<Dashboard />} />
                             <Route path="/teacher/share/:id" element={<Share />} />
                             <Route path="/teacher/editor-quiz/:id" element={<QuizForm />} />
