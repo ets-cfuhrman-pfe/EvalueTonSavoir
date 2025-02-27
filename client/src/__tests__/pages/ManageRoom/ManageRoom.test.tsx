@@ -35,7 +35,7 @@ const mockQuiz: QuizType = {
     folderName: 'folder-name',
     userId: 'user-id',
     created_at: new Date(),
-    updated_at: new Date()
+    updated_at: new Date(),
 };
 
 const mockStudents: StudentType[] = [
@@ -58,12 +58,12 @@ describe('ManageRoom', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         (useNavigate as jest.Mock).mockReturnValue(navigate);
-        useParamsMock.mockReturnValue({ id: 'test-quiz-id' });
+        useParamsMock.mockReturnValue({ quizId: 'test-quiz-id', roomName: 'Test Room' });
         (ApiService.getQuiz as jest.Mock).mockResolvedValue(mockQuiz);
         (webSocketService.connect as jest.Mock).mockReturnValue(mockSocket);
         (useRooms as jest.Mock).mockReturnValue({
             selectedRoom: { id: '1', title: 'Test Room' },
-            setSelectedRoom: mockSetSelectedRoom
+            setSelectedRoom: mockSetSelectedRoom,
         });
     });
 
@@ -84,7 +84,7 @@ describe('ManageRoom', () => {
         await waitFor(() => {
             expect(ApiService.getQuiz).toHaveBeenCalledWith('test-quiz-id');
         });
-
+    
         const launchButton = screen.getByText('Lancer');
         fireEvent.click(launchButton);
     
@@ -96,12 +96,15 @@ describe('ManageRoom', () => {
     
         await waitFor(() => {
             expect(screen.getByText('Test Quiz')).toBeInTheDocument();
-            expect(screen.getByText(/Salle\s*:\s*Test Room/i)).toBeInTheDocument();
+    
+            const roomHeader = document.querySelector('h1');
+            expect(roomHeader).toHaveTextContent('Salle : Test Room');
+    
             expect(screen.getByText('0/60')).toBeInTheDocument();
             expect(screen.getByText('Question 1/2')).toBeInTheDocument();
         });
     });
-
+    
     test('handles create-success event', async () => {
         await act(async () => {
             render(
@@ -110,14 +113,14 @@ describe('ManageRoom', () => {
                 </MemoryRouter>
             );
         });
-    
+
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
-    
+
         await waitFor(() => {
-            expect(screen.getByText(/Salle\s*:\s*test-room-name/i)).toBeInTheDocument();
+            expect(screen.getByText(/Salle\s*:\s*Test Room/i)).toBeInTheDocument();
         });
     });
 
@@ -132,7 +135,7 @@ describe('ManageRoom', () => {
 
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
 
         await act(async () => {
@@ -172,7 +175,7 @@ describe('ManageRoom', () => {
 
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
 
         const launchButton = screen.getByText('Lancer');
@@ -195,7 +198,9 @@ describe('ManageRoom', () => {
         });
 
         await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith('Received answer from Student 1 for question 1: Answer1');
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Received answer from Student 1 for question 1: Answer1'
+            );
         });
 
         consoleSpy.mockRestore();
@@ -209,29 +214,30 @@ describe('ManageRoom', () => {
                 </MemoryRouter>
             );
         });
-
+    
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
-
-        const launchButton = screen.getByText('Lancer');
-        fireEvent.click(launchButton);
-
-        const rythmeButton = screen.getByText('Rythme du professeur');
-        fireEvent.click(rythmeButton);
-
-        const secondLaunchButton = screen.getAllByText('Lancer');
-        fireEvent.click(secondLaunchButton[1]);
-
-        const nextQuestionButton = screen.getByText('Prochaine question');
+    
+        fireEvent.click(screen.getByText('Lancer'));
+        fireEvent.click(screen.getByText('Rythme du professeur'));
+        fireEvent.click(screen.getAllByText('Lancer')[1]);
+    
+        await waitFor(() => {
+            screen.debug();
+        });
+    
+        const nextQuestionButton = await screen.findByRole('button', { name: /Prochaine question/i });
+        expect(nextQuestionButton).toBeInTheDocument();
+    
         fireEvent.click(nextQuestionButton);
-        
+    
         await waitFor(() => {
             expect(screen.getByText('Question 2/2')).toBeInTheDocument();
         });
     });
-
+    
     test('handles disconnect', async () => {
         await act(async () => {
             render(
@@ -243,7 +249,7 @@ describe('ManageRoom', () => {
 
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
 
         const disconnectButton = screen.getByText('Quitter');
@@ -300,7 +306,7 @@ describe('ManageRoom', () => {
     
         consoleSpy.mockRestore();
     });
-    
+
     test('vide la liste des étudiants après déconnexion', async () => {
         await act(async () => {
             render(
@@ -312,7 +318,7 @@ describe('ManageRoom', () => {
 
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
 
         await act(async () => {
@@ -330,6 +336,4 @@ describe('ManageRoom', () => {
             expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
         });
     });
-
-   
 });
