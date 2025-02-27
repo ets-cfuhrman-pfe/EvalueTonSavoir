@@ -16,7 +16,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
 
-  useEffect(() => {
+  useEffect(() => { 
     const loadRooms = async () => {
       const userRooms = await ApiService.getUserRooms();
       const roomsList = userRooms as RoomType[];
@@ -31,16 +31,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
   
-      if (roomsList.length === 0) {
-        const randomRoomName = `Room-${Math.floor(Math.random() * 1000000)}`;
-        const newRoomId = await ApiService.createRoom(randomRoomName);
-        const newRoom = await ApiService.getRoomContent(newRoomId);
-        setSelectedRoom(newRoom);
-        localStorage.setItem('selectedRoomId', newRoomId);
-        
-        const updatedRooms = await ApiService.getUserRooms();
-        setRooms(updatedRooms as RoomType[]);
-      } else {
+      if (roomsList.length > 0) {
         setSelectedRoom(roomsList[0]);
         localStorage.setItem('selectedRoomId', roomsList[0]._id);
       }
