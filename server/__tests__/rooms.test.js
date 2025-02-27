@@ -1,47 +1,43 @@
+const AppError = require("../middleware/AppError");
+
 jest.mock("../middleware/AppError", () => {
-  return jest.fn((message, code) => {
-    const error = new Error(message);
-    error.code = code;
-    return error;
+  const actualAppError = jest.requireActual("../middleware/AppError");
+
+  return jest.fn().mockImplementation((message, statusCode) => {
+    return new actualAppError(message, statusCode);
   });
 });
-const AppError = require("../middleware/AppError");
 
 const Rooms = require("../models/room");
 const ObjectId = require("mongodb").ObjectId;
-
 describe("Rooms", () => {
   let rooms;
   let db;
   let collection;
 
   beforeEach(() => {
-    jest.clearAllMocks(); // Clear any previous mock calls
+    jest.clearAllMocks();
 
-    // Mock the collection object
     collection = {
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      find: jest.fn().mockReturnValue({ toArray: jest.fn() }), // Mock the find method
+      find: jest.fn().mockReturnValue({ toArray: jest.fn() }),
       deleteOne: jest.fn(),
       deleteMany: jest.fn(),
       updateOne: jest.fn(),
     };
 
-    // Mock the database connection
     db = {
       connect: jest.fn(),
-      getConnection: jest.fn().mockReturnThis(), // Add getConnection method
+      getConnection: jest.fn().mockReturnThis(),
       collection: jest.fn().mockReturnValue(collection),
     };
 
     rooms = new Rooms(db);
   });
 
-  // create
   describe("create", () => {
     it("should return insertedId on success", async () => {
-      // Mock d'une création réussie
       collection.findOne.mockResolvedValue(null);
       collection.insertOne.mockResolvedValue({ insertedId: "abc123" });
 
@@ -49,14 +45,12 @@ describe("Rooms", () => {
       expect(result).toBe("abc123");
     });
 
-    // throw an error if userId is undefined
     it("should throw error when userId is missing", async () => {
-      await expect(rooms.create("test", undefined)).rejects.toThrow(
-        "AppError is not defined"
+      await expect(rooms.create("test", undefined)).rejects.toThrowError(
+        new AppError("Missing required parameter(s)", 400)
       );
     });
 
-    // throw an error if room exists
     it("should throw conflict error when room exists", async () => {
       collection.findOne.mockResolvedValue({
         _id: "660c72b2f9b1d8b3a4c8e4d3b",
@@ -64,13 +58,11 @@ describe("Rooms", () => {
         title: "existing room",
       });
 
-      await expect(rooms.create("existing room", "12345")).rejects.toThrow(
-        "AppError is not defined"
+      await expect(rooms.create("existing room", "12345")).rejects.toThrowError(
+        new AppError("Une salle avec ce nom existe déjà", 409)
       );
     });
   });
-
-  // getUserRooms
   describe("getUserRooms", () => {
     it("should return all rooms for a user", async () => {
       const userId = "12345";
@@ -79,7 +71,6 @@ describe("Rooms", () => {
         { title: "room 2", userId },
       ];
 
-      // Mock the database response
       collection.find().toArray.mockResolvedValue(userRooms);
 
       const result = await rooms.getUserRooms(userId);
@@ -91,13 +82,11 @@ describe("Rooms", () => {
     });
   });
 
-  // getOwner
   describe("getOwner", () => {
     it("should return the owner of a room", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
       const userId = "12345";
 
-      // Mock the database response
       collection.findOne.mockResolvedValue({ userId });
 
       const result = await rooms.getOwner(roomId);
@@ -115,7 +104,6 @@ describe("Rooms", () => {
     it("should delete a room and return true", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
 
-      // Mock the database response
       collection.deleteOne.mockResolvedValue({ deletedCount: 1 });
 
       const result = await rooms.delete(roomId);
@@ -131,7 +119,6 @@ describe("Rooms", () => {
     it("should return false if the room does not exist", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
 
-      // Mock the database response
       collection.deleteOne.mockResolvedValue({ deletedCount: 0 });
 
       const result = await rooms.delete(roomId);
@@ -145,21 +132,18 @@ describe("Rooms", () => {
     });
   });
 
-  // rename
   describe("rename", () => {
     it("should rename a room and return true", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
       const newTitle = "new room name";
       const userId = "12345";
 
-      // Mock the database response
       collection.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await rooms.rename(roomId, userId, newTitle);
 
       expect(db.connect).toHaveBeenCalled();
       expect(db.collection).toHaveBeenCalledWith("rooms");
-      // { _id: ObjectId.createFromHexString(roomId), userId: userId }, { $set: { title: newTitle } }
       expect(collection.updateOne).toHaveBeenCalledWith(
         { _id: new ObjectId(roomId), userId: userId },
         { $set: { title: newTitle } }
@@ -172,7 +156,6 @@ describe("Rooms", () => {
       const newTitle = "new room name";
       const userId = "12345";
 
-      // Mock the database response
       collection.updateOne.mockResolvedValue({ modifiedCount: 0 });
 
       const result = await rooms.rename(roomId, userId, newTitle);
@@ -191,7 +174,6 @@ describe("Rooms", () => {
       const newTitle = "existing room";
       const userId = "12345";
 
-      // Mock the database response
       collection.findOne.mockResolvedValue({ title: newTitle });
       collection.updateOne.mockResolvedValue({ modifiedCount: 0 });
 
@@ -212,7 +194,6 @@ describe("Rooms", () => {
     it("should return true if room exists", async () => {
       const title = "test room";
 
-      // Mock the database response
       collection.findOne.mockResolvedValue({ title });
 
       const result = await rooms.roomExists(title);
@@ -225,7 +206,6 @@ describe("Rooms", () => {
 
     it("should return false if room does not exist", async () => {
       const title = "nonexistent room";
-      // Mock the database response
       collection.findOne.mockResolvedValue(null);
 
       const result = await rooms.roomExists(title);
@@ -237,7 +217,6 @@ describe("Rooms", () => {
     });
   });
 
-  // write a test for getRoomById
   describe("getRoomById", () => {
     it("should return a room by ID", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
@@ -246,7 +225,6 @@ describe("Rooms", () => {
         title: "test room",
       };
 
-      // Mock the database response
       collection.findOne.mockResolvedValue(room);
 
       const result = await rooms.getRoomById(roomId);
@@ -262,11 +240,10 @@ describe("Rooms", () => {
     it("should throw an error if the room does not exist", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
 
-      // Mock the database response
       collection.findOne.mockResolvedValue(null);
 
-      await expect(rooms.getRoomById(roomId)).resolves.toThrow(
-        `Room ${roomId} not found`
+      await expect(rooms.getRoomById(roomId)).rejects.toThrowError(
+        new AppError(`Room ${roomId} not found`, 404)
       );
 
       expect(db.connect).toHaveBeenCalled();
