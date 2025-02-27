@@ -1,5 +1,3 @@
-const AppError = require("../middleware/AppError");
-
 jest.mock("../middleware/AppError", () => {
   const actualAppError = jest.requireActual("../middleware/AppError");
 
@@ -47,7 +45,7 @@ describe("Rooms", () => {
 
     it("should throw error when userId is missing", async () => {
       await expect(rooms.create("test", undefined)).rejects.toThrowError(
-        new AppError("Missing required parameter(s)", 400)
+        new Error("Missing required parameter(s)", 400)
       );
     });
 
@@ -59,7 +57,7 @@ describe("Rooms", () => {
       });
 
       await expect(rooms.create("existing room", "12345")).rejects.toThrowError(
-        new AppError("Une salle avec ce nom existe déjà", 409)
+        new Error("Room already exists", 409)
       );
     });
   });
@@ -210,12 +208,12 @@ describe("Rooms", () => {
 
       const result = await rooms.roomExists(title);
 
-      expect(db.connect).toHaveBeenCalled();
-      expect(db.collection).toHaveBeenCalledWith("rooms");
-      expect(collection.findOne).toHaveBeenCalledWith({ title });
-      expect(result).toBe(false);
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.collection).toHaveBeenCalledWith('rooms');
+            expect(collection.findOne).toHaveBeenCalledWith({ title });
+            expect(result).toBeFalsy();
+        });
     });
-  });
 
   describe("getRoomById", () => {
     it("should return a room by ID", async () => {
@@ -243,7 +241,7 @@ describe("Rooms", () => {
       collection.findOne.mockResolvedValue(null);
 
       await expect(rooms.getRoomById(roomId)).rejects.toThrowError(
-        new AppError(`Room ${roomId} not found`, 404)
+        new Error(`Room ${roomId} not found`, 404)
       );
 
       expect(db.connect).toHaveBeenCalled();
