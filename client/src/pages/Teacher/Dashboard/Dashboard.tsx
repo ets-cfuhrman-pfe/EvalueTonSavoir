@@ -33,7 +33,6 @@ import {
     FolderCopy,
     ContentCopy,
     Edit,
-    Share,
     // DriveFileMove
 } from '@mui/icons-material';
 import ShareQuizModal from 'src/components/ShareQuizModal/ShareQuizModal';
