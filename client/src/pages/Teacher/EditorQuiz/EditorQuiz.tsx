@@ -118,7 +118,11 @@ const QuizForm: React.FC = () => {
             setValue(value);
         }
 
-        const linesArray = value.split(/(?<=^|[^\\]}.*)[\n]+/);
+        // split value when there is at least one blank line
+        const linesArray = value.split(/\n{2,}/); 
+
+        // if the first item in linesArray is blank, remove it
+        if (linesArray[0] === '') linesArray.shift();
 
         if (linesArray[linesArray.length - 1] === '') linesArray.pop();
 

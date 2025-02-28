@@ -3,66 +3,87 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview';
 
+const validQuestions = [
+  '::TFTitle::[markdown]Troo statement {TRUE}',
+  '::SATitle::[markdown]What is the answer? {=ShortAnswerOne =ShortAnswerTwo}',
+  '::MCQTitle::[markdown]MultiChoice question? {=MQAnswerOne ~MQAnswerTwo#feedback####Gen feedback}',
+];
+
+const unsupportedQuestions = [
+  '::Title::[markdown]Essay {}',
+  '::Title::[markdown]Matching {}',
+  '::Title::[markdown]Description',
+  '$CATEGORY a/b/c'
+];
+
 describe('GIFTTemplatePreview Component', () => {
-  test('renders error message when questions contain invalid syntax', () => {
-    render(<GIFTTemplatePreview questions={[':: title']} />);
-    const errorMessage = screen.getByText(/Title ::, Category, Description, or Question formatted stem but ":" found./i);
+  it('renders error message when questions contain invalid syntax', () => {
+    render(<GIFTTemplatePreview questions={['T{']} hideAnswers={false} />);
+    const previewContainer = screen.getByTestId('preview-container');
+    expect(previewContainer).toBeInTheDocument();
+    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
     expect(errorMessage).toBeInTheDocument();
   });
 
-  test('renders preview when valid questions are provided', () => {
-    const questions = [
-      'Stem1 {=ans1 ~ans2 ~ans3}',
-    ];
-    render(<GIFTTemplatePreview questions={questions} />);
+  it('renders preview when valid questions are provided, including answers, has no errors', () => {
+    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
-    // const question1 = screen.getByText('Stem1');
-    const mcQuestion1 = screen.getByText('Stem1');
-    const ans1 = screen.getByText('ans1');
-    const ans2 = screen.getByText('ans2');
-    const ans3 = screen.getByText('ans3');
-    expect(mcQuestion1).toBeInTheDocument();
-    expect(ans1).toBeInTheDocument();
-    expect(ans2).toBeInTheDocument();
-    expect(ans3).toBeInTheDocument();
+    // Check that all question titles are rendered inside the previewContainer
+    validQuestions.forEach((question) => {
+      const title = question.split('::')[1].split('::')[0];
+      expect(previewContainer).toHaveTextContent(title);
+    });
+    // There should be no errors
+    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
+    expect(errorMessage).not.toBeInTheDocument();
+    // Check that some stems and answers are rendered inside the previewContainer
+    expect(previewContainer).toHaveTextContent('Troo statement');
+    expect(previewContainer).toHaveTextContent('What is the answer?');
+    expect(previewContainer).toHaveTextContent('MultiChoice question?');
+    expect(previewContainer).toHaveTextContent('Vrai');
+    // short answers are stored in a textbox
+    const answerInputElements = screen.getAllByRole('textbox');
+    const giftInputElements = answerInputElements.filter(element => element.classList.contains('gift-input'));
 
-    // each answer should have a radio button before it
-    const radioButtons = screen.getAllByRole('radio');
-    expect(radioButtons).toHaveLength(3);
-    // ans1 should be the <label> for the first radio button
-    expect(radioButtons[0].nextElementSibling).toBe(ans1);
-    // ans2 should be the <label> for the second radio button
-    expect(radioButtons[1].nextElementSibling).toBe(ans2);
-    // ans3 should be the <label> for the third radio button
-    expect(radioButtons[2].nextElementSibling).toBe(ans3);
+    expect(giftInputElements).toHaveLength(1);
+    expect(giftInputElements[0]).toHaveAttribute('placeholder', 'ShortAnswerOne, ShortAnswerTwo');
 
-    // after the <label> for correct answer (ans1) there should be an svg with aria-hidden="true"
-    expect(ans1.nextElementSibling).toHaveAttribute('aria-hidden', 'true');
-    // after the <label> for incorrect answer (ans2) there should be an svg with aria-hidden="true"
-    expect(ans2.nextElementSibling).toHaveAttribute('aria-hidden', 'true');
-    // after the <label> for incorrect answer (ans3) there should be an svg with aria-hidden="true"
-    expect(ans3.nextElementSibling).toHaveAttribute('aria-hidden', 'true');
+    // Check for correct answer icon just after MQAnswerOne
+    const mqAnswerOneElement = screen.getByText('MQAnswerOne');
+    const correctAnswerIcon = mqAnswerOneElement.parentElement?.querySelector('[data-testid="correct-icon"]');
+    expect(correctAnswerIcon).toBeInTheDocument();
 
-  });
-  test('hides correct/incorrect answers when hideAnswers prop is true', () => {
-    const questions = [
-      'Stem1 {=ans1 ~ans2 ~ans3}',
-    ];
-    render(<GIFTTemplatePreview questions={questions} hideAnswers />);
+    // Check for incorrect answer icon just after MQAnswerTwo
+    const mqAnswerTwoElement = screen.getByText('MQAnswerTwo');
+    const incorrectAnswerIcon = mqAnswerTwoElement.parentElement?.querySelector('[data-testid="incorrect-icon"]');
+    expect(incorrectAnswerIcon).toBeInTheDocument();
+ });
+
+ it('hides answers when hideAnswers prop is true', () => {
+    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={true} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
-    const ans1 = screen.queryByText('ans1');
-    const ans2 = screen.queryByText('ans2');
-    const ans3 = screen.queryByText('ans3');
-
-    const radioButtons = screen.getAllByRole('radio');
-    expect(radioButtons).toHaveLength(3);
-    expect(radioButtons[0].nextElementSibling).toBe(ans1);
-    expect(ans1?.nextElementSibling).toBeNull();
-    expect(radioButtons[1].nextElementSibling).toBe(ans2);
-    expect(ans2?.nextElementSibling).toBeNull();
-    expect(radioButtons[2].nextElementSibling).toBe(ans3);
-    expect(ans3?.nextElementSibling).toBeNull();
+    expect(previewContainer).toHaveTextContent('Troo statement');
+    expect(previewContainer).toHaveTextContent('What is the answer?');
+    expect(previewContainer).toHaveTextContent('MultiChoice question?');
+    expect(previewContainer).toHaveTextContent('Vrai');
+    expect(previewContainer).not.toHaveTextContent('ShortAnswerOne');
+    expect(previewContainer).not.toHaveTextContent('ShortAnswerTwo');
+    // shouldn't have correct/incorrect icons
+    const correctAnswerIcon = screen.queryByTestId('correct-icon');
+    expect(correctAnswerIcon).not.toBeInTheDocument();
+    const incorrectAnswerIcon = screen.queryByTestId('incorrect-icon');
+    expect(incorrectAnswerIcon).not.toBeInTheDocument();
   });
+
+  it('should indicate in the preview that unsupported GIFT questions are not supported', () => {
+    render(<GIFTTemplatePreview questions={unsupportedQuestions} hideAnswers={false} />);
+    const previewContainer = screen.getByTestId('preview-container');
+    expect(previewContainer).toBeInTheDocument();
+    // find all unsupported errors (should be 4)
+    const unsupportedMessages = previewContainer.querySelectorAll('div[label="error-message"]');
+    expect(unsupportedMessages).toHaveLength(4);
+  });
+
 });
