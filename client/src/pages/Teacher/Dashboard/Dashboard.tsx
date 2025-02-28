@@ -97,7 +97,7 @@ const Dashboard: React.FC = () => {
                 setRooms(userRooms as RoomType[]);
                 // select the first room if it exists
                 if (userRooms instanceof Array && userRooms.length > 0) {
-                    selectRoom(userRooms[0]);
+                    selectRoom(userRooms[userRooms.length-1]);
                 }
 
                 const userFolders = await ApiService.getUserFolders();
@@ -137,20 +137,20 @@ const Dashboard: React.FC = () => {
     localStorage.setItem('selectedRoomId', roomId);
   };
 
-    const handleCreateRoom = async () => {
-        if (newRoomTitle.trim()) {
-            try {
+  const handleCreateRoom = async () => {
+    if (newRoomTitle.trim()) {
+      try {
                 await createRoom(newRoomTitle);
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
-                setOpenAddRoomDialog(false);
-                setNewRoomTitle('');
-            } catch (error) {
-                setErrorMessage(error instanceof Error ? error.message : "Erreur inconnue");
-                setShowErrorDialog(true);
-            }
-        }
-    };
+        setOpenAddRoomDialog(false);
+        setNewRoomTitle('');
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : "Erreur inconnue");
+        setShowErrorDialog(true);
+      }
+    }
+  };
 
     const handleSelectFolder = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedFolderId(event.target.value);
