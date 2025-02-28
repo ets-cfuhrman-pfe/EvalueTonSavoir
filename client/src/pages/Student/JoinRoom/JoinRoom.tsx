@@ -111,6 +111,12 @@ const JoinRoom: React.FC = () => {
         webSocketService.submitAnswer(answerData);
     };
 
+    const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSocket();
+        }
+    };
+
     if (isWaitingForTeacher) {
         return (
             <div className='room'>
@@ -167,7 +173,8 @@ const JoinRoom: React.FC = () => {
                         onChange={(e) => setRoomName(e.target.value)}
                         placeholder="Numéro de la salle"
                         sx={{ marginBottom: '1rem' }}
-                        fullWidth
+                        fullWidth={true}
+                        onKeyDown={handleReturnKey}
                     />
 
                     <TextField
@@ -177,7 +184,8 @@ const JoinRoom: React.FC = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Nom d'utilisateur"
                         sx={{ marginBottom: '1rem' }}
-                        fullWidth
+                        fullWidth={true}
+                        onKeyDown={handleReturnKey}
                     />
 
                     <LoadingButton
