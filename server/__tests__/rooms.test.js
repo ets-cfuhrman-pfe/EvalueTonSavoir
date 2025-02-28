@@ -190,7 +190,8 @@ describe("Rooms", () => {
 
   describe("roomExists", () => {
     it("should return true if room exists", async () => {
-      const title = "test room";
+      const title = "TEST ROOM";
+      const userId = '66fc70bea1b9e87655cf17c9';
 
       collection.findOne.mockResolvedValue({ title });
 
@@ -203,7 +204,9 @@ describe("Rooms", () => {
     });
 
     it("should return false if room does not exist", async () => {
-      const title = "nonexistent room";
+      const title = "NONEXISTENT ROOM";
+      const userId = '66fc70bea1b9e87655cf17c9';
+
       collection.findOne.mockResolvedValue(null);
 
       const result = await rooms.roomExists(title);
