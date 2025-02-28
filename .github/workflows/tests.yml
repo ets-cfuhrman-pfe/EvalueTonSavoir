@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies, lint and Run Tests
         run: |
           echo "Installing dependencies..."
-          npm ci
+          npm install
           echo "Running ESLint..."
           npx eslint .
           echo "Running tests..."
