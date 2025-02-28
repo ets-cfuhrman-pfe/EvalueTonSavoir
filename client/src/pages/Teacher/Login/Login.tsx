@@ -1,6 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
-
-// JoinRoom.tsx
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 
 import './Login.css';
@@ -38,6 +36,11 @@ const Login: React.FC = () => {
 
     };
 
+    const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && email && password) {
+            login();
+        }
+    };
 
     return (
         <LoginContainer
@@ -51,7 +54,8 @@ const Login: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Adresse courriel"
                 sx={{ marginBottom: '1rem' }}
-                fullWidth
+                fullWidth={true}
+                onKeyDown={handleReturnKey} // Add this line as well
             />
 
             <TextField
@@ -62,7 +66,8 @@ const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
                 sx={{ marginBottom: '1rem' }}
-                fullWidth
+                fullWidth={true}
+                onKeyDown={handleReturnKey} // Add this line as well
             />
 
             <LoadingButton
