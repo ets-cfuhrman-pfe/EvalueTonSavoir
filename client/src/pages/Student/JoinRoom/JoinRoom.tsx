@@ -112,7 +112,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && username && roomName) {
             handleSocket();
         }
     };

@@ -36,8 +36,8 @@ const Login: React.FC = () => {
 
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+    const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && email && password) {
             login();
         }
     };
@@ -55,7 +55,7 @@ const Login: React.FC = () => {
                 placeholder="Adresse courriel"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth={true}
-                onKeyDown={handleKeyPress} // Add this line as well
+                onKeyDown={handleReturnKey} // Add this line as well
             />
 
             <TextField
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
                 placeholder="Mot de passe"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth={true}
-                onKeyDown={handleKeyPress} // Add this line as well
+                onKeyDown={handleReturnKey} // Add this line as well
             />
 
             <LoadingButton
