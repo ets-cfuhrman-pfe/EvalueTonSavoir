@@ -95,10 +95,6 @@ const Dashboard: React.FC = () => {
             } else {
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
-                // select the first room if it exists
-                if (userRooms instanceof Array && userRooms.length > 0) {
-                    selectRoom(userRooms[userRooms.length-1]);
-                }
 
                 const userFolders = await ApiService.getUserFolders();
                 setFolders(userFolders as FolderType[]);
@@ -107,6 +103,13 @@ const Dashboard: React.FC = () => {
 
         fetchData();
     }, []);
+    
+    useEffect(() => {
+        if (rooms.length > 0 && !selectedRoom) {
+            selectRoom(rooms[rooms.length - 1]);
+            localStorage.setItem('selectedRoomId', rooms[rooms.length - 1]._id);
+        }
+    }, [rooms, selectedRoom]);
 
     const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
         if (event.target.value === 'add-room') {
