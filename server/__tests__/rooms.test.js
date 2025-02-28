@@ -192,32 +192,32 @@ describe("Rooms", () => {
     it("should return true if room exists", async () => {
       const title = "TEST ROOM";
       const userId = '66fc70bea1b9e87655cf17c9';
-
-      collection.findOne.mockResolvedValue({ title });
-
-      const result = await rooms.roomExists(title);
-
+  
+      collection.findOne.mockResolvedValue({ title, userId });
+  
+      const result = await rooms.roomExists(title, userId);
+  
       expect(db.connect).toHaveBeenCalled();
       expect(db.collection).toHaveBeenCalledWith("rooms");
-      expect(collection.findOne).toHaveBeenCalledWith({ title });
+      expect(collection.findOne).toHaveBeenCalledWith({ title: title.toUpperCase(), userId });
       expect(result).toBe(true);
     });
-
+  
     it("should return false if room does not exist", async () => {
       const title = "NONEXISTENT ROOM";
       const userId = '66fc70bea1b9e87655cf17c9';
-
+  
       collection.findOne.mockResolvedValue(null);
-
-      const result = await rooms.roomExists(title);
-
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.collection).toHaveBeenCalledWith('rooms');
-            expect(collection.findOne).toHaveBeenCalledWith({ title });
-            expect(result).toBeFalsy();
-        });
+  
+      const result = await rooms.roomExists(title, userId);
+  
+      expect(db.connect).toHaveBeenCalled();
+      expect(db.collection).toHaveBeenCalledWith('rooms');
+      expect(collection.findOne).toHaveBeenCalledWith({ title: title.toUpperCase(), userId });
+      expect(result).toBe(false);
     });
-
+  });
+  
   describe("getRoomById", () => {
     it("should return a room by ID", async () => {
       const roomId = "60c72b2f9b1d8b3a4c8e4d3b";
