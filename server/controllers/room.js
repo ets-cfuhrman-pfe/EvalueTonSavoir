@@ -29,13 +29,12 @@ class RoomsController {
 
       const roomExists = await this.rooms.roomExists(normalizedTitle);
 
-
       if (roomExists) {
-        const error = new AppError(ROOM_ALREADY_EXISTS);
-        error.message = "Cette salle existe déjà";
+        const error = new Error("Room already exists");
         error.statusCode = 409;
         throw error;
       }
+
       const result = await this.rooms.create(normalizedTitle, req.user.userId);
 
       return res.status(201).json({
@@ -43,10 +42,17 @@ class RoomsController {
         roomId: result.insertedId,
       });
     } catch (error) {
-      next(Object.assign(error, { message: error.message }));
+      if (error instanceof Error) {
+        if (error.message === "Room already exists") {
+          return next(new AppError(ROOM_ALREADY_EXISTS));
+        } 
+      }
+
+      next(error);
     }
   };
 
+  
   getUserRooms = async (req, res, next) => {
     try {
       const rooms = await this.rooms.getUserRooms(req.user.userId);
@@ -200,7 +206,9 @@ class RoomsController {
       if (!title) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
-      const exists = await this.rooms.roomExists(title);
+      const userId = req.user.userId;
+
+      const exists = await this.rooms.roomExists(title, userId);
 
       return res.status(200).json({
         exists: exists,

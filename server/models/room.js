@@ -7,35 +7,34 @@ class Rooms
         this.db = db;
     }
 
-    async create(title, userId)
-    {
+    async create(title, userId) {
         if (!title || !userId) {
-            throw new Error('Missing required parameter(s)', 400);
+            throw new Error('Missing required parameter(s)');
         }
-
+    
         await this.db.connect();
         const conn = this.db.getConnection();
         const roomsCollection = conn.collection('rooms');
-        const normalizedTitle = title.toLowerCase();
-
-        const existingRoom = await roomsCollection.findOne({ title: normalizedTitle, userId: userId });
-
+        const normalizedTitle = title.toUpperCase();
+    
+        const existingRoom = await roomsCollection.findOne({ title: normalizedTitle });
+    
         if (existingRoom) {
-            throw new Error('Room already exists', 409);
+            // Lancer une erreur générique ici
+            throw new Error('Room already exists');
         }
-
+    
         const newRoom = {
             userId: userId,
             title: title,
             created_at: new Date()
         };
-
+    
         const result = await roomsCollection.insertOne(newRoom);
-
+    
         return result.insertedId;
-
     }
-
+    
 
     async getUserRooms(userId)
     {
@@ -119,14 +118,15 @@ class Rooms
         return true;
     }
 
-    async roomExists(title)
-    { // Ajouter userId en paramètre
+    async roomExists(title, userId)
+    {
         try
         {
             await this.db.connect();
             const conn = this.db.getConnection();
             const existingRoom = await conn.collection('rooms').findOne({
-                title: title.toLowerCase()
+                title: title.toUpperCase(), 
+                userId: userId 
             });
             return existingRoom ? true : false;
         } catch (error)
