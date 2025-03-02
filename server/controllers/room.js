@@ -18,17 +18,16 @@ class RoomsController {
     try {
       if (!req.user || !req.user.userId) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
-      }
+      }      
 
       const { title } = req.body;
       if (!title) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
 
-      const normalizedTitle = title.toUpperCase();
-
-      const roomExists = await this.rooms.roomExists(normalizedTitle);
-
+      const normalizedTitle = title.toUpperCase().trim();
+      
+      const roomExists = await this.rooms.roomExists(normalizedTitle, req.user.userId);
       if (roomExists) {
         throw new AppError(ROOM_ALREADY_EXISTS);
       }
@@ -40,13 +39,10 @@ class RoomsController {
         roomId: result.insertedId,
       });
     } catch (error) {
-      next(
-        error instanceof AppError
-          ? error
-          : new AppError({ message: error.message, code: 500 })
-      );
+      next(error);
     }
   };
+  
 
   getUserRooms = async (req, res, next) => {
     try {
@@ -194,24 +190,7 @@ class RoomsController {
       return next(error);
     }
   };
-  roomExists = async (req, res, next) => {
-    try {
-      const { title } = req.body;
-
-      if (!title) {
-        throw new AppError(MISSING_REQUIRED_PARAMETER);
-      }
-      const userId = req.user.userId;
-
-      const exists = await this.rooms.roomExists(title, userId);
-
-      return res.status(200).json({
-        exists: exists,
-      });
-    } catch (error) {
-      return next(error);
-    }
-  };
+  
   getRoomTitleByUserId = async (req, res, next) => {
     try {
       const { userId } = req.params;
