@@ -17,7 +17,7 @@ class RoomsController {
   create = async (req, res, next) => {
     try {
       if (!req.user || !req.user.userId) {
-        throw new AppError("Utilisateur non authentifié", 401);
+        throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
 
       const { title } = req.body;
@@ -30,9 +30,7 @@ class RoomsController {
       const roomExists = await this.rooms.roomExists(normalizedTitle);
 
       if (roomExists) {
-        const error = new Error("Room already exists");
-        error.statusCode = 409;
-        throw error;
+        throw new AppError(ROOM_ALREADY_EXISTS);
       }
 
       const result = await this.rooms.create(normalizedTitle, req.user.userId);
@@ -42,17 +40,14 @@ class RoomsController {
         roomId: result.insertedId,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "Room already exists") {
-          return next(new AppError(ROOM_ALREADY_EXISTS));
-        } 
-      }
-
-      next(error);
+      next(
+        error instanceof AppError
+          ? error
+          : new AppError({ message: error.message, code: 500 })
+      );
     }
   };
 
-  
   getUserRooms = async (req, res, next) => {
     try {
       const rooms = await this.rooms.getUserRooms(req.user.userId);

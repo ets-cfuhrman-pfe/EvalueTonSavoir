@@ -9,11 +9,15 @@ const errorHandler = (error, req, res, _next) => {
         code: error.statusCode
       });
     }
-  
-    return res.status(500).json({
-      message: "Erreur technique",
-      code: 500
-    });
+
+    logError(error.stack);
+    return res.status(505).send("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
   };
+
+  const logError = (error) => {
+    const time = new Date();
+    var log_file = fs.createWriteStream(__dirname + '/../debug.log', {flags : 'a'});
+    log_file.write(time + '\n' + error + '\n\n');
+}
 
 module.exports = errorHandler;
