@@ -3,19 +3,18 @@ version: '3'
 services:
 
   frontend:
-    image: fuhrmanator/evaluetonsavoir-frontend:latest
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     container_name: frontend
-    environment:
-      # Define empty VITE_BACKEND_URL because it's production
-      - VITE_BACKEND_URL=
-      # Define empty VITE_BACKEND_SOCKET_URL so it will default to window.location.host
-      - VITE_BACKEND_SOCKET_URL=
     ports:
       - "5173:5173"
     restart: always
 
   backend:
-    image: fuhrmanator/evaluetonsavoir-backend:latest
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
@@ -29,13 +28,11 @@ services:
       JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
       SESSION_Secret: 'lookMomImQuizzing'
       SITE_URL: http://localhost
-      OIDC_URL: https://evalsa.etsmtl.ca
       FRONTEND_PORT: 5173
       USE_PORTS: false
       AUTHENTICATED_ROOMS: false
     volumes:
-      - /opt/EvalueTonSavoir/auth_config.json:/usr/src/app/serveur/auth_config.json
-      - /opt/EvalueTonSavoir/oauth-tester/config.json:/usr/src/app/serveur/oauth-tester/config.json
+      - ./server/auth_config.json:/usr/src/app/serveur/config/auth_config.json
     depends_on:
       - mongo
       - keycloak

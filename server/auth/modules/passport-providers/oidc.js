@@ -4,6 +4,7 @@ var users = require('../../../models/users');
 var { hasNestedValue } = require('../../../utils');
 const { MISSING_OIDC_PARAMETER } = require('../../../constants/errorCodes.js');
 const AppError = require('../../../middleware/AppError.js');
+const expressListEndpoints = require('express-list-endpoints');
 
 class PassportOpenIDConnect {
     constructor(passportjs, auth_name) {
@@ -23,11 +24,16 @@ class PassportOpenIDConnect {
 
     async register(app, passport, endpoint, name, provider) {
 
-        const config = await this.getConfigFromConfigURL(name, provider)
-        const cb_url = `${process.env['BACKEND_URL']}${endpoint}/${name}/callback`
-        const self = this
-        const scope = 'openid profile email ' + `${provider.OIDC_ADD_SCOPE}`
+        const config = await this.getConfigFromConfigURL(name, provider);
+        const cb_url = `${process.env['OIDC_URL']}${endpoint}/${name}/callback`;
+        const self = this;
+        const scope = 'openid profile email ' + `${provider.OIDC_ADD_SCOPE}`;
 
+        console.log(config);
+        console.log('');
+        console.log(cb_url);
+        console.log('');
+        console.log(scope);
         passport.use(name, new OpenIDConnectStrategy({
             issuer: config.issuer,
             authorizationURL: config.authorization_endpoint,
@@ -48,7 +54,6 @@ class PassportOpenIDConnect {
                         name: profile.name.givenName,
                         roles: []
                     };
-
 
                     if (hasNestedValue(profile, provider.OIDC_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
                     if (hasNestedValue(profile, provider.OIDC_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
@@ -99,7 +104,8 @@ class PassportOpenIDConnect {
                 }
             }
         );
-        console.info(`Ajout de la connexion : ${name}(OIDC)`)
+        console.info(`Ajout de la connexion : ${name}(OIDC)`);
+        console.log(expressListEndpoints(app));
     }
 }
 
