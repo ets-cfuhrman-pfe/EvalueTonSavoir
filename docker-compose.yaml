@@ -35,7 +35,6 @@ services:
       AUTHENTICATED_ROOMS: false
     volumes:
       - /opt/EvalueTonSavoir/auth_config.json:/usr/src/app/serveur/auth_config.json
-      - /opt/EvalueTonSavoir/oauth-tester/config.json:/usr/src/app/serveur/oauth-tester/config.json
     depends_on:
       - mongo
       - keycloak
@@ -101,7 +100,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./oauth-tester/config.json:/opt/keycloak/data/import/realm-config.json
+      - /opt/EvalueTonSavoir/oauth-tester/config.json:/opt/keycloak/data/import/realm-config.json
     command:
       - start-dev
       - --import-realm
