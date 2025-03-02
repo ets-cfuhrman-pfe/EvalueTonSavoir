@@ -1,6 +1,5 @@
 var OAuth2Strategy = require('passport-oauth2')
 var authUserAssoc = require('../../../models/authUserAssociation')
-var users = require('../../../models/users')
 var { hasNestedValue } = require('../../../utils')
 
 class PassportOAuth {
@@ -9,8 +8,8 @@ class PassportOAuth {
         this.auth_name = auth_name
     }
 
-    register(app, passport, endpoint, name, provider) {
-        const cb_url = `${process.env['BACKEND_URL']}${endpoint}/${name}/callback`
+    register(app, passport, endpoint, name, provider, userModel) {
+        const cb_url = `${process.env['OIDC_URL']}${endpoint}/${name}/callback`
         const self = this
         const scope = 'openid profile email offline_access' + ` ${provider.OAUTH_ADD_SCOPE}`;
 
@@ -43,14 +42,14 @@ class PassportOAuth {
 
                     let user_account
                     if (user_association) {
-                        user_account = await users.getById(user_association.user_id)
+                        user_account = await userModel.getById(user_association.user_id)
                     }
                     else {
-                        let user_id = await users.getId(received_user.email)
+                        let user_id = await userModel.getId(received_user.email)
                         if (user_id) {
-                            user_account = await users.getById(user_id);
+                            user_account = await userModel.getById(user_id);
                         } else {
-                            received_user.password = users.generatePassword()
+                            received_user.password = userModel.generatePassword()
                             user_account = await self.passportjs.register(received_user)
                         }
                         await authUserAssoc.link(self.auth_name, received_user.auth_id, user_account._id)
@@ -58,7 +57,7 @@ class PassportOAuth {
 
                     user_account.name = received_user.name
                     user_account.roles = received_user.roles
-                    await users.editUser(user_account)
+                    await userModel.editUser(user_account)
 
                     // Store the tokens in the session
                     req.session.oauth2Tokens = {

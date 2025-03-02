@@ -9,7 +9,7 @@ class PassportJs{
         this.endpoint = "/api/auth"
     }
 
-    async registerAuth(expressapp){
+    async registerAuth(expressapp, userModel){
         expressapp.use(passport.initialize());
         expressapp.use(passport.session());
         
@@ -21,7 +21,7 @@ class PassportJs{
                     this.registerProvider(provider.type,auth_id)
                 }
                 try{
-                    this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider)
+                    this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider,userModel)
                     authprovider.create(auth_id)
                 } catch(error){
                     console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`);

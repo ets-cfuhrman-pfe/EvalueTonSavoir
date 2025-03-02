@@ -53,7 +53,7 @@ class SimpleAuth {
                 throw error;
             }
             
-            await self.authmanager.login(email, password, req, res, next);
+            await self.authmanager.loginSimple(email, password, req, res, next);
         } catch (error) {
             const statusCode = error.statusCode || 500;
             const message = error.message || "An internal server error occurred";

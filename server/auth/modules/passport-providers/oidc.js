@@ -1,6 +1,5 @@
 var OpenIDConnectStrategy = require('passport-openidconnect');
 var authUserAssoc = require('../../../models/authUserAssociation');
-var users = require('../../../models/users');
 var { hasNestedValue } = require('../../../utils');
 const { MISSING_OIDC_PARAMETER } = require('../../../constants/errorCodes.js');
 const AppError = require('../../../middleware/AppError.js');
@@ -22,7 +21,7 @@ class PassportOpenIDConnect {
         }
     }
 
-    async register(app, passport, endpoint, name, provider) {
+    async register(app, passport, endpoint, name, provider, userModel) {
 
         const config = await this.getConfigFromConfigURL(name, provider);
         const cb_url = `${process.env['OIDC_URL']}${endpoint}/${name}/callback`;
@@ -62,14 +61,14 @@ class PassportOpenIDConnect {
 
                     let user_account
                     if (user_association) {
-                        user_account = await users.getById(user_association.user_id)
+                        user_account = await userModel.getById(user_association.user_id)
                     }
                     else {
-                        let user_id = await users.getId(received_user.email)
+                        let user_id = await userModel.getId(received_user.email)
                         if (user_id) {
-                            user_account = await users.getById(user_id);
+                            user_account = await userModel.getById(user_id);
                         } else {
-                            received_user.password = users.generatePassword()
+                            received_user.password = userModel.generatePassword()
                             user_account = await self.passportjs.register(received_user)
                         }
                         await authUserAssoc.link(self.auth_name, received_user.auth_id, user_account._id)
@@ -77,7 +76,7 @@ class PassportOpenIDConnect {
 
                     user_account.name = received_user.name
                     user_account.roles = received_user.roles
-                    await users.editUser(user_account);
+                    await userModel.editUser(user_account);
 
                     return done(null, user_account);
                 } catch (error) {
