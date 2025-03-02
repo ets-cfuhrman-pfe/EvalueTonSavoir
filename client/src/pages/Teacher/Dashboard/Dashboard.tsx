@@ -252,6 +252,7 @@ const Dashboard: React.FC = () => {
                 Template(parsedItem[0]);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
+                console.error('Error parsing question:', error);
                 return false;
             }
         }

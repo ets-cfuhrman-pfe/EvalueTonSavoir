@@ -9,7 +9,7 @@ import './studentWaitPage.css';
 interface Props {
     students: StudentType[];
     launchQuiz: () => void;
-    setQuizMode: (mode: 'student' | 'teacher') => void;
+    setQuizMode: (_mode: 'student' | 'teacher') => void;
 }
 
 const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode }) => {

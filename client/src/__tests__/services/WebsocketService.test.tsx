@@ -23,13 +23,13 @@ describe('WebSocketService', () => {
     });
 
     test('connect should initialize socket connection', () => {
-        WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         expect(io).toHaveBeenCalled();
         expect(WebsocketService['socket']).toBe(mockSocket);
     });
 
     test('disconnect should terminate socket connection', () => {
-        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         expect(WebsocketService['socket']).toBeTruthy();
         WebsocketService.disconnect();
         expect(mockSocket.disconnect).toHaveBeenCalled();
@@ -47,7 +47,7 @@ describe('WebSocketService', () => {
         const roomName = 'testRoom';
         const question = { id: 1, text: 'Sample Question' };
 
-        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         WebsocketService.nextQuestion(roomName, question);
         expect(mockSocket.emit).toHaveBeenCalledWith('next-question', { roomName, question });
     });
@@ -56,7 +56,7 @@ describe('WebSocketService', () => {
         const roomName = 'testRoom';
         const questions = [{ id: 1, text: 'Sample Question' }];
 
-        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         WebsocketService.launchStudentModeQuiz(roomName, questions);
         expect(mockSocket.emit).toHaveBeenCalledWith('launch-student-mode', {
             roomName,
@@ -67,7 +67,7 @@ describe('WebSocketService', () => {
     test('endQuiz should emit end-quiz event with correct parameters', () => {
         const roomName = 'testRoom';
 
-        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         WebsocketService.endQuiz(roomName);
         expect(mockSocket.emit).toHaveBeenCalledWith('end-quiz', { roomName });
     });
@@ -76,7 +76,7 @@ describe('WebSocketService', () => {
         const enteredRoomName = 'testRoom';
         const username = 'testUser';
 
-        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         WebsocketService.joinRoom(enteredRoomName, username);
         expect(mockSocket.emit).toHaveBeenCalledWith('join-room', { enteredRoomName, username });
     });
