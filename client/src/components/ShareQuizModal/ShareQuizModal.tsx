@@ -52,7 +52,7 @@ const ShareQuizModal: React.FC<ShareQuizModalProps> = ({ quiz }) => {
     return (
         <>
             <Tooltip title="Partager quiz" placement="top">
-                <IconButton color="primary" onClick={handleOpenModal}>
+                <IconButton color="primary" onClick={handleOpenModal} aria-label="partager quiz">
                     <Share />
                 </IconButton>
             </Tooltip>
