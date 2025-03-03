@@ -12,7 +12,7 @@ const Register: React.FC = () => {
     const [name, setName] = useState(''); // State for name
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [roles, setRoles] = useState<string[]>(['student']); // Set 'student' as the default role
+    const [roles, setRoles] = useState<string[]>(['teacher']); // Set 'student' as the default role
 
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting] = useState<boolean>(false);
