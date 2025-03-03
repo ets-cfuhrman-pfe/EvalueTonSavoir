@@ -52,6 +52,8 @@ class Images {
 
         if (!result) return null;
 
+        const total = result.length;
+
         const objImages = result.slice((page - 1) * limit, page * limit).map(image => ({
             id: image._id,
             user: image.userId,
@@ -60,7 +62,12 @@ class Images {
             mime_type: image.mime_type
         }));
 
-        return objImages;
+        let respObj = {
+            images: objImages,
+            total: total
+        }
+
+        return respObj;
     }
 }
 

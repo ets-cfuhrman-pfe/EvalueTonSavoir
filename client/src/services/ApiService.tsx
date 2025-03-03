@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import { FolderType } from 'src/Types/FolderType';
+import { ImagesResponse } from '../Types/Images';
 import { QuizType } from 'src/Types/QuizType';
 import { ENV_VARIABLES } from 'src/constants';
 
@@ -63,6 +64,16 @@ class ApiService {
         }
 
         return object.token;
+    }
+
+    private getUserID(): string | null {
+        const objStr = localStorage.getItem("uid");
+
+        if (!objStr) {
+            return null;
+        }
+
+        return objStr;
     }
 
     public isLoggedIn(): boolean {
@@ -141,7 +152,8 @@ class ApiService {
                 throw new Error(`La connexion a échoué. Status: ${result.status}`);
             }
 
-            this.saveToken(result.data.token);
+            this.saveToken(result.data.result.token);
+            localStorage.setItem("uid", JSON.stringify(result.data.result.userId));
 
             return true;
 
@@ -886,7 +898,38 @@ class ApiService {
             return `ERROR : Une erreur inattendue s'est produite.`
         }
     }
-    // NOTE : Get Image pas necessaire
+
+    
+    public async getImages(page: number, limit: number): Promise<ImagesResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/getImages`);
+            const headers = this.constructRequestHeaders();
+            const params = { page: page, limit: limit};
+
+            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'enregistrement a échoué. Status: ${result.status}`);
+            }
+
+            console.log(result.data);
+            const images = result.data;
+
+            return images;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
 
 }
 
