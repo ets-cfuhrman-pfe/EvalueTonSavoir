@@ -1,11 +1,8 @@
 // TeacherModeQuiz.tsx
 import React, { useEffect, useState } from 'react';
-
 import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
-
 import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
-// import { QuestionService } from '../../services/QuestionService';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Question } from 'gift-pegjs';
@@ -24,7 +21,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
     const [feedbackMessage, setFeedbackMessage] = useState<React.ReactNode>('');
-    
+
     const renderFeedbackMessage = (answer: string) => {
 
         if(answer === 'true' || answer === 'false'){
@@ -43,12 +40,18 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
         // Close the feedback dialog when the question changes
         handleFeedbackDialogClose();
         setIsAnswerSubmitted(false);
-        
+        const answer = localStorage.getItem(`Answer${questionInfos.question.id}`);
+        if (answer !== null) {
+            setIsAnswerSubmitted(true);
+            setIsFeedbackDialogOpen(true);
+        }
+
     }, [questionInfos.question]);
 
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
+
         setFeedbackMessage(renderFeedbackMessage(answer.toString()));
         setIsFeedbackDialogOpen(true);
     };

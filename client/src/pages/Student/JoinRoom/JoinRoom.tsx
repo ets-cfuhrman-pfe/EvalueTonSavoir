@@ -45,6 +45,7 @@ const JoinRoom: React.FC = () => {
         socket.on('next-question', (question: QuestionType) => {
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
+
             setQuestion(question);
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
@@ -78,6 +79,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
+        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -107,7 +109,7 @@ const JoinRoom: React.FC = () => {
             username: username,
             idQuestion: idQuestion
         };
-
+        localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
         webSocketService.submitAnswer(answerData);
     };
 
