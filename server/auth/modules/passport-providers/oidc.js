@@ -46,6 +46,8 @@ class PassportOpenIDConnect {
         },
             // patch pour la librairie permet d'obtenir les groupes, PR en cours mais "morte" : https://github.com/jaredhanson/passport-openidconnect/pull/101
             async function (req, issuer, profile, times, tok, done) {
+                console.log(`oidc.js: register: issuer: ${JSON.stringify(issuer)}`);
+                console.log(`oidc.js: register: profile: ${JSON.stringify(profile)}`);
                 try {
                     const received_user = {
                         auth_id: profile.id,
@@ -57,25 +59,35 @@ class PassportOpenIDConnect {
                     if (hasNestedValue(profile, provider.OIDC_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
                     if (hasNestedValue(profile, provider.OIDC_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
 
-                    const user_association = await authUserAssoc.find_user_association(self.auth_name, received_user.auth_id)
+                    console.log(`oidc.js: register: received_user: ${JSON.stringify(received_user)}`);
+                    const user_association = await authUserAssoc.find_user_association(self.auth_name, received_user.auth_id);
+                    console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
 
                     let user_account
                     if (user_association) {
+                        console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
                         user_account = await userModel.getById(user_association.user_id)
+                        console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
                     }
                     else {
+                        console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
                         let user_id = await userModel.getId(received_user.email)
+                        console.log(`oidc.js: register: user_id: ${JSON.stringify(user_id)}`);
                         if (user_id) {
                             user_account = await userModel.getById(user_id);
+                            console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
                         } else {
                             received_user.password = userModel.generatePassword()
                             user_account = await self.passportjs.register(received_user)
+                            console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
                         }
+                        console.log(`oidc.js: register: authUserAssoc.ling.`);
                         await authUserAssoc.link(self.auth_name, received_user.auth_id, user_account._id)
                     }
 
                     user_account.name = received_user.name
                     user_account.roles = received_user.roles
+                    console.log(`oidc.js: register: calling userModel.editUser: ${JSON.stringify(user_account)}`);
                     await userModel.editUser(user_account);
 
                     return done(null, user_account);
