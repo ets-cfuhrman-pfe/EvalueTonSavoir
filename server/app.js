@@ -86,7 +86,7 @@ console.log(`Websocket setup with on() listeners.`);
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.enable('trust proxy');
 // Create routes
 app.use('/api/user', userRouter);
 app.use('/api/folder', folderRouter);
