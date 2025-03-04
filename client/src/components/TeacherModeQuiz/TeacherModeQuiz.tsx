@@ -21,6 +21,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
     const [feedbackMessage, setFeedbackMessage] = useState<React.ReactNode>('');
+    const [answer, setAnswer] = useState<string | number | boolean>('');
 
     const renderFeedbackMessage = (answer: string) => {
 
@@ -36,17 +37,18 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
             </span>
         );}
     };
+
     useEffect(() => {
         // Close the feedback dialog when the question changes
         handleFeedbackDialogClose();
         setIsAnswerSubmitted(false);
-        const answer = localStorage.getItem(`Answer${questionInfos.question.id}`);
-        if (answer !== null) {
+        setAnswer(JSON.parse(localStorage.getItem(`Answer${questionInfos.question.id}`)||'null'));
+        if (answer) {
             setIsAnswerSubmitted(true);
             setIsFeedbackDialogOpen(true);
         }
 
-    }, [questionInfos.question]);
+    }, [questionInfos.question , answer]);
 
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
@@ -85,6 +87,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                 <QuestionComponent
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
+                    answer={answer} 
                 />
             )}
 
@@ -109,6 +112,8 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={true}
+                    answer={answer} 
+
                     />
                 </DialogContent>
                 <DialogActions>

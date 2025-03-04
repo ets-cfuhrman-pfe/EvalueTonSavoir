@@ -32,8 +32,6 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
         
     };
 
-
-
     useEffect(() => {        
         const answer = localStorage.getItem(`Answer${questionInfos.question.id}`);
         if (answer !== null) {
@@ -81,6 +79,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
+                    answer={localStorage.getItem(`Answer${questionInfos.question.id}`) || undefined}
                     />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
                 <div>

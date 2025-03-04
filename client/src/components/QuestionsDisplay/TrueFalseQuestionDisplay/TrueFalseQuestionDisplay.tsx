@@ -1,25 +1,35 @@
 // TrueFalseQuestion.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
+import { Answer } from 'src/Types/StudentType';
 
 interface Props {
     question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer: boolean) => void;
+    handleOnSubmitAnswer?: (answer: Answer) => void;
     showAnswer?: boolean;
+    passedAnswer?: string | number | boolean;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer} =
         props;
-    const [answer, setAnswer] = useState<boolean | undefined>(undefined);
+    console.log("Passedanswer", passedAnswer);
 
-    useEffect(() => {
-        setAnswer(undefined);
-    }, [question]);
+    const [answer, setAnswer] = useState<boolean | undefined>(() => {
+        if (typeof passedAnswer === 'boolean') {
+            return passedAnswer;
+        }
+        return undefined;
+    }); 
 
+    const handleOnClickAnswer = (choice: boolean) => {
+        setAnswer(choice);
+    };
+
+    console.log("Answer", answer);
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
     return (
@@ -30,7 +40,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
             <div className="choices-wrapper mb-1">
                 <Button
                     className="button-wrapper"
-                    onClick={() => !showAnswer && setAnswer(true)}
+                    onClick={() => !showAnswer && handleOnClickAnswer(true)}
                     fullWidth
                 >
                     {showAnswer? (<div> {(question.isTrue ? '✅' : '❌')}</div>):``}                    
@@ -39,7 +49,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 </Button>
                 <Button
                     className="button-wrapper"
-                    onClick={() => !showAnswer && setAnswer(false)}
+                    onClick={() => !showAnswer && handleOnClickAnswer(false)}
                     fullWidth
                 >
                     {showAnswer? (<div> {(!question.isTrue ? '✅' : '❌')}</div>):``}                    

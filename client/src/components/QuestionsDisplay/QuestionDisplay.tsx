@@ -11,11 +11,13 @@ interface QuestionProps {
     question: Question;
     handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
+    answer?: string | number | boolean;
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    answer,
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
@@ -30,6 +32,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;
@@ -39,6 +42,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;

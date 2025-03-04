@@ -1,5 +1,5 @@
 // MultipleChoiceQuestionDisplay.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
@@ -7,21 +7,20 @@ import { MultipleChoiceQuestion } from 'gift-pegjs';
 
 interface Props {
     question: MultipleChoiceQuestion;
-    handleOnSubmitAnswer?: (answer: string) => void;
+    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
+    passedAnswer?: string | number | boolean;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } = props;
-    const [answer, setAnswer] = useState<string>();
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
     
-    useEffect(() => {
-        setAnswer(undefined);
-    }, [question]);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer(choice);
     };
+
 
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
@@ -67,9 +66,9 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                     }
-                    disabled={answer === undefined}
+                    disabled={answer === ''}
                 >
                     Répondre
                     
