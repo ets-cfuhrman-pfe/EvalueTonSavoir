@@ -103,8 +103,7 @@ app.use(session({
   cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
-let authManager = new AuthManager(app,null,userModel);
-authManager.getUserModel();
+let _authManager = new AuthManager(app,null,userModel);
 app.use(errorHandler);
 
 // Start server

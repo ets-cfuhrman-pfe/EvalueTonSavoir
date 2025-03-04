@@ -7,6 +7,8 @@ const AppError = require('../middleware/AppError.js');
 
 class AuthManager{
     constructor(expressapp,configs=null,userModel){
+        console.log(`AuthManager: constructor: configs: ${JSON.stringify(configs)}`);
+        console.log(`AuthManager: constructor: userModel: ${JSON.stringify(userModel)}`);
         this.modules = []
         this.app = expressapp
 
