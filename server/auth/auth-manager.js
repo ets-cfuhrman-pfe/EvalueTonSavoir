@@ -14,8 +14,8 @@ class AuthManager{
 
         this.configs = configs ?? (new AuthConfig()).loadConfig()
         this.addModules()
-        this.registerAuths()
         this.simpleregister = userModel;
+        this.registerAuths()
     }
 
     getUserModel(){
@@ -41,6 +41,7 @@ class AuthManager{
     }
 
     async registerAuths(){
+        console.log(``);
         for(const module of this.modules){
             try{
                 module.registerAuth(this.app, this.simpleregister);
