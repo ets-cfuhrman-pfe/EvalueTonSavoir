@@ -91,42 +91,39 @@ const Share: React.FC = () => {
     };
 
     return (
-        <div className='quizImport'>
-
-            <div className='importHeader'>
-                <ReturnButton />
-
-                <div className='title'>Importer quiz: {quizTitle}</div>
-
-                <div className='dumb'></div>
+<div className='quizImport'>
+    <div className='importHeader'>
+        <ReturnButton />
+        <div className='titleContainer'>
+            <div className='mainTitle'>Importation du Quiz: {quizTitle}</div>
+            <div className='subTitle'>
+                Vous êtes sur le point d'importer le quiz <strong>{quizTitle}</strong>, choisissez un dossier dans lequel enregistrer ce nouveau quiz.
             </div>
-
-            <div className='editSection'>
-
-                <div>
-
-                    <NativeSelect
-                        id="select-folder"
-                        color="primary"
-                        value={selectedFolder}
-                        onChange={handleSelectFolder}
-                    >
-                        <option disabled value=""> Choisir un dossier... </option>
-
-                        {folders.map((folder: FolderType) => (
-                            <option value={folder._id} key={folder._id}> {folder.title} </option>
-                        ))}
-                    </NativeSelect>
-
-                    <Button variant="contained" onClick={handleQuizSave}>
-                        Enregistrer
-                    </Button>
-
-                </div>
-
-            </div>
-
         </div>
+        <div className='dumb'></div>
+    </div>
+
+    <div className='editSection'>
+        <div className='formContainer'>
+            <NativeSelect
+                id="select-folder"
+                color="primary"
+                value={selectedFolder}
+                onChange={handleSelectFolder}
+                className="folderSelect"
+            >
+                <option disabled value=""> Choisir un dossier... </option>
+                {folders.map((folder: FolderType) => (
+                    <option value={folder._id} key={folder._id}> {folder.title} </option>
+                ))}
+            </NativeSelect>
+
+            <Button variant="contained" onClick={handleQuizSave} className="saveButton">
+                Enregistrer
+            </Button>
+        </div>
+    </div>
+</div>
     );
 };
 
