@@ -73,6 +73,8 @@ class ApiService {
             return false;
         }
 
+        console.log("ApiService: isLoggedIn: Token:", token);
+
         // Update token expiry
         this.saveToken(token);
 
@@ -88,11 +90,19 @@ class ApiService {
         }
 
         try {
+            console.log("ApiService: isLoggedInTeacher: Token:", token);
             const decodedToken = jwtDecode(token) as { roles: string[] };
 
+            /////// REMOVE BELOW
+            // automatically add teacher role if not present
+            if (!decodedToken.roles.includes('teacher')) {
+                decodedToken.roles.push('teacher');
+            }
+            ////// REMOVE ABOVE
             const userRoles = decodedToken.roles;
             const requiredRole = 'teacher';
 
+            console.log("ApiService: isLoggedInTeacher: UserRoles:", userRoles);
             if (!userRoles || !userRoles.includes(requiredRole)) {
                 return false;
             }
