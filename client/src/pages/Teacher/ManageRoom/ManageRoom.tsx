@@ -105,7 +105,7 @@ const ManageRoom: React.FC = () => {
     };
 
     const createWebSocketRoom = () => {
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         const roomNameUpper = roomName.toUpperCase();
         setFormattedRoomName(roomNameUpper);
         console.log(`Creating WebSocket room named ${roomNameUpper}`);

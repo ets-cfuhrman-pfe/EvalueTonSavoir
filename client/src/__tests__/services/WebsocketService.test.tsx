@@ -38,7 +38,7 @@ describe('WebSocketService', () => {
 
     test('createRoom should emit create-room event', () => {
         const roomName = 'Test Room';
-        WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
         WebsocketService.createRoom(roomName);
         expect(mockSocket.emit).toHaveBeenCalledWith('create-room', roomName);
     });
