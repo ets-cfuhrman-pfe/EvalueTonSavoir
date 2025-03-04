@@ -32,7 +32,7 @@ class SimpleAuth {
                 email: req.body.email,
                 password: req.body.password,
                 roles: req.body.roles
-            }
+            };
             let user = await self.authmanager.register(userInfos)
             if (user) res.redirect("/login")
         }
@@ -52,11 +52,8 @@ class SimpleAuth {
                 error.statusCode = 400;
                 throw error;
             }
-    
-            const userModel = self.authmanager.getUserModel();
-            const user = userModel.login(email, password);
-    
-            await self.authmanager.login(user, req, res, next);
+            
+            await self.authmanager.loginSimple(email, password, req, res, next);
         } catch (error) {
             const statusCode = error.statusCode || 500;
             const message = error.message || "An internal server error occurred";

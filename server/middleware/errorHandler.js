@@ -1,4 +1,5 @@
 const AppError = require("./AppError");
+const fs = require('fs');
 
 const errorHandler = (error, req, res, _next) => {
     res.setHeader('Cache-Control', 'no-store');

@@ -53,20 +53,6 @@ class Users {
     return user;
   }
 
-  async login(userid) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
-
-    const userCollection = conn.collection("users");
-    const user = await userCollection.findOne({ _id: userid });
-
-    if (!user) {
-      return false;
-    }
-
-    return user;
-  }
-/*
   async login(email, password) {
     try {
       await this.db.connect();
@@ -95,7 +81,7 @@ class Users {
       throw error; 
     }
   }
-*/
+
   async resetPassword(email) {
     const newPassword = this.generatePassword();
 

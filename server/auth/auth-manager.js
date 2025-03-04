@@ -7,13 +7,15 @@ const AppError = require('../middleware/AppError.js');
 
 class AuthManager{
     constructor(expressapp,configs=null,userModel){
+        console.log(`AuthManager: constructor: configs: ${JSON.stringify(configs)}`);
+        console.log(`AuthManager: constructor: userModel: ${JSON.stringify(userModel)}`);
         this.modules = []
         this.app = expressapp
 
         this.configs = configs ?? (new AuthConfig()).loadConfig()
         this.addModules()
-        this.registerAuths()
         this.simpleregister = userModel;
+        this.registerAuths()
     }
 
     getUserModel(){
@@ -39,9 +41,10 @@ class AuthManager{
     }
 
     async registerAuths(){
+        console.log(``);
         for(const module of this.modules){
             try{
-                module.registerAuth(this.app)
+                module.registerAuth(this.app, this.simpleregister);
             } catch(error){
                 console.error(`L'enregistrement du module ${module} a échoué.`);
                 console.error(`Error: ${error} `);
@@ -56,7 +59,16 @@ class AuthManager{
         console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
     }
 
+    // eslint-disable-next-line no-unused-vars
+    async loginSimple(email,pswd,req,res,next){ //passport and simpleauth use next
+        const userInfo = await this.simpleregister.login(email, pswd);
+        const tokenToSave = jwt.create(userInfo.email, userInfo._id,userInfo.roles);
+        res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
+        console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
+    }
+
     async register(userInfos){
+        console.log(userInfos);
         if (!userInfos.email || !userInfos.password) {
             throw new AppError(MISSING_REQUIRED_PARAMETER);
         }

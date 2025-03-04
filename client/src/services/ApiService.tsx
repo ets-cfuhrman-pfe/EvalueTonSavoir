@@ -73,10 +73,83 @@ class ApiService {
             return false;
         }
 
+        console.log("ApiService: isLoggedIn: Token:", token);
+
         // Update token expiry
         this.saveToken(token);
 
         return true;
+    }
+
+    public isLoggedInTeacher(): boolean {
+        const token = this.getToken();
+
+
+        if (token == null) {
+            return false;
+        }
+
+        try {
+            console.log("ApiService: isLoggedInTeacher: Token:", token);
+            const decodedToken = jwtDecode(token) as { roles: string[] };
+
+            /////// REMOVE BELOW
+            // automatically add teacher role if not present
+            if (!decodedToken.roles.includes('teacher')) {
+                decodedToken.roles.push('teacher');
+            }
+            ////// REMOVE ABOVE
+            const userRoles = decodedToken.roles;
+            const requiredRole = 'teacher';
+
+            console.log("ApiService: isLoggedInTeacher: UserRoles:", userRoles);
+            if (!userRoles || !userRoles.includes(requiredRole)) {
+                return false;
+            }
+
+            // Update token expiry
+            this.saveToken(token);
+
+            return true;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            return false;
+        }
+    }
+
+    public saveUsername(username: string): void {
+        if (!username || username.length === 0) {
+            return;
+        }
+
+        const object = {
+            username: username
+        }
+
+        localStorage.setItem("username", JSON.stringify(object));
+    }
+
+    public getUsername(): string {
+        const objectStr = localStorage.getItem("username");
+        
+        if (!objectStr) {
+            return "";
+        }
+
+        const object = JSON.parse(objectStr)
+
+        return object.username;
+    }
+
+    // Route to know if rooms need authentication to join
+    public async getRoomsRequireAuth(): Promise<any> {
+        const url: string = this.constructRequestUrl(`/auth/getRoomsRequireAuth`);
+        const result: AxiosResponse = await axios.get(url);
+
+        if (result.status == 200) {
+            return result.data.roomsRequireAuth;
+        }
+        return false;
     }
 
     public logout(): void {
