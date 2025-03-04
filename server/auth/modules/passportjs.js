@@ -10,6 +10,7 @@ class PassportJs{
     }
 
     async registerAuth(expressapp, userModel){
+        console.log(`PassportJs: registerAuth: userModel: ${JSON.stringify(userModel)}`);
         expressapp.use(passport.initialize());
         expressapp.use(passport.session());
         
