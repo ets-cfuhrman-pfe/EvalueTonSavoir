@@ -21,20 +21,33 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     submitAnswer,
     disconnectWebSocket
 }) => {
+    //Ajouter type AnswerQuestionType en remplacement de QuestionType
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     // const [imageUrl, setImageUrl] = useState('');
 
-    // const previousQuestion = () => {
-    //     setQuestion(questions[Number(questionInfos.question?.id) - 2]);
-    //     setIsAnswerSubmitted(false);
-    // };
+    const previousQuestion = () => {
+        setQuestion(questions[Number(questionInfos.question?.id) - 2]);
+        setIsAnswerSubmitted(false);
+        
+    };
 
-    useEffect(() => {}, [questionInfos]);
+
+
+    useEffect(() => {        
+        const answer = localStorage.getItem(`Answer${questionInfos.question.id}`);
+        if (answer !== null) {
+            setIsAnswerSubmitted(true);
+        } else {
+            setIsAnswerSubmitted(false);
+
+        }
+    }, [questionInfos.question]);
 
     const nextQuestion = () => {
         setQuestion(questions[Number(questionInfos.question?.id)]);
         setIsAnswerSubmitted(false);
+        
     };
 
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
@@ -46,11 +59,13 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     return (
     <div className='room'>
     <div className='roomHeader'>
-
         <DisconnectButton
             onReturn={disconnectWebSocket}
             message={`Êtes-vous sûr de vouloir quitter?`} />
 
+    </div>
+    <div >
+    <b>Question {questionInfos.question.id}/{questions.length}</b>
     </div>
         <div className="overflow-auto">
             <div className="question-component-container">
@@ -67,30 +82,28 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
                     />
-                <div className="center-h-align mt-1/2">
-                    <div className="w-12">
-                        {/* <Button
-                            variant="outlined"
-                            onClick={previousQuestion}
-                            fullWidth
-                            startIcon={<ChevronLeft />}
-                            disabled={Number(questionInfos.question.id) <= 1}
-                            >
-                            Question précédente
-                        </Button> */}
-                    </div>
-                    <div className="w-12">
-                        <Button style={{ display: isAnswerSubmitted ? 'block' : 'none' }}
-                            variant="outlined"
-                            onClick={nextQuestion}
-                            fullWidth
-                            //endIcon={<ChevronRight />}
-                            disabled={Number(questionInfos.question.id) >= questions.length}
-                            >
-                            Question suivante
-                        </Button>
-                    </div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
+                <div>
+                    <Button
+                        variant="outlined"
+                        onClick={previousQuestion}
+                        fullWidth
+                        disabled={Number(questionInfos.question.id) <= 1}
+                    >
+                        Question précédente
+                    </Button>
                 </div>
+                <div>
+                    <Button
+                        variant="outlined"
+                        onClick={nextQuestion}
+                        fullWidth
+                        disabled={Number(questionInfos.question.id) >= questions.length}
+                    >
+                        Question suivante
+                    </Button>
+                </div>
+            </div>
             </div>
         </div>
     </div>
