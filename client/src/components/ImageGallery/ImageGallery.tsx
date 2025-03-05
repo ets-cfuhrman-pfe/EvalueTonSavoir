@@ -67,8 +67,9 @@ const ImageDialog: React.FC<Props> = ({ galleryOpen, admin, setDialogOpen, setIm
   };
 
   const onCopy = (id: string) => {
+    const escLink = 'http://localhost:4400/api/image/get/'+id;
     setCopiedId(id);
-    setImageLinks(prevLinks => [...prevLinks, id]);
+    setImageLinks(prevLinks => [...prevLinks, escLink]);
   };
 
   const handleNextPage = () => {
