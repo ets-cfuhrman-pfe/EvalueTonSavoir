@@ -48,13 +48,17 @@ class Images {
 
         const imagesCollection = conn.collection('images');
 
-        const result = await imagesCollection.find({}).sort({created_at: 1}).toArray();
+        
+        const total = await imagesCollection.countDocuments(); // Efficient total count
+        if (!total || total === 0) return { images: [], total };
 
-        if (!result) return null;
+        const result = await imagesCollection.find({})
+        .sort({ created_at: 1 }) // Ensure 'created_at' is indexed
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray();
 
-        const total = result.length;
-
-        const objImages = result.slice((page - 1) * limit, page * limit).map(image => ({
+        const objImages = result.map(image => ({
             id: image._id,
             user: image.userId,
             file_name: image.file_name,

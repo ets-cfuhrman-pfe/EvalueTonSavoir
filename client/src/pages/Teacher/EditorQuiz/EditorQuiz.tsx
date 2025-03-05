@@ -13,11 +13,11 @@ import { QuizType } from '../../../Types/QuizType';
 import './editorQuiz.css';
 import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
+import ImageGallery from 'src/components/ImageGallery/ImageGallery';
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { Upload, ImageSearch } from '@mui/icons-material';
-import { Images } from '../../../Types/Images';
 
 interface EditQuizParams {
     id: string;
@@ -43,10 +43,6 @@ const QuizForm: React.FC = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
-    const [images, setImages] = useState<Images[]>([]);
-    const [totalImg, setTotalImg] = useState(0);
-    const [imgPage, setImgPage] = useState(1);
-    const [imgLimit] = useState(5);
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -75,19 +71,9 @@ const QuizForm: React.FC = () => {
         }
     };
 
-    const fetchImages = async (page: number , limit: number) => {
-        const data = await ApiService.getImages(page, limit);
-        const imgs = data.images;
-        const total = data.total;
-        
-        setImages(imgs as Images[]);
-        setTotalImg(total);
-    }
-
     useEffect(() => {
         const fetchData = async () => {
             const userFolders = await ApiService.getUserFolders();
-            fetchImages(1, imgLimit);
             setFolders(userFolders as FolderType[]);
         };
 
@@ -220,13 +206,13 @@ const QuizForm: React.FC = () => {
     const handleCopyToClipboard = async (link: string) => {
         navigator.clipboard.writeText(link);
     }
+    
+    const handleCopy = (imgId: string) => {
+        setImageLinks(prevLinks => [...prevLinks, imgId]);
+        console.log(imgId);
+    };
 
-    const handleMoreImages = async () => {
-        let page = imgPage;
-        page += 1;
-        setImgPage(page);
-        fetchImages(imgPage, imgLimit);
-    }
+    
 
     return (
         <div className='quizEditor'>
@@ -321,40 +307,14 @@ const QuizForm: React.FC = () => {
                                     Images <ImageSearch /> 
                                 </Button>
 
-                            <Dialog
-                                open={galleryOpen}
-                                onClose={() => setDialogOpen(false)} >
-                                <DialogTitle>Images disponibles</DialogTitle>
-                                <DialogContent>
-
-                                    <div className="grid grid-cols-3 gap-4 p-4">
-                                      {images.map((obj: Images, index) => (
-                                        <div key={obj.id}>
-                                        <img
-                                          key={index}
-                                          src={`data:${obj.mime_type};base64,${obj.file_content}`}
-                                          alt={`Image ${obj.file_name + 1}`}
-                                          className="w-full h-auto rounded-lg shadow-md"
-                                        />
-                                        {`lien: ${obj.id}`}
-                                        </div>
-                                      ))}
-                                    </div>
-                                </DialogContent>
-                                <DialogActions>
-                                    {
-                                        totalImg > 10 ? 
-                                        <Button onClick={() => handleMoreImages()} color="primary">
-                                            Plus
-                                        </Button>
-                                        : 
-                                        <Button onClick={() => setDialogOpen(false)} color="primary">
-                                            OK
-                                        </Button>
-                                        
-                                    }
-                                </DialogActions>
-                            </Dialog>
+                                <ImageGallery 
+                                    galleryOpen={galleryOpen}
+                                    setDialogOpen={setGalleryOpen}
+                                    admin={false}
+                                    setImageLinks={setImageLinks}
+                                    >
+                                </ImageGallery>
+                                
                         <div>
                                 <div>
                                 <div style={{ display: "inline" }}>(Voir section </div>
