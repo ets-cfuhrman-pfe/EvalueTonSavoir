@@ -14,8 +14,13 @@ class AuthService {
 
     async fetchAuthData(){
         try {
+            // console.info(`MODE: ${ENV_VARIABLES.MODE}`);
+            // if (ENV_VARIABLES.MODE === 'development') {
+            //     return { authActive: true };
+            // }
             const response = await fetch(this.constructRequestUrl('/auth/getActiveAuth'));
             const data = await response.json();
+            console.log('Data:', JSON.stringify(data));
             return data.authActive;
         } catch (error) {
             console.error('Erreur lors de la récupération des données d\'auth:', error);

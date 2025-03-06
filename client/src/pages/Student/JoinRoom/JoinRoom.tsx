@@ -39,17 +39,20 @@ const JoinRoom: React.FC = () => {
         console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
 
-        socket.on('join-success', () => {
+        socket.on('join-success', (roomJoinedName) => {
             setIsWaitingForTeacher(true);
             setIsConnecting(false);
-            console.log('Successfully joined the room.');
+            console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
         });
         socket.on('next-question', (question: QuestionType) => {
+            console.log('on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
+            console.log('on(launch-student-mode): Received launch-student-mode:', questions);
+
             setQuizMode('student');
             setIsWaitingForTeacher(false);
             setQuestions(questions);
@@ -98,6 +101,8 @@ const JoinRoom: React.FC = () => {
         }
 
         if (username && roomName) {
+            console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
+
             webSocketService.joinRoom(roomName, username);
         }
     };
@@ -168,12 +173,12 @@ const JoinRoom: React.FC = () => {
                     error={connectionError}>
 
                     <TextField
-                        type="number"
-                        label="Numéro de la salle"
+                        type="text"
+                        label="Nom de la salle"
                         variant="outlined"
                         value={roomName}
-                        onChange={(e) => setRoomName(e.target.value)}
-                        placeholder="Numéro de la salle"
+                        onChange={(e) => setRoomName(e.target.value.toUpperCase())}
+                        placeholder="Nom de la salle"
                         sx={{ marginBottom: '1rem' }}
                         fullWidth={true}
                         onKeyDown={handleReturnKey}

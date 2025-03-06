@@ -90,6 +90,6 @@ describe('LiveResultsTableBody', () => {
             />
         );
 
-        expect(screen.getAllByText('******').length).toBe(2);
+        expect(screen.getAllByText('******')).toHaveLength(2);
     });
 });

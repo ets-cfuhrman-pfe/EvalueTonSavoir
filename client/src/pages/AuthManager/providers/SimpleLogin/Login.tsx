@@ -25,6 +25,7 @@ const SimpleLogin: React.FC = () => {
     }, []);
 
     const login = async () => {
+        console.log(`SimpleLogin: login: email: ${email}, password: ${password}`);
         const result = await ApiService.login(email, password);
         if (result !== true) {
             setConnectionError(result);
@@ -71,9 +72,10 @@ const SimpleLogin: React.FC = () => {
 
             <div className="login-links">
 
-                <Link to="/resetPassword">
-                    Réinitialiser le mot de passe
-                </Link>
+                
+                {/* <Link to="/resetPassword"> */}
+                    <del>Réinitialiser le mot de passe</del>
+                {/* </Link> */}
 
                 <Link to="/register">
                     Créer un compte
