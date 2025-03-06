@@ -15,9 +15,11 @@ import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
+import ApiService from '../../../services/ApiService'
+
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(ApiService.getUsername());
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isWaitingForTeacher, setIsWaitingForTeacher] = useState(false);
     const [question, setQuestion] = useState<QuestionType>();
@@ -34,8 +36,8 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     const handleCreateSocket = () => {
-        console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_SOCKET_URL}`);
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
+        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
 
         socket.on('join-success', () => {
             setIsWaitingForTeacher(true);
@@ -111,6 +113,12 @@ const JoinRoom: React.FC = () => {
         webSocketService.submitAnswer(answerData);
     };
 
+    const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && username && roomName) {
+            handleSocket();
+        }
+    };
+
     if (isWaitingForTeacher) {
         return (
             <div className='room'>
@@ -167,7 +175,8 @@ const JoinRoom: React.FC = () => {
                         onChange={(e) => setRoomName(e.target.value)}
                         placeholder="Numéro de la salle"
                         sx={{ marginBottom: '1rem' }}
-                        fullWidth
+                        fullWidth={true}
+                        onKeyDown={handleReturnKey}
                     />
 
                     <TextField
@@ -177,7 +186,8 @@ const JoinRoom: React.FC = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Nom d'utilisateur"
                         sx={{ marginBottom: '1rem' }}
-                        fullWidth
+                        fullWidth={true}
+                        onKeyDown={handleReturnKey}
                     />
 
                     <LoadingButton
