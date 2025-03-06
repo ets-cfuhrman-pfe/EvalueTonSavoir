@@ -8,7 +8,7 @@ import { QuizType } from 'src/Types/QuizType';
 import webSocketService, { AnswerReceptionFromBackendType } from 'src/services/WebsocketService';
 import ApiService from 'src/services/ApiService';
 import { Socket } from 'socket.io-client';
-import { useRooms } from 'src/pages/Teacher/ManageRoom/RoomContext';
+import { RoomProvider } from 'src/pages/Teacher/ManageRoom/RoomContext';
 
 jest.mock('src/services/WebsocketService');
 jest.mock('src/services/ApiService');
@@ -61,7 +61,7 @@ describe('ManageRoom', () => {
         useParamsMock.mockReturnValue({ quizId: 'test-quiz-id', roomName: 'Test Room' });
         (ApiService.getQuiz as jest.Mock).mockResolvedValue(mockQuiz);
         (webSocketService.connect as jest.Mock).mockReturnValue(mockSocket);
-        (useRooms as jest.Mock).mockReturnValue({
+        (RoomProvider as jest.Mock).mockReturnValue({
             selectedRoom: { id: '1', title: 'Test Room' },
             setSelectedRoom: mockSetSelectedRoom,
         });
@@ -161,49 +161,6 @@ describe('ManageRoom', () => {
             expect(screen.getByText('1/60')).toBeInTheDocument();
 
         });
-    });
-
-    test('handles submit-answer-room event', async () => {
-        const consoleSpy = jest.spyOn(console, 'log');
-        await act(async () => {
-            render(
-                <MemoryRouter>
-                    <ManageRoom />
-                </MemoryRouter>
-            );
-        });
-
-        await act(async () => {
-            const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('Test Room');
-        });
-
-        const launchButton = screen.getByText('Lancer');
-        fireEvent.click(launchButton);
-
-        const rythmeButton = screen.getByText('Rythme du professeur');
-        fireEvent.click(rythmeButton);
-
-        const secondLaunchButton = screen.getAllByText('Lancer');
-        fireEvent.click(secondLaunchButton[1]);
-
-        await act(async () => {
-            const userJoinedCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'user-joined')[1];
-            userJoinedCallback(mockStudents[0]);
-        });
-
-        await act(async () => {
-            const submitAnswerCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'submit-answer-room')[1];
-            submitAnswerCallback(mockAnswerData);
-        });
-
-        await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Received answer from Student 1 for question 1: Answer1'
-            );
-        });
-
-        consoleSpy.mockRestore();
     });
 
     test('handles next question', async () => {

@@ -25,6 +25,7 @@ const SimpleLogin: React.FC = () => {
     }, []);
 
     const login = async () => {
+        console.log(`SimpleLogin: login: email: ${email}, password: ${password}`);
         const result = await ApiService.login(email, password);
         if (result !== true) {
             setConnectionError(result);

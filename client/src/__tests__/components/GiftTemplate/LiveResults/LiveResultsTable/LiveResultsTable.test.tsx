@@ -88,10 +88,10 @@ describe('LiveResultsTable', () => {
         //50% because only one of the two questions have been answered (getALLByText, because there are a value 50% for the %reussite de la question
         // and a second one for the student grade)
         const gradeElements = screen.getAllByText('50 %');
-        expect(gradeElements.length).toBe(2);
+        expect(gradeElements).toHaveLength(2);
 
         const gradeElements2 = screen.getAllByText('0 %');
-        expect(gradeElements2.length).toBe(2);    });
+        expect(gradeElements2).toHaveLength(2);    });
 
     test('calculates and displays class average', () => {
         render(
