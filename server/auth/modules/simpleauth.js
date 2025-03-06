@@ -26,6 +26,7 @@ class SimpleAuth {
     }
 
     async register(self, req, res) {
+        console.log(`simpleauth.js.register: ${JSON.stringify(req.body)}`);
         try {
             let userInfos = {
                 name: req.body.name,
@@ -34,7 +35,11 @@ class SimpleAuth {
                 roles: req.body.roles
             };
             let user = await self.authmanager.register(userInfos)
-            if (user) res.redirect("/login")
+            if (user) {
+                return res.status(200).json({
+                    message: 'User created'
+                });
+            }
         }
         catch (error) {
             return res.status(400).json({

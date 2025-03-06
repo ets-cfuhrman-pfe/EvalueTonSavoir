@@ -165,6 +165,7 @@ class ApiService {
      * @returns A error string if unsuccessful,
      */
     public async register(name: string, email: string, password: string, roles: string[]): Promise<any> {
+        console.log(`ApiService.register: name: ${name}, email: ${email}, password: ${password}, roles: ${roles}`);
         try {
 
             if (!email || !password) {
@@ -179,7 +180,8 @@ class ApiService {
 
             console.log(result);
             if (result.status == 200) {
-                window.location.href = result.request.responseURL;
+                //window.location.href = result.request.responseURL;
+                window.location.href = '/login';
             }
             else {
                 throw new Error(`La connexion a échoué. Status: ${result.status}`);
