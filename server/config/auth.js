@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const pathAuthConfig = './auth_config.json';
+// set pathAuthConfig to './auth_config-development.json' if NODE_ENV is set to development
+const pathAuthConfig = process.env.NODE_ENV === 'development' ? './auth_config-development.json' : './auth_config.json';
 
 const configPath = path.join(process.cwd(), pathAuthConfig);
 
