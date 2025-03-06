@@ -77,7 +77,7 @@ const App: React.FC = () => {
                             element={isTeacherAuthenticated ? <QuizForm /> : <Navigate to="/login" />}
                         />
                         <Route
-                            path="/teacher/manage-room/:id"
+                            path="/teacher/manage-room/:quizId/:roomName"
                             element={isTeacherAuthenticated ? <ManageRoom /> : <Navigate to="/login" />}
                         />
 
