@@ -157,6 +157,7 @@ describe(
         },
       };
       authConfigInstance.loadConfigTest(validModule); // On injecte la configuration mockée
+      // TODO new AuthManager(...) essaie d'établir une connexion MongoDB et ça laisse un "open handle" dans Jest 
       authmanagerInstance = new AuthManager(expressMock,authConfigInstance.config);
       authmanagerInstance.getUserModel();
       expect(logSpy).toHaveBeenCalledTimes(0);
