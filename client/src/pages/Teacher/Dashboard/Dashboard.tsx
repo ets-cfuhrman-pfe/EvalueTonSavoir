@@ -89,7 +89,9 @@ const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!ApiService.isLoggedIn()) {
+            const isLoggedIn = await ApiService.isLoggedIn();
+            console.log(`Dashboard: isLoggedIn: ${isLoggedIn}`);
+            if (!isLoggedIn) {
                 navigate('/teacher/login');
                 return;
             } else {
@@ -247,10 +249,8 @@ const Dashboard: React.FC = () => {
         // Otherwise the quiz is invalid
         for (let i = 0; i < questions.length; i++) {
             try {
-                // questions[i] = QuestionService.ignoreImgTags(questions[i]);
                 const parsedItem = parse(questions[i]);
                 Template(parsedItem[0]);
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
                 console.error('Error parsing question:', error);
                 return false;

@@ -12,10 +12,11 @@ class AuthConfig {
   // Méthode pour lire le fichier de configuration JSON
   loadConfig() {
     try {
+      console.info(`Chargement du fichier de configuration: ${configPath}`);
       const configData = fs.readFileSync(configPath, 'utf-8');
       this.config = JSON.parse(configData);
     } catch (error) {
-      console.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mit de fichier de configuration.");
+      console.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mis de fichier de configuration.");
       this.config = {};
       throw error;
     }
@@ -139,6 +140,8 @@ class AuthConfig {
 
   // Méthode pour retourner la configuration des fournisseurs PassportJS pour le frontend
   getActiveAuth() {
+    console.log(`getActiveAuth: this.config: ${JSON.stringify(this.config)}`);
+    console.log(`getActiveAuth: this.config.auth: ${JSON.stringify(this.config.auth)}`);
     if (this.config && this.config.auth) {
       const passportConfig = {};
 

@@ -44,6 +44,7 @@ class SimpleAuth {
     }
 
     async authenticate(self, req, res, next) {
+        console.log(`authenticate: ${JSON.stringify(req.body)}`);
         try {
             const { email, password } = req.body;
     
@@ -54,6 +55,7 @@ class SimpleAuth {
             }
             
             await self.authmanager.loginSimple(email, password, req, res, next);
+            // return res.status(200).json({ message: 'Logged in' });
         } catch (error) {
             const statusCode = error.statusCode || 500;
             const message = error.message || "An internal server error occurred";

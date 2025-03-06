@@ -200,15 +200,12 @@ class ApiService {
         }
     }
 
-    /**
-     * @returns true if  successful 
-     * @returns A error string if unsuccessful,
-     */
-    /**
+/**
  * @returns true if successful
  * @returns An error string if unsuccessful
  */
 public async login(email: string, password: string): Promise<any> {
+    console.log(`login: email: ${email}, password: ${password}`);
     try {
         if (!email || !password) {
             throw new Error("L'email et le mot de passe sont requis.");
@@ -218,11 +215,16 @@ public async login(email: string, password: string): Promise<any> {
         const headers = this.constructRequestHeaders();
         const body = { email, password };
 
+        console.log(`login: POST ${url} body: ${JSON.stringify(body)}`);
         const result: AxiosResponse = await axios.post(url, body, { headers: headers });
+        console.log(`login: result: ${result.status}, ${result.data}`);
 
         // If login is successful, redirect the user
         if (result.status === 200) {
-            window.location.href = result.request.responseURL;
+            //window.location.href = result.request.responseURL;
+            this.saveToken(result.data.token);
+            this.saveUsername(result.data.username);
+            window.location.href = '/teacher/dashboard';
             return true;
         } else {
             throw new Error(`La connexion a échoué. Statut: ${result.status}`);
