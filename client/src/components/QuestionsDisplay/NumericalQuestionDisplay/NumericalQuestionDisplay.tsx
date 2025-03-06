@@ -1,25 +1,56 @@
 // NumericalQuestion.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
+import { StudentType } from 'src/Types/StudentType';
 
 interface Props {
     question: NumericalQuestion;
     handleOnSubmitAnswer?: (answer: number) => void;
     showAnswer?: boolean;
+    students?: StudentType[];
+    isDisplayOnly?: boolean;
 }
 
 const NumericalQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly } =
         props;
 
     const [answer, setAnswer] = useState<number>();
 
     const correctAnswers = question.choices;
     let correctAnswer = '';
+
+    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+    const [correctAnswerRate, setCorrectAnswerRate] = useState<number>(0);
+
+    const toggleShowCorrectAnswers = () => {
+        setShowCorrectAnswers(!showCorrectAnswers);
+    };
+
+    useEffect(() => {
+        if (showCorrectAnswers && students) {
+            calculateCorrectAnswerRate();
+        }
+    }, [showCorrectAnswers, students]);
+
+    const calculateCorrectAnswerRate = () => {
+        if (!students || students.length === 0) {
+            setCorrectAnswerRate(0); // Safeguard against undefined or empty student array
+            return;
+        }
+
+        const totalSubmissions = students.length;
+        const correctSubmissions = students.filter(student =>
+            student.answers.some(ans =>
+                ans.idQuestion === Number(question.id) && ans.isCorrect
+            )
+        ).length;
+        setCorrectAnswerRate((correctSubmissions / totalSubmissions) * 100);
+    };
 
     //const isSingleAnswer = correctAnswers.length === 1;
 
@@ -80,6 +111,34 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                             Répondre
                         </Button>
                     )}
+                </>
+            )}
+
+            
+            {isDisplayOnly && (
+                <>
+                    <div style={{ marginTop: '10px' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={toggleShowCorrectAnswers}
+                            color="primary"
+                        >
+                            {showCorrectAnswers ? "Masquer les résultats" : "Afficher les résultats"}
+                        </Button>
+                    </div>
+                    <div style={{
+                        visibility: showCorrectAnswers ? 'visible' : 'hidden'
+                    }}>
+                        <div>
+                            Taux de réponse correcte:
+                        </div>
+                        <div className="progress-bar-container">
+                            <div className="progress-bar-fill" style={{ width: `${correctAnswerRate}%` }}></div>
+                            <div className="progress-bar-text">
+                                {correctAnswerRate.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
                 </>
             )}
         </div>

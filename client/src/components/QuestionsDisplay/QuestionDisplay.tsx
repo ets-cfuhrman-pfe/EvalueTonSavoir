@@ -7,15 +7,21 @@ import NumericalQuestionDisplay from './NumericalQuestionDisplay/NumericalQuesti
 import ShortAnswerQuestionDisplay from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplay';
 // import useCheckMobileScreen from '../../services/useCheckMobileScreen';
 
+import { StudentType } from '../../Types/StudentType';
+
 interface QuestionProps {
     question: Question;
     handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
+    students?: StudentType[];
+    isDisplayOnly?: boolean;
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    students,
+    isDisplayOnly = false
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
@@ -30,6 +36,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    isDisplayOnly={isDisplayOnly}
                 />
             );
             break;
@@ -39,6 +47,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    isDisplayOnly={isDisplayOnly}
                 />
             );
             break;
@@ -50,6 +60,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            students={students}
+                            isDisplayOnly={isDisplayOnly}
                         />
                     );
                 } else {
@@ -58,6 +70,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            students={students}
+                            isDisplayOnly={isDisplayOnly}
                         />
                     );
                 }
@@ -69,6 +83,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    isDisplayOnly={isDisplayOnly}
                 />
             );
             break;

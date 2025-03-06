@@ -485,6 +485,8 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
+                                        students={students}
+                                        isDisplayOnly={true}
                                     />
                                 )}
 
