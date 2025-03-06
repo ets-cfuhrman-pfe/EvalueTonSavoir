@@ -72,9 +72,10 @@ const SimpleLogin: React.FC = () => {
 
             <div className="login-links">
 
-                <Link to="/resetPassword">
-                    Réinitialiser le mot de passe
-                </Link>
+                
+                {/* <Link to="/resetPassword"> */}
+                    <del>Réinitialiser le mot de passe</del>
+                {/* </Link> */}
 
                 <Link to="/register">
                     Créer un compte
