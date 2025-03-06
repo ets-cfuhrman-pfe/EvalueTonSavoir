@@ -16,6 +16,7 @@ class AuthManager{
         this.addModules()
         this.simpleregister = userModel;
         this.registerAuths()
+        console.log(`AuthManager: constructor: this.configs: ${JSON.stringify(this.configs)}`);
     }
 
     getUserModel(){
@@ -54,17 +55,22 @@ class AuthManager{
 
     // eslint-disable-next-line no-unused-vars
     async login(userInfo,req,res,next){ //passport and simpleauth use next
-        const tokenToSave = jwt.create(userInfo.email, userInfo._id,userInfo.roles);
+        const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
         res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
         console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
     }
 
     // eslint-disable-next-line no-unused-vars
     async loginSimple(email,pswd,req,res,next){ //passport and simpleauth use next
+        console.log(`auth-manager: loginSimple: email: ${email}, pswd: ${pswd}`);
         const userInfo = await this.simpleregister.login(email, pswd);
-        const tokenToSave = jwt.create(userInfo.email, userInfo._id,userInfo.roles);
-        res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
-        console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
+        console.log(`auth-manager: loginSimple: userInfo: ${JSON.stringify(userInfo)}`);
+        userInfo.roles = ['teacher']; // hard coded role
+        const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
+        console.log(`auth-manager: loginSimple: tokenToSave: ${tokenToSave}`);
+        //res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.email}`);
+        res.status(200).json({token: tokenToSave});
+        console.info(`L'utilisateur '${userInfo.email}' vient de se connecter`)
     }
 
     async register(userInfos){

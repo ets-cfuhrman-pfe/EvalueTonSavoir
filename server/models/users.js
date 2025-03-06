@@ -54,6 +54,7 @@ class Users {
   }
 
   async login(email, password) {
+    console.log(`models/users: login: email: ${email}, password: ${password}`);
     try {
       await this.db.connect();
       const conn = this.db.getConnection();
@@ -74,7 +75,7 @@ class Users {
         error.statusCode = 401; 
         throw error;
       }
-
+      console.log(`models/users: login: FOUND user: ${JSON.stringify(user)}`);
       return user;
     } catch (error) {
       console.error(error);

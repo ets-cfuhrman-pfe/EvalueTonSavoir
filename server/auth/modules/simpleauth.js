@@ -26,6 +26,7 @@ class SimpleAuth {
     }
 
     async register(self, req, res) {
+        console.log(`simpleauth.js.register: ${JSON.stringify(req.body)}`);
         try {
             let userInfos = {
                 name: req.body.name,
@@ -34,7 +35,11 @@ class SimpleAuth {
                 roles: req.body.roles
             };
             let user = await self.authmanager.register(userInfos)
-            if (user) res.redirect("/login")
+            if (user) {
+                return res.status(200).json({
+                    message: 'User created'
+                });
+            }
         }
         catch (error) {
             return res.status(400).json({
@@ -44,6 +49,7 @@ class SimpleAuth {
     }
 
     async authenticate(self, req, res, next) {
+        console.log(`authenticate: ${JSON.stringify(req.body)}`);
         try {
             const { email, password } = req.body;
     
@@ -54,6 +60,7 @@ class SimpleAuth {
             }
             
             await self.authmanager.loginSimple(email, password, req, res, next);
+            // return res.status(200).json({ message: 'Logged in' });
         } catch (error) {
             const statusCode = error.statusCode || 500;
             const message = error.message || "An internal server error occurred";
