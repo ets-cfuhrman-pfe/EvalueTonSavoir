@@ -20,7 +20,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-    const [answer, setAnswer] = useState<string | number | boolean>('');
+    const [answer, setAnswer] = useState<string | number | boolean>();
 
 
     useEffect(() => {
@@ -28,7 +28,8 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
         handleFeedbackDialogClose();
         setIsAnswerSubmitted(false);
         setAnswer(JSON.parse(localStorage.getItem(`Answer${questionInfos.question.id}`)||'null'));
-        if (typeof answer !== "object") {
+        console.log("LA REP",typeof answer);
+        if (typeof answer !== "object" && typeof answer !== "undefined") {
             setIsAnswerSubmitted(true);
             setIsFeedbackDialogOpen(true);
         }

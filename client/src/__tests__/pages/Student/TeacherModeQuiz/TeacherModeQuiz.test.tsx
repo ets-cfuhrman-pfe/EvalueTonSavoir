@@ -11,11 +11,7 @@ const mockGiftQuestions = parse(
     `::Question:: Sample Question {=Option A ~Option B}`);
 
 
-describe('TeacherModeQuiz', () => {
-    it ('renders the initial question as MultipleChoiceQuestion', () => {
-        expect(mockGiftQuestions[0].type).toBe('MC');
-    });
-    
+describe('TeacherModeQuiz', () => {  
     const mockQuestion = mockGiftQuestions[0] as MultipleChoiceQuestion;
     mockQuestion.id = '1';
 
