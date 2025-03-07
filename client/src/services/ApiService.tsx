@@ -66,16 +66,6 @@ class ApiService {
         return object.token;
     }
 
-    private getUserID(): string | null {
-        const objStr = localStorage.getItem("uid");
-
-        if (!objStr) {
-            return null;
-        }
-
-        return objStr;
-    }
-
     public isLoggedIn(): boolean {
         const token = this.getToken()
 

@@ -206,13 +206,6 @@ const QuizForm: React.FC = () => {
     const handleCopyToClipboard = async (link: string) => {
         navigator.clipboard.writeText(link);
     }
-    
-    const handleCopy = (imgId: string) => {
-        setImageLinks(prevLinks => [...prevLinks, imgId]);
-        console.log(imgId);
-    };
-
-    
 
     return (
         <div className='quizEditor'>
