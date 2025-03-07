@@ -22,12 +22,13 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     }
 
     useEffect(() => {
+        console.log("passedAnswer", answer);
                 if (passedAnswer === true || passedAnswer === false) {
                     setAnswer(passedAnswer);
                 } else {
                     setAnswer(undefined);
                 }
-            }, [passedAnswer]);
+            }, [passedAnswer, question.id]);
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
 
@@ -94,6 +95,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     variant="contained"
                     onClick={() =>
                         answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+
                     }
                     disabled={answer === undefined}
                 >

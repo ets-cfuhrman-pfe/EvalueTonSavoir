@@ -28,7 +28,6 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
         handleFeedbackDialogClose();
         setIsAnswerSubmitted(false);
         setAnswer(JSON.parse(localStorage.getItem(`Answer${questionInfos.question.id}`)||'null'));
-        console.log("LA REP",typeof answer);
         if (typeof answer !== "object" && typeof answer !== "undefined") {
             setIsAnswerSubmitted(true);
             setIsFeedbackDialogOpen(true);
