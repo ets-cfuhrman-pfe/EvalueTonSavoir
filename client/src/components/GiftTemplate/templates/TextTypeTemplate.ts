@@ -16,8 +16,8 @@ function formatLatex(text: string): string {
         .replace(/\\\((.*?)\\\)/g, (_, inner) =>
             katex.renderToString(inner, { displayMode: false })
         );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+        console.log('Error rendering LaTeX (KaTeX):', error);
         renderedText = text;
     }
 

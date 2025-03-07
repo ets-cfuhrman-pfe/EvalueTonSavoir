@@ -9,23 +9,27 @@ import './studentWaitPage.css';
 interface Props {
     students: StudentType[];
     launchQuiz: () => void;
-    setQuizMode: (mode: 'student' | 'teacher') => void;
+    setQuizMode: (_mode: 'student' | 'teacher') => void;
 }
 
 const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode }) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const handleLaunchClick = () => {
+        setIsDialogOpen(true);
+    };
 
     return (
         <div className="wait">
             <div className='button'>
                 <Button
                     variant="contained"
-                    onClick={() => setIsDialogOpen(true)}
+                    onClick={handleLaunchClick}
                     startIcon={<PlayArrow />}
                     fullWidth
                     sx={{ fontWeight: 600, fontSize: 20 }}
                 >
-                    Lancer
+                    Lancer 
                 </Button> 
             </div>
 
