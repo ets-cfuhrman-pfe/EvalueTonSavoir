@@ -14,7 +14,7 @@ interface Props {
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || ' ');
+    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
 
 
     let disableButton = false;
@@ -33,8 +33,8 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     };
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
-    
     return (
+
         <div className="question-container">
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -43,7 +43,6 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
-                    console.log("dsa", selected)
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">
                             <Button
@@ -81,7 +80,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     onClick={() =>
                         answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                     }
-                    disabled={answer === ''}
+                    disabled={answer === '' || answer === null}
                 >
                     Répondre
                     
