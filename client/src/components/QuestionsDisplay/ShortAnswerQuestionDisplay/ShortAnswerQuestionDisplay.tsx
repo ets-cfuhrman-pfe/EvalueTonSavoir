@@ -13,15 +13,17 @@ interface Props {
 }
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
+
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || ' ');
+    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
     
     useEffect(() => {
     if (passedAnswer !== undefined) {
         setAnswer(passedAnswer);
     }
     }, [passedAnswer]);
-    
+    console.log("Answer" , answer);
+
     return (
         <div className="question-wrapper">
             <div className="question content">

@@ -22,8 +22,6 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
     const [answer, setAnswer] = useState<string | number | boolean>('');
 
-    console.log("Answer" , answer);
-
 
     useEffect(() => {
         // Close the feedback dialog when the question changes
