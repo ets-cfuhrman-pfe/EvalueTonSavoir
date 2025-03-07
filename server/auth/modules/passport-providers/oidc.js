@@ -24,8 +24,8 @@ class PassportOpenIDConnect {
         try {
             const received_user = {
                 auth_id: profile.id,
-                email: profile.emails[0].value.toLowerCase(),
-                name: profile.name.displayName,
+                email: profile.emails[0].value,
+                name: profile.name.givenName,
                 roles: []
             };
 
