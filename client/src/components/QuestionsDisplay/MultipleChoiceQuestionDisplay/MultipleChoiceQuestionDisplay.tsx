@@ -1,5 +1,5 @@
 // MultipleChoiceQuestionDisplay.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
@@ -14,29 +14,42 @@ interface Props {
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
-    
+    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || ' ');
+
+
+    let disableButton = false;
+    if(handleOnSubmitAnswer === undefined){
+        disableButton = true;
+    }
+
+    useEffect(() => {
+    if (passedAnswer !== undefined) {
+        setAnswer(passedAnswer);
+    }
+    }, [passedAnswer]);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer(choice);
     };
-
-
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
+    
     return (
         <div className="question-container">
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
+                
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
+                    console.log("dsa", selected)
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">
                             <Button
                                 variant="text"
                                 className="button-wrapper"
+                                disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
                                 {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
                                 :``}

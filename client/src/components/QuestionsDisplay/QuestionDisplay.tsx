@@ -12,6 +12,7 @@ interface QuestionProps {
     handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
     answer?: string | number | boolean;
+
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
@@ -37,6 +38,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
             );
             break;
         case 'MC':
+            
             questionTypeComponent = (
                 <MultipleChoiceQuestionDisplay
                     question={question}
@@ -48,23 +50,15 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
             break;
         case 'Numerical':
             if (question.choices) {
-                if (!Array.isArray(question.choices)) {
                     questionTypeComponent = (
                         <NumericalQuestionDisplay
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            passedAnswer={answer}
+                            
                         />
                     );
-                } else {
-                    questionTypeComponent = (  // TODO fix NumericalQuestion (correctAnswers is borked)
-                        <NumericalQuestionDisplay
-                            question={question}
-                            handleOnSubmitAnswer={handleOnSubmitAnswer}
-                            showAnswer={showAnswer}
-                        />
-                    );
-                }
             }
             break;
         case 'Short':
@@ -73,6 +67,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;

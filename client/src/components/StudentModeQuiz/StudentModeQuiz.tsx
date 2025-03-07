@@ -3,10 +3,8 @@ import React, { useEffect, useState } from 'react';
 import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
 import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
-// import { QuestionService } from '../../services/QuestionService';
 import { Button } from '@mui/material';
 //import QuestionNavigation from '../QuestionNavigation/QuestionNavigation';
-//import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 
@@ -24,28 +22,24 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     //Ajouter type AnswerQuestionType en remplacement de QuestionType
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-    // const [imageUrl, setImageUrl] = useState('');
+    const [answer, setAnswer] = useState<string | number | boolean>('');
+    
 
     const previousQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id) - 2]);
-        setIsAnswerSubmitted(false);
-        
+        setQuestion(questions[Number(questionInfos.question?.id) - 2]);        
     };
 
     useEffect(() => {        
-        const answer = localStorage.getItem(`Answer${questionInfos.question.id}`);
+        setAnswer(JSON.parse(localStorage.getItem(`Answer${questionInfos.question.id}`)||'null'));
         if (answer !== null) {
             setIsAnswerSubmitted(true);
         } else {
             setIsAnswerSubmitted(false);
-
         }
-    }, [questionInfos.question]);
+    }, [questionInfos.question , answer]);
 
     const nextQuestion = () => {
         setQuestion(questions[Number(questionInfos.question?.id)]);
-        setIsAnswerSubmitted(false);
-        
     };
 
     const handleOnSubmitAnswer = (answer: string | number | boolean) => {
@@ -79,7 +73,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
-                    answer={localStorage.getItem(`Answer${questionInfos.question.id}`) || undefined}
+                    answer={answer}
                     />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
                 <div>

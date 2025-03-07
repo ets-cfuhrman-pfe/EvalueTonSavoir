@@ -16,7 +16,7 @@ describe('TrueFalseQuestion Component', () => {
     const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
-        const handleOnSubmitAnswer = (answer: boolean) => {
+        const handleOnSubmitAnswer = (answer: string | number | boolean) => {
             mockHandleSubmitAnswer(answer);
             setShowAnswerState(true);
         };

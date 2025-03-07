@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
@@ -6,14 +6,22 @@ import { ShortAnswerQuestion } from 'gift-pegjs';
 
 interface Props {
     question: ShortAnswerQuestion;
-    handleOnSubmitAnswer?: (answer: string) => void;
+    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
     showAnswer?: boolean;
+    passedAnswer?: string | number | boolean;
+
 }
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } = props;
-    const [answer, setAnswer] = useState<string>();
-
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || ' ');
+    
+    useEffect(() => {
+    if (passedAnswer !== undefined) {
+        setAnswer(passedAnswer);
+    }
+    }, [passedAnswer]);
+    
     return (
         <div className="question-wrapper">
             <div className="question content">
@@ -22,11 +30,18 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
             {showAnswer ? (
                 <>
                     <div className="correct-answer-text mb-1">
+                    <span>
+                        <strong>La bonne réponse est: </strong>
+                    
                         {question.choices.map((choice) => (
                             <div key={choice.text} className="mb-1">
                                 {choice.text}
                             </div>
                         ))}
+                    </span>
+                    <span>
+                        <strong>Votre réponse est: </strong>{answer}
+                    </span>
                     </div>
                     {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
@@ -54,7 +69,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                                 handleOnSubmitAnswer &&
                                 handleOnSubmitAnswer(answer)
                             }
-                            disabled={answer === undefined || answer === ''}
+                            disabled={answer === null || answer === ''}
                         >
                             Répondre
                         </Button>

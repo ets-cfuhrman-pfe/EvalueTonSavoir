@@ -21,7 +21,7 @@ describe('MultipleChoiceQuestionDisplay', () => {
     const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
-        const handleOnSubmitAnswer = (answer: string) => {
+        const handleOnSubmitAnswer = (answer: string | number | boolean) => {
             mockHandleOnSubmitAnswer(answer);
             setShowAnswerState(true);
         };

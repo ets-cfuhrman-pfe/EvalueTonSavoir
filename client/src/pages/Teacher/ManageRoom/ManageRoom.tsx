@@ -435,8 +435,6 @@ const ManageRoom: React.FC = () => {
                     message={`Êtes-vous sûr de vouloir quitter?`} />
 
 
-
-
                 <div className='headerContent' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                         <div className='title'>Salle: {roomName}</div>
@@ -485,6 +483,7 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
+                                        
                                     />
                                 )}
 
