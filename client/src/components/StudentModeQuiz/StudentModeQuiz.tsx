@@ -3,41 +3,47 @@ import React, { useEffect, useState } from 'react';
 import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
 import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
-// import { QuestionService } from '../../services/QuestionService';
 import { Button } from '@mui/material';
 //import QuestionNavigation from '../QuestionNavigation/QuestionNavigation';
-//import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
+import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface StudentModeQuizProps {
     questions: QuestionType[];
-    submitAnswer: (_answer: string | number | boolean, _idQuestion: number) => void;
+    answers: AnswerSubmissionToBackendType[];
+    submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
 
 const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     questions,
+    answers,
     submitAnswer,
     disconnectWebSocket
 }) => {
+    //Ajouter type AnswerQuestionType en remplacement de QuestionType
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-    // const [imageUrl, setImageUrl] = useState('');
+    // const [answer, setAnswer] = useState<AnswerType>('');
+    
 
-    // const previousQuestion = () => {
-    //     setQuestion(questions[Number(questionInfos.question?.id) - 2]);
-    //     setIsAnswerSubmitted(false);
-    // };
+    const previousQuestion = () => {
+        setQuestion(questions[Number(questionInfos.question?.id) - 2]);        
+    };
 
-    useEffect(() => {}, [questionInfos]);
+    useEffect(() => {
+        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
+        console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
+        setIsAnswerSubmitted(savedAnswer !== undefined);
+    }, [questionInfos.question, answers]);
 
     const nextQuestion = () => {
         setQuestion(questions[Number(questionInfos.question?.id)]);
-        setIsAnswerSubmitted(false);
     };
 
-    const handleOnSubmitAnswer = (answer: string | number | boolean) => {
+    const handleOnSubmitAnswer = (answer: AnswerType) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
         setIsAnswerSubmitted(true);
@@ -46,11 +52,13 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     return (
     <div className='room'>
     <div className='roomHeader'>
-
         <DisconnectButton
             onReturn={disconnectWebSocket}
             message={`Êtes-vous sûr de vouloir quitter?`} />
 
+    </div>
+    <div >
+    <b>Question {questionInfos.question.id}/{questions.length}</b>
     </div>
         <div className="overflow-auto">
             <div className="question-component-container">
@@ -66,31 +74,30 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
+                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
                     />
-                <div className="center-h-align mt-1/2">
-                    <div className="w-12">
-                        {/* <Button
-                            variant="outlined"
-                            onClick={previousQuestion}
-                            fullWidth
-                            startIcon={<ChevronLeft />}
-                            disabled={Number(questionInfos.question.id) <= 1}
-                            >
-                            Question précédente
-                        </Button> */}
-                    </div>
-                    <div className="w-12">
-                        <Button style={{ display: isAnswerSubmitted ? 'block' : 'none' }}
-                            variant="outlined"
-                            onClick={nextQuestion}
-                            fullWidth
-                            //endIcon={<ChevronRight />}
-                            disabled={Number(questionInfos.question.id) >= questions.length}
-                            >
-                            Question suivante
-                        </Button>
-                    </div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
+                <div>
+                    <Button
+                        variant="outlined"
+                        onClick={previousQuestion}
+                        fullWidth
+                        disabled={Number(questionInfos.question.id) <= 1}
+                    >
+                        Question précédente
+                    </Button>
                 </div>
+                <div>
+                    <Button
+                        variant="outlined"
+                        onClick={nextQuestion}
+                        fullWidth
+                        disabled={Number(questionInfos.question.id) >= questions.length}
+                    >
+                        Question suivante
+                    </Button>
+                </div>
+            </div>
             </div>
         </div>
     </div>

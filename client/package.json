@@ -57,6 +57,7 @@
         "@typescript-eslint/eslint-plugin": "^8.25.0",
         "@typescript-eslint/parser": "^8.25.0",
         "@vitejs/plugin-react-swc": "^3.8.0",
+        "cross-env": "^7.0.3",
         "eslint": "^9.21.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
         "eslint-plugin-jest": "^28.11.0",

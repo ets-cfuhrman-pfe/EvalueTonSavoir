@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import TrueFalseQuestionDisplay from 'src/components/QuestionsDisplay/TrueFalseQuestionDisplay/TrueFalseQuestionDisplay';
 import { parse, TrueFalseQuestion } from 'gift-pegjs';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 describe('TrueFalseQuestion Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
@@ -16,7 +17,7 @@ describe('TrueFalseQuestion Component', () => {
     const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
-        const handleOnSubmitAnswer = (answer: boolean) => {
+        const handleOnSubmitAnswer = (answer: AnswerType) => {
             mockHandleSubmitAnswer(answer);
             setShowAnswerState(true);
         };

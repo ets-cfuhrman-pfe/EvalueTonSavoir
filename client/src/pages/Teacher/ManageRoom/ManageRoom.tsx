@@ -24,6 +24,7 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button } from '@mui/material';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -131,7 +132,11 @@ const ManageRoom: React.FC = () => {
             if (!quizStarted) return;
 
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(formattedRoomName, currentQuestion);
+                webSocketService.nextQuestion(
+                    {roomName: formattedRoomName, 
+                     questions: quizQuestions, 
+                     questionIndex: Number(currentQuestion?.question.id) - 1, 
+                     isLaunch: false});
             } else if (quizMode === 'student') {
                 webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
             }
@@ -224,7 +229,10 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion(formattedRoomName, quizQuestions[nextQuestionIndex]);
+        webSocketService.nextQuestion({roomName: formattedRoomName, 
+                                       questions: quizQuestions, 
+                                       questionIndex: nextQuestionIndex, 
+                                       isLaunch: false});
     };
 
     const previousQuestion = () => {
@@ -234,7 +242,7 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion(formattedRoomName, quizQuestions[prevQuestionIndex]);
+        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
     };
 
     const initializeQuizQuestion = () => {
@@ -262,7 +270,7 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion(formattedRoomName, quizQuestions[0]);
+        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
     };
 
     const launchStudentMode = () => {
@@ -300,9 +308,8 @@ const ManageRoom: React.FC = () => {
     const showSelectedQuestion = (questionIndex: number) => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
-
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(formattedRoomName, quizQuestions[questionIndex]);
+                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
             }
         }
     };
@@ -313,7 +320,7 @@ const ManageRoom: React.FC = () => {
     };
 
     function checkIfIsCorrect(
-        answer: string | number | boolean,
+        answer: AnswerType,
         idQuestion: number,
         questions: QuestionType[]
     ): boolean {
@@ -453,6 +460,7 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
+                                        
                                     />
                                 )}
 

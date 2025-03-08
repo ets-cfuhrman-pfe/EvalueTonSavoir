@@ -5,6 +5,7 @@ import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { MultipleChoiceQuestion, parse } from 'gift-pegjs';
 import MultipleChoiceQuestionDisplay from 'src/components/QuestionsDisplay/MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 const questions = parse(
     `::Sample Question 1:: Question stem
@@ -21,7 +22,7 @@ describe('MultipleChoiceQuestionDisplay', () => {
     const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
-        const handleOnSubmitAnswer = (answer: string) => {
+        const handleOnSubmitAnswer = (answer: AnswerType) => {
             mockHandleOnSubmitAnswer(answer);
             setShowAnswerState(true);
         };

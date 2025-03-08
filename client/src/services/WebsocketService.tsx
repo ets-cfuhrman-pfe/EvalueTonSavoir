@@ -1,18 +1,20 @@
 import { io, Socket } from 'socket.io-client';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { QuestionType } from 'src/Types/QuestionType';
 
 // Must (manually) sync these types to server/socket/socket.js
 
 export type AnswerSubmissionToBackendType = {
     roomName: string;
     username: string;
-    answer: string | number | boolean;
+    answer: AnswerType;
     idQuestion: number;
 };
 
 export type AnswerReceptionFromBackendType = {
     idUser: string;
     username: string;
-    answer: string | number | boolean;
+    answer: AnswerType;
     idQuestion: number;
 };
 
@@ -59,12 +61,19 @@ class WebSocketService {
     //     }
     // }
 
-    nextQuestion(roomName: string, question: unknown) {
-        console.log('WebsocketService: nextQuestion', roomName, question);
-        if (!question) {
+    nextQuestion(args: {roomName: string, questions: QuestionType[] | undefined, questionIndex: number, isLaunch: boolean}) {
+        // deconstruct args
+        const { roomName, questions, questionIndex, isLaunch } = args;
+        console.log('WebsocketService: nextQuestion', roomName, questions, questionIndex, isLaunch);
+        if (!questions || !questions[questionIndex]) {
             throw new Error('WebsocketService: nextQuestion: question is null');
         }
+        
         if (this.socket) {
+            if (isLaunch) {
+                this.socket.emit('launch-teacher-mode', { roomName, questions });
+            }
+            const question = questions[questionIndex];
             this.socket.emit('next-question', { roomName, question });
         }
     }
