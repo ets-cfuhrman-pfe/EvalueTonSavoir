@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import StudentModeQuiz from 'src/components/StudentModeQuiz/StudentModeQuiz';
 import { BaseQuestion, parse } from 'gift-pegjs';
 import { QuestionType } from 'src/Types/QuestionType';
+import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 
 const mockGiftQuestions = parse(
     `::Sample Question 1:: Sample Question 1 {=Option A ~Option B}
@@ -23,12 +24,13 @@ const mockDisconnectWebSocket = jest.fn();
 
 beforeEach(() => {
     // Clear local storage before each test
-    localStorage.clear();
+    // localStorage.clear();
 
     render(
         <MemoryRouter>
             <StudentModeQuiz
                 questions={mockQuestions}
+                answers={Array(mockQuestions.length).fill({} as AnswerSubmissionToBackendType)}
                 submitAnswer={mockSubmitAnswer}
                 disconnectWebSocket={mockDisconnectWebSocket}
             />

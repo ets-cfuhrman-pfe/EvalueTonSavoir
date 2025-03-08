@@ -81,6 +81,10 @@ const setupWebsocket = (io) => {
       socket.to(roomName).emit("next-question", question);
     });
 
+    socket.on("launch-teacher-mode", ({ roomName, questions }) => {
+      socket.to(roomName).emit("launch-teacher-mode", questions);
+    });
+
     socket.on("launch-student-mode", ({ roomName, questions }) => {
       socket.to(roomName).emit("launch-student-mode", questions);
     });

@@ -7,36 +7,36 @@ import { Button } from '@mui/material';
 //import QuestionNavigation from '../QuestionNavigation/QuestionNavigation';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
+import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 
 interface StudentModeQuizProps {
     questions: QuestionType[];
+    answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: string | number | boolean, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
 
 const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     questions,
+    answers,
     submitAnswer,
     disconnectWebSocket
 }) => {
     //Ajouter type AnswerQuestionType en remplacement de QuestionType
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-    const [answer, setAnswer] = useState<string | number | boolean>('');
+    // const [answer, setAnswer] = useState<string | number | boolean>('');
     
 
     const previousQuestion = () => {
         setQuestion(questions[Number(questionInfos.question?.id) - 2]);        
     };
 
-    useEffect(() => {        
-        setAnswer(JSON.parse(localStorage.getItem(`Answer${questionInfos.question.id}`)||'null'));
-        if (answer !== null) {
-            setIsAnswerSubmitted(true);
-        } else {
-            setIsAnswerSubmitted(false);
-        }
-    }, [questionInfos.question , answer]);
+    useEffect(() => {
+        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
+        console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
+        setIsAnswerSubmitted(savedAnswer !== undefined);
+    }, [questionInfos.question, answers]);
 
     const nextQuestion = () => {
         setQuestion(questions[Number(questionInfos.question?.id)]);
@@ -73,7 +73,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
-                    answer={answer}
+                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
                     />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
                 <div>

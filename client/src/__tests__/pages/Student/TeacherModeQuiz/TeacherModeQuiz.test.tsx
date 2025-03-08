@@ -7,6 +7,7 @@ import { BaseQuestion, MultipleChoiceQuestion, parse } from 'gift-pegjs';
 import TeacherModeQuiz from 'src/components/TeacherModeQuiz/TeacherModeQuiz';
 import { MemoryRouter } from 'react-router-dom';
 import { QuestionType } from 'src/Types/QuestionType';
+import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 
 const mockGiftQuestions = parse(
     `::Sample Question 1:: Sample Question 1 {=Option A ~Option B}
@@ -36,6 +37,7 @@ describe('TeacherModeQuiz', () => {
             <MemoryRouter>
                 <TeacherModeQuiz
                     questionInfos={{ question: mockQuestion }}
+                    answers={Array(mockQuestions.length).fill({} as AnswerSubmissionToBackendType)}
                     submitAnswer={mockSubmitAnswer}
                     disconnectWebSocket={mockDisconnectWebSocket} />
             </MemoryRouter>
@@ -80,6 +82,7 @@ describe('TeacherModeQuiz', () => {
                 <MemoryRouter>
                     <TeacherModeQuiz
                         questionInfos={{ question: mockQuestion }}
+                        answers={Array(mockQuestions.length).fill({} as AnswerSubmissionToBackendType)}
                         submitAnswer={mockSubmitAnswer}
                         disconnectWebSocket={mockDisconnectWebSocket}
                     />
@@ -94,6 +97,7 @@ describe('TeacherModeQuiz', () => {
                 <MemoryRouter>
                     <TeacherModeQuiz
                         questionInfos={{ question: mockQuestion }}
+                        answers={Array(mockQuestions.length).fill({} as AnswerSubmissionToBackendType)}
                         submitAnswer={mockSubmitAnswer}
                         disconnectWebSocket={mockDisconnectWebSocket}
                     />

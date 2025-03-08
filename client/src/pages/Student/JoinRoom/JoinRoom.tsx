@@ -17,6 +17,8 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
 import ApiService from '../../../services/ApiService'
 
+export type AnswerType = string | number | boolean;
+
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
     const [username, setUsername] = useState(ApiService.getUsername());
@@ -25,6 +27,7 @@ const JoinRoom: React.FC = () => {
     const [question, setQuestion] = useState<QuestionType>();
     const [quizMode, setQuizMode] = useState<string>();
     const [questions, setQuestions] = useState<QuestionType[]>([]);
+    const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
@@ -34,6 +37,13 @@ const JoinRoom: React.FC = () => {
             disconnect();
         };
     }, []);
+
+    useEffect(() => {
+        // init the answers array, one for each question
+        setAnswers(Array(questions.length).fill({} as AnswerSubmissionToBackendType));
+        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
+    }, [questions]);
+
 
     const handleCreateSocket = () => {
         console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
@@ -45,11 +55,17 @@ const JoinRoom: React.FC = () => {
             console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
         });
         socket.on('next-question', (question: QuestionType) => {
-            console.log('on(next-question): Received next-question:', question);
+            console.log('JoinRoom: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
-
             setQuestion(question);
+        });
+        socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
+            console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
+            setQuizMode('teacher');
+            setIsWaitingForTeacher(true);
+            setQuestions(questions);
+            // wait for next-question
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
             console.log('on(launch-student-mode): Received launch-student-mode:', questions);
@@ -84,7 +100,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
-        localStorage.clear();
+//        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -109,14 +125,22 @@ const JoinRoom: React.FC = () => {
         }
     };
 
-    const handleOnSubmitAnswer = (answer: string | number | boolean, idQuestion: number) => {
+    const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
+        console.info(`JoinRoom: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
             username: username,
             idQuestion: idQuestion
         };
-        localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
+        // localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
+        setAnswers((prevAnswers) => {
+            console.log(`JoinRoom: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
+            const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
+            newAnswers[idQuestion - 1] = answerData; // Update the specific answer
+            return newAnswers; // Return the new array
+        });
+        console.log(`JoinRoom: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
         webSocketService.submitAnswer(answerData);
     };
 
@@ -154,6 +178,7 @@ const JoinRoom: React.FC = () => {
             return (
                 <StudentModeQuiz
                     questions={questions}
+                    answers={answers}
                     submitAnswer={handleOnSubmitAnswer}
                     disconnectWebSocket={disconnect}
                 />
@@ -163,6 +188,7 @@ const JoinRoom: React.FC = () => {
                 question && (
                     <TeacherModeQuiz
                         questionInfos={question}
+                        answers={answers}
                         submitAnswer={handleOnSubmitAnswer}
                         disconnectWebSocket={disconnect}
                     />
