@@ -3,19 +3,20 @@ import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { ShortAnswerQuestion } from 'gift-pegjs';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: ShortAnswerQuestion;
-    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
-    passedAnswer?: string | number | boolean;
+    passedAnswer?: AnswerType;
 
 }
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
 
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
     
     useEffect(() => {
     if (passedAnswer !== undefined) {

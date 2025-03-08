@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { QuestionType } from 'src/Types/QuestionType';
 
 // Must (manually) sync these types to server/socket/socket.js
@@ -6,14 +7,14 @@ import { QuestionType } from 'src/Types/QuestionType';
 export type AnswerSubmissionToBackendType = {
     roomName: string;
     username: string;
-    answer: string | number | boolean;
+    answer: AnswerType;
     idQuestion: number;
 };
 
 export type AnswerReceptionFromBackendType = {
     idUser: string;
     username: string;
-    answer: string | number | boolean;
+    answer: AnswerType;
     idQuestion: number;
 };
 

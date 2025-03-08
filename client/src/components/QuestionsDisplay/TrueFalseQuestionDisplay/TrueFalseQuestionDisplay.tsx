@@ -4,12 +4,13 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer:  string | number | boolean) => void;
+    handleOnSubmitAnswer?: (answer:  AnswerType) => void;
     showAnswer?: boolean;
-    passedAnswer?: string | number | boolean;
+    passedAnswer?: AnswerType;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {

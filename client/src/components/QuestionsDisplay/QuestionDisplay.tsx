@@ -5,13 +5,14 @@ import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuesti
 import MultipleChoiceQuestionDisplay from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
 import NumericalQuestionDisplay from './NumericalQuestionDisplay/NumericalQuestionDisplay';
 import ShortAnswerQuestionDisplay from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplay';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 // import useCheckMobileScreen from '../../services/useCheckMobileScreen';
 
 interface QuestionProps {
     question: Question;
-    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
-    answer?: string | number | boolean;
+    answer?: AnswerType;
 
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({

@@ -8,11 +8,12 @@ import { Button } from '@mui/material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface StudentModeQuizProps {
     questions: QuestionType[];
     answers: AnswerSubmissionToBackendType[];
-    submitAnswer: (_answer: string | number | boolean, _idQuestion: number) => void;
+    submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
 
@@ -25,7 +26,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     //Ajouter type AnswerQuestionType en remplacement de QuestionType
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-    // const [answer, setAnswer] = useState<string | number | boolean>('');
+    // const [answer, setAnswer] = useState<AnswerType>('');
     
 
     const previousQuestion = () => {
@@ -42,7 +43,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
         setQuestion(questions[Number(questionInfos.question?.id)]);
     };
 
-    const handleOnSubmitAnswer = (answer: string | number | boolean) => {
+    const handleOnSubmitAnswer = (answer: AnswerType) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
         setIsAnswerSubmitted(true);

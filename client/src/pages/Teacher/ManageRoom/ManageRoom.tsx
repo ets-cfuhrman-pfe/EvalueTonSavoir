@@ -24,6 +24,7 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button } from '@mui/material';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -319,7 +320,7 @@ const ManageRoom: React.FC = () => {
     };
 
     function checkIfIsCorrect(
-        answer: string | number | boolean,
+        answer: AnswerType,
         idQuestion: number,
         questions: QuestionType[]
     ): boolean {

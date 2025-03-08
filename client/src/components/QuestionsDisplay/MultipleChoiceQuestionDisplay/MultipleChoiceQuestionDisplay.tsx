@@ -4,17 +4,18 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: MultipleChoiceQuestion;
-    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
-    passedAnswer?: string | number | boolean;
+    passedAnswer?: AnswerType;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<string | number | boolean>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
 
 
     let disableButton = false;

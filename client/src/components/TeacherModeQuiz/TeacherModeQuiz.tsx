@@ -13,7 +13,7 @@ import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 interface TeacherModeQuizProps {
     questionInfos: QuestionType;
     answers: AnswerSubmissionToBackendType[];
-    submitAnswer: (_answer: string | number | boolean, _idQuestion: number) => void;
+    submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
 
@@ -50,7 +50,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
         setIsFeedbackDialogOpen(isAnswerSubmitted);
     }, [isAnswerSubmitted]);
 
-    const handleOnSubmitAnswer = (answer: string | number | boolean) => {
+    const handleOnSubmitAnswer = (answer: AnswerType) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
         // setAnswer(answer);
