@@ -73,13 +73,15 @@ class AuthManager{
         console.info(`L'utilisateur '${userInfo.email}' vient de se connecter`)
     }
 
-    async register(userInfos){
+    async register(userInfos, sendEmail=false){
         console.log(userInfos);
         if (!userInfos.email || !userInfos.password) {
             throw new AppError(MISSING_REQUIRED_PARAMETER);
         }
         const user = await this.simpleregister.register(userInfos);
-        emailer.registerConfirmation(user.email)
+        if(sendEmail){
+            emailer.registerConfirmation(user.email);
+        }
         return user
     }
 }
