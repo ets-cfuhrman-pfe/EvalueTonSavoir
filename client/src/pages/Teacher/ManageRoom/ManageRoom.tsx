@@ -36,8 +36,40 @@ const ManageRoom: React.FC = () => {
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
-    const [quizStarted, setQuizStarted] = useState(false);
+    const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
+    const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+
+    // Handle the newly connected user in useEffect, because it needs state info 
+    // not available in the socket.on() callback
+    useEffect(() => {
+        if (newlyConnectedUser) {
+            console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
+            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+    
+            // only send nextQuestion if the quiz has started
+            if (!quizStarted) {
+                console.log(`!quizStarted: returning.... `);
+                return;
+            }
+    
+            if (quizMode === 'teacher') {
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex: Number(currentQuestion?.question.id) - 1,
+                    isLaunch: true // started late
+                });
+            } else if (quizMode === 'student') {
+                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+            } else {
+                console.error('Invalid quiz mode:', quizMode);
+            }
+    
+            // Reset the newly connected user state
+            setNewlyConnectedUser(null);
+        }
+    }, [newlyConnectedUser, quizStarted, quizMode, formattedRoomName, quizQuestions, currentQuestion]);
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -110,6 +142,17 @@ const ManageRoom: React.FC = () => {
         const roomNameUpper = roomName.toUpperCase();
         setFormattedRoomName(roomNameUpper);
         console.log(`Creating WebSocket room named ${roomNameUpper}`);
+
+        /** 
+         * ATTENTION: Lire les variables d'état dans 
+         * les .on() n'est pas une bonne pratique.
+         * Les valeurs sont celles au moment de la création
+         * de la fonction et non au moment de l'exécution.
+         * Il faut utiliser des refs pour les valeurs qui
+         * changent fréquemment. Sinon, utiliser un trigger
+         * de useEffect pour mettre déclencher un traitement
+         * (voir user-joined plus bas).
+         */
         socket.on('connect', () => {
             webSocketService.createRoom(roomNameUpper);
         });
@@ -124,23 +167,9 @@ const ManageRoom: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
-            console.log(`Student joined: name = ${student.name}, id = ${student.id}, quizMode = ${quizMode}, quizStarted = ${quizStarted}`);
-
-            setStudents((prevStudents) => [...prevStudents, student]);
-
-            // only send nextQuestion if the quiz has started
-            if (!quizStarted) return;
-
-            if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(
-                    {roomName: formattedRoomName, 
-                     questions: quizQuestions, 
-                     questionIndex: Number(currentQuestion?.question.id) - 1, 
-                     isLaunch: false});
-            } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
-            }
+            setNewlyConnectedUser(student);
         });
+
         socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
@@ -286,21 +315,19 @@ const ManageRoom: React.FC = () => {
     };
 
     const launchQuiz = () => {
+        setQuizStarted(true);
         if (!socket || !formattedRoomName || !quiz?.content || quiz?.content.length === 0) {
             // TODO: This error happens when token expires! Need to handle it properly
             console.log(
                 `Error launching quiz. socket: ${socket}, roomName: ${formattedRoomName}, quiz: ${quiz}`
             );
-            setQuizStarted(true);
-
             return;
         }
+        console.log(`Launching quiz in ${quizMode} mode...`);
         switch (quizMode) {
             case 'student':
-                setQuizStarted(true);
                 return launchStudentMode();
             case 'teacher':
-                setQuizStarted(true);
                 return launchTeacherMode();
         }
     };
