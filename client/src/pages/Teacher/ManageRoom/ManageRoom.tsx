@@ -69,7 +69,7 @@ const ManageRoom: React.FC = () => {
             // Reset the newly connected user state
             setNewlyConnectedUser(null);
         }
-    }, [newlyConnectedUser, quizStarted, quizMode, formattedRoomName, quizQuestions, currentQuestion]);
+    }, [newlyConnectedUser]);
 
     useEffect(() => {
         const verifyLogin = async () => {
