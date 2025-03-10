@@ -54,12 +54,7 @@ class UsersController {
 
             const token = jwt.create(user.email, user._id);
 
-            let result = {
-                token: token,
-                userId: user._id
-            }
-
-            return res.status(200).json({ result });
+            return res.status(200).json({ token });
         } catch (error) {
             next(error);
         }
