@@ -73,12 +73,22 @@ describe('Images', () => {
     let images;
     let dbConn;
     let mockImagesCollection;
+    let mockFindCursor;
 
     beforeEach(() => {
+
+        mockFindCursor = {
+            sort: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            toArray: jest.fn(),
+        };
+
         mockImagesCollection = {
             insertOne: jest.fn().mockResolvedValue({ insertedId: 'image123' }),
             findOne: jest.fn(),
-            find: jest.fn().mockReturnValue({ sort: jest.fn().mockReturnValue([]) })
+            find: jest.fn().mockReturnValue(mockFindCursor),
+            countDocuments: jest.fn()
         };
 
         dbConn = {
@@ -147,35 +157,41 @@ describe('Images', () => {
         });
     });
 
-    describe('getAll', () => {
+    describe('getImages', () => {
         it('should retrieve a paginated list of images', async () => {
             const mockImages = [
-                { id: '1', file_name: 'image1.png', file_content: Buffer.from('data1').toString('base64'), mime_type: 'image/png' },
-                { id: '2', file_name: 'image2.png', file_content: Buffer.from('data2').toString('base64'), mime_type: 'image/png' }
+                { _id: '1', userId: 'user1', file_name: 'image1.png', file_content: Buffer.from('data1'), mime_type: 'image/png' },
+                { _id: '2', userId: 'user2', file_name: 'image2.png', file_content: Buffer.from('data2'), mime_type: 'image/png' }
             ];
-            mockImagesCollection.find.mockReturnValue({ sort: jest.fn().mockReturnValue(mockImages) });
-
-            const result = await images.getAll(1, 10);
-
+    
+            mockImagesCollection.countDocuments.mockResolvedValue(2);
+            mockFindCursor.toArray.mockResolvedValue(mockImages);
+    
+            const result = await images.getImages(1, 10);
+    
             expect(db.connect).toHaveBeenCalled();
             expect(db.getConnection).toHaveBeenCalled();
             expect(dbConn.collection).toHaveBeenCalledWith('images');
             expect(mockImagesCollection.find).toHaveBeenCalledWith({});
-            expect(result.length).toEqual(mockImages.length);
-            expect(result).toEqual([
-                { id: '1', file_name: 'image1.png', file_content: Buffer.from('data1'), mime_type: 'image/png' },
-                { id: '2', file_name: 'image2.png', file_content: Buffer.from('data2'), mime_type: 'image/png' }
-            ]);
+            expect(mockFindCursor.sort).toHaveBeenCalledWith({ created_at: 1 });
+            expect(mockFindCursor.skip).toHaveBeenCalledWith(0);
+            expect(mockFindCursor.limit).toHaveBeenCalledWith(10);
+            expect(result).toEqual({
+                images: [
+                    { id: '1', user: 'user1', file_name: 'image1.png', file_content: 'ZGF0YTE=', mime_type: 'image/png' },
+                    { id: '2', user: 'user2', file_name: 'image2.png', file_content: 'ZGF0YTI=', mime_type: 'image/png' }
+                ],
+                total: 2,
+            });
         });
-
-        it('should return null if not images is not found', async () => {
-            mockImagesCollection.find.mockReturnValue({ sort: jest.fn().mockReturnValue(undefined) });
-            const result = await images.getAll(1, 10);
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.getConnection).toHaveBeenCalled();
-            expect(dbConn.collection).toHaveBeenCalledWith('images');
-            expect(mockImagesCollection.find).toHaveBeenCalledWith({});
-            expect(result).toEqual(null);
+    
+        it('should return an empty array if no images are found', async () => {
+            mockImagesCollection.countDocuments.mockResolvedValue(0);
+            mockFindCursor.toArray.mockResolvedValue([]);
+    
+            const result = await images.getImages(1, 10);
+    
+            expect(result).toEqual({ images: [], total: 0 });
         });
     });
 });
