@@ -127,4 +127,11 @@ async function start() {
   });
 }
 
+// Graceful shutdown on SIGINT (Ctrl+C)
+process.on('SIGINT', async () => {
+  console.log('Shutting down...');
+  await db.closeConnection();
+  process.exit(0);
+});
+
 start();
