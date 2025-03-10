@@ -4,33 +4,44 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: MultipleChoiceQuestion;
-    handleOnSubmitAnswer?: (answer: string) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    passedAnswer?: AnswerType;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } = props;
-    const [answer, setAnswer] = useState<string>();
-    
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+
+
+    let disableButton = false;
+    if(handleOnSubmitAnswer === undefined){
+        disableButton = true;
+    }
+
     useEffect(() => {
-        setAnswer(undefined);
-    }, [question]);
+    if (passedAnswer !== undefined) {
+        setAnswer(passedAnswer);
+    }
+    }, [passedAnswer]);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer(choice);
     };
-
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
     return (
+
         <div className="question-container">
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
+                
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
                     return (
@@ -38,6 +49,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                             <Button
                                 variant="text"
                                 className="button-wrapper"
+                                disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
                                 {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
                                 :``}
@@ -67,9 +79,9 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                     }
-                    disabled={answer === undefined}
+                    disabled={answer === '' || answer === null}
                 >
                     Répondre
                     

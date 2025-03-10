@@ -10,14 +10,15 @@ describe('StudentWaitPage Component', () => {
         { id: '1', name: 'User1', answers: new Array<Answer>() },
         { id: '2', name: 'User2', answers: new Array<Answer>() },
         { id: '3', name: 'User3', answers: new Array<Answer>() },
-      ];
+    ];
 
-      const mockProps = {
+    const mockProps = {
         students: mockUsers,
         launchQuiz: jest.fn(),
         roomName: 'Test Room',
         setQuizMode: jest.fn(),
-      };
+        setIsRoomSelectionVisible: jest.fn()
+    };
 
     test('renders StudentWaitPage with correct content', () => {
         render(<StudentWaitPage {...mockProps} />);
@@ -28,16 +29,15 @@ describe('StudentWaitPage Component', () => {
         expect(launchButton).toBeInTheDocument();
 
         mockUsers.forEach((user) => {
-          expect(screen.getByText(user.name)).toBeInTheDocument();
+            expect(screen.getByText(user.name)).toBeInTheDocument();
         });
-      });
+    });
 
-      test('clicking on "Lancer" button opens LaunchQuizDialog', () => {
+    test('clicking on "Lancer" button opens LaunchQuizDialog', () => {
         render(<StudentWaitPage {...mockProps} />);
 
         fireEvent.click(screen.getByRole('button', { name: /Lancer/i }));
 
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-})
+    });
+});
