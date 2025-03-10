@@ -1,3 +1,5 @@
+version: '3'
+
 services:
 
   frontend:
@@ -25,9 +27,17 @@ services:
       SENDER_EMAIL: infoevaluetonsavoir@gmail.com
       EMAIL_PSW: 'vvml wmfr dkzb vjzb'
       JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
-      FRONTEND_URL: "http://localhost:5173"
+      SESSION_Secret: 'lookMomImQuizzing'
+      SITE_URL: http://localhost
+      OIDC_URL: https://evalsa.etsmtl.ca
+      FRONTEND_PORT: 5173
+      USE_PORTS: false
+      AUTHENTICATED_ROOMS: false
+    volumes:
+      - /opt/EvalueTonSavoir/auth_config.json:/usr/src/app/serveur/auth_config.json
     depends_on:
       - mongo
+      - keycloak
     restart: always
 
   # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
@@ -78,6 +88,23 @@ services:
       - WATCHTOWER_DEBUG=true
       - WATCHTOWER_INCLUDE_RESTARTING=true
     restart: "no"
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_HEALTH_ENABLED: 'true'
+      KC_FEATURES: preview
+    ports:
+      - "8080:8080"
+    volumes:
+      - /opt/EvalueTonSavoir/oauth-tester/config.json:/opt/keycloak/data/import/realm-config.json
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname-strict=false
 
 volumes:
   mongodb_data:

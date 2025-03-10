@@ -194,9 +194,8 @@ const QuizForm: React.FC = () => {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
+            window.alert(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`)
 
         }
     };

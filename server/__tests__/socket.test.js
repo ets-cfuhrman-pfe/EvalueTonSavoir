@@ -60,45 +60,42 @@ describe("websocket server", () => {
   });
 
   test("should create a room", (done) => {
-    teacherSocket.emit("create-room", "room1");
     teacherSocket.on("create-success", (roomName) => {
       expect(roomName).toBe("ROOM1");
       done();
     });
+    teacherSocket.emit("create-room", "room1");
   });
 
   test("should not create a room if it already exists", (done) => {
-    teacherSocket.emit("create-room", "room1");
     teacherSocket.on("create-failure", () => {
       done();
     });
+    teacherSocket.emit("create-room", "room1");
   });
 
   test("should join a room", (done) => {
-    studentSocket.emit("join-room", {
-      enteredRoomName: "ROOM1",
-      username: "student1",
-    });
-    studentSocket.on("join-success", () => {
+    studentSocket.on("join-success", (roomName) => {
+      expect(roomName).toBe("ROOM1");
       done();
+    });
+    studentSocket.emit("join-room", {
+      enteredRoomName: "room1",
+      username: "student1",
     });
   });
 
   test("should not join a room if it does not exist", (done) => {
+    studentSocket.on("join-failure", () => {
+      done();
+    });
     studentSocket.emit("join-room", {
       enteredRoomName: "ROOM2",
       username: "student1",
     });
-    studentSocket.on("join-failure", () => {
-      done();
-    });
   });
 
   test("should launch student mode", (done) => {
-    teacherSocket.emit("launch-student-mode", {
-      roomName: "ROOM1",
-      questions: [{ question: "question1" }, { question: "question2" }],
-    });
     studentSocket.on("launch-student-mode", (questions) => {
       expect(questions).toEqual([
         { question: "question1" },
@@ -106,26 +103,36 @@ describe("websocket server", () => {
       ]);
       done();
     });
+    teacherSocket.emit("launch-student-mode", {
+      roomName: "ROOM1",
+      questions: [{ question: "question1" }, { question: "question2" }],
+    });
+  });
+
+  test("should launch teacher mode", (done) => {
+    studentSocket.on("launch-teacher-mode", (questions) => {
+      expect(questions).toEqual([
+        { question: "question1" },
+        { question: "question2" },
+      ]);
+      done();
+    });
+    teacherSocket.emit("launch-teacher-mode", {
+      roomName: "ROOM1",
+      questions: [{ question: "question1" }, { question: "question2" }],
+    });
   });
 
   test("should send next question", (done) => {
-    teacherSocket.emit("next-question", {
-      roomName: "ROOM1",
-      question: { question: "question2" },
-    });
-    studentSocket.on("next-question", (question) => {
-      expect(question).toEqual({ question: "question2" });
+    studentSocket.on("next-question", ( question ) => {
+      expect(question).toBe("question2");
       done();
     });
+    teacherSocket.emit("next-question", { roomName: "ROOM1", question: 'question2'},
+    );
   });
 
   test("should send answer", (done) => {
-    studentSocket.emit("submit-answer", {
-      roomName: "ROOM1",
-      username: "student1",
-      answer: "answer1",
-      idQuestion: 1,
-    });
     teacherSocket.on("submit-answer-room", (answer) => {
       expect(answer).toEqual({
         idUser: studentSocket.id,
@@ -135,31 +142,37 @@ describe("websocket server", () => {
       });
       done();
     });
+    studentSocket.emit("submit-answer", {
+      roomName: "ROOM1",
+      username: "student1",
+      answer: "answer1",
+      idQuestion: 1,
+    });
   });
 
   test("should not join a room if no room name is provided", (done) => {
+    studentSocket.on("join-failure", () => {
+      done();
+    });
     studentSocket.emit("join-room", {
       enteredRoomName: "",
       username: "student1",
     });
-    studentSocket.on("join-failure", () => {
-      done();
-    });
   });
 
   test("should not join a room if the username is not provided", (done) => {
-    studentSocket.emit("join-room", { enteredRoomName: "ROOM2", username: "" });
     studentSocket.on("join-failure", () => {
       done();
     });
+    studentSocket.emit("join-room", { enteredRoomName: "ROOM2", username: "" });
   });
 
   test("should end quiz", (done) => {
-    teacherSocket.emit("end-quiz", {
-      roomName: "ROOM1",
-    });
     studentSocket.on("end-quiz", () => {
       done();
+    });
+    teacherSocket.emit("end-quiz", {
+      roomName: "ROOM1",
     });
   });
 

@@ -5,17 +5,21 @@ import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuesti
 import MultipleChoiceQuestionDisplay from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
 import NumericalQuestionDisplay from './NumericalQuestionDisplay/NumericalQuestionDisplay';
 import ShortAnswerQuestionDisplay from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplay';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 // import useCheckMobileScreen from '../../services/useCheckMobileScreen';
 
 interface QuestionProps {
     question: Question;
-    handleOnSubmitAnswer?: (answer: string | number | boolean) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    answer?: AnswerType;
+
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    answer,
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
@@ -30,37 +34,32 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;
         case 'MC':
+            
             questionTypeComponent = (
                 <MultipleChoiceQuestionDisplay
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;
         case 'Numerical':
             if (question.choices) {
-                if (!Array.isArray(question.choices)) {
                     questionTypeComponent = (
                         <NumericalQuestionDisplay
                             question={question}
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
+                            passedAnswer={answer}
+                            
                         />
                     );
-                } else {
-                    questionTypeComponent = (  // TODO fix NumericalQuestion (correctAnswers is borked)
-                        <NumericalQuestionDisplay
-                            question={question}
-                            handleOnSubmitAnswer={handleOnSubmitAnswer}
-                            showAnswer={showAnswer}
-                        />
-                    );
-                }
             }
             break;
         case 'Short':
@@ -69,6 +68,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    passedAnswer={answer}
                 />
             );
             break;
