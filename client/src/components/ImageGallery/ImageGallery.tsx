@@ -20,7 +20,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import { Images } from "../../Types/Images";
 import ApiService from '../../services/ApiService';
-import { ENV_VARIABLES } from '../constants';
+import { ENV_VARIABLES } from '../../constants';
 
 type Props = {
   galleryOpen: boolean;
