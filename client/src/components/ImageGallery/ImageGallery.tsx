@@ -20,6 +20,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import { Images } from "../../Types/Images";
 import ApiService from '../../services/ApiService';
+import { ENV_VARIABLES } from '../constants';
 
 type Props = {
   galleryOpen: boolean;
@@ -52,7 +53,8 @@ const ImageDialog: React.FC<Props> = ({ galleryOpen, admin, setDialogOpen, setIm
   };
 
   const onCopy = (id: string) => {
-    const escLink = 'http://localhost:4400/api/image/get/'+id;
+    const escLink = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
+    console.log(escLink);
     setCopiedId(id);
     setImageLinks(prevLinks => [...prevLinks, escLink]);
   };

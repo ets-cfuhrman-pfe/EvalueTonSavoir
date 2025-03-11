@@ -9,3 +9,9 @@ export interface ImagesResponse {
     images: Images[];
     total: number;
 }
+
+export interface ImagesParams {
+    page: number;
+    limit: number;
+    uid?: string;
+}
