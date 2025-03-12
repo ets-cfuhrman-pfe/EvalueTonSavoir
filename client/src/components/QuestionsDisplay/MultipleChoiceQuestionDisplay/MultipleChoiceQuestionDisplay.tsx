@@ -56,17 +56,24 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                 variant="text"
                                 className="button-wrapper"
                                 disabled={disableButton}
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>                                {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
+                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>     
+                                {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
                                 :``}
-                                <div className={`circle ${selected}`}>{alphabet[i]}</div>
+                                <div className={`circle ${selected}`}>{alphabet[i]}
+
+
+                                    
+                                </div>
                                 <div className={`answer-text ${selected}`}>
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedText) }} />
-                                </div>
-                                {choice.formattedFeedback && showAnswer && (
+                                    
+                                    {choice.formattedFeedback && showAnswer && (
                                 <div className="feedback-container">
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
                                 </div>
                             )}
+                                </div>
+                                
                             </Button>
 
                         </div>
