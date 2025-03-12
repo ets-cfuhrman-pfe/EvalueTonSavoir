@@ -2,21 +2,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-.choices-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.75rem;
 }
 
 .answer-wrapper {
     display: flex;
     flex-direction: column;
+    
 }
 
 .question-wrapper {
@@ -31,7 +22,8 @@
 }
 
 .katex * {
-    font-family: 'KaTeX_Main'  /* to display characters like \neq properly */
+    font-family: 'KaTeX_Main'
+        /* to display characters like \neq properly */
 }
 
 .circle {
@@ -54,15 +46,6 @@
     color: white;
 }
 
-.button-wrapper {
-    border: 0;
-    display: flex;
-    column-gap: 0.5rem;
-    align-items: center;
-    background-color: transparent;
-    margin-bottom: 0.25rem;
-}
-
 .answer-text {
     border-width: 1px;
     border-style: solid;
@@ -73,6 +56,11 @@
     width: 20rem;
     color: black;
     box-shadow: 0 0 1px #3a3a3a;
+}
+.answer-text-container {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
 }
 
 .answer-weight-container {
@@ -97,15 +85,11 @@
 }
 
 .answer-positive-weight {
-    background-color: hsl(
-        120, 100%, 90%
-    );
+    background-color: hsl(120, 100%, 90%);
 }
 
 .answer-zero-or-less-weight {
-    background-color: hsl(
-        0, 100%, 90%
-    );
+    background-color: hsl(0, 100%, 90%);
 }
 
 .answer-text.selected {
@@ -113,22 +97,38 @@
     color: white;
 }
 
+.button-wrapper {
+    border: 0;
+    display: flex;
+    column-gap: 0.5rem;
+    background-color: transparent;
+    margin-bottom: 0.25rem;
+    display: flex;
+    position: relative;
+    height: min-content;
+}
+
+
 .choice-container {
+    
     display: flex;
     flex-direction: column;
+    align-items: center;    
+    
 }
 
 .feedback-container {
-    display: inline-block !important; /* override the parent */
-    align-items: center;
-    margin-left: 1.1rem;
     position: relative;
+    right: calc(-1 * var(--button-wrapper-width)); 
+    margin-left: 1.1rem;
     padding: 0 0.5rem;
     background-color: hsl(43, 100%, 94%);
     color: hsl(43, 95%, 9%);
     border: hsl(36, 84%, 93%) 1px solid;
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+    width: var(--button-wrapper-width);
+
 }
 
 .feedback-container img {
@@ -156,6 +156,7 @@
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
 }
+
 .false-feedback {
     position: relative;
     padding: 0 1rem;
@@ -164,8 +165,4 @@
     border: hsl(36, 84%, 93%) 1px solid;
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-}
-
-.choices-wrapper {
-    width: 90%;
 }
