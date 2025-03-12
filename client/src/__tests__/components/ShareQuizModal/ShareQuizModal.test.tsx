@@ -67,7 +67,7 @@ describe('ShareQuizModal', () => {
 
 		// Check if the alert is shown
 		await waitFor(() => {
-			expect(window.alert).toHaveBeenCalledWith('URL copied to clipboard!');
+			expect(window.alert).toHaveBeenCalledWith('URL a été copiée avec succès.');
 		});
 	});
 
