@@ -74,8 +74,6 @@ class ApiService {
             return false;
         }
 
-        console.log("ApiService: isLoggedIn: Token:", token);
-
         // Update token expiry
         this.saveToken(token);
 
@@ -91,7 +89,6 @@ class ApiService {
         }
 
         try {
-            console.log("ApiService: isLoggedInTeacher: Token:", token);
             const decodedToken = jwtDecode(token) as { roles: string[] };
 
             /////// REMOVE BELOW
@@ -103,7 +100,6 @@ class ApiService {
             const userRoles = decodedToken.roles;
             const requiredRole = 'teacher';
 
-            console.log("ApiService: isLoggedInTeacher: UserRoles:", userRoles);
             if (!userRoles || !userRoles.includes(requiredRole)) {
                 return false;
             }
@@ -178,7 +174,6 @@ class ApiService {
 
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
-            console.log(result);
             if (result.status == 200) {
                 //window.location.href = result.request.responseURL;
                 window.location.href = '/login';
@@ -190,7 +185,6 @@ class ApiService {
             return true;
 
         } catch (error) {
-            console.log("Error details: ", error);
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
@@ -553,7 +547,6 @@ public async login(email: string, password: string): Promise<any> {
             const headers = this.constructRequestHeaders();
             const body = { folderId };
 
-            console.log(headers);
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
             if (result.status !== 200) {
@@ -1168,6 +1161,29 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
     // NOTE : Get Image pas necessaire
+
+    public async getAllQuizIds(): Promise<string[]> {
+        try {
+           const folders = await this.getUserFolders();
+
+           const allQuizIds: string[] = [];
+
+           for (const folder of folders) {
+               const folderQuizzes = await this.getFolderContent(folder._id);
+
+               if (Array.isArray(folderQuizzes)) {
+                   allQuizIds.push(...folderQuizzes.map(quiz => quiz._id));
+               }
+           }
+
+           return allQuizIds;
+        } catch (error) {
+            console.error('Failed to get all quiz ids:', error);
+            throw error;
+        }
+    }	
+
+   
 
 }
 

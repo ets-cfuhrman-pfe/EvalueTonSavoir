@@ -1,18 +1,12 @@
-// EditorQuiz.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import { FolderType } from '../../../Types/FolderType';
-
-
 import './share.css';
 import { Button, NativeSelect } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
-
 import ApiService from '../../../services/ApiService';
 
 const Share: React.FC = () => {
-    console.log('Component rendered');
     const navigate = useNavigate();
     const { id } = useParams<string>();
 
@@ -23,7 +17,6 @@ const Share: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log("QUIZID : " + id)
             if (!id) {
                 window.alert(`Une erreur est survenue.\n Le quiz n'a pas été trouvé\nVeuillez réessayer plus tard`)
                 console.error('Quiz not found for id:', id);
@@ -36,9 +29,17 @@ const Share: React.FC = () => {
                 navigate("/login");
                 return;
             }
+            
+            const quizIds = await ApiService.getAllQuizIds();
+            
+            if (quizIds.includes(id)) {
+                window.alert(`Le quiz que vous essayez d'importer existe déjà sur votre compte.`)
+                navigate('/teacher/dashboard');
+                return;
+            }
 
             const userFolders = await ApiService.getUserFolders();
-
+            
             if (userFolders.length == 0) {
                 window.alert(`Vous n'avez aucun dossier.\nVeuillez en créer un et revenir à ce lien`)
                 navigate('/teacher/dashboard');

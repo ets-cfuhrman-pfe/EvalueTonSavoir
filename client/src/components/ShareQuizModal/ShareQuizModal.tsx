@@ -40,10 +40,10 @@ const ShareQuizModal: React.FC<ShareQuizModalProps> = ({ quiz }) => {
         const quizUrl = `${window.location.origin}/teacher/share/${quiz._id}`;
         navigator.clipboard.writeText(quizUrl)
             .then(() => {
-                window.alert('URL copied to clipboard!');
+                window.alert('URL a été copiée avec succès.');
             })
             .catch(() => {
-                window.alert('Failed to copy URL to clipboard.');
+                window.alert('Une erreur est survenue lors de la copie de l\'URL.');
             });
 
         handleCloseModal();
