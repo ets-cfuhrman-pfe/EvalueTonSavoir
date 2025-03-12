@@ -194,4 +194,53 @@ describe('Images', () => {
             expect(result).toEqual({ images: [], total: 0 });
         });
     });
+
+    describe('getUserImages', () => {
+        it('should return empty images array when no images exist', async () => {
+            mockImagesCollection.countDocuments.mockResolvedValue(0);
+            
+            const result = await images.getUserImages(1, 10, 'user123');
+            
+            expect(result).toEqual({ images: [], total: 0 });
+            expect(db.connect).toHaveBeenCalled();
+            expect(mockImagesCollection.countDocuments).toHaveBeenCalledWith({ userId: 'user123' });
+        });
+
+        it('should return images when they exist', async () => {
+            const mockImages = [
+                {
+                    _id: 'img1',
+                    userId: 'user123',
+                    file_name: 'image1.png',
+                    file_content: Buffer.from('testdata'),
+                    mime_type: 'image/png'
+                }
+            ];
+
+            mockImagesCollection.countDocuments.mockResolvedValue(1);
+            mockImagesCollection.find.mockReturnValue({
+                sort: jest.fn().mockReturnThis(),
+                skip: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                toArray: jest.fn().mockResolvedValue(mockImages)
+            });
+
+            const result = await images.getUserImages(1, 10, 'user123');
+            
+            expect(result).toEqual({
+                images: [
+                    {
+                        id: 'img1',
+                        user: 'user123',
+                        file_name: 'image1.png',
+                        file_content: Buffer.from('testdata').toString('base64'),
+                        mime_type: 'image/png'
+                    }
+                ],
+                total: 1
+            });
+            expect(db.connect).toHaveBeenCalled();
+            expect(mockImagesCollection.countDocuments).toHaveBeenCalledWith({ userId: 'user123' });
+        });
+    });
 });
