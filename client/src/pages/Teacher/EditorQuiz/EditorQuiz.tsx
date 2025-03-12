@@ -29,7 +29,7 @@ const QuizForm: React.FC = () => {
     const [filteredValue, setFilteredValue] = useState<string[]>([]);
 
     const { id } = useParams<EditQuizParams>();
-    const [value, setValue] = useState('');
+    const [values, setValues] = useState<string[]>([]);
     const [isNewQuiz, setNewQuiz] = useState(false);
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const navigate = useNavigate();
@@ -101,7 +101,7 @@ const QuizForm: React.FC = () => {
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
                 setFilteredValue(content);
-                setValue(quiz.content.join('\n\n'));
+                setValues(content);
 
             } catch (error) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
@@ -113,21 +113,17 @@ const QuizForm: React.FC = () => {
         fetchData();
     }, [id]);
 
-    function handleUpdatePreview(value: string) {
-        if (value !== '') {
-            setValue(value);
-        }
+    const handleAddQuestion = () => {
+        console.log("Adding question");
+        console.log("Current values:", values); // Log current state
+        setValues([...values, '']);
+        console.log("Updated values:", [...values, '']); // Log new state
+    };
 
-        // split value when there is at least one blank line
-        const linesArray = value.split(/\n{2,}/); 
-
-        // if the first item in linesArray is blank, remove it
-        if (linesArray[0] === '') linesArray.shift();
-
-        if (linesArray[linesArray.length - 1] === '') linesArray.pop();
-
-        setFilteredValue(linesArray);
-    }
+    const handleUpdatePreview = (newValues: string[]) => {
+        setValues(newValues);
+        setFilteredValue(newValues.filter(value => value.trim() !== ''));
+    };
 
     const handleQuizTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuizTitle(event.target.value);
@@ -204,6 +200,8 @@ const QuizForm: React.FC = () => {
         navigator.clipboard.writeText(link);
     }
 
+    
+
     return (
         <div className='quizEditor'>
 
@@ -213,7 +211,7 @@ const QuizForm: React.FC = () => {
                     message={`Êtes-vous sûr de vouloir quitter l'éditeur sans sauvegarder le questionnaire?`}
                 />
 
-                <div className='title'>Éditeur de quiz</div>
+                <div className='title'>Éditeur de Quiz</div>
 
                 <div className='dumb'></div>
             </div>
@@ -253,9 +251,12 @@ const QuizForm: React.FC = () => {
 
                 <div className='edit'>
                     <Editor
-                        label="Contenu GIFT du quiz:"
-                        initialValue={value}
-                        onEditorChange={handleUpdatePreview} />
+                        label="Contenu GIFT de chaque question:"
+                        values={values}
+                        onValuesChange={handleUpdatePreview} />
+                    <Button variant="contained" onClick={handleAddQuestion}>
+                        Ajouter une question
+                    </Button>
 
                     <div className='images'>
                         <div className='upload'>
