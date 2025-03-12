@@ -1168,12 +1168,16 @@ public async login(email: string, password: string): Promise<any> {
 
            const allQuizIds: string[] = [];
 
-           for (const folder of folders) {
-               const folderQuizzes = await this.getFolderContent(folder._id);
+           if (Array.isArray(folders)) {
+               for (const folder of folders) {
+                   const folderQuizzes = await this.getFolderContent(folder._id);
 
-               if (Array.isArray(folderQuizzes)) {
-                   allQuizIds.push(...folderQuizzes.map(quiz => quiz._id));
+                   if (Array.isArray(folderQuizzes)) {
+                       allQuizIds.push(...folderQuizzes.map(quiz => quiz._id));
+                   }
                }
+           } else {
+               console.error('Failed to get user folders:', folders);
            }
 
            return allQuizIds;
