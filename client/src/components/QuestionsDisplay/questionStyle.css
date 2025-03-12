@@ -31,7 +31,8 @@
 }
 
 .katex * {
-    font-family: 'KaTeX_Main'  /* to display characters like \neq properly */
+    font-family: 'KaTeX_Main'
+        /* to display characters like \neq properly */
 }
 
 .circle {
@@ -52,15 +53,6 @@
 .circle.selected {
     background-color: var(--main-color);
     color: white;
-}
-
-.button-wrapper {
-    border: 0;
-    display: flex;
-    column-gap: 0.5rem;
-    align-items: center;
-    background-color: transparent;
-    margin-bottom: 0.25rem;
 }
 
 .answer-text {
@@ -97,15 +89,11 @@
 }
 
 .answer-positive-weight {
-    background-color: hsl(
-        120, 100%, 90%
-    );
+    background-color: hsl(120, 100%, 90%);
 }
 
 .answer-zero-or-less-weight {
-    background-color: hsl(
-        0, 100%, 90%
-    );
+    background-color: hsl(0, 100%, 90%);
 }
 
 .answer-text.selected {
@@ -113,22 +101,33 @@
     color: white;
 }
 
+.button-wrapper {
+    border: 0;
+    display: flex;
+    column-gap: 0.5rem;
+    background-color: transparent;
+    margin-bottom: 0.25rem;
+}
+
 .choice-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    align-content: center;
 }
 
+
 .feedback-container {
-    display: inline-block !important; /* override the parent */
-    align-items: center;
+    position: absolute;
+    right: calc(-1 * var(--button-wrapper-width)); 
     margin-left: 1.1rem;
-    position: relative;
     padding: 0 0.5rem;
     background-color: hsl(43, 100%, 94%);
     color: hsl(43, 95%, 9%);
     border: hsl(36, 84%, 93%) 1px solid;
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+    width: var(--button-wrapper-width);
 }
 
 .feedback-container img {
@@ -156,6 +155,7 @@
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
 }
+
 .false-feedback {
     position: relative;
     padding: 0 1rem;
