@@ -19,6 +19,11 @@ jest.mock('react-router-dom', () => ({
 }));
 jest.mock('src/pages/Teacher/ManageRoom/RoomContext');
 
+jest.mock('qrcode.react', () => ({
+    __esModule: true,
+    default: ({ value }: { value: string }) => <div data-testid="qr-code">{value}</div>
+}));
+
 const mockSocket = {
     on: jest.fn(),
     off: jest.fn(),
@@ -292,5 +297,44 @@ describe('ManageRoom', () => {
         await waitFor(() => {
             expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
         });
+    });
+    test('Affiche la modale QR Code lorsqu’on clique sur le bouton', () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        const button = screen.getByRole('button', { name: /lien de participation/i });
+        fireEvent.click(button);
+        
+        expect(screen.getByText('Rejoindre la salle')).toBeInTheDocument();
+        expect(screen.getByText('Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :')).toBeInTheDocument();
+        expect(screen.getByTestId('qr-code')).toBeInTheDocument();
+    });
+
+    test('Ferme la modale QR Code lorsqu’on clique sur le bouton Fermer', async () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+        expect(screen.getByText('Rejoindre la salle')).toBeInTheDocument();
+    
+        fireEvent.click(screen.getByRole('button', { name: /fermer/i }));
+    
+        await waitFor(() => expect(screen.queryByText('Rejoindre la salle')).not.toBeInTheDocument());
+    });
+    
+    test('Affiche le bon lien de participation', () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+        
+        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
+    });
+
+    test('Vérifie que le QR code contient la bonne URL', () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+        
+        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        expect(screen.getByTestId('qr-code')).toHaveTextContent(`${roomUrl}`);
     });
 });

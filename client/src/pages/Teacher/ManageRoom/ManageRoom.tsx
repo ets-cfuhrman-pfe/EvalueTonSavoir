@@ -14,6 +14,7 @@ import webSocketService, {
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
 import './manageRoom.css';
+import QRCodeIcon from '@mui/icons-material/QrCode';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
@@ -23,14 +24,22 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
+} from '@mui/material';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import QRCode from 'qrcode.react';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -38,6 +47,8 @@ const ManageRoom: React.FC = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
+    const [showQrModal, setShowQrModal] = useState(false);
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -64,7 +75,16 @@ const ManageRoom: React.FC = () => {
         return () => {
             disconnectWebSocket();
         };
-      }, [roomName, navigate]);
+    }, [roomName, navigate]);
+
+    useEffect(() => {
+        if (!roomName) {
+            console.error('Room name is missing!');
+            return;
+        }
+
+        console.log(`Joining room: ${roomName}`);
+    }, [roomName]);
 
     useEffect(() => {
         if (quizId) {
@@ -134,8 +154,8 @@ const ManageRoom: React.FC = () => {
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion(
                     {roomName: formattedRoomName, 
-                     questions: quizQuestions, 
-                     questionIndex: Number(currentQuestion?.question.id) - 1, 
+                    questions: quizQuestions,
+                    questionIndex: Number(currentQuestion?.question.id) - 1,
                      isLaunch: false});
             } else if (quizMode === 'student') {
                 webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
@@ -230,8 +250,8 @@ const ManageRoom: React.FC = () => {
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
         webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
-                                       questionIndex: nextQuestionIndex, 
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
                                        isLaunch: false});
     };
 
@@ -242,7 +262,12 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: prevQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const initializeQuizQuestion = () => {
@@ -400,7 +425,55 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <h1>Salle : {formattedRoomName}</h1>
+            {/* En-tête avec titre et bouton QR code*/}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
+                <h1 style={{ margin: 0 }}>Salle : {formattedRoomName}</h1>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowQrModal(true)}
+                    startIcon={<QRCodeIcon />}
+                >
+                    Lien de participation
+                </Button>
+            </div>
+
+            {/* Modale QR Code */}
+            <Dialog
+                open={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                aria-labelledby="qr-modal-title"
+            >
+                <DialogTitle id="qr-modal-title">Rejoindre la salle</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :
+                    </DialogContentText>
+
+                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                        <QRCode value={roomUrl} size={256} />
+                    </div>
+
+                    <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>
+                        <h3>URL de participation :</h3>
+                        <p>{roomUrl}</p>
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowQrModal(false)} color="primary">
+                        Fermer
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
@@ -417,15 +490,15 @@ const ManageRoom: React.FC = () => {
                         width: '100%'
                     }}
                 >
-                    {(
+                    {
                         <div
                             className="userCount subtitle smallText"
-                            style={{ display: "flex", justifyContent: "flex-end" }}
+                            style={{ display: 'flex', justifyContent: 'flex-end' }}
                         >
                             <GroupIcon style={{ marginRight: '5px' }} />
                             {students.length}/60
                         </div>
-                    )}
+                    }
                 </div>
 
                 <div className="dumb"></div>

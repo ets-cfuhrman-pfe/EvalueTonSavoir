@@ -5,7 +5,7 @@ import { ENV_VARIABLES } from 'src/constants';
 
 import StudentModeQuiz from 'src/components/StudentModeQuiz/StudentModeQuiz';
 import TeacherModeQuiz from 'src/components/TeacherModeQuiz/TeacherModeQuiz';
-import webSocketService, { AnswerSubmissionToBackendType } from '../../../services/WebsocketService';
+import webSocketService, {AnswerSubmissionToBackendType} from '../../../services/WebsocketService';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 
 import './joinRoom.css';
@@ -13,9 +13,10 @@ import { QuestionType } from '../../../Types/QuestionType';
 import { TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
-import LoginContainer from 'src/components/LoginContainer/LoginContainer'
+import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
-import ApiService from '../../../services/ApiService'
+import ApiService from '../../../services/ApiService';
+import { useSearchParams } from 'react-router-dom';
 
 export type AnswerType = string | number | boolean;
 
@@ -30,6 +31,17 @@ const JoinRoom: React.FC = () => {
     const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
+    const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
+    const [searchParams] = useSearchParams(); // Remplacer l'ancienne méthode
+
+    useEffect(() => {
+        const roomFromUrl = searchParams.get('roomName');
+        if (roomFromUrl) {
+            setRoomName(roomFromUrl);
+            setIsQRCodeJoin(true);
+            console.log('Mode QR Code détecté, salle:', roomFromUrl);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         handleCreateSocket();
@@ -43,7 +55,7 @@ const JoinRoom: React.FC = () => {
         setAnswers(Array(questions.length).fill({} as AnswerSubmissionToBackendType));
         console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
     }, [questions]);
-
+    
 
     const handleCreateSocket = () => {
         console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
@@ -100,7 +112,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
-//        localStorage.clear();
+        //        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -197,21 +209,25 @@ const JoinRoom: React.FC = () => {
         default:
             return (
                 <LoginContainer
-                    title='Rejoindre une salle'
-                    error={connectionError}>
+                    title={isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre une salle'}
+                    error={connectionError}
+                >
+                    {/* Afficher champ salle SEULEMENT si pas de QR code */}
+                    {!isQRCodeJoin && (
+                        <TextField
+                            type="text"
+                            label="Nom de la salle"
+                            variant="outlined"
+                            value={roomName}
+                            onChange={(e) => setRoomName(e.target.value.toUpperCase())}
+                            placeholder="Nom de la salle"
+                            sx={{ marginBottom: '1rem' }}
+                            fullWidth={true}
+                            onKeyDown={handleReturnKey}
+                        />
+                    )}
 
-                    <TextField
-                        type="text"
-                        label="Nom de la salle"
-                        variant="outlined"
-                        value={roomName}
-                        onChange={(e) => setRoomName(e.target.value.toUpperCase())}
-                        placeholder="Nom de la salle"
-                        sx={{ marginBottom: '1rem' }}
-                        fullWidth={true}
-                        onKeyDown={handleReturnKey}
-                    />
-
+                    {/* Champ username toujours visible */}
                     <TextField
                         label="Nom d'utilisateur"
                         variant="outlined"
@@ -228,9 +244,10 @@ const JoinRoom: React.FC = () => {
                         onClick={handleSocket}
                         variant="contained"
                         sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                        disabled={!username || !roomName}
-                    >Rejoindre</LoadingButton>
-
+                        disabled={!username || (isQRCodeJoin && !roomName)}
+                    >
+                        {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                    </LoadingButton>
                 </LoginContainer>
             );
     }
