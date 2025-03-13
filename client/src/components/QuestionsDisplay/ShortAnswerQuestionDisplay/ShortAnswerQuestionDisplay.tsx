@@ -17,34 +17,59 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
 
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
-    
+    const [isGoodAnswer, setisGoodAnswer] = useState<boolean>(false);
+
+
     useEffect(() => {
-    if (passedAnswer !== undefined) {
-        setAnswer(passedAnswer);
-    }
+        if (passedAnswer !== undefined) {
+            setAnswer(passedAnswer);
+        }
     }, [passedAnswer]);
-    console.log("Answer" , answer);
+
+    useEffect(() => {
+        checkAnswer();
+    }, [answer]);
+
+    const checkAnswer = () => {
+        const isCorrect = question.choices.some((choice) => choice.text.toLowerCase() === (answer as String).toLowerCase());
+        setisGoodAnswer(isCorrect);
+    };
 
     return (
+
         <div className="question-wrapper">
-            <div className="question content">
+            {showAnswer && (
+                <div>
+                    <div className='question-feedback-validation'>
+                        {isGoodAnswer ? '✅ Correct! ' : '❌ Incorrect!'}
+                    </div>
+                    <div className="question-title">
+                        Question :
+                    </div>
+
+                </div>
+            )}
+            <div>
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             {showAnswer ? (
                 <>
                     <div className="correct-answer-text mb-1">
-                    <span>
-                        <strong>La bonne réponse est: </strong>
-                    
-                        {question.choices.map((choice) => (
-                            <div key={choice.text} className="mb-1">
-                                {choice.text}
+                        <div>
+                            <div className="question-title">
+                                Réponse(s) accepté(es):
                             </div>
-                        ))}
-                    </span>
-                    <span>
-                        <strong>Votre réponse est: </strong>{answer}
-                    </span>
+                            {question.choices.map((choice) => (
+                                <div key={choice.text} className="accepted-answers">
+                                    {choice.text}
+                                </div>
+                            ))}
+                        </div>
+                        <div>
+                            <div className="question-title">
+                                Votre réponse est: </div>
+                            <div className="accepted-answers">{answer}</div>
+                        </div>
                     </div>
                     {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />

@@ -18,6 +18,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+    const [isGoodAnswer, setisGoodAnswer] = useState<boolean>(false);
     const correctAnswers = question.choices;
     let correctAnswer = '';
 
@@ -27,6 +28,14 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     }
     }, [passedAnswer]);
     
+    useEffect(() => {
+        checkAnswer();
+    }, [answer]);
+
+    const checkAnswer = () => {
+        const isCorrect = correctAnswer === answer;
+        setisGoodAnswer(isCorrect);
+    };
     //const isSingleAnswer = correctAnswers.length === 1;
 
     if (isSimpleNumericalAnswer(correctAnswers[0])) {
@@ -45,21 +54,40 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
 
     return (
         <div className="question-wrapper">
+            {showAnswer && (
+            <div>
+                <div className='question-feedback-validation'>
+                    {isGoodAnswer ? '✅ Correct! ' : '❌ Incorrect!'}    
+                </div>
+                <div className="question-title">
+                    Question : 
+                </div>
+               
+            </div>
+            )}
             <div>
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             {showAnswer ? (
-                <>
-                    <div className="correct-answer-text mb-2">
-                    <strong>La bonne réponse est: </strong>
-                    {correctAnswer}</div>
-                    <span>
-                        <strong>Votre réponse est: </strong>{answer.toString()}
-                    </span>
+ <>
+                    <div className="correct-answer-text mb-1">
+                        <div>
+                            <div className="question-title">
+                                Réponse(s) accepté(es):
+                            </div>
+                                <div className="accepted-answers">
+                                    {correctAnswer}
+                                </div>
+                        </div>
+                        <div>
+                            <div className="question-title">
+                                Votre réponse est: </div>
+                            <div className="accepted-answers">{answer}</div>
+                        </div>
+                    </div>
                     {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>}
-
                 </>
             ) : (
                 <>

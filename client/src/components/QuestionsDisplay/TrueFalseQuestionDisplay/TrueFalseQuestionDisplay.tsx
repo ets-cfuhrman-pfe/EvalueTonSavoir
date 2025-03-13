@@ -47,7 +47,19 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
     return (
-        <div className="question-container">
+        <div className="question-wrapper">
+             {showAnswer && (
+                <div>
+                    <div className='question-feedback-validation'>
+                        {question.isTrue? '✅ Correct! ' : '❌ Incorrect!'}
+                    </div>
+                    <div className="question-title">
+                        Question :
+                    </div>
+
+                </div>
+            )}
+            
             <div className="question content">
             <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
