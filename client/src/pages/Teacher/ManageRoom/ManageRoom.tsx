@@ -33,7 +33,7 @@ import {
     DialogActions
 } from '@mui/material';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -497,7 +497,7 @@ const ManageRoom: React.FC = () => {
                     </DialogContentText>
 
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                        <QRCode value={roomUrl} size={256} />
+                        <QRCodeCanvas value={roomUrl} size={256} />
                     </div>
 
                     <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>

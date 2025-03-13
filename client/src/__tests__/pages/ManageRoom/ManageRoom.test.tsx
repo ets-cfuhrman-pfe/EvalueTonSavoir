@@ -21,7 +21,7 @@ jest.mock('src/pages/Teacher/ManageRoom/RoomContext');
 
 jest.mock('qrcode.react', () => ({
     __esModule: true,
-    default: (props: { value: string }) => <div data-testid="qr-code">{props.value}</div>,
+    QRCodeCanvas: ({ value }: { value: string }) => <div data-testid="qr-code">{value}</div>,
 }));
 
 const mockSocket = {
