@@ -32,7 +32,6 @@ describe("ImageDialog Component", () => {
         render(
           <ImageDialog
             galleryOpen={true}
-            admin={false}
             setDialogOpen={setDialogOpenMock}
             setImageLinks={setImageLinksMock}
           />
@@ -50,7 +49,6 @@ describe("ImageDialog Component", () => {
         render(
           <ImageDialog
             galleryOpen={true}
-            admin={false}
             setDialogOpen={setDialogOpenMock}
             setImageLinks={setImageLinksMock}
           />
@@ -68,7 +66,6 @@ describe("ImageDialog Component", () => {
         render(
           <ImageDialog
             galleryOpen={true}
-            admin={false}
             setDialogOpen={setDialogOpenMock}
             setImageLinks={setImageLinksMock}
           />
@@ -85,32 +82,11 @@ describe("ImageDialog Component", () => {
     expect(screen.getByText("Copié!")).toBeInTheDocument();
   });
 
-  test("shows edit field when admin clicks edit button", async () => {
-    await act(async () => {
-        render(
-          <ImageDialog
-            galleryOpen={true}
-            admin={true}
-            setDialogOpen={setDialogOpenMock}
-            setImageLinks={setImageLinksMock}
-          />
-        );
-      });
-
-    await waitFor(() => expect(ApiService.getImages).toHaveBeenCalled());
-
-    const editButton = screen.getByTestId("edit-button-1"); 
-    fireEvent.click(editButton);
-
-    expect(screen.getByDisplayValue("image1.jpg")).toBeInTheDocument();
-  });
-
   test("navigates to next and previous page", async () => {
     await act(async () => {
         render(
           <ImageDialog
             galleryOpen={true}
-            admin={false}
             setDialogOpen={setDialogOpenMock}
             setImageLinks={setImageLinksMock}
           />
@@ -126,5 +102,49 @@ describe("ImageDialog Component", () => {
     fireEvent.click(screen.getByText("Précédent"));
 
     await waitFor(() => expect(ApiService.getImages).toHaveBeenCalledWith(1, 3));
+  });
+
+  test("deletes an image successfully", async () => {
+    jest.spyOn(ApiService, "deleteImage").mockResolvedValue(true);
+    
+    await act(async () => {
+      render(
+        <ImageDialog
+          galleryOpen={true}
+          setDialogOpen={setDialogOpenMock}
+          setImageLinks={setImageLinksMock}
+        />
+      );
+    });
+
+    await waitFor(() => expect(ApiService.getImages).toHaveBeenCalled());
+    
+    fireEvent.click(screen.getByTestId("delete-button-1"));
+    
+    await waitFor(() => expect(ApiService.deleteImage).toHaveBeenCalledWith("1"));
+    
+    expect(screen.queryByTestId("delete-button-1")).not.toBeInTheDocument();
+  });
+
+  test("handles failed delete when image is linked", async () => {
+    jest.spyOn(ApiService, "deleteImage").mockResolvedValue(false);
+    
+    await act(async () => {
+      render(
+        <ImageDialog
+          galleryOpen={true}
+          setDialogOpen={setDialogOpenMock}
+          setImageLinks={setImageLinksMock}
+        />
+      );
+    });
+
+    await waitFor(() => expect(ApiService.getImages).toHaveBeenCalled());
+    
+    fireEvent.click(screen.getByTestId("delete-button-1"));
+    
+    await waitFor(() => expect(ApiService.deleteImage).toHaveBeenCalledWith("1"));
+    
+    expect(screen.getByText("Confirmer la suppression")).toBeInTheDocument();
   });
 });

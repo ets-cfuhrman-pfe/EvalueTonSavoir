@@ -88,7 +88,8 @@ describe('Images', () => {
             insertOne: jest.fn().mockResolvedValue({ insertedId: 'image123' }),
             findOne: jest.fn(),
             find: jest.fn().mockReturnValue(mockFindCursor),
-            countDocuments: jest.fn()
+            countDocuments: jest.fn(),
+            deleteOne: jest.fn(),
         };
 
         dbConn = {
@@ -241,6 +242,64 @@ describe('Images', () => {
             });
             expect(db.connect).toHaveBeenCalled();
             expect(mockImagesCollection.countDocuments).toHaveBeenCalledWith({ userId: 'user123' });
+        });
+    });
+
+    describe('delete', () => {
+        
+        it('should delete the image when it exists', async () => {
+            const uid = 'user123';
+            const imgId = 'img123';
+    
+            // Simulate the image being found in the collection
+            mockImagesCollection.find.mockResolvedValue([{ _id: imgId }]);
+            mockImagesCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
+    
+            const result = await images.delete(uid, imgId);
+    
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(mockImagesCollection.find).toHaveBeenCalledWith({
+                userId: uid,
+                content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
+            });
+            expect(mockImagesCollection.deleteOne).toHaveBeenCalledWith({ _id: imgId });
+            expect(result).toEqual({ deleted: true });
+        });
+    
+        it('should not delete the image when it does not exist', async () => {
+            const uid = 'user123';
+            const imgId = 'img123';
+    
+            // Simulate the image not being found in the collection
+            mockImagesCollection.find.mockResolvedValue([]);
+    
+            const result = await images.delete(uid, imgId);
+    
+            expect(db.connect).toHaveBeenCalled();
+            expect(mockImagesCollection.find).toHaveBeenCalledWith({
+                userId: uid,
+                content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
+            });
+            expect(mockImagesCollection.deleteOne).toHaveBeenCalled();
+            expect(result).toEqual({ deleted: false });
+        });
+    
+        it('should return false if the delete operation fails', async () => {
+            const uid = 'user123';
+            const imgId = 'img123';
+    
+            // Simulate the image being found, but the delete operation failing
+            mockImagesCollection.find.mockResolvedValue([{ _id: imgId }]);
+    
+            const result = await images.delete(uid, imgId);
+    
+            expect(db.connect).toHaveBeenCalled();
+            expect(mockImagesCollection.find).toHaveBeenCalledWith({
+                userId: uid,
+                content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
+            });
+            expect(result).toEqual({ deleted: false });
         });
     });
 });

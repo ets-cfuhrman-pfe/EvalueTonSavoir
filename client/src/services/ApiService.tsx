@@ -1247,6 +1247,36 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+    public async deleteImage(imgId: string): Promise<ApiResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/delete`);
+            const headers = this.constructRequestHeaders();
+            const uid = this.getUserID();
+            let params = { uid: uid, imgId: imgId };
+
+            const result: AxiosResponse = await axios.delete(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La suppression de l'image a échoué. Status: ${result.status}`);
+            }
+            const deleted = result.data.delete;
+
+            return deleted;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
 }
 
 const apiService = new ApiService();

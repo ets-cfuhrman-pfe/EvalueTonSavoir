@@ -102,6 +102,24 @@ class Images {
 
         return respObj;
     }
+
+    async delete(uid, imgId) {
+        let resp = false;
+        await this.db.connect()
+        const conn = this.db.getConnection();
+        const imgsColl = conn.collection('files');
+        const rgxImg = new RegExp(`/api/image/get/${imgId}`);
+        
+        const result = await imgsColl.find({ userId: uid, content: { $regex: rgxImg }});
+
+        if(result){
+            const isDeleted = await imgsColl.deleteOne({ _id: imgId });
+            if(isDeleted){
+                resp = true;
+            }
+        }
+        return { deleted: resp };
+    }
 }
 
 module.exports = Images;
