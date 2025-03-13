@@ -302,7 +302,6 @@ const QuizForm: React.FC = () => {
                                 <ImageGallery 
                                     galleryOpen={galleryOpen}
                                     setDialogOpen={setGalleryOpen}
-                                    admin={false}
                                     setImageLinks={setImageLinks}
                                     >
                                 </ImageGallery>
