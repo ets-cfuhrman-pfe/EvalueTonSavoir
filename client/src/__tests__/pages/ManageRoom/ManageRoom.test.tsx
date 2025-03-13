@@ -21,7 +21,7 @@ jest.mock('src/pages/Teacher/ManageRoom/RoomContext');
 
 jest.mock('qrcode.react', () => ({
     __esModule: true,
-    default: ({ value }: { value: string }) => <div data-testid="qr-code">{value}</div>
+    default: (props: { value: string }) => <div data-testid="qr-code">{props.value}</div>,
 }));
 
 const mockSocket = {
@@ -319,7 +319,7 @@ describe('ManageRoom', () => {
     
         await waitFor(() => expect(screen.queryByText('Rejoindre la salle')).not.toBeInTheDocument());
     });
-    
+
     test('Affiche le bon lien de participation', () => {
         render(<MemoryRouter><ManageRoom /></MemoryRouter>);
         
@@ -335,6 +335,6 @@ describe('ManageRoom', () => {
         fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
         
         const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
-        expect(screen.getByTestId('qr-code')).toHaveTextContent(`${roomUrl}`);
+        expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
     });
 });
