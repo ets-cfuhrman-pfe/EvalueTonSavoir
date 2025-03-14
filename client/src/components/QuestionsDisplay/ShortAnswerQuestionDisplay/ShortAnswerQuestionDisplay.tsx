@@ -31,7 +31,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
     }, [answer]);
 
     const checkAnswer = () => {
-        const isCorrect = question.choices.some((choice) => choice.text.toLowerCase() === (answer as String).toLowerCase());
+        const isCorrect = question.choices.some((choice) => String(choice.text).toLowerCase() === String(answer).toLowerCase());
         setisGoodAnswer(isCorrect);
     };
 
