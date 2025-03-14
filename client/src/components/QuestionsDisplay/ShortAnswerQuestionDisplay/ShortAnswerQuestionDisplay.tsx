@@ -91,6 +91,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                     </div>
                     {handleOnSubmitAnswer && (
                         <Button
+                        className='submit-button'   
                             variant="contained"
                             onClick={() =>
                                 answer !== undefined &&

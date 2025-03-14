@@ -99,6 +99,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
             {!showAnswer && handleOnSubmitAnswer && (
 
                 <Button
+                    className='submit-button'
                     variant="contained"
                     onClick={() =>
                         answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)

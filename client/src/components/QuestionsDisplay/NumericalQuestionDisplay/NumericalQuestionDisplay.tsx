@@ -109,6 +109,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                     )}
                     {handleOnSubmitAnswer && (
                         <Button
+                        className='submit-button'
                             variant="contained"
                             onClick={() =>
                                 answer !== undefined &&

@@ -105,6 +105,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
             )}
             {!showAnswer && handleOnSubmitAnswer && (
                 <Button
+                className='submit-button'
                     variant="contained"
                     onClick={() =>
                         answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
