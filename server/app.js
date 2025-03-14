@@ -20,6 +20,8 @@ const users = require('./models/users.js');
 const userModel = new users(db, foldersModel);
 const images = require('./models/images.js');
 const imageModel = new images(db);
+const Admin = require('./models/admin.js');
+const adminModel = new Admin(db);
 
 // instantiate the controllers
 const usersController = require('./controllers/users.js');
@@ -32,6 +34,8 @@ const quizController = require('./controllers/quiz.js');
 const quizControllerInstance = new quizController(quizModel, foldersModel);
 const imagesController = require('./controllers/images.js');
 const imagesControllerInstance = new imagesController(imageModel);
+const AdminController = require('./controllers/admin.js');
+const AdminControllerInstance = new AdminController(adminModel);
 
 // export the controllers
 module.exports.users = usersControllerInstance;
@@ -39,6 +43,7 @@ module.exports.rooms = roomsControllerInstance;
 module.exports.folders = foldersControllerInstance;
 module.exports.quizzes = quizControllerInstance;
 module.exports.images = imagesControllerInstance;
+module.exports.admin = AdminControllerInstance;
 
 //import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
@@ -48,6 +53,7 @@ const quizRouter = require('./routers/quiz.js');
 const imagesRouter = require('./routers/images.js')
 const AuthManager = require('./auth/auth-manager.js')
 const authRouter = require('./routers/auth.js')
+const adminRouter = require('./routers/admin.js')
 
 // Setup environment
 dotenv.config();
@@ -100,6 +106,7 @@ app.use('/api/folder', folderRouter);
 app.use('/api/quiz', quizRouter);
 app.use('/api/image', imagesRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 
 // Add Auths methods
 const session = require('express-session');
@@ -113,11 +120,9 @@ app.use(session({
 let _authManager = new AuthManager(app,null,userModel);
 app.use(errorHandler);
 
-// Start server
 async function start() {
   const port = process.env.PORT || 4400;
 
-  // Check DB connection
   await db.connect();
   db.getConnection();
   console.log(`Connexion MongoDB établie`);
@@ -127,7 +132,6 @@ async function start() {
   });
 }
 
-// Graceful shutdown on SIGINT (Ctrl+C)
 process.on('SIGINT', async () => {
   console.log('Shutting down...');
   await db.closeConnection();
