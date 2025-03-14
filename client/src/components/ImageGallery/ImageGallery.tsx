@@ -124,7 +124,7 @@ const ImageDialog: React.FC<Props> = ({ galleryOpen, setDialogOpen, setImageLink
                       <IconButton onClick={() => onCopy(obj.id)} size="small" data-testid={`copy-button-${obj.id}`}>
                         <ContentCopyIcon fontSize="small" />
                       </IconButton>
-                      <IconButton onClick={() => handleDelete(obj.id)} size="small" color="secondary" data-testid={`delete-button-${obj.id}`}>
+                      <IconButton onClick={() => handleDelete(obj.id)} size="small" color="primary" data-testid={`delete-button-${obj.id}`}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                       {copiedId === obj.id && <span style={{ marginLeft: 8, color: "green" }}>Copié!</span>}

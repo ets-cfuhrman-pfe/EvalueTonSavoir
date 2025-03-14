@@ -144,13 +144,14 @@ class ApiService {
     }
 
     public getUserID(): string {
-        const objectStr = localStorage.getItem("jwt");
+        const token = localStorage.getItem("jwt");
         
-        if (!objectStr) {
+        if (!token) {
             return "";
         }
 
-        const jsonObj = JSON.parse(objectStr);
+        const jsonObj = jwtDecode(token) as { userId: string };
+        
         if (!jsonObj.userId) {
             return "";
         }
@@ -1259,8 +1260,8 @@ public async login(email: string, password: string): Promise<any> {
             if (result.status !== 200) {
                 throw new Error(`La suppression de l'image a échoué. Status: ${result.status}`);
             }
-            const deleted = result.data.delete;
 
+            const deleted = result.data.deleted;
             return deleted;
 
         } catch (error) {

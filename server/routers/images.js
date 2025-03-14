@@ -14,6 +14,6 @@ router.post("/upload", jwt.authenticate, upload.single('image'), asyncHandler(im
 router.get("/get/:id", asyncHandler(images.get));
 router.get("/getImages", asyncHandler(images.getImages));
 router.get("/getUserImages", asyncHandler(images.getUserImages));
-router.get("/delete", asyncHandler(images.delete));
+router.delete("/delete", asyncHandler(images.delete));
 
 module.exports = router;
