@@ -60,7 +60,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     <div >
     <b>Question {questionInfos.question.id}/{questions.length}</b>
     </div>
-        <div className="overflow-auto">
+        <div className="overflow-auto" style={{ width: '50%', alignItems: 'center', justifyContent: 'center', margin: 'auto' }}>
             <div className="question-component-container">
                 <div className="mb-5">
                     {/* <QuestionNavigation
