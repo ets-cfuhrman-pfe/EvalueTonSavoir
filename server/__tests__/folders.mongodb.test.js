@@ -6,6 +6,7 @@ console.log('db:', db); // Debugging line
 console.log('db.getConnection:', db.getConnection); // Debugging line
 
 describe('Folders', () => {
+    const folder = new Folder(db, new Quiz(db));
     let database;
 
     beforeAll(async () => {
@@ -17,15 +18,52 @@ describe('Folders', () => {
         await db.closeConnection();
     });
 
-    it('should insert a folder into collection', async () => {
-        const folders = new Folder(db, Quiz);
-        const folderId = await folders.create('Test Folder', '12345');
-        const result = await database.collection('folders').findOne({ _id: folderId });
-        expect(result).toBeTruthy();
-        console.log('found folder result:', result); // Debugging line
-        expect(result.title).toBe('Test Folder');
+    // it('should insert a folder into collection', async () => {
+    //     const folders = new Folder(db, Quiz);
+    //     const folderId = await folders.create('Test Folder', '12345');
+    //     const result = await database.collection('folders').findOne({ _id: folderId });
+    //     expect(result).toBeTruthy();
+    //     console.log('found folder result:', result); // Debugging line
+    //     expect(result.title).toBe('Test Folder');
+    // });
+
+    describe('create', () => {
+        it('should create a new folder and return the new folder ID', async () => {
+            const title = 'Test Folder';
+            const userId = '12345';
+
+            // Ensure the folder does not exist before the test
+            await database.collection('folders').deleteMany({ title, userId });
+
+            const result = await folder.create(title, userId);
+
+            const createdFolder = await database.collection('folders').findOne({ _id: result });
+
+            expect(createdFolder).toBeTruthy();
+            expect(createdFolder.title).toBe(title);
+            expect(createdFolder.userId).toBe(userId);
+        });
+
+        it('should throw an error if userId is undefined', async () => {
+            const title = 'Test Folder';
+
+            await expect(folder.create(title, undefined)).rejects.toThrow('Missing required parameter(s)');
+        });
+
+        it('should throw an error if the folder already exists', async () => {
+            const title = 'Existing Folder';
+            const userId = '12345';
+
+            // Ensure the folder exists before the test
+            await database.collection('folders').insertOne({ title, userId, created_at: new Date() });
+
+            await expect(folder.create(title, userId)).rejects.toThrow('Folder already exists');
+
+            // Clean up
+            await database.collection('folders').deleteMany({ title, userId });
+        });
     });
-    
+
     // beforeEach(() => {
     //     jest.clearAllMocks(); // Clear any previous mock calls
 
