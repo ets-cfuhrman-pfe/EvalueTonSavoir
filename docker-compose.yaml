@@ -10,7 +10,7 @@ services:
       - VITE_BACKEND_URL=
       # Define empty VITE_BACKEND_SOCKET_URL so it will default to window.location.host
       - VITE_BACKEND_SOCKET_URL=
-      - IMG_URL: https://evalsa.etsmtl.ca
+      - VITE_IMG_URL=https://evalsa.etsmtl.ca
     ports:
       - "5173:5173"
     restart: always

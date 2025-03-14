@@ -2,7 +2,7 @@
 const ENV_VARIABLES = {
     MODE: process.env.MODE || "production",
     VITE_BACKEND_URL: process.env.VITE_BACKEND_URL || "",
-    IMG_URL: process.env.MODE == "development" ? process.env.VITE_BACKEND_URL : process.env.IMG_URL,
+    IMG_URL: import.meta.env.VITE_IMG_URL || "http://localhost",
     BACKEND_URL: process.env.SITE_URL != undefined ? `${process.env.SITE_URL}${process.env.USE_PORTS ? `:${process.env.BACKEND_PORT}`:''}` : process.env.VITE_BACKEND_URL || '',
     FRONTEND_URL: process.env.SITE_URL != undefined ? `${process.env.SITE_URL}${process.env.USE_PORTS ? `:${process.env.PORT}`:''}` : ''
 };
