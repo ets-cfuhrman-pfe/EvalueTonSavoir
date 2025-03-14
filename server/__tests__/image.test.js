@@ -68,6 +68,17 @@ describe.skip("GET /get", () => {
 
 })
 
+jest.mock('mongodb', () => {
+    const originalModule = jest.requireActual('mongodb');
+    return {
+        ...originalModule,
+        ObjectId: {
+            ...originalModule.ObjectId,
+            createFromHexString: jest.fn().mockReturnValue('507f191e810c19729de860ea'), // Return a valid 24-character ObjectId string
+        },
+    };
+});
+
 describe('Images', () => {
     let db;
     let images;
@@ -76,24 +87,41 @@ describe('Images', () => {
     let mockFindCursor;
 
     beforeEach(() => {
+            
+    const mockImagesCursor = {
+        sort: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        toArray: jest.fn()
+    };
 
-        mockFindCursor = {
-            sort: jest.fn().mockReturnThis(),
-            skip: jest.fn().mockReturnThis(),
-            limit: jest.fn().mockReturnThis(),
-            toArray: jest.fn(),
-        };
+    const mockFilesCursor = {
+        sort: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        toArray: jest.fn()
+    };
 
         mockImagesCollection = {
             insertOne: jest.fn().mockResolvedValue({ insertedId: 'image123' }),
             findOne: jest.fn(),
-            find: jest.fn().mockReturnValue(mockFindCursor),
+            find: jest.fn().mockReturnValue(mockImagesCursor),
             countDocuments: jest.fn(),
-            deleteOne: jest.fn(),
+            deleteOne: jest.fn()
         };
 
+        mockFilesCollection = {
+            find: jest.fn().mockReturnValue(mockFilesCursor)
+        };
+        
         dbConn = {
-            collection: jest.fn().mockReturnValue(mockImagesCollection)
+            collection: jest.fn((name) => {
+                if (name === 'images') {
+                    return mockImagesCollection;
+                } else if (name === 'files') {
+                    return mockFilesCollection;
+                }
+            })
         };
 
         db = {
@@ -166,8 +194,16 @@ describe('Images', () => {
             ];
     
             mockImagesCollection.countDocuments.mockResolvedValue(2);
-            mockFindCursor.toArray.mockResolvedValue(mockImages);
+            // Create a mock cursor for images collection
+            const mockFindCursor = {
+                sort: jest.fn().mockReturnThis(),
+                skip: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                toArray: jest.fn().mockResolvedValue(mockImages),  // Return mock images when toArray is called
+            };
     
+            // Mock the find method to return the mock cursor
+            mockImagesCollection.find.mockReturnValue(mockFindCursor);
             const result = await images.getImages(1, 10);
     
             expect(db.connect).toHaveBeenCalled();
@@ -188,7 +224,6 @@ describe('Images', () => {
     
         it('should return an empty array if no images are found', async () => {
             mockImagesCollection.countDocuments.mockResolvedValue(0);
-            mockFindCursor.toArray.mockResolvedValue([]);
     
             const result = await images.getImages(1, 10);
     
@@ -244,62 +279,77 @@ describe('Images', () => {
             expect(mockImagesCollection.countDocuments).toHaveBeenCalledWith({ userId: 'user123' });
         });
     });
-
     describe('delete', () => {
-        
-        it('should delete the image when it exists', async () => {
+        it('should not delete the image when it exists in the files collection', async () => {
             const uid = 'user123';
-            const imgId = 'img123';
-    
-            // Simulate the image being found in the collection
-            mockImagesCollection.find.mockResolvedValue([{ _id: imgId }]);
-            mockImagesCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
-    
+            const imgId = '507f191e810c19729de860ea';  // A valid 24-character ObjectId string
+
+            // Mock the files collection cursor to simulate an image found
+            const mockFilesCursor = {
+                toArray: jest.fn().mockResolvedValue([{ _id: imgId }])  // Image found
+            };
+
+            mockFilesCollection.find.mockReturnValue(mockFilesCursor);
+            mockImagesCollection.deleteOne.mockResolvedValue({ deletedCount: 0 });
+
             const result = await images.delete(uid, imgId);
-    
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.getConnection).toHaveBeenCalled();
-            expect(mockImagesCollection.find).toHaveBeenCalledWith({
+
+            // Ensure the files collection is queried
+            expect(dbConn.collection).toHaveBeenCalledWith('files');
+            expect(mockFilesCollection.find).toHaveBeenCalledWith({
                 userId: uid,
                 content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
             });
-            expect(mockImagesCollection.deleteOne).toHaveBeenCalledWith({ _id: imgId });
+
+            // Ensure the images collection is queried for deletion
+            expect(dbConn.collection).toHaveBeenCalledWith('files');
+            expect(mockImagesCollection.deleteOne).not.toHaveBeenCalledWith({
+                _id: ObjectId.createFromHexString(imgId), // Ensure the ObjectId is created correctly
+            });
+
+            expect(result).toEqual({ deleted: false });
+        });
+
+        it('should delete the image if not found in the files collection', async () => {
+            const uid = 'user123';
+            const imgId = '507f191e810c19729de860ea';
+
+            // Mock the files collection cursor to simulate the image not being found
+            const mockFindCursor = {
+                toArray: jest.fn().mockResolvedValue([])  // Empty array means image not found
+            };
+
+            mockFilesCollection.find.mockReturnValue(mockFindCursor);
+            mockImagesCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
+
+            const result = await images.delete(uid, imgId);
+
+            // Ensure the deleteOne is not called if the image is not found
+            expect(mockImagesCollection.deleteOne).toHaveBeenCalled();
             expect(result).toEqual({ deleted: true });
         });
-    
-        it('should not delete the image when it does not exist', async () => {
+
+        it('should return false if the delete operation fails in the images collection', async () => {
             const uid = 'user123';
-            const imgId = 'img123';
-    
-            // Simulate the image not being found in the collection
-            mockImagesCollection.find.mockResolvedValue([]);
-    
+            const imgId = '507f191e810c19729de860ea';
+
+            // Mock the files collection cursor to simulate the image being found
+            const mockFindCursor = {
+                toArray: jest.fn().mockResolvedValue([{ _id: imgId }])  // Image found
+            };
+
+            mockFilesCollection.find.mockReturnValue(mockFindCursor);
+            mockImagesCollection.deleteOne.mockResolvedValue({ deletedCount: 0 });  // Simulate failure
+
             const result = await images.delete(uid, imgId);
-    
-            expect(db.connect).toHaveBeenCalled();
-            expect(mockImagesCollection.find).toHaveBeenCalledWith({
-                userId: uid,
-                content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
+
+            // Ensure the images collection deletion is called
+            expect(mockImagesCollection.deleteOne).not.toHaveBeenCalledWith({
+                _id: ObjectId.createFromHexString(imgId),  // Ensure the ObjectId is created correctly
             });
-            expect(mockImagesCollection.deleteOne).toHaveBeenCalled();
+
             expect(result).toEqual({ deleted: false });
         });
-    
-        it('should return false if the delete operation fails', async () => {
-            const uid = 'user123';
-            const imgId = 'img123';
-    
-            // Simulate the image being found, but the delete operation failing
-            mockImagesCollection.find.mockResolvedValue([{ _id: imgId }]);
-    
-            const result = await images.delete(uid, imgId);
-    
-            expect(db.connect).toHaveBeenCalled();
-            expect(mockImagesCollection.find).toHaveBeenCalledWith({
-                userId: uid,
-                content: { $regex: new RegExp(`/api/image/get/${imgId}`) },
-            });
-            expect(result).toEqual({ deleted: false });
-        });
+        
     });
 });

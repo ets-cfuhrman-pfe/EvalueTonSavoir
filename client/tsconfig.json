@@ -27,8 +27,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-        "esModuleInterop": true,
-        "types": ["vite/client"]
+        "esModuleInterop": true
     },
     // "exclude": [
     //     // "src/components/GiftTemplate/**/*",
