@@ -13,8 +13,8 @@ class AuthUserAssociation {
     }
 
     async find_user_association(provider_name,auth_id){
-      await db.connect()
-      const conn = db.getConnection();
+
+      const conn = await db.getConnection();
 
       const collection = conn.collection('authUserAssociation');
       const provider_id = await authProvider.getId(provider_name)
@@ -24,8 +24,8 @@ class AuthUserAssociation {
     }
 
     async link(provider_name,auth_id,user_id){
-      await db.connect()
-      const conn = db.getConnection();
+
+      const conn = await db.getConnection();
 
       const collection = conn.collection('authUserAssociation');
       const provider_id = await authProvider.getId(provider_name)
@@ -43,8 +43,8 @@ class AuthUserAssociation {
     }
 
     async unlink(provider_name,user_id){
-      await db.connect()
-      const conn = db.getConnection();
+
+      const conn = await db.getConnection();
 
       const collection = conn.collection('authUserAssociation');
       const provider_id = await authProvider.getId(provider_name)

@@ -10,8 +10,8 @@ class Quiz {
 
     async create(title, content, folderId, userId) {
         // console.log(`quizzes: create title: ${title}, folderId: ${folderId}, userId: ${userId}`);
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -37,8 +37,8 @@ class Quiz {
     }
 
     async getOwner(quizId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -48,8 +48,8 @@ class Quiz {
     }
 
     async getContent(quizId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -59,8 +59,8 @@ class Quiz {
     }
 
     async delete(quizId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -71,8 +71,7 @@ class Quiz {
         return true;
     }
     async deleteQuizzesByFolderId(folderId) {
-        await this.db.connect();
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
 
         const quizzesCollection = conn.collection('files');
 
@@ -82,8 +81,8 @@ class Quiz {
     }
 
     async update(quizId, newTitle, newContent) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -102,8 +101,8 @@ class Quiz {
     }
 
     async move(quizId, newFolderId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const quizCollection = conn.collection('files');
 
@@ -118,7 +117,7 @@ class Quiz {
     }
 
     async duplicate(quizId, userId) {
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
         const quizCollection = conn.collection('files');
 
         const sourceQuiz = await quizCollection.findOne({ _id: ObjectId.createFromHexString(quizId), userId: userId });
@@ -141,8 +140,7 @@ class Quiz {
     }
 
     async quizExists(title, userId) {
-        await this.db.connect();
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
     
         const filesCollection = conn.collection('files');           
         const existingFolder = await filesCollection.findOne({ title: title, userId: userId });        

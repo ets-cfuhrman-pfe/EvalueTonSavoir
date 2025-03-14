@@ -22,8 +22,7 @@ class Users {
   }
 
   async register(userInfos) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -56,8 +55,7 @@ class Users {
   async login(email, password) {
     console.log(`models/users: login: email: ${email}, password: ${password}`);
     try {
-      await this.db.connect();
-      const conn = this.db.getConnection();
+      const conn = await this.db.getConnection();
       const userCollection = conn.collection("users");
 
       const user = await userCollection.findOne({ email: email });
@@ -90,8 +88,7 @@ class Users {
   }
 
   async changePassword(email, newPassword) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -108,8 +105,7 @@ class Users {
   }
 
   async delete(email) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -121,8 +117,7 @@ class Users {
   }
 
   async getId(email) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -136,8 +131,7 @@ class Users {
   }
 
   async getById(id) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 
@@ -151,8 +145,7 @@ class Users {
   }
 
   async editUser(userInfo) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const userCollection = conn.collection("users");
 

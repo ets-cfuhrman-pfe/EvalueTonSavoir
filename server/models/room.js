@@ -17,8 +17,7 @@ class Rooms
       throw new Error("Room already exists");
     }
 
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
     const roomsCollection = conn.collection("rooms");
 
     const newRoom = {
@@ -34,8 +33,7 @@ class Rooms
 
   async getUserRooms(userId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 
@@ -46,8 +44,7 @@ class Rooms
 
   async getOwner(roomId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 
@@ -60,8 +57,7 @@ class Rooms
 
   async getContent(roomId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
     const roomsCollection = conn.collection("rooms");
     if (!ObjectId.isValid(roomId)) 
         {
@@ -75,8 +71,7 @@ class Rooms
 
   async delete(roomId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 
@@ -91,8 +86,7 @@ class Rooms
 
   async rename(roomId, userId, newTitle) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 
@@ -118,8 +112,7 @@ class Rooms
   {
     try 
     {
-      await this.db.connect();
-      const conn = this.db.getConnection();
+      const conn = await this.db.getConnection();
       const existingRoom = await conn.collection("rooms").findOne({
         title: title.toUpperCase(),
         userId: userId,
@@ -132,8 +125,7 @@ class Rooms
   }
   async getRoomById(roomId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 
@@ -159,8 +151,7 @@ class Rooms
   }
   async getRoomTitleByUserId(userId) 
   {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const conn = await this.db.getConnection();
 
     const roomsCollection = conn.collection("rooms");
 

@@ -8,8 +8,8 @@ class AuthProvider {
     }
 
     async getId(name){
-      await db.connect()
-      const conn = db.getConnection();
+
+      const conn = await db.getConnection();
 
       const collection = conn.collection('authprovider');
 
@@ -22,8 +22,8 @@ class AuthProvider {
     }
 
     async create(name) {
-      await db.connect()
-      const conn = db.getConnection();
+
+      const conn = await db.getConnection();
 
       const collection = conn.collection('authprovider');
 

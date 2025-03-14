@@ -7,8 +7,8 @@ class Images {
     }
 
     async upload(file, userId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const imagesCollection = conn.collection('images');
 
@@ -26,8 +26,8 @@ class Images {
     }
 
     async get(id) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const imagesCollection = conn.collection('images');
 

@@ -2,7 +2,7 @@
 const ObjectId = require('mongodb').ObjectId;
 const { generateUniqueTitle } = require('./utils');
 
-class Folders {
+class Folder {
     constructor(db, quizModel) {
         this.db = db;
         this.quizModel = quizModel;
@@ -14,8 +14,8 @@ class Folders {
             throw new Error('Missing required parameter(s)');
         }
         
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -37,8 +37,8 @@ class Folders {
     }
 
     async getUserFolders(userId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -48,8 +48,8 @@ class Folders {
     }
 
     async getOwner(folderId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -60,8 +60,8 @@ class Folders {
 
     // finds all quizzes in a folder
     async getContent(folderId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const filesCollection = conn.collection('files');
 
@@ -71,8 +71,8 @@ class Folders {
     }
 
     async delete(folderId) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -85,8 +85,8 @@ class Folders {
     }
 
     async rename(folderId, userId, newTitle) {
-        await this.db.connect()
-        const conn = this.db.getConnection();
+
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -103,7 +103,7 @@ class Folders {
     }
 
     async duplicate(folderId, userId) {
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
         const foldersCollection = conn.collection('folders');
 
         const sourceFolder = await foldersCollection.findOne({ _id: ObjectId.createFromHexString(folderId), userId: userId });
@@ -139,8 +139,7 @@ class Folders {
     }
 
     async folderExists(title, userId) {
-        await this.db.connect();
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
     
         const foldersCollection = conn.collection('folders');           
         const existingFolder = await foldersCollection.findOne({ title: title, userId: userId });
@@ -163,8 +162,7 @@ class Folders {
     }
 
     async getFolderById(folderId) {
-        await this.db.connect();
-        const conn = this.db.getConnection();
+        const conn = await this.db.getConnection();
 
         const foldersCollection = conn.collection('folders');
 
@@ -192,4 +190,4 @@ class Folders {
 
 }
 
-module.exports = Folders;
+module.exports = Folder;

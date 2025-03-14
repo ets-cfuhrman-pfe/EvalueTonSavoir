@@ -5,14 +5,17 @@ dotenv.config();
 
 class DBConnection {
     constructor() {
-        this.mongoURI = process.env.MONGO_URI;
-        this.databaseName = process.env.MONGO_DATABASE;
+        // for testing with @shelf/jest-mongodb
+        this.mongoURI = globalThis.__MONGO_URI__ || process.env.MONGO_URI;
+        this.databaseName = globalThis.__MONGO_DB_NAME__ || process.env.MONGO_DATABASE;
         this.client = null;
         this.connection = null;
+        console.log(`db.js: Mongo URI: ${this.mongoURI}`);
+        console.log(`db.js: Mongo DB: ${this.databaseName}`);
     }
 
-    // Connect to the database, but don't reconnect if already connected
-    async connect() {
+    // Return the current database connection, creating it if necessary
+    async getConnection() {
         if (this.connection) {
             console.log('Using existing MongoDB connection');
             return this.connection;
@@ -20,7 +23,10 @@ class DBConnection {
 
         try {
             // Create the MongoClient only if the connection does not exist
-            this.client = new MongoClient(this.mongoURI);
+            this.client = new MongoClient(this.mongoURI, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            });
             await this.client.connect();
             this.connection = this.client.db(this.databaseName);
             console.log('MongoDB connected');
@@ -31,18 +37,11 @@ class DBConnection {
         }
     }
 
-    // Return the current database connection
-    getConnection() {
-        if (!this.connection) {
-            throw new Error('MongoDB connection not established');
-        }
-        return this.connection;
-    }
-
     // Close the MongoDB connection gracefully
     async closeConnection() {
         if (this.client) {
             await this.client.close();
+            this.connection = null;
             console.log('MongoDB connection closed');
         }
     }

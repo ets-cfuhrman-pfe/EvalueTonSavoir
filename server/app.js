@@ -118,8 +118,8 @@ async function start() {
   const port = process.env.PORT || 4400;
 
   // Check DB connection
-  await db.connect();
-  db.getConnection();
+  
+  await db.getConnection();
   console.log(`Connexion MongoDB établie`);
 
   server.listen(port, () => {
