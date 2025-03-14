@@ -50,6 +50,58 @@ class ImagesController {
         }
     };
 
+    getImages = async (req, res, next) => {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5;
+            const images = await this.images.getImages(page, limit);
+
+            if (!images || images.length === 0) {
+                throw new AppError(IMAGE_NOT_FOUND);
+            }
+            
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(200).json(images);
+        } catch (error) {
+            return next(error);
+        }
+    };
+
+    getUserImages = async (req, res, next) => {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5;
+            const uid = req.query.uid;
+            const images = await this.images.getUserImages(page, limit, uid);
+    
+            if (!images || images.length === 0) {
+                throw new AppError(IMAGE_NOT_FOUND);
+            }
+            
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(200).json(images);
+        } catch (error) {
+            return next(error);
+        }
+    };
+
+    delete = async (req, res, next) => {
+        try {
+            const uid = req.query.uid;
+            const imgId = req.query.imgId;
+            
+            if (!uid || !imgId) {
+                throw new AppError(MISSING_REQUIRED_PARAMETER);
+            }
+            const images = await this.images.delete(uid, imgId);
+            
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(200).json(images);
+        } catch (error) {
+            return next(error);
+        }
+    };
+
 }
 
 module.exports = ImagesController;
