@@ -29,6 +29,7 @@ import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isAdmin, setIsAdmin] = useState(false);
     const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
@@ -37,6 +38,7 @@ const App: React.FC = () => {
         const checkLoginStatus = () => {
             setIsAuthenticated(ApiService.isLoggedIn());
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
+            //setIsAdmin(ApiService.isAdmin());
         };
 
         const fetchAuthenticatedRooms = async () => {
@@ -56,7 +58,7 @@ const App: React.FC = () => {
 
     return (
         <div className="content">
-            <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
+            <Header isLoggedIn={isAuthenticated} isAdmin={true} handleLogout={handleLogout} />
             <div className="app">
                 <main>
                     <Routes>
