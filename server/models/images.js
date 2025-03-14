@@ -107,13 +107,13 @@ class Images {
         let resp = false;
         await this.db.connect()
         const conn = this.db.getConnection();
-        const imgsColl = conn.collection('files');
+        const quizColl = conn.collection('files');
         const rgxImg = new RegExp(`/api/image/get/${imgId}`);
         
-        const result = await imgsColl.find({ userId: uid, content: { $regex: rgxImg }});
-
-        if(result){
-            const isDeleted = await imgsColl.deleteOne({ _id: imgId });
+        const result = await quizColl.find({ userId: uid, content: { $regex: rgxImg }}).toArray();
+        if(!result || result.length < 1){
+            const imgsColl = conn.collection('images');
+            const isDeleted = await imgsColl.deleteOne({ _id: ObjectId.createFromHexString(imgId) });
             if(isDeleted){
                 resp = true;
             }
