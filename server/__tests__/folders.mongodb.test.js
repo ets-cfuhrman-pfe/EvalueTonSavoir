@@ -152,43 +152,33 @@ describe('Folders', () => {
         });
     });
 
+    // delete
+    describe('delete', () => {
+        it('should delete a folder and return true', async () => {
+            const folderId = await folder.create('Test Folder', '12345');
+
+            // Insert the content using the quiz API
+            const _quiz1ObjectId = await quiz.create('Quiz 1', [], folderId.toString(), '12345');
+            const _quiz2ObjectId = await quiz.create('Quiz 2', [], folderId.toString(), '12345');
+
+            const result = await folder.delete(folderId.toString());
+
+            expect(result).toBe(true);
+
+            // make sure quizzes were deleted
+            const quiz1 = await database.collection('files').findOne({ _id: _quiz1ObjectId });
+            const quiz2 = await database.collection('files').findOne({ _id: _quiz2ObjectId });
+
+            expect(quiz1).toBeNull();
+            expect(quiz2).toBeNull();
+
+            // Clean up
+            await database.collection('files').deleteMany({ folderId: folderId.toString() });
+            await database.collection('folders').deleteMany({ _id: folderId });
+        });
+
+    });
             
-
-    // // write a test for getContent
-    // describe('getContent', () => {
-    //     it('should return the content of a folder', async () => {
-    //         const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
-    //         const content = [
-    //             { title: 'Quiz 1', content: [] },
-    //             { title: 'Quiz 2', content: [] },
-    //         ];
-
-    //         // Mock the database response
-    //         collection.find().toArray.mockResolvedValue(content);
-
-    //         const result = await folders.getContent(folderId);
-
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('files');
-    //         expect(collection.find).toHaveBeenCalledWith({ folderId });
-    //         expect(result).toEqual(content);
-    //     });
-
-    //     it('should return an empty array if the folder has no content', async () => {
-    //         const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
-
-    //         // Mock the database response
-    //         collection.find().toArray.mockResolvedValue([]);
-
-    //         const result = await folders.getContent(folderId);
-
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('files');
-    //         expect(collection.find).toHaveBeenCalledWith({ folderId });
-    //         expect(result).toEqual([]);
-    //     });
-    // });
-
     // // delete
     // describe('delete', () => {
     //     it('should delete a folder and return true', async () => {
