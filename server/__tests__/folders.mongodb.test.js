@@ -6,7 +6,8 @@ console.log('db:', db); // Debugging line
 console.log('db.getConnection:', db.getConnection); // Debugging line
 
 describe('Folders', () => {
-    const folder = new Folder(db, new Quiz(db));
+    const quiz = new Quiz(db);
+    const folder = new Folder(db, quiz);
     let database;
 
     beforeAll(async () => {
@@ -112,23 +113,46 @@ describe('Folders', () => {
         });
     });
 
-    // // getOwner
-    // describe('getOwner', () => {
-    //     it('should return the owner of a folder', async () => {
-    //         const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
-    //         const userId = '12345';
+    // write a test for getContent
+    describe('getContent', () => {
+        it('should return the content of a folder', async () => {
 
-    //         // Mock the database response
-    //         collection.findOne.mockResolvedValue({ userId });
+            // create a new folder
+            const folderId = await folder.create('Test Folder', '12345');
 
-    //         const result = await folders.getOwner(folderId);
+            // Insert the content using the quiz API
+            const _quiz1ObjectId = await quiz.create('Quiz 1', [], folderId.toString(), '12345');
+            const _quiz2ObjectId = await quiz.create('Quiz 2', [], folderId.toString(), '12345');
 
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('folders');
-    //         expect(collection.findOne).toHaveBeenCalledWith({ _id: new ObjectId(folderId) });
-    //         expect(result).toBe(userId);
-    //     });
-    // });
+            const content = [
+                { title: 'Quiz 1', content: [], _id: _quiz1ObjectId, created_at: expect.any(Date), updated_at: expect.any(Date), folderId: folderId.toString(), userId: '12345' },
+                { title: 'Quiz 2', content: [], _id: _quiz2ObjectId, created_at: expect.any(Date), updated_at: expect.any(Date), folderId: folderId.toString(), userId: '12345' },
+            ];
+
+            const result = await folder.getContent(folderId.toString());
+
+            expect(result).toEqual(content);
+
+            // Clean up
+            await database.collection('files').deleteMany({ folderId: folderId.toString() });
+            await database.collection('folders').deleteMany({ _id: folderId });
+        });
+
+        it('should return an empty array if the folder has no content', async () => {
+            // create a new folder
+            const folderId = await folder.create('Test Folder', '12345');
+
+            const content = [];
+            const result = await folder.getContent(folderId.toString());
+
+            expect(result).toEqual(content);
+
+            // Clean up
+            await database.collection('folders').deleteMany({ _id: folderId });
+        });
+    });
+
+            
 
     // // write a test for getContent
     // describe('getContent', () => {
