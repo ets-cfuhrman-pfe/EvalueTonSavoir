@@ -64,101 +64,53 @@ describe('Folders', () => {
         });
     });
 
-    // beforeEach(() => {
-    //     jest.clearAllMocks(); // Clear any previous mock calls
 
-    //     // Mock the collection object
-    //     collection = {
-    //         findOne: jest.fn(),
-    //         insertOne: jest.fn(),
-    //         find: jest.fn().mockReturnValue({ toArray: jest.fn() }), // Mock the find method
-    //         deleteOne: jest.fn(),
-    //         deleteMany: jest.fn(),
-    //         updateOne: jest.fn(),
-    //     };
+    // getUserFolders
+    describe('getUserFolders', () => {
+        it('should return all folders for a user', async () => {
+            const userId = '12345';
+            const userFolders = [
+                { title: 'Folder 1', userId },
+                { title: 'Folder 2', userId },
+            ];
+            // Ensure the folders do not exist before the test
+            await database.collection('folders').deleteMany({ userId });
+            
+            // Insert the folders
+            await database.collection('folders').insertMany(userFolders);
 
-    //     // Mock the database connection
-    //     db = {
-    //         connect: jest.fn(),
-    //         getConnection: jest.fn().mockReturnThis(), // Add getConnection method
-    //         collection: jest.fn().mockReturnValue(collection),
-    //     };        
+            const result = await folder.getUserFolders(userId);
+            
+            expect(result).toEqual(userFolders);
 
-    //     quizzes = new Quizzes(db);
-    //     folders = new Folders(db, quizzes);
+            // Clean up
+            await database.collection('folders').deleteMany({ userId });
 
-    // });
+        });
+    });
 
-    // // create
-    // describe('create', () => {
-    //     it('should create a new folder and return the new folder ID', async () => {
-    //         const title = 'Test Folder';
+    // getOwner
+    describe('getOwner', () => {
+        it('should return the owner of a folder', async () => {
+            // userId must be 24-char hex string
+            const userId = '60c72b2f9b1d8b3a4c8e4d3b';
 
-    //         // Mock the database response
-    //         collection.findOne.mockResolvedValue(null);
-    //         collection.insertOne.mockResolvedValue({ insertedId: new ObjectId() });
+            expect(userId.length).toBe(24);
+            expect(/^[0-9A-Fa-f]{24}$/.test(userId)).toBe(true);
 
-    //         const result = await folders.create(title, '12345');
+            // create the folder using the folder API
+            const folderId = await folder.create('Test Folder', userId);
 
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('folders');
-    //         expect(collection.findOne).toHaveBeenCalledWith({ title, userId: '12345' });
-    //         expect(collection.insertOne).toHaveBeenCalledWith(expect.objectContaining({ title, userId: '12345' }));
-    //         expect(result).toBeDefined();
-    //     });
+            const folderIdString = folderId.toString();
 
-    //     // throw an error if userId is undefined
-    //     it('should throw an error if userId is undefined', async () => {
-    //         const title = 'Test Folder';
+            expect(folderIdString.length).toBe(24);
+            expect(/^[0-9A-Fa-f]{24}$/.test(folderIdString)).toBe(true);
 
-    //         await expect(folders.create(title, undefined)).rejects.toThrow('Missing required parameter(s)');
+            const result = await folder.getOwner(folderIdString);
 
-    //         expect(db.connect).not.toHaveBeenCalled();
-    //     });
-
-    //     it('should throw an error if the folder already exists', async () => {
-    //         const title = 'Existing Folder';
-    //         const userId = '66fc70bea1b9e87655cf17c9';
-
-    //         // Mock the database response of a found folder
-    //         collection.findOne.mockResolvedValue(
-    //             // real result from mongosh
-    //             {
-    //                 _id: ObjectId.createFromHexString('66fd33fd81758a882ce99aae'),
-    //                 userId: userId,
-    //                 title: title,
-    //                 created_at: new Date('2024-10-02T11:52:29.797Z')
-    //             }
-    //         );
-
-    //         await expect(folders.create(title, userId)).rejects.toThrow('Folder already exists');
-
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('folders');
-    //         expect(collection.findOne).toHaveBeenCalledWith({ title, userId: userId });
-    //     });
-    // });
-
-    // // getUserFolders
-    // describe('getUserFolders', () => {
-    //     it('should return all folders for a user', async () => {
-    //         const userId = '12345';
-    //         const userFolders = [
-    //             { title: 'Folder 1', userId },
-    //             { title: 'Folder 2', userId },
-    //         ];
-
-    //         // Mock the database response
-    //         collection.find().toArray.mockResolvedValue(userFolders);
-
-    //         const result = await folders.getUserFolders(userId);
-
-    //         expect(db.connect).toHaveBeenCalled();
-    //         expect(db.collection).toHaveBeenCalledWith('folders');
-    //         expect(collection.find).toHaveBeenCalledWith({ userId });
-    //         expect(result).toEqual(userFolders);
-    //     });
-    // });
+            expect(result).toBe(userId);
+        });
+    });
 
     // // getOwner
     // describe('getOwner', () => {
