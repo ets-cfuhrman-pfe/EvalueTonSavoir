@@ -1,44 +1,21 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { NumericalQuestion, parse, ParsedGIFTQuestion } from 'gift-pegjs';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { parse, NumericalQuestion } from 'gift-pegjs';
+import React from 'react';
 import NumericalQuestionDisplay from 'src/components/QuestionsDisplay/NumericalQuestionDisplay/NumericalQuestionDisplay';
 
-const questions = parse(
-    `
-    ::Sample Question 1:: Question stem
-    {
-        #5..10
-    }`
-) as ParsedGIFTQuestion[];
-
-const question = questions[0] as NumericalQuestion;
-
-describe('NumericalQuestion parse', () => {
-    const q = questions[0];
-
-    it('The question is Numerical', () => {
-        expect(q.type).toBe('Numerical');
-    });
-});
-
-describe('NumericalQuestion Component', () => {
+describe('NumericalQuestionDisplay Component', () => {
     const mockHandleOnSubmitAnswer = jest.fn();
+    const question = 
+        parse('::Sample Numerical Question:: What is 2+2? {#4}')[0] as NumericalQuestion;
 
     const sampleProps = {
-        question: question,
         handleOnSubmitAnswer: mockHandleOnSubmitAnswer,
         showAnswer: false
     };
 
     beforeEach(() => {
-        render(
-            <MemoryRouter>
-                <NumericalQuestionDisplay
-                    {...sampleProps}
-                />
-            </MemoryRouter>);
+        render(<NumericalQuestionDisplay question={question} {...sampleProps} />);
     });
 
     it('renders correctly', () => {
@@ -55,13 +32,13 @@ describe('NumericalQuestion Component', () => {
         expect(inputElement.value).toBe('7');
     });
 
-    it('Submit button should be disable if nothing is entered', () => {
+    it('Submit button should be disabled if nothing is entered', () => {
         const submitButton = screen.getByText('Répondre');
 
         expect(submitButton).toBeDisabled();
     });
 
-    it('not submited answer if nothing is entered', () => {
+    it('does not submit answer if nothing is entered', () => {
         const submitButton = screen.getByText('Répondre');
 
         fireEvent.click(submitButton);
@@ -78,5 +55,53 @@ describe('NumericalQuestion Component', () => {
         fireEvent.click(submitButton);
 
         expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(7);
+    });
+
+    it('renders correctly with the correct answer shown', () => {
+        render(<NumericalQuestionDisplay question={question} {...sampleProps} showAnswer={true} passedAnswer={4} />);
+        expect(screen.getByText('Réponse(s) accepté(es):')).toBeInTheDocument();
+        expect(screen.getAllByText('4')).toHaveLength(2);
+    });
+
+    it('handles input change and checks if the answer is correct', () => {
+        const inputElement = screen.getByTestId('number-input') as HTMLInputElement;
+
+        fireEvent.change(inputElement, { target: { value: '4' } });
+
+        expect(inputElement.value).toBe('4');
+
+        const submitButton = screen.getByText('Répondre');
+        fireEvent.click(submitButton);
+
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(4);
+    });
+
+    it('submits the correct answer', () => {
+        const inputElement = screen.getByTestId('number-input') as HTMLInputElement;
+
+        fireEvent.change(inputElement, { target: { value: '4' } });
+
+        const submitButton = screen.getByText('Répondre');
+        fireEvent.click(submitButton);
+
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(4);
+    });
+
+    it('submits an incorrect answer', () => {
+        const inputElement = screen.getByTestId('number-input') as HTMLInputElement;
+
+        fireEvent.change(inputElement, { target: { value: '5' } });
+
+        const submitButton = screen.getByText('Répondre');
+        fireEvent.click(submitButton);
+
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(5);
+    });
+
+    it('displays feedback when the answer is shown', () => {
+        render(<NumericalQuestionDisplay question={question} {...sampleProps} showAnswer={true} passedAnswer={5} />);
+        expect(screen.getByText('❌ Incorrect!')).toBeInTheDocument();
+        expect(screen.getByText('Réponse(s) accepté(es):')).toBeInTheDocument();
+        expect(screen.getByText('5')).toBeInTheDocument();
     });
 });

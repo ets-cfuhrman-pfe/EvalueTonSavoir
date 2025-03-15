@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     width: 100%;
 }
 
@@ -22,8 +21,6 @@
 .question-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .question-wrapper .katex {
@@ -31,7 +28,8 @@
 }
 
 .katex * {
-    font-family: 'KaTeX_Main'  /* to display characters like \neq properly */
+    font-family: 'KaTeX_Main'
+        /* to display characters like \neq properly */
 }
 
 .circle {
@@ -97,15 +95,11 @@
 }
 
 .answer-positive-weight {
-    background-color: hsl(
-        120, 100%, 90%
-    );
+    background-color: hsl(120, 100%, 90%);
 }
 
 .answer-zero-or-less-weight {
-    background-color: hsl(
-        0, 100%, 90%
-    );
+    background-color: hsl(0, 100%, 90%);
 }
 
 .answer-text.selected {
@@ -119,7 +113,8 @@
 }
 
 .feedback-container {
-    display: inline-block !important; /* override the parent */
+    display: inline-block !important;
+    /* override the parent */
     align-items: center;
     margin-left: 1.1rem;
     position: relative;
@@ -136,12 +131,12 @@
     /* height: 1em; */
 }
 
-
 .global-feedback {
     position: relative;
     padding: 0 1rem;
     background-color: hsl(43, 100%, 94%);
     color: hsl(43, 95%, 9%);
+    margin-top: 2rem;
     border: hsl(36, 84%, 93%) 1px solid;
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
@@ -156,6 +151,7 @@
     border-radius: 6px;
     box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
 }
+
 .false-feedback {
     position: relative;
     padding: 0 1rem;
@@ -169,3 +165,52 @@
 .choices-wrapper {
     width: 90%;
 }
+
+.correct-answer-text {
+    text-align: left;
+    /* Align text to the left */
+    width: 100%;
+    /* Ensure it takes the full width of its container */
+}
+
+.accepted-answers {
+    display: inline-block;
+    /* Display elements side by side */
+    border-radius: 6px;
+    /* Add rounded corners */
+    padding: 0.5rem;
+    /* Add padding for spacing */
+    margin: 0.5rem;
+    /* Add margin for spacing between elements */
+    background-color: hsl(0, 0%, 87%);
+    /* Optional: Add a background color for emphasis */
+}
+
+.question-feedback-validation {
+    font-size: 1.8rem;
+    /* Increase the font size */
+    font-weight: bold;
+    /* Make the text bold */
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+
+}
+
+.question-title {
+    margin-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    width: 100%;
+
+    font-weight: bold;
+}
+
+.question-content {
+    margin-bottom: 1rem;
+
+}
+
+.submit-button {
+    width: min-content;
+    margin-left: 19rem;}
+
