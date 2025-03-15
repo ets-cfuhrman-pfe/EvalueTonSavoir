@@ -14,38 +14,38 @@ const quiz = require('./models/quiz.js');
 const quizModel = new quiz(db);
 const room = require('./models/room.js');
 const roomModel = new room(db);
-const folders = require('./models/folders.js');
+const folders = require('./models/folder.js');
 const foldersModel = new folders(db, quizModel);
-const users = require('./models/users.js');
+const users = require('./models/user.js');
 const userModel = new users(db, foldersModel);
-const images = require('./models/images.js');
+const images = require('./models/image.js');
 const imageModel = new images(db);
 
 // instantiate the controllers
-const usersController = require('./controllers/users.js');
-const usersControllerInstance = new usersController(userModel);
+const usersController = require('./controllers/user.js');
+const userControllerInstance = new usersController(userModel);
 const roomsController = require('./controllers/room.js');
-const roomsControllerInstance = new roomsController(roomModel);
-const foldersController = require('./controllers/folders.js');
-const foldersControllerInstance = new foldersController(foldersModel);
+const roomControllerInstance = new roomsController(roomModel);
+const foldersController = require('./controllers/folder.js');
+const folderControllerInstance = new foldersController(foldersModel);
 const quizController = require('./controllers/quiz.js');
 const quizControllerInstance = new quizController(quizModel, foldersModel);
-const imagesController = require('./controllers/images.js');
-const imagesControllerInstance = new imagesController(imageModel);
+const imagesController = require('./controllers/image.js');
+const imageControllerInstance = new imagesController(imageModel);
 
 // export the controllers
-module.exports.users = usersControllerInstance;
-module.exports.rooms = roomsControllerInstance;
-module.exports.folders = foldersControllerInstance;
+module.exports.users = userControllerInstance;
+module.exports.rooms = roomControllerInstance;
+module.exports.folders = folderControllerInstance;
 module.exports.quizzes = quizControllerInstance;
-module.exports.images = imagesControllerInstance;
+module.exports.images = imageControllerInstance;
 
 //import routers (instantiate controllers as side effect)
-const userRouter = require('./routers/users.js');
+const userRouter = require('./routers/user.js');
 const roomRouter = require('./routers/room.js');
-const folderRouter = require('./routers/folders.js');
+const folderRouter = require('./routers/folder.js');
 const quizRouter = require('./routers/quiz.js');
-const imagesRouter = require('./routers/images.js')
+const imagesRouter = require('./routers/image.js')
 const AuthManager = require('./auth/auth-manager.js')
 const authRouter = require('./routers/auth.js')
 

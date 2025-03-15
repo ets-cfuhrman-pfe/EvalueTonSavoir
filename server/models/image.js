@@ -1,6 +1,6 @@
 const { ObjectId } = require('mongodb');
 
-class Images {
+class Image {
 
     constructor(db) {
         this.db = db;
@@ -44,4 +44,4 @@ class Images {
 
 }
 
-module.exports = Images;
+module.exports = Image;

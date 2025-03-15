@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
 const AppError = require("../middleware/AppError.js");
-const { USER_ALREADY_EXISTS } = require("../constants/errorCodes");
+const { USER_ALREADY_EXISTS } = require("../constants/errorCodes.js");
 
-class Users {
+class User {
   
   constructor(db, foldersModel) {
       this.db = db;
@@ -53,7 +53,7 @@ class Users {
   }
 
   async login(email, password) {
-    console.log(`models/users: login: email: ${email}, password: ${password}`);
+    console.log(`models/user: login: email: ${email}, password: ${password}`);
     try {
       const conn = await this.db.getConnection();
       const userCollection = conn.collection("users");
@@ -73,7 +73,7 @@ class Users {
         error.statusCode = 401; 
         throw error;
       }
-      console.log(`models/users: login: FOUND user: ${JSON.stringify(user)}`);
+      console.log(`models/user: login: FOUND user: ${JSON.stringify(user)}`);
       return user;
     } catch (error) {
       console.error(error);
@@ -171,4 +171,4 @@ class Users {
   }
 }
 
-module.exports = Users;
+module.exports = User;

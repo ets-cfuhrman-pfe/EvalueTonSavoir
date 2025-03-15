@@ -3,7 +3,7 @@ const router = express.Router();
 const users = require('../app.js').users;
 const jwt = require('../middleware/jwtToken.js');
 const asyncHandler = require('./routerUtils.js');
-const usersController = require('../controllers/users.js')
+const usersController = require('../controllers/user.js')
 
 router.post("/register", asyncHandler(users.register));
 router.post("/login", asyncHandler(users.login));

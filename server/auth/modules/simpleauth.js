@@ -1,7 +1,7 @@
 const jwt = require('../../middleware/jwtToken.js');
 const emailer = require('../../config/email.js');
 
-const model = require('../../models/users.js');
+const model = require('../../models/user.js');
 const AppError = require('../../middleware/AppError.js');
 const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR } = require('../../constants/errorCodes');
 const { name } = require('../../models/authProvider.js');

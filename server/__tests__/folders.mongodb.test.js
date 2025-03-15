@@ -1,5 +1,5 @@
-const Folder = require('../models/folders');
-const Quiz = require('../models/quizzes');
+const Folder = require('../models/folder');
+const Quiz = require('../models/quiz');
 const db = require('../config/db');
 
 console.log('db:', db); // Debugging line

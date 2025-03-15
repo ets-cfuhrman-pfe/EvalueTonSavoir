@@ -1,12 +1,12 @@
-const Users = require('../models/users');
+const Users = require('../models/user');
 const bcrypt = require('bcrypt');
 const Quizzes = require('../models/quiz');
-const Folders = require('../models/folders');
+const Folders = require('../models/folder');
 const { ObjectId } = require('mongodb');
 
 jest.mock('bcrypt');
 jest.mock('../middleware/AppError');
-jest.mock('../models/folders');
+jest.mock('../models/folder');
 
 describe('Users', () => {
     let users;

@@ -1,9 +1,9 @@
 //controller
 const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, FOLDER_NOT_FOUND, FOLDER_ALREADY_EXISTS, GETTING_FOLDER_ERROR, DELETE_FOLDER_ERROR, UPDATE_FOLDER_ERROR, DUPLICATE_FOLDER_ERROR, COPY_FOLDER_ERROR } = require('../constants/errorCodes');
+const { MISSING_REQUIRED_PARAMETER, FOLDER_NOT_FOUND, FOLDER_ALREADY_EXISTS, GETTING_FOLDER_ERROR, DELETE_FOLDER_ERROR, UPDATE_FOLDER_ERROR, DUPLICATE_FOLDER_ERROR, COPY_FOLDER_ERROR } = require('../constants/errorCodes.js');
 
 // controllers must use arrow functions to bind 'this' to the class instance in order to access class properties as callbacks in Express
-class FoldersController {
+class FolderController {
 
     constructor(foldersModel) {
         this.folders = foldersModel;
@@ -267,4 +267,4 @@ class FoldersController {
 
 
 
-module.exports = FoldersController;
+module.exports = FolderController;

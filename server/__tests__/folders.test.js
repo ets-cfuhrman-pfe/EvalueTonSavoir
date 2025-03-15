@@ -1,4 +1,4 @@
-const Folders = require('../models/folders');
+const Folders = require('../models/folder');
 const ObjectId = require('mongodb').ObjectId;
 const Quizzes = require('../models/quiz');
 
