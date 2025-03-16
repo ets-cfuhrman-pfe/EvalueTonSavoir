@@ -41,6 +41,7 @@ const QuizForm: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -204,6 +205,27 @@ const QuizForm: React.FC = () => {
         navigator.clipboard.writeText(link);
     }
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                setCopySuccess(true); // Afficher le message de succès
+                console.log(copySuccess);
+                // Masquer le message de succès après quelques secondes
+                setTimeout(() => {
+                    setCopySuccess(false);
+                }, 3000); // 3 secondes
+            })
+            .catch((error) => {
+                console.error('Erreur lors de la copie dans le presse-papiers : ', error);
+            });
+    };
+
+    const QuestionVraiFaux = "::Exemple de question vrai/faux:: \n 2+2 \\= 4 ? {T}  //Utilisez les valeurs {T}, {F}, {TRUE} et {FALSE}.";
+    const QuestionChoixMul = "::Ville capitale du Canada:: \nQuelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Rétroaction spécifique.\n}  // Commentaire non visible (au besoin)";
+    const QuestionChoixMulMany = "::Villes canadiennes:: \n Quelles villes trouve-t-on au Canada? { \n~ %33.3% Montréal \n ~ %33.3% Ottawa \n ~ %33.3% Vancouver \n ~ %-100% New York \n ~ %-100% Paris \n#### Rétroaction globale de la question. \n}  // Utilisez tilde (signe de vague) pour toutes les réponses. // On doit indiquer le pourcentage de chaque réponse.";
+    const QuestionCourte = "::Clé et porte:: \n Avec quoi ouvre-t-on une porte? { \n= clé \n= clef \n} // Permet de fournir plusieurs bonnes réponses. // Note: La casse n'est pas prise en compte.";
+    const QuestionNum = "::Question numérique avec marge:: \nQuel est un nombre de 1 à 5 ? {\n#3:2\n}\n \n// Plage mathématique spécifiée avec des points de fin d'intervalle. \n ::Question numérique avec plage:: \n Quel est un nombre de 1 à 5 ? {\n#1..5\n} \n\n// Réponses numériques multiples avec crédit partiel et commentaires.\n::Question numérique avec plusieurs réponses::\nQuand est né Ulysses S. Grant ? {\n# =1822:0 # Correct ! Crédit complet. \n=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.\n}";
+
     return (
         <div className='quizEditor'>
 
@@ -243,9 +265,21 @@ const QuizForm: React.FC = () => {
                 ))}
             </NativeSelect></label>
 
-            <Button variant="contained" onClick={handleQuizSave}>
-                Enregistrer
-            </Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div>
+                    <Button variant="contained" onClick={handleQuizSave}>
+                        Enregistrer
+                    </Button>
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    <Button variant="contained" onClick={() => copyToClipboard(QuestionVraiFaux)}>Vrai/Faux</Button>
+                    <Button variant="contained" onClick={() => copyToClipboard(QuestionChoixMul)}>Choix multiples R1</Button>
+                    <Button variant="contained" onClick={() => copyToClipboard(QuestionChoixMulMany)}>Choix multiples R2+</Button>
+                    <Button variant="contained" onClick={() => copyToClipboard(QuestionCourte)}>Réponse courte</Button>
+                    <Button variant="contained" onClick={() =>copyToClipboard(QuestionNum)}>Numérique</Button>
+                </div>
+            </div>
 
             <Divider style={{ margin: '16px 0' }} />
 

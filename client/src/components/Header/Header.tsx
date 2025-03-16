@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                         navigate('/');
                     }}
                 >
-                    Logout
+                    <p>Déconnexion</p>
                 </Button>
             )}
 
