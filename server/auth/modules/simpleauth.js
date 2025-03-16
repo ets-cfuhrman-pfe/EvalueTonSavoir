@@ -34,7 +34,7 @@ class SimpleAuth {
                 password: req.body.password,
                 roles: req.body.roles
             };
-            let user = await self.authmanager.register(userInfos)
+            let user = await self.authmanager.register(userInfos, true);
             if (user) {
                 return res.status(200).json({
                     message: 'User created'

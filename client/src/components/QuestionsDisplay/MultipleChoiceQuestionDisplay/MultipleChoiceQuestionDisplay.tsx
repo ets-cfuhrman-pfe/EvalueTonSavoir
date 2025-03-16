@@ -5,20 +5,27 @@ import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import { StudentType } from 'src/Types/StudentType';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: MultipleChoiceQuestion;
-    handleOnSubmitAnswer?: (answer: string) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    passedAnswer?: AnswerType;
     students?: StudentType[];
     isDisplayOnly?: boolean;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly } = props;
-    const [answer, setAnswer] = useState<string>();
+    const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly, passedAnswer } = props;
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
     const [pickRates, setPickRates] = useState<number[]>([]);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+
+    let disableButton = false;
+    if(handleOnSubmitAnswer === undefined){
+        disableButton = true;
+    }
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer(choice);
@@ -47,19 +54,25 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     };
 
     useEffect(() => {
-        setAnswer(undefined);
-        calculatePickRates();
-    }, [students, question, showCorrectAnswers]);
+        if (passedAnswer !== undefined) {
+            setAnswer(passedAnswer);
+        } else {
+            setAnswer('');
+            calculatePickRates();
+        }
+    }, [passedAnswer, students, question, showCorrectAnswers]);
     
 
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
     return (
+
         <div className="question-container">
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
+                
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
                     const rateStyle = showCorrectAnswers ? {
@@ -71,6 +84,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                             {/* <Button
                                 variant="text"
                                 className="button-wrapper"
+                                disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
                                 {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
                                 :``}
@@ -87,6 +101,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                             <Button
                                 variant="text"
                                 className={`button-wrapper ${selected}`}
+                                disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                                 >
                                 <div className={`circle ${selected}`}>{alphabet[i]}</div>
@@ -121,9 +136,9 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                     }
-                    disabled={answer === undefined}
+                    disabled={answer === '' || answer === null}
                 >
                     Répondre
                     

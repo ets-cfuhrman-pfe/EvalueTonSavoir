@@ -1,5 +1,7 @@
+import { AnswerType } from "src/pages/Student/JoinRoom/JoinRoom";
+
 export interface Answer {
-    answer: string | number | boolean;
+    answer: AnswerType;
     isCorrect: boolean;
     idQuestion: number;
 }

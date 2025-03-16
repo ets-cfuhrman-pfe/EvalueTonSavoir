@@ -109,15 +109,27 @@ describe("websocket server", () => {
     });
   });
 
-  test("should send next question", (done) => {
-    studentSocket.on("next-question", (question) => {
-      expect(question).toEqual({ question: "question2" });
+  test("should launch teacher mode", (done) => {
+    studentSocket.on("launch-teacher-mode", (questions) => {
+      expect(questions).toEqual([
+        { question: "question1" },
+        { question: "question2" },
+      ]);
       done();
     });
-    teacherSocket.emit("next-question", {
+    teacherSocket.emit("launch-teacher-mode", {
       roomName: "ROOM1",
-      question: { question: "question2" },
+      questions: [{ question: "question1" }, { question: "question2" }],
     });
+  });
+
+  test("should send next question", (done) => {
+    studentSocket.on("next-question", ( question ) => {
+      expect(question).toBe("question2");
+      done();
+    });
+    teacherSocket.emit("next-question", { roomName: "ROOM1", question: 'question2'},
+    );
   });
 
   test("should send answer", (done) => {
