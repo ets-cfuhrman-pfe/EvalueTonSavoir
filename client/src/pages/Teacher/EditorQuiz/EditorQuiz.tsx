@@ -131,7 +131,6 @@ const QuizForm: React.FC = () => {
 
     const handleQuizSave = async () => {
         try {
-            // check if everything is there
             if (quizTitle == '') {
                 alert("Veuillez choisir un titre");
                 return;
