@@ -36,7 +36,7 @@ class AdminController {
 
             const imgs = await this.model.getImages(page, limit);
     
-            return res.status(200).json({ imgs });
+            return res.status(200).json({ data: imgs });
         } catch (error) {
             return next(error);
         }

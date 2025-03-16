@@ -10,6 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ImageIcon from '@mui/icons-material/Image';
 import PeopleIcon from '@mui/icons-material/People';
+import { useNavigate } from 'react-router-dom';
 
 const styles = {
   drawerBg: 'rgba(82, 113, 255, 0.85)',
@@ -21,23 +22,29 @@ const styles = {
 
 export default function AdminDrawer() {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const toggleDrawer = (isOpen: boolean) => () => {
     setOpen(isOpen);
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setOpen(false);
+  };
+
   const menuItems = [
-    { text: 'Stats', icon: <BarChartIcon /> },
-    { text: 'Images', icon: <ImageIcon /> },
-    { text: 'Users', icon: <PeopleIcon /> },
+    { text: 'Stats', icon: <BarChartIcon />, path: '/admin/stats' },
+    { text: 'Images', icon: <ImageIcon />, path: '/admin/images' },
+    { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
   ];
 
   const list = (
     <Box sx={{ width: 250, backgroundColor: styles.drawerBg, height: styles.height, color: styles.drawerTxtColor }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {menuItems.map(({ text, icon }) => (
+        {menuItems.map(({ text, icon, path }) => (
           <ListItem key={text} disablePadding>
-            <ListItemButton>
+            <ListItemButton  onClick={() => handleNavigation(path)}>
               <ListItemIcon sx={{ color: styles.drawerTxtColor }}>{icon}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItemButton>

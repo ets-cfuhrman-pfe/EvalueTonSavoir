@@ -9,3 +9,11 @@ export interface QuizType {
     created_at: Date;
     updated_at: Date;
 }
+
+export interface QuizTypeShort {
+    _id: string;
+    userId: string;
+    title: string;
+    created_at: Date;
+    updated_at: Date;
+}

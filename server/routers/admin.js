@@ -10,7 +10,6 @@ router.get("/getUsers", asyncHandler(admin.getUsers));
 router.get("/getQuizzes", asyncHandler(admin.getQuizzes));
 router.get("/getImages", asyncHandler(admin.getImages));
 router.delete("/deleteUser", asyncHandler(admin.deleteUser));
-router.delete("/deleteQuiz", asyncHandler(admin.deleteQuiz));
 router.delete("/deleteImage", jwt.authenticate, asyncHandler(admin.deleteImage));
 
 module.exports = router;

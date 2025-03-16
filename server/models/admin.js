@@ -38,26 +38,12 @@ class Admin {
         const conn = this.db.getConnection();
 
         const quizColl = conn.collection('files');
-
-        const result = await quizColl.find({}).toArray();
+        const projection = { content: 0, folderName: 0, folderId: 0 };
+        const result = await quizColl.find({}, projection).toArray();
 
         if (!result) return null;
 
         return result;
-    }
-
-    async deleteQuiz(id) {
-        let deleted = false;
-        await this.db.connect()
-        const conn = this.db.getConnection();
-
-        const quizColl = conn.collection('files');
-
-        const result = await quizColl.deleteOne({ _id: ObjectId.createFromHexString(id) });
-
-        if (result) deleted = true;
-
-        return deleted;
     }
     
     async getImages(page, limit) {
