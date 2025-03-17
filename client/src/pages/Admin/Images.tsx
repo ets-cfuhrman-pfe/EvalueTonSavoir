@@ -10,8 +10,7 @@ import {
   Paper,
   Box,
   CircularProgress,
-  Button,
-  Typography
+  Button
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ImageType } from "../../Types/ImageType";

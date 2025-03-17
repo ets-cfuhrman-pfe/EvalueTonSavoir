@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 import { ENV_VARIABLES } from '../constants';
 
 import { FolderType } from 'src/Types/FolderType';
-import { QuizType, QuizTypeShort } from 'src/Types/QuizType';
+import { QuizType, QuizResponse } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 import { UserType } from 'src/Types/UserType';
 import { ImagesResponse, ImagesParams } from 'src/Types/ImageType';
@@ -1181,7 +1181,6 @@ public async login(email: string, password: string): Promise<any> {
             if (result.status !== 200) {
                 throw new Error(`L'obtention des titres des salles a échoué. Status: ${result.status}`);
             }
-            console.log(result.data);
 
             return result.data.users;
         } catch (error) {
@@ -1209,7 +1208,6 @@ public async login(email: string, password: string): Promise<any> {
             if (result.status !== 200) {
                 throw new Error(`L'affichage des images a échoué. Status: ${result.status}`);
             }
-            console.log(result.data);
             const images = result.data.data;
 
             return images;
@@ -1257,18 +1255,18 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async getQuizzes(): Promise<QuizTypeShort[]> {
+    public async getStats(): Promise<QuizResponse> {
         try {
-            const url: string = this.constructRequestUrl(`/admin/getQuizzes`);
+            const url: string = this.constructRequestUrl(`/admin/getStats`);
             const headers = this.constructRequestHeaders();
             const result: AxiosResponse = await axios.get(url, { headers });
 
             if (result.status !== 200) {
                 throw new Error(`L'affichage des images a échoué. Status: ${result.status}`);
             }
-            const quiz = result.data.quizzes;
+            const resp = result.data.data;
 
-            return quiz;
+            return resp;
 
         } catch (error) {
             console.log("Error details: ", error);

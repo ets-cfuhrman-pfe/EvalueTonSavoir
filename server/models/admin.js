@@ -33,17 +33,25 @@ class Admin {
         return deleted;
     }
 
-    async getQuizzes() {
+    async getStats() {
         await this.db.connect()
         const conn = this.db.getConnection();
+        const usrColl = conn.collection('users');
+        const total = await usrColl.countDocuments();
 
         const quizColl = conn.collection('files');
+        
         const projection = { content: 0, folderName: 0, folderId: 0 };
         const result = await quizColl.find({}, projection).toArray();
 
         if (!result) return null;
 
-        return result;
+        let respObj = {
+            quizzes: result,
+            total: total
+        }
+
+        return respObj;
     }
     
     async getImages(page, limit) {
@@ -78,14 +86,14 @@ class Admin {
         return respObj;
     }
 
-    async deleteImage(uid, imgId) {
+    async deleteImage(imgId) {
         let resp = false;
         await this.db.connect()
         const conn = this.db.getConnection();
         const quizColl = conn.collection('files');
         const rgxImg = new RegExp(`/api/image/get/${imgId}`);
         
-        const result = await quizColl.find({ userId: uid, content: { $regex: rgxImg }}).toArray();
+        const result = await quizColl.find({ content: { $regex: rgxImg }}).toArray();
         if(!result || result.length < 1){
             const imgsColl = conn.collection('images');
             const isDeleted = await imgsColl.deleteOne({ _id: ObjectId.createFromHexString(imgId) });

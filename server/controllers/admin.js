@@ -19,11 +19,11 @@ class AdminController {
         }
     };
 
-    getQuizzes = async (req, res, next) => {
+    getStats = async (req, res, next) => {
         try {
-            const quizzes = await this.model.getQuizzes();
+            const data = await this.model.getStats();
     
-            return res.status(200).json({ quizzes });
+            return res.status(200).json({ data });
         } catch (error) {
             return next(error);
         }
@@ -62,41 +62,20 @@ class AdminController {
         }
     };
     
-    deleteQuiz = async (req, res, next) => {
-        try {
-            const { id } = req.params;
-    
-            if (!id) {
-                throw new AppError(MISSING_REQUIRED_PARAMETER);
-            }
-    
-            const user = await this.model.deleteUser(id);
-    
-            if (!user) {
-                throw new AppError(IMAGE_NOT_FOUND);
-            }
-
-            return res.status(200).json({ user: user });
-        } catch (error) {
-            return next(error);
-        }
-    };
-    
     deleteImage = async (req, res, next) => {
         try {
-            const { id } = req.params;
-    
-            if (!id) {
+            const { imgId } = req.query;
+            if (!imgId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
-            const user = await this.model.deleteUser(id);
+            const deleted = await this.model.deleteImage(imgId);
     
-            if (!user) {
+            if (!deleted) {
                 throw new AppError(IMAGE_NOT_FOUND);
             }
 
-            return res.status(200).json({ user: user });
+            return res.status(200).json({ deleted });
         } catch (error) {
             return next(error);
         }

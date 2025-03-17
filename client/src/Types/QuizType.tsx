@@ -17,3 +17,8 @@ export interface QuizTypeShort {
     created_at: Date;
     updated_at: Date;
 }
+
+export interface QuizResponse {
+    quizzes: QuizTypeShort[];
+    total: number;
+}
