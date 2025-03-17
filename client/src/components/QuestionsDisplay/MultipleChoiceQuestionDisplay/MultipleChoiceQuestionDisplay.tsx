@@ -35,7 +35,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     }, [answer]);
 
     const checkAnswer = () => {
-        const isCorrect = question.choices.some((choice) => choice.formattedText.text === answer as string);
+        const isCorrect = question.choices.some((choice) => choice.isCorrect && choice.formattedText.text === answer as string);
         setisGoodAnswer(isCorrect);
     };
 
@@ -97,7 +97,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
             )}
 
             {!showAnswer && handleOnSubmitAnswer && (
-
+                <div className="submit-button-container">
                 <Button
                 className='submit-button'
                 variant="contained"
@@ -109,6 +109,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     Répondre
 
                 </Button>
+                </div>
             )}
         </div>
     );

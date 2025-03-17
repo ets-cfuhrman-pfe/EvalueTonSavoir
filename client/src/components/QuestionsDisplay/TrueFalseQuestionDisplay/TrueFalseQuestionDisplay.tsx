@@ -51,7 +51,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
              {showAnswer && (
                 <div>
                     <div className='question-feedback-validation'>
-                        {question.isTrue? '✅ Correct! ' : '❌ Incorrect!'}
+                        {answer === question.isTrue ? '✅ Correct! ' : '❌ Incorrect!'}
                     </div>
                     <div className="question-title">
                         Question :
@@ -104,6 +104,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 </div>
             )}
             {!showAnswer && handleOnSubmitAnswer && (
+            <div className="submit-button-container">
                 <Button
                 className='submit-button'
                     variant="contained"
@@ -115,6 +116,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 >
                     Répondre
                 </Button>
+                </div>
             )}
         </div>
     );

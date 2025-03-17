@@ -108,6 +108,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                         </div>
                     )}
                     {handleOnSubmitAnswer && (
+                    <div className="submit-button-container">
                         <Button
                         className='submit-button'
                             variant="contained"
@@ -120,6 +121,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                         >
                             Répondre
                         </Button>
+                        </div>
                     )}
                 </>
             )}

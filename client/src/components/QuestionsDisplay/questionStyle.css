@@ -214,3 +214,8 @@
     width: min-content;
     margin-left: 19rem;}
 
+.submit-button-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
