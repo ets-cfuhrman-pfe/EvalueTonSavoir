@@ -1,7 +1,6 @@
 const { ObjectId } = require('mongodb');
-const Admin = require('../models/admin'); // Adjust the path if needed
+const Admin = require('../models/admin');
 
-// Mock database connection
 const mockDb = {
     connect: jest.fn(),
     getConnection: jest.fn()
