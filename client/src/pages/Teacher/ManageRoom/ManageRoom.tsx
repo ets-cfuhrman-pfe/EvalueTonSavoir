@@ -490,7 +490,7 @@ const ManageRoom: React.FC = () => {
                 onClose={() => setShowQrModal(false)}
                 aria-labelledby="qr-modal-title"
             >
-                <DialogTitle id="qr-modal-title">Rejoindre la salle</DialogTitle>
+                <DialogTitle id="qr-modal-title">Rejoindre la salle: {formattedRoomName}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :

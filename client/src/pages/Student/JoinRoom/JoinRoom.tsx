@@ -32,7 +32,7 @@ const JoinRoom: React.FC = () => {
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
     const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
-    const [searchParams] = useSearchParams(); // Remplacer l'ancienne méthode
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -210,7 +210,7 @@ const JoinRoom: React.FC = () => {
         default:
             return (
                 <LoginContainer
-                    title={isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre une salle'}
+                    title={isQRCodeJoin ? `Rejoindre la ${roomName}` : 'Rejoindre une salle'}
                     error={connectionError}
                 >
                     {/* Afficher champ salle SEULEMENT si pas de QR code */}
