@@ -94,7 +94,7 @@ const Users: React.FC = () => {
           <TableBody>
             {quizzes.map((quiz) => (
               <TableRow key={quiz._id}>
-                <TableCell>{quiz.userId}</TableCell>
+                <TableCell>{quiz.email}</TableCell>
                 <TableCell>{quiz.title}</TableCell>
                 <TableCell>{new Date(quiz.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>{new Date(quiz.updated_at).toLocaleDateString()}</TableCell>

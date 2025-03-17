@@ -12,7 +12,7 @@ export interface QuizType {
 
 export interface QuizTypeShort {
     _id: string;
-    userId: string;
+    email: string;
     title: string;
     created_at: Date;
     updated_at: Date;

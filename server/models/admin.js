@@ -41,10 +41,31 @@ class Admin {
 
         const quizColl = conn.collection('files');
         
-        const projection = { content: 0, folderName: 0, folderId: 0 };
-        const result = await quizColl.find({}, projection).toArray();
-
-        if (!result) return null;
+        const result = await quizColl.aggregate([
+            {
+                $addFields: { userId: { $toObjectId: "$userId" } }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $project: {
+                    _id: 1,
+                    email: "$user.email",
+                    title: 1,
+                    created_at: 1,
+                    updated_at: 1
+                }
+            }
+        ]).toArray();
 
         let respObj = {
             quizzes: result,
