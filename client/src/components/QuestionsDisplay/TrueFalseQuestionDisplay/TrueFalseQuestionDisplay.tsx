@@ -19,7 +19,13 @@ interface Props {
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, isDisplayOnly } = props;
     const [answer, setAnswer] = useState<boolean | undefined>(undefined);
-    const [pickRates, setPickRates] = useState<{ trueRate: number, falseRate: number }>({ trueRate: 0, falseRate: 0 });
+    const [pickRates, setPickRates] = useState<{ trueRate: number, falseRate: number, trueCount: number, falseCount: number, totalCount: number }>({ 
+        trueRate: 0, 
+        falseRate: 0, 
+        trueCount: 0, 
+        falseCount: 0, 
+        totalCount: 0 
+    });
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     let disableButton = false;
@@ -54,36 +60,33 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     // Calcul le pick rate de chaque réponse
     const calculatePickRates = () => {
         if (!students) {
-            setPickRates({ trueRate: 0, falseRate: 0 });
+            setPickRates({ trueRate: 0, falseRate: 0, trueCount: 0, falseCount: 0, totalCount: 0 });
             return;
         }
     
         const totalAnswers = students.length;
-    
         const trueAnswers = students.filter(student =>
             student.answers.some(ans =>
                 ans.idQuestion === Number(question.id) && ans.answer === true
             )).length;
-    
         const falseAnswers = students.filter(student =>
             student.answers.some(ans =>
                 ans.idQuestion === Number(question.id) && ans.answer === false
             )).length;
     
-        if (totalAnswers > 0) {
-            setPickRates({
-                trueRate: (trueAnswers / totalAnswers) * 100,
-                falseRate: (falseAnswers / totalAnswers) * 100
-            });
-        } else {
-            setPickRates({ trueRate: 0, falseRate: 0 });
-        }
+        setPickRates({
+            trueRate: (trueAnswers / totalAnswers) * 100,
+            falseRate: (falseAnswers / totalAnswers) * 100,
+            trueCount: trueAnswers,
+            falseCount: falseAnswers,
+            totalCount: totalAnswers
+        });
     };
 
     return (
         <div className="question-container">
             <div className="question content">
-            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
                 <Button
@@ -102,7 +105,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     </div>
                     {showCorrectAnswers && (
                         <>
-                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueRate.toFixed(1)}%</div>
+                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueRate}/{pickRates.totalCount} ({pickRates.trueRate.toFixed(1)}%)</div>
                         </>
                     )}
 
@@ -131,7 +134,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
 
                     {showCorrectAnswers && (
                         <>
-                            <div className="pick-rate">{!question.isTrue ? '✅' : '❌'} {pickRates.falseRate.toFixed(1)}%</div>
+                            <div className="pick-rate">{!question.isTrue ? '✅' : '❌'} {pickRates.falseCount}/{pickRates.totalCount} ({pickRates.falseRate.toFixed(1)}%)</div>
                         </>
                     )}
 

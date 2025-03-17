@@ -19,7 +19,7 @@ interface Props {
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly, passedAnswer } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
-    const [pickRates, setPickRates] = useState<number[]>([]);
+    const [pickRates, setPickRates] = useState<{ percentages: number[], counts: number[], totalCount: number }>({ percentages: [], counts: [], totalCount: 0 });
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     let disableButton = false;
@@ -37,20 +37,26 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     
     const calculatePickRates = () => {
         if (!students || students.length === 0) {
-            setPickRates(new Array(question.choices.length).fill(0)); // Fill with 0 for each choice
+            setPickRates({ percentages: new Array(question.choices.length).fill(0), counts: new Array(question.choices.length).fill(0), totalCount: 0 });
             return;
         }
-    
-        const rates = question.choices.map(choice => {
-            const choiceAnswers = students.filter(student =>
+
+        const rates: number[] = [];
+        const counts: number[] = [];
+        let totalResponses = 0;
+
+        question.choices.forEach(choice => {
+            const choiceCount = students.filter(student =>
                 student.answers.some(ans =>
                     ans.idQuestion === Number(question.id) && ans.answer === choice.formattedText.text
                 )
             ).length;
-            return (choiceAnswers / students.length) * 100;
+            totalResponses += choiceCount;
+            rates.push((choiceCount / students.length) * 100);
+            counts.push(choiceCount);
         });
-    
-        setPickRates(rates);
+
+        setPickRates({ percentages: rates, counts: counts, totalCount: totalResponses });
     };
 
     useEffect(() => {
@@ -76,7 +82,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
                     const rateStyle = showCorrectAnswers ? {
-                        backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'royalblue' : 'orange'} ${pickRates[i]}%, transparent ${pickRates[i]}%)`,
+                        backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'lightgreen' : 'lightcoral'} ${pickRates.percentages[i]}%, transparent ${pickRates.percentages[i]}%)`,
                         color: 'black'
                     } : {};
                     return (
@@ -114,7 +120,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
                                     </div>
                                 )}
-                                {showCorrectAnswers && <div className="pick-rate">{choice.isCorrect ? '✅' : '❌'} {pickRates[i].toFixed(1)}%</div>}
+                                {showCorrectAnswers && <div className="pick-rate">{choice.isCorrect ? '✅' : '❌'} {`${pickRates.counts[i]}/${pickRates.totalCount} (${pickRates.percentages[i].toFixed(1)}%)`}</div>}
                             </Button>
                         </div>
                     );
