@@ -28,7 +28,7 @@ class Admin {
 
         const result = await usrColl.deleteOne({ _id: ObjectId.createFromHexString(id) });
 
-        if (result) deleted = true;
+        if (result && result.deletedCount > 0) deleted = true;
 
         return deleted;
     }
