@@ -26,6 +26,10 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [correctAnswerRate, setCorrectAnswerRate] = useState<number>(0);
+    const [submissionCounts, setSubmissionCounts] = useState({
+        correctSubmissions: 0,
+        totalSubmissions: 0
+    });
 
     const toggleShowCorrectAnswers = () => {
         setShowCorrectAnswers(!showCorrectAnswers);
@@ -42,7 +46,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
 
     const calculateCorrectAnswerRate = () => {
         if (!students || students.length === 0) {
-            setCorrectAnswerRate(0); // Safeguard against undefined or empty student array
+            setSubmissionCounts({ correctSubmissions: 0, totalSubmissions: 0 });
             return;
         }
 
@@ -52,6 +56,12 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                 ans.idQuestion === Number(question.id) && ans.isCorrect
             )
         ).length;
+        
+        setSubmissionCounts({
+            correctSubmissions,
+            totalSubmissions
+        });
+
         setCorrectAnswerRate((correctSubmissions / totalSubmissions) * 100);
     };
 
@@ -139,7 +149,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                         visibility: showCorrectAnswers ? 'visible' : 'hidden'
                     }}>
                         <div>
-                            Taux de réponse correcte:
+                            Taux de réponse correcte: {submissionCounts.correctSubmissions}/{submissionCounts.totalSubmissions}
                         </div>
                         <div className="progress-bar-container">
                             <div className="progress-bar-fill" style={{ width: `${correctAnswerRate}%` }}></div>

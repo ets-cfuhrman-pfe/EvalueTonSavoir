@@ -67,7 +67,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const alphabet = alpha.map((x) => String.fromCharCode(x));
     return (
 
-        <div className="question-container">
+        <div className="question-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
@@ -76,7 +76,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 {question.choices.map((choice, i) => {
                     const selected = answer === choice.formattedText.text ? 'selected' : '';
                     const rateStyle = showCorrectAnswers ? {
-                        backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'lightgreen' : 'lightcoral'} ${pickRates[i]}%, transparent ${pickRates[i]}%)`,
+                        backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'royalblue' : 'orange'} ${pickRates[i]}%, transparent ${pickRates[i]}%)`,
                         color: 'black'
                     } : {};
                     return (
@@ -114,12 +114,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
                                     </div>
                                 )}
-                                {showCorrectAnswers && <div>{choice.isCorrect ? '✅' : '❌'}</div>}
-                                {showCorrectAnswers && (
-                                    <div className="pick-rate">
-                                        {pickRates[i].toFixed(1)}%
-                                    </div>
-                                )}
+                                {showCorrectAnswers && <div className="pick-rate">{choice.isCorrect ? '✅' : '❌'} {pickRates[i].toFixed(1)}%</div>}
                             </Button>
                         </div>
                     );

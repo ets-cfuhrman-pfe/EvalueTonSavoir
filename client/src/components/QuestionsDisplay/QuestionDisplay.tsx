@@ -24,7 +24,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     handleOnSubmitAnswer,
     showAnswer,
     students,
-    isDisplayOnly = false
+    isDisplayOnly = false,
     answer,
 }) => {
     // const isMobile = useCheckMobileScreen();

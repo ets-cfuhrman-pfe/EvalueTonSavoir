@@ -32,7 +32,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     };
 
     useEffect(() => {
-        console.log("passedAnswer", passedAnswer);
         if (passedAnswer === true || passedAnswer === false) {
             setAnswer(passedAnswer);
         } else {
@@ -96,15 +95,14 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     <div className={`circle ${selectedTrue}`}>V</div>
                     <div className={`answer-text ${selectedTrue}`}
                         style={showCorrectAnswers ? {
-                            backgroundImage: `linear-gradient(to right, ${question.isTrue ? 'lightgreen' : 'lightcoral'} ${pickRates.trueRate}%, transparent ${pickRates.trueRate}%)`
+                            backgroundImage: `linear-gradient(to right, ${question.isTrue ? 'royalblue' : 'orange'} ${pickRates.trueRate}%, transparent ${pickRates.trueRate}%)`
                         } : {}}
                     >
                         Vrai
                     </div>
                     {showCorrectAnswers && (
                         <>
-                            <div>{question.isTrue ? '✅' : '❌'}</div>
-                            <div className="pick-rate">{pickRates.trueRate.toFixed(1)}%</div>
+                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueRate.toFixed(1)}%</div>
                         </>
                     )}
 
@@ -125,7 +123,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     <div
                         className={`answer-text ${selectedFalse}`}
                         style={showCorrectAnswers ? {
-                            backgroundImage: `linear-gradient(to right, ${!question.isTrue ? 'lightgreen' : 'lightcoral'} ${pickRates.falseRate}%, transparent ${pickRates.falseRate}%)`,
+                            backgroundImage: `linear-gradient(to right, ${!question.isTrue ? 'royalblue' : 'orange'} ${pickRates.falseRate}%, transparent ${pickRates.falseRate}%)`,
                         } : {}}
                     >
                         Faux
@@ -133,8 +131,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
 
                     {showCorrectAnswers && (
                         <>
-                            <div>{!question.isTrue ? '✅' : '❌'}</div>
-                            <div className="pick-rate">{pickRates.falseRate.toFixed(1)}%</div>
+                            <div className="pick-rate">{!question.isTrue ? '✅' : '❌'} {pickRates.falseRate.toFixed(1)}%</div>
                         </>
                     )}
 

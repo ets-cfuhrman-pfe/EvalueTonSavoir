@@ -20,6 +20,10 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [correctAnswerRate, setCorrectAnswerRate] = useState<number>(0);
+    const [submissionCounts, setSubmissionCounts] = useState({
+        correctSubmissions: 0,
+        totalSubmissions: 0
+    });
 
     const toggleShowCorrectAnswers = () => {
         setShowCorrectAnswers(!showCorrectAnswers);
@@ -39,7 +43,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
 
     const calculateCorrectAnswerRate = () => {
         if (!students || students.length === 0) {
-            setCorrectAnswerRate(0); // Safeguard against undefined or empty student array
+            setSubmissionCounts({ correctSubmissions: 0, totalSubmissions: 0 });
             return;
         }
 
@@ -49,63 +53,69 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                 ans.idQuestion === Number(question.id) && ans.isCorrect
             )
         ).length;
+
+        setSubmissionCounts({
+            correctSubmissions,
+            totalSubmissions
+        });
+
         setCorrectAnswerRate((correctSubmissions / totalSubmissions) * 100);
     };
 
     return (
-        <div className="question-wrapper">
-            <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-            </div>
-            {showAnswer ? (
-                <>
-                    <div className="correct-answer-text mb-1">
-                    <span>
-                        <strong>La bonne réponse est: </strong>
-                    
-                        {question.choices.map((choice) => (
-                            <div key={choice.text} className="mb-1">
-                                {choice.text}
-                            </div>
-                        ))}
-                    </span>
-                    <span>
-                        <strong>Votre réponse est: </strong>{answer}
-                    </span>
-                    </div>
-                    {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                    </div>}
-                </>
-            ) : (
-                <>
-                    <div className="answer-wrapper mb-1">
-                        <TextField
-                            type="text"
-                            id={question.formattedStem.text}
-                            name={question.formattedStem.text}
-                            onChange={(e) => {
-                                setAnswer(e.target.value);
-                            }}
-                            disabled={showAnswer}
-                            aria-label="short-answer-input"
-                        />
-                    </div>
-                    {handleOnSubmitAnswer && (
-                        <Button
-                            variant="contained"
-                            onClick={() =>
-                                answer !== undefined &&
-                                handleOnSubmitAnswer &&
-                                handleOnSubmitAnswer(answer)
-                            }
-                            disabled={answer === null || answer === ''}
-                        >
-                            Répondre
-                        </Button>
-                    )}
-                </>
-            )}
+            <div className="question-wrapper">
+                <div>
+                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                </div>
+                {showAnswer ? (
+                    <>
+                        <div className="correct-answer-text mb-1">
+                        <span>
+                            <strong>La bonne réponse est: </strong>
+                        
+                            {question.choices.map((choice) => (
+                                <div key={choice.text} className="mb-1">
+                                    {choice.text}
+                                </div>
+                            ))}
+                        </span>
+                        <span>
+                            <strong>Votre réponse est: </strong>{answer}
+                        </span>
+                        </div>
+                        {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                        </div>}
+                    </>
+                ) : (
+                    <>
+                        <div className="answer-wrapper mb-1">
+                            <TextField
+                                type="text"
+                                id={question.formattedStem.text}
+                                name={question.formattedStem.text}
+                                onChange={(e) => {
+                                    setAnswer(e.target.value);
+                                }}
+                                disabled={showAnswer}
+                                aria-label="short-answer-input"
+                            />
+                        </div>
+                        {handleOnSubmitAnswer && (
+                            <Button
+                                variant="contained"
+                                onClick={() =>
+                                    answer !== undefined &&
+                                    handleOnSubmitAnswer &&
+                                    handleOnSubmitAnswer(answer)
+                                }
+                                disabled={answer === null || answer === ''}
+                            >
+                                Répondre
+                            </Button>
+                        )}
+                    </>
+                )}   
 
             {isDisplayOnly && (
                 <>
@@ -122,7 +132,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                         visibility: showCorrectAnswers ? 'visible' : 'hidden'
                     }}>
                         <div>
-                            Taux de réponse correcte:
+                            Taux de réponse correcte: {submissionCounts.correctSubmissions}/{submissionCounts.totalSubmissions}
                         </div>
                         <div className="progress-bar-container">
                             <div className="progress-bar-fill" style={{ width: `${correctAnswerRate}%` }}></div>

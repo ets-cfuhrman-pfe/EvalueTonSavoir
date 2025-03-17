@@ -23,6 +23,7 @@
         "@mui/material": "^6.4.6",
         "@types/uuid": "^9.0.7",
         "axios": "^1.8.1",
+        "bootstrap": "^5.3.3",
         "dompurify": "^3.2.3",
         "esbuild": "^0.25.0",
         "gift-pegjs": "^2.0.0-beta.1",
