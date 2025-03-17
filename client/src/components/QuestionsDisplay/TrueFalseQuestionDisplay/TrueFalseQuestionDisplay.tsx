@@ -105,7 +105,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     </div>
                     {showCorrectAnswers && (
                         <>
-                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueRate}/{pickRates.totalCount} ({pickRates.trueRate.toFixed(1)}%)</div>
+                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueCount}/{pickRates.totalCount} ({pickRates.trueRate.toFixed(1)}%)</div>
                         </>
                     )}
 
