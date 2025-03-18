@@ -22,12 +22,12 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 import { QuizTypeShort } from "../../Types/QuizType";
-import { LabelMap } from "../../Types/LabelMap";
+import { LabelMap, AdminTableType } from "../../Types/LabelMap";
 
 
 interface AdminTableProps {
-  data: QuizTypeShort[];
-  onDelete: (row: QuizTypeShort) => void;
+  data: AdminTableType[];
+  onDelete: (row: AdminTableType) => void;
   filterKeys?: string[];
   labelMap?: LabelMap;
 }
@@ -42,7 +42,7 @@ const AdminTable: React.FC<AdminTableProps> = ({
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [deleteRow, setDeleteRow] = useState<QuizTypeShort | null>(null);
+  const [deleteRow, setDeleteRow] = useState<AdminTableType | null>(null);
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -58,7 +58,7 @@ const AdminTable: React.FC<AdminTableProps> = ({
     setPage(0);
   };
 
-  const handleOpenDialog = (row: QuizTypeShort) => {
+  const handleOpenDialog = (row: AdminTableType) => {
     setDeleteRow(row);
     setOpenDialog(true);
   };
@@ -116,12 +116,12 @@ const AdminTable: React.FC<AdminTableProps> = ({
               .map((row, index) => (
                 <TableRow key={row._id} sx={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "inherit" }}>
                   {headers.map((key) => {
-                    const value = row[key as keyof QuizTypeShort];
+                    const value = row[key as keyof AdminTableType];
                     let displayValue;
                     if (value instanceof Date) {
-                      displayValue = value.toLocaleDateString("en-GB");
+                      displayValue = value.toLocaleDateString();
                     } else if (value && typeof value === "string" && !isNaN(Date.parse(value))) {
-                      displayValue = new Date(value).toLocaleDateString("en-GB");
+                      displayValue = new Date(value).toLocaleDateString();
                     } else {
                       displayValue = value;
                     }
