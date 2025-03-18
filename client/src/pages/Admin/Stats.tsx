@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  IconButton, Grid, Typography, CircularProgress, Box, TextField, Accordion, AccordionSummary, AccordionDetails
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Paper, Grid, Typography, CircularProgress, Box, TextField, Accordion, AccordionSummary, AccordionDetails} from "@mui/material";
 import ApiService from '../../services/ApiService';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { QuizTypeShort } from "../../Types/QuizType";
+import AdminTable from "../../components/AdminTable/AdminTable";
+
 
 const Users: React.FC = () => {
   const [quizzes, setQuizzes] = useState<QuizTypeShort[]>([]);
@@ -52,8 +50,8 @@ const Users: React.FC = () => {
     setFilteredQuizzes(filtered);
   }, [emailFilter, dateFilter, quizzes]);
 
-  const handleDelete = (id: string) => {
-    setQuizzes(quizzes.filter(quiz => quiz._id !== id));
+  const handleQuizDelete = (rowToDelete: QuizTypeShort) => {
+    setQuizzes((prevData) => prevData.filter((row) => row._id !== rowToDelete._id));
   };
 
   const totalQuizzes = quizzes.length;
@@ -66,6 +64,14 @@ const Users: React.FC = () => {
     );
   }
 
+  const labelMap = {
+    _id: "ID",
+    email: "Enseignant",
+    title: "Titre",
+    created_at: "Création",
+    updated_at: "Mise à Jour",
+  };
+  
   return (
     <Paper className="p-4" sx={{ boxShadow: 'none' }}>
       <Grid container spacing={8} justifyContent="center">
@@ -98,72 +104,12 @@ const Users: React.FC = () => {
         </Grid>
       </Grid>
 
-      
-      <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="filter-content"
-          id="filter-header"
-        >
-          <Typography variant="h6">Filtres</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                placeholder="Filtrer par email"
-                value={emailFilter}
-                onChange={(e) => setEmailFilter(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                placeholder="Filtrer par date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-
-      {/* Table */}
-      <TableContainer component={Paper} className="mt-4">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                Enseignant
-              </TableCell>
-              <TableCell>Titre</TableCell>
-              <TableCell>Crée</TableCell>
-              <TableCell>Modifié</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredQuizzes.map((quiz) => (
-              <TableRow key={quiz._id}>
-                <TableCell>{quiz.email}</TableCell>
-                <TableCell>{quiz.title}</TableCell>
-                <TableCell>{new Date(quiz.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(quiz.updated_at).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleDelete(quiz._id)} color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <AdminTable 
+        data={quizzes} 
+        onDelete={handleQuizDelete} 
+        filterKeys={["_id"]} 
+        labelMap={labelMap}
+      />
     </Paper>
   );
 };
