@@ -30,7 +30,7 @@ const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string, roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -39,6 +39,7 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const [isQuestionShown, setIsQuestionShown] = useState<boolean>(quizMode === 'student' ? false : true);
 
     // Handle the newly connected user in useEffect, because it needs state info 
     // not available in the socket.on() callback
@@ -46,13 +47,13 @@ const ManageRoom: React.FC = () => {
         if (newlyConnectedUser) {
             console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
             setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
-    
+
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
                 console.log(`!quizStarted: returning.... `);
                 return;
             }
-    
+
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
@@ -65,11 +66,15 @@ const ManageRoom: React.FC = () => {
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
-    
+
             // Reset the newly connected user state
             setNewlyConnectedUser(null);
         }
     }, [newlyConnectedUser]);
+
+    useEffect(() => {
+        setIsQuestionShown(quizMode === 'student' ? false : true);
+    }, [quizMode]);
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -96,7 +101,7 @@ const ManageRoom: React.FC = () => {
         return () => {
             disconnectWebSocket();
         };
-      }, [roomName, navigate]);
+    }, [roomName, navigate]);
 
     useEffect(() => {
         if (quizId) {
@@ -218,14 +223,14 @@ const ManageRoom: React.FC = () => {
                                     console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
                                     return ans.idQuestion === idQuestion
                                         ? {
-                                              ...ans,
-                                              answer,
-                                              isCorrect: checkIfIsCorrect(
-                                                  answer,
-                                                  idQuestion,
-                                                  quizQuestions!
-                                              )
-                                          }
+                                            ...ans,
+                                            answer,
+                                            isCorrect: checkIfIsCorrect(
+                                                answer,
+                                                idQuestion,
+                                                quizQuestions!
+                                            )
+                                        }
                                         : ans;
                                 });
                             } else {
@@ -258,10 +263,12 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
-                                       questionIndex: nextQuestionIndex, 
-                                       isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const previousQuestion = () => {
@@ -271,7 +278,7 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false });
     };
 
     const initializeQuizQuestion = () => {
@@ -299,7 +306,7 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
+        webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true });
     };
 
     const launchStudentMode = () => {
@@ -336,9 +343,11 @@ const ManageRoom: React.FC = () => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
+                webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false });
             }
+            setIsQuestionShown(true);
         }
+
     };
 
     const handleReturn = () => {
@@ -460,15 +469,29 @@ const ManageRoom: React.FC = () => {
 
             {/* the following breaks the css (if 'room' classes are nested) */}
             <div className="">
+
                 {quizQuestions ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
-                        {!isNaN(Number(currentQuestion?.question.id)) && (
-                            <strong className="number of questions">
-                                Question {Number(currentQuestion?.question.id)}/
-                                {quizQuestions?.length}
-                            </strong>
+                        {(quizMode === 'student' && isQuestionShown) && (
+                            <div className='close-button-wrapper'>
+                                <Button
+                                    className="close-button"
+                                    onClick={() => {
+                                        setIsQuestionShown(false);
+                                    }} >
+                                    ✖
+                                </Button>
+                            </div>
                         )}
+                        {!isNaN(Number(currentQuestion?.question.id))
+                            && isQuestionShown && (
+                                <strong className="number of questions">
+                                    Question {Number(currentQuestion?.question.id)}/
+                                    {quizQuestions?.length}
+                                </strong>
+                            )
+                        }
 
                         {quizMode === 'teacher' && (
                             <div className="mb-1">
@@ -483,11 +506,11 @@ const ManageRoom: React.FC = () => {
 
                         <div className="mb-2 flex-column-wrapper">
                             <div className="preview-and-result-container">
-                                {currentQuestion && (
+                                {currentQuestion && isQuestionShown && (
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
-                                        
+
                                     />
                                 )}
 

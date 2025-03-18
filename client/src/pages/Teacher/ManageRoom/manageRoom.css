@@ -37,10 +37,11 @@
     /* align-items: center; */
 }
 
-
-
-
-
+.close-button-wrapper{
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 1rem;
+}
 
 /* .create-room-container {
     display: flex;
