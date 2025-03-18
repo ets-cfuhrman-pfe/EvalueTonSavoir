@@ -71,7 +71,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
             )}
             </div>
             {isExpanded && ( 
-            <div className="table-container">
+            <div className="table-container" data-testid="table-container">
 
                 <LiveResultsTable
                     students={students}

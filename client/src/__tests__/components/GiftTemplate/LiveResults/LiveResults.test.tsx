@@ -92,4 +92,29 @@ describe('LiveResults', () => {
 
         expect(mockShowSelectedQuestion).toHaveBeenCalled();
     });
+
+    test('toggles the visibility of content when the arrow button is clicked', () => {
+        render(<LiveResults
+                socket={null}
+                questions={mockQuestions}
+                showSelectedQuestion={mockShowSelectedQuestion}
+                quizMode="teacher"
+                students={mockStudents}
+            />);
+        expect(screen.queryByText('Afficher les noms')).toBeInTheDocument();
+        expect(screen.queryByText('Afficher les réponses')).toBeInTheDocument();
+        expect(screen.queryByTestId('table-container')).toBeInTheDocument();
+
+        const toggleButton = screen.getByRole('button', { name: /toggle visibility/i });
+        fireEvent.click(toggleButton);
+
+        expect(screen.queryByText('Afficher les noms')).not.toBeInTheDocument();
+        expect(screen.queryByText('Afficher les réponses')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('table-container')).not.toBeInTheDocument();
+
+        fireEvent.click(toggleButton);
+        expect(screen.queryByText('Afficher les noms')).toBeInTheDocument();
+        expect(screen.queryByText('Afficher les réponses')).toBeInTheDocument();
+        expect(screen.queryByTestId('table-container')).toBeInTheDocument();
+    });
 });
