@@ -34,6 +34,7 @@ import {
 } from '@mui/material';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { QRCodeCanvas } from 'qrcode.react';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -50,6 +51,14 @@ const ManageRoom: React.FC = () => {
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
     const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
     const [showQrModal, setShowQrModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(roomUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
 
     // Handle the newly connected user in useEffect, because it needs state info
     // not available in the socket.on() callback
@@ -503,6 +512,14 @@ const ManageRoom: React.FC = () => {
                     <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>
                         <h3>URL de participation :</h3>
                         <p>{roomUrl}</p>
+                        <Button
+                        variant="contained"
+                        startIcon={<ContentCopyIcon />}
+                        onClick={handleCopy}
+                        style={{ marginTop: '10px' }}
+                    >
+                        {copied ? "Copié !" : "Copier le lien"}
+                    </Button>
                     </div>
                 </DialogContent>
                 <DialogActions>
