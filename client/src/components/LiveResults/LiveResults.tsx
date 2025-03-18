@@ -6,11 +6,13 @@ import './liveResult.css';
 import {
     FormControlLabel,
     FormGroup,
+    IconButton,
     Switch,
 } from '@mui/material';
 import { StudentType } from '../../Types/StudentType';
 
 import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 interface LiveResultsProps {
     socket: Socket | null;
@@ -24,13 +26,24 @@ interface LiveResultsProps {
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
+    const [isExpanded, setIsExpanded] = useState<boolean>(true);
+
+    const toggleExpand = () => {
+        setIsExpanded(!isExpanded);
+    };
 
     return (
 
         
         <div>
             <div className="action-bar mb-1">
-                <div className="text-2xl text-bold">Résultats du quiz</div>
+            <div>
+                <IconButton onClick={toggleExpand} aria-label="toggle visibility">
+                    {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+                <span>Résultats du quiz</span>
+            </div>
+            {isExpanded && (          
                 <FormGroup row>
                     <FormControlLabel
                         label={<div className="text-sm">Afficher les noms</div>}
@@ -55,8 +68,9 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                         }
                     />
                 </FormGroup>
+            )}
             </div>
-
+            {isExpanded && ( 
             <div className="table-container">
 
                 <LiveResultsTable
@@ -67,6 +81,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
                     showUsernames={showUsernames}
                 />
             </div>
+            )}
         </div>
     );
 };
