@@ -298,28 +298,37 @@ describe('ManageRoom', () => {
             expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
         });
     });
-    test('Affiche la modale QR Code lorsqu’on clique sur le bouton', () => {
+    test("Affiche la modale QR Code lorsqu’on clique sur le bouton", async () => {
         render(<MemoryRouter><ManageRoom /></MemoryRouter>);
-        
+    
         const button = screen.getByRole('button', { name: /lien de participation/i });
         fireEvent.click(button);
-        
-        expect(screen.getByText('Rejoindre la salle')).toBeInTheDocument();
-        expect(screen.getByText('Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :')).toBeInTheDocument();
+    
+        await waitFor(() => {
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
+    
+        expect(screen.getByRole('heading', { name: /Rejoindre la salle/i })).toBeInTheDocument();
+        expect(screen.getByText(/Scannez ce QR code ou partagez le lien ci-dessous/i)).toBeInTheDocument();
         expect(screen.getByTestId('qr-code')).toBeInTheDocument();
     });
-
-    test('Ferme la modale QR Code lorsqu’on clique sur le bouton Fermer', async () => {
+    
+    test("Ferme la modale QR Code lorsqu’on clique sur le bouton Fermer", async () => {
         render(<MemoryRouter><ManageRoom /></MemoryRouter>);
-        
+    
         fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
-        expect(screen.getByText('Rejoindre la salle')).toBeInTheDocument();
+    
+        await waitFor(() => {
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
     
         fireEvent.click(screen.getByRole('button', { name: /fermer/i }));
     
-        await waitFor(() => expect(screen.queryByText('Rejoindre la salle')).not.toBeInTheDocument());
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
     });
-
+    
     test('Affiche le bon lien de participation', () => {
         render(<MemoryRouter><ManageRoom /></MemoryRouter>);
         
