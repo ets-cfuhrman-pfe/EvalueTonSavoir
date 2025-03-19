@@ -23,7 +23,7 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button } from '@mui/material';
+import { Button, FormControlLabel, Switch } from '@mui/material';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 const ManageRoom: React.FC = () => {
@@ -471,19 +471,24 @@ const ManageRoom: React.FC = () => {
             <div className="">
 
                 {quizQuestions ? (
+
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
-                        {(quizMode === 'student' && isQuestionShown) && (
+                        
                             <div className='close-button-wrapper'>
-                                <Button
-                                    className="close-button"
-                                    onClick={() => {
-                                        setIsQuestionShown(false);
-                                    }} >
-                                    ✖
-                                </Button>
+                    <FormControlLabel
+                        label={<div className="text-sm">Afficher les questions</div>}
+                        control={
+                            <Switch
+                                value={isQuestionShown}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    setIsQuestionShown(e.target.checked)
+                                }
+                            />
+                        }
+                    />
                             </div>
-                        )}
+                    
                         {!isNaN(Number(currentQuestion?.question.id))
                             && isQuestionShown && (
                                 <strong className="number of questions">
