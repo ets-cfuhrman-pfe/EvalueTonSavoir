@@ -318,6 +318,7 @@ const ManageRoom: React.FC = () => {
             return;
         }
         setQuizQuestions(quizQuestions);
+        setCurrentQuestion(quizQuestions[0]);
         webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
     };
 
@@ -475,19 +476,20 @@ const ManageRoom: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
                         
-                            <div className='close-button-wrapper'>
+                    <div className='close-button-wrapper'>
                     <FormControlLabel
                         label={<div className="text-sm">Afficher les questions</div>}
                         control={
                             <Switch
-                                value={isQuestionShown}
+                                data-testid="question-visibility-switch" // Add a unique test ID
+                                checked={isQuestionShown}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                     setIsQuestionShown(e.target.checked)
                                 }
                             />
                         }
                     />
-                            </div>
+                    </div>
                     
                         {!isNaN(Number(currentQuestion?.question.id))
                             && isQuestionShown && (

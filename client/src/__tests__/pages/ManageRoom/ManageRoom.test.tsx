@@ -344,11 +344,10 @@ describe('ManageRoom', () => {
         const tableHeader = screen.getByText('Q1');
         fireEvent.click(tableHeader);
 
-        const closeButton = screen.getByRole('button', { name: /✖/i });
-        expect(closeButton).toBeInTheDocument();
+        const questionVisibilitySwitch = screen.getByTestId('question-visibility-switch'); // Get the specific switch
         expect(screen.getByText(/Question 1\//i)).toBeInTheDocument();
 
-        fireEvent.click(closeButton);
+        fireEvent.click(questionVisibilitySwitch);
 
         expect(screen.queryByRole('button', { name: /✖/i })).not.toBeInTheDocument();
         expect(screen.queryByText(/Question 1\//i)).not.toBeInTheDocument();
