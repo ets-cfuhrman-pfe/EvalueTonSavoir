@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Paper, Grid, Typography, CircularProgress, Box, TextField, Accordion, AccordionSummary, AccordionDetails} from "@mui/material";
+import { Paper, Grid, Typography, CircularProgress, Box } from "@mui/material";
 import ApiService from '../../services/ApiService';
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AdminTableType } from "../../Types/LabelMap/AdminTableType";
+import { AdminTableType } from "../../Types/AdminTableType";
 import AdminTable from "../../components/AdminTable/AdminTable";
 
 
 const Users: React.FC = () => {
   const [quizzes, setQuizzes] = useState<AdminTableType[]>([]);
-  const [filteredQuizzes, setFilteredQuizzes] = useState<AdminTableType[]>([]);
   const [monthlyQuizzes, setMonthlyQuizzes] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [emailFilter, setEmailFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const data = await ApiService.getStats();
         setQuizzes(data.quizzes);
-        setFilteredQuizzes(data.quizzes);
         setTotalUsers(data.total);
 
         const currentMonth = new Date().getMonth();
@@ -40,15 +34,6 @@ const Users: React.FC = () => {
     };
     fetchStats();
   }, []);
-
-  useEffect(() => {
-    const filtered = quizzes.filter(quiz =>
-      quiz.email.toLowerCase().includes(emailFilter.toLowerCase()) &&
-      ((new Date(quiz.created_at).toLocaleDateString().includes(dateFilter) || 
-      new Date(quiz.updated_at).toLocaleDateString().includes(dateFilter)))
-    );
-    setFilteredQuizzes(filtered);
-  }, [emailFilter, dateFilter, quizzes]);
 
   const handleQuizDelete = (rowToDelete: AdminTableType) => {
     setQuizzes((prevData) => prevData.filter((row) => row._id !== rowToDelete._id));

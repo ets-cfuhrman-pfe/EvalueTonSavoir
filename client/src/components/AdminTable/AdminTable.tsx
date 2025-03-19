@@ -21,8 +21,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
-import { QuizTypeShort } from "../../Types/QuizType";
-import { LabelMap, AdminTableType } from "../../Types/LabelMap";
+import { AdminTableType } from "../../Types/AdminTableType";
+import { LabelMap } from "../../Types/LabelMap";
 
 
 interface AdminTableProps {
@@ -87,7 +87,7 @@ const AdminTable: React.FC<AdminTableProps> = ({
     <Paper sx={{ width: "100%", overflow: "hidden", padding: "16px" }}>
       <Box display="flex" justifyContent="flex-start" marginBottom={2}>
         <Input
-          placeholder="Search"
+          placeholder="Recherche: Enseignant, Courriel..."
           value={searchQuery}
           onChange={handleSearchChange}
           startAdornment={
