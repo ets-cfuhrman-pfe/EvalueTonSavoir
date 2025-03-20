@@ -24,49 +24,68 @@ interface LiveResultsProps {
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
+    const [isExpanded, setIsExpanded] = useState<boolean>(true);
+
+    const toggleExpand = () => {
+        setIsExpanded(!isExpanded);
+    };
 
     return (
 
-        
+
         <div>
-            <div className="action-bar mb-1">
-                <div className="text-2xl text-bold">Résultats du quiz</div>
-                <FormGroup row>
+            <div className="action-bar">
+                <div>
                     <FormControlLabel
-                        label={<div className="text-sm">Afficher les noms</div>}
+                        label={<div className="text-sm">Résultats du quiz</div>}
                         control={
                             <Switch
-                                value={showUsernames}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setShowUsernames(e.target.checked)
-                                }
+                                data-testid="liveResults-switch"
+                                checked={isExpanded}
+                                onChange={() => toggleExpand()}
                             />
                         }
                     />
-                    <FormControlLabel
-                        label={<div className="text-sm">Afficher les réponses</div>}
-                        control={
-                            <Switch
-                                value={showCorrectAnswers}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setShowCorrectAnswers(e.target.checked)
-                                }
-                            />
-                        }
+                </div>
+                {isExpanded && (
+                    <FormGroup row className='form-group'>
+                        <FormControlLabel
+                            label={<div className="text-sm">Afficher les noms</div>}
+                            control={
+                                <Switch
+                                    value={showUsernames}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setShowUsernames(e.target.checked)
+                                    }
+                                />
+                            }
+                        />
+                        <FormControlLabel
+                            label={<div className="text-sm">Afficher les réponses</div>}
+                            control={
+                                <Switch
+                                    value={showCorrectAnswers}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setShowCorrectAnswers(e.target.checked)
+                                    }
+                                />
+                            }
+                        />
+                    </FormGroup>
+                )}
+            </div>
+            {isExpanded && (
+                <div className="table-container" data-testid="table-container">
+
+                    <LiveResultsTable
+                        students={students}
+                        questions={questions}
+                        showCorrectAnswers={showCorrectAnswers}
+                        showSelectedQuestion={showSelectedQuestion}
+                        showUsernames={showUsernames}
                     />
-                </FormGroup>
-            </div>
-
-            <div className="table-container">
-
-                <LiveResultsTable
-                    students={students}
-                    questions={questions}
-                    showCorrectAnswers={showCorrectAnswers}
-                    showSelectedQuestion={showSelectedQuestion}
-                    showUsernames={showUsernames}
-                />
-            </div>
+                </div>
+            )}
         </div>
     );
 };
