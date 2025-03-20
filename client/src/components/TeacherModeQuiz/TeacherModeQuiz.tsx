@@ -4,7 +4,7 @@ import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
 import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogContent, DialogActions, Button } from '@mui/material';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
@@ -94,7 +94,6 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                 open={isFeedbackDialogOpen}
                 onClose={handleFeedbackDialogClose}
             >
-                <DialogTitle>Rétroaction</DialogTitle>
                 <DialogContent>
                     <div style={{
                         wordWrap: 'break-word',
@@ -102,8 +101,6 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                         maxHeight: '400px',
                         overflowY: 'auto',
                     }}>
-                        <div style={{ textAlign: 'left', fontWeight: 'bold', marginTop: '10px' }}
-                        >Question : </div>
                     </div>
 
                     <QuestionComponent

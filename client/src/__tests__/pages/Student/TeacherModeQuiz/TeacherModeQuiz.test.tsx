@@ -66,6 +66,18 @@ describe('TeacherModeQuiz', () => {
         expect(mockSubmitAnswer).toHaveBeenCalledWith('Option A', 1);
     });
 
+
+    test('handles shows feedback for answered question', () => {
+            act(() => {
+                fireEvent.click(screen.getByText('Option B'));
+            });
+            act(() => {
+                fireEvent.click(screen.getByText('Répondre'));
+            });
+            expect(mockSubmitAnswer).toHaveBeenCalledWith('Option B', 1)
+            expect(screen.getByText('❌ Incorrect!')).toBeInTheDocument();
+    });
+
     test('handles shows feedback for an already answered question', () => {
         // Answer the first question
         act(() => {
@@ -106,7 +118,7 @@ describe('TeacherModeQuiz', () => {
         });
 
         // Check if the feedback dialog is shown again
-        expect(screen.getByText('Rétroaction')).toBeInTheDocument();
+        expect(screen.getByText('❌ Incorrect!')).toBeInTheDocument();
     });
     
     test('handles disconnect button click', () => {
