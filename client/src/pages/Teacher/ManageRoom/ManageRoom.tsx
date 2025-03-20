@@ -30,6 +30,7 @@ const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
+    const [allStudents, setAllStudents] = useState<StudentType[]>([]);
     const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
@@ -46,7 +47,8 @@ const ManageRoom: React.FC = () => {
         if (newlyConnectedUser) {
             console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
             setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
-    
+            setAllStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
                 console.log(`!quizStarted: returning.... `);
@@ -134,6 +136,8 @@ const ManageRoom: React.FC = () => {
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
             setStudents(new Array<StudentType>());
+            setAllStudents(new Array<StudentType>());
+
         }
     };
 
@@ -204,6 +208,48 @@ const ManageRoom: React.FC = () => {
                         console.log(student.name);
                     });
 
+                    let foundStudent = false;
+                    const updatedStudents = prevStudents.map((student) => {
+                        console.log(`Comparing ${student.id} to ${idUser}`);
+                        if (student.id === idUser) {
+                            foundStudent = true;
+                            const existingAnswer = student.answers.find(
+                                (ans) => ans.idQuestion === idQuestion
+                            );
+                            let updatedAnswers: Answer[] = [];
+                            if (existingAnswer) {
+                                updatedAnswers = student.answers.map((ans) => {
+                                    console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
+                                    return ans.idQuestion === idQuestion
+                                        ? {
+                                              ...ans,
+                                              answer,
+                                              isCorrect: checkIfIsCorrect(
+                                                  answer,
+                                                  idQuestion,
+                                                  quizQuestions!
+                                              )
+                                          }
+                                        : ans;
+                                });
+                            } else {
+                                const newAnswer = {
+                                    idQuestion,
+                                    answer,
+                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
+                                };
+                                updatedAnswers = [...student.answers, newAnswer];
+                            }
+                            return { ...student, answers: updatedAnswers };
+                        }
+                        return student;
+                    });
+                    if (!foundStudent) {
+                        console.log(`Student ${username} not found in the list.`);
+                    }
+                    return updatedStudents;
+                });
+                setAllStudents((prevStudents) => {
                     let foundStudent = false;
                     const updatedStudents = prevStudents.map((student) => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
@@ -496,7 +542,7 @@ const ManageRoom: React.FC = () => {
                                     socket={socket}
                                     questions={quizQuestions}
                                     showSelectedQuestion={showSelectedQuestion}
-                                    students={students}
+                                    students={allStudents}
                                 ></LiveResultsComponent>
                             </div>
                         </div>
