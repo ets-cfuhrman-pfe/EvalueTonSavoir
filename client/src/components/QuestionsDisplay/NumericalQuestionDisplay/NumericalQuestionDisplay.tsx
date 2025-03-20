@@ -19,7 +19,12 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
         props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
     const [isGoodAnswer, setisGoodAnswer] = useState<boolean>(false);
+    const [isMultpleAnswer, setIsMultpleAnswer] = useState<boolean>(false);
+
     const correctAnswers = question.choices;
+    const correctAnswersList: number[] = [];
+    const correctAnswersPhrases: string[] = [];
+
     let correctAnswer = '';
 
     useEffect(() => {
@@ -33,9 +38,29 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     }, [answer]);
 
     const checkAnswer = () => {
-        const isCorrect = correctAnswer === answer;
-        setisGoodAnswer(isCorrect);
+        if(isMultpleAnswer) {
+            correctAnswers.forEach((answers) => {
+                if(isSimpleNumericalAnswer(answers) && answer === answers.number) {
+                    setisGoodAnswer(true);
+                } else if(isRangeNumericalAnswer(answers) && answer as number >= answers.number - answers.range && answer as number <= answers.number + answers.range) {
+                    setisGoodAnswer(true);
+                } else if(isHighLowNumericalAnswer(answers) && answer as number >= answers.numberLow && answer as number <= answers.numberHigh) {
+                    setisGoodAnswer(true);
+                }
+            }
+        )
+        ;
+        } else {
+                if(isSimpleNumericalAnswer(answers) && answer === answers.number) {
+                    setisGoodAnswer(true);
+                } else if(isRangeNumericalAnswer(answers) && answer as number >= answers.number - answers.range && answer as number <= answers.number + answers.range) {
+                    setisGoodAnswer(true);
+                } else if(isHighLowNumericalAnswer(answers) && answer as number >= answers.numberLow && answer as number <= answers.numberHigh) {
+                    setisGoodAnswer(true);
+                }
+            };
     };
+
     //const isSingleAnswer = correctAnswers.length === 1;
 
     if (isSimpleNumericalAnswer(correctAnswers[0])) {
@@ -47,8 +72,18 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
         const choice = correctAnswers[0] as HighLowNumericalAnswer;
         correctAnswer = `Entre ${choice.numberLow} et ${choice.numberHigh}`;
     } else if (isMultipleNumericalAnswer(correctAnswers[0])) {
-        correctAnswer = `MultipleNumericalAnswer is not supported yet`;
-    } else {
+        setIsMultpleAnswer(true);
+        correctAnswers.forEach((answers) => {
+            if(isSimpleNumericalAnswer(answers)) {
+                correctAnswersPhrases.push(`${(answers as SimpleNumericalAnswer).number}`);
+            } else if(isRangeNumericalAnswer(answers)) {
+                correctAnswersPhrases.push(`Entre ${answers.number - answers.range} et ${answers.number + answers.range}`);
+            } else if(isHighLowNumericalAnswer(answers)) {
+                correctAnswersPhrases.push(`Entre ${answers.numberLow} et ${answers.numberHigh}`);
+            }
+        });
+    }
+     else {
         throw new Error('Unknown numerical answer type');
     }
 
