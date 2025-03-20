@@ -227,7 +227,7 @@ test('calls showSelectedQuestion when a table cell is clicked', () => {
     expect(mockShowSelectedQuestion).toHaveBeenCalled();
 });
 
-test.skip('toggles the visibility of content when the arrow button is clicked', () => {
+test('toggles the visibility of content when the arrow button is clicked', () => {
     render(<LiveResults
         socket={null}
         questions={mockQuestions}
@@ -235,19 +235,16 @@ test.skip('toggles the visibility of content when the arrow button is clicked', 
         quizMode="teacher"
         students={mockStudents}
     />);
-    const toggleSwitch = screen.getByTestId("liveResults-visibility-switch");
-    fireEvent.click(toggleSwitch);
+    const toggleSwitch = screen.getByTestId("liveResults-switch");
     expect(toggleSwitch).toBeInTheDocument();
-
-    expect(toggleSwitch).toBeChecked();
     expect(screen.queryByText('Afficher les noms')).toBeInTheDocument();
     expect(screen.queryByText('Afficher les réponses')).toBeInTheDocument();
     expect(screen.queryByTestId('table-container')).toBeInTheDocument();
 
 
     fireEvent.click(toggleSwitch);
+    screen.debug();
 
-    expect(toggleSwitch).not.toBeChecked();
     expect(screen.queryByText('Afficher les noms')).not.toBeInTheDocument();
     expect(screen.queryByText('Afficher les réponses')).not.toBeInTheDocument();
     expect(screen.queryByTestId('table-container')).not.toBeInTheDocument();

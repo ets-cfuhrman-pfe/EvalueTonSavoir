@@ -36,13 +36,16 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
         <div>
             <div className="action-bar">
                 <div>
-                <Switch
-                    data-testid="liveResults-visibility-switch" 
-                    checked={isExpanded}
-                    onChange={() => toggleExpand()}
-                    inputProps={{ 'aria-label': 'toggle visibility' }}
-                />
-                    <span>Résultats du quiz</span>
+                    <FormControlLabel
+                        label={<div className="text-sm">Résultats du quiz</div>}
+                        control={
+                            <Switch
+                                data-testid="liveResults-switch"
+                                checked={isExpanded}
+                                onChange={() => toggleExpand()}
+                            />
+                        }
+                    />
                 </div>
                 {isExpanded && (
                     <FormGroup row className='form-group'>
