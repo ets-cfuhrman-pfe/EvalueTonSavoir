@@ -6,8 +6,8 @@ import LiveResultsTableFooter from 'src/components/LiveResults/LiveResultsTable/
 
 
 const mockStudents: StudentType[] = [
-    { id: "1", name: 'Student 1', answers: [{ idQuestion: 1, answer: 'Answer 1', isCorrect: true }] },
-    { id: "2", name: 'Student 2', answers: [{ idQuestion: 2, answer: 'Answer 2', isCorrect: false }] },
+    { id: "1", name: 'Student 1', answers: [{ idQuestion: 1, answer: ['Answer 1'], isCorrect: true }] },
+    { id: "2", name: 'Student 2', answers: [{ idQuestion: 2, answer: ['Answer 2'], isCorrect: false }] },
 ];
 
 const mockGetStudentGrade = jest.fn((student: StudentType) => {

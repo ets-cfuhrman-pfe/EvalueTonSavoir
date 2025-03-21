@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
-import {
-    isSimpleNumericalAnswer,
-    isRangeNumericalAnswer,
-    isHighLowNumericalAnswer
-} from 'gift-pegjs/typeGuards';
+import { BaseQuestion, parse, Question } from 'gift-pegjs';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 import webSocketService, {
     AnswerReceptionFromBackendType
@@ -24,7 +19,7 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button, FormControlLabel, Switch } from '@mui/material';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { checkIfIsCorrect } from './useRooms';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -355,63 +350,6 @@ const ManageRoom: React.FC = () => {
         disconnectWebSocket();
         navigate('/teacher/dashboard');
     };
-
-    function checkIfIsCorrect(
-        answer: AnswerType,
-        idQuestion: number,
-        questions: QuestionType[]
-    ): boolean {
-        const questionInfo = questions.find((q) =>
-            q.question.id ? q.question.id === idQuestion.toString() : false
-        ) as QuestionType | undefined;
-
-        const answerText = answer.toString();
-        if (questionInfo) {
-            const question = questionInfo.question as ParsedGIFTQuestion;
-            if (question.type === 'TF') {
-                return (
-                    (question.isTrue && answerText == 'true') ||
-                    (!question.isTrue && answerText == 'false')
-                );
-            } else if (question.type === 'MC') {
-                return question.choices.some(
-                    (choice) => choice.isCorrect && choice.formattedText.text === answerText
-                );
-            } else if (question.type === 'Numerical') {
-                if (isHighLowNumericalAnswer(question.choices[0])) {
-                    const choice = question.choices[0];
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= choice.numberHigh && answerNumber >= choice.numberLow
-                        );
-                    }
-                }
-                if (isRangeNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    const range = question.choices[0].range;
-                    const correctAnswer = question.choices[0].number;
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= correctAnswer + range &&
-                            answerNumber >= correctAnswer - range
-                        );
-                    }
-                }
-                if (isSimpleNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return answerNumber === question.choices[0].number;
-                    }
-                }
-            } else if (question.type === 'Short') {
-                return question.choices.some(
-                    (choice) => choice.text.toUpperCase() === answerText.toUpperCase()
-                );
-            }
-        }
-        return false;
-    }
 
     if (!formattedRoomName) {
         return (

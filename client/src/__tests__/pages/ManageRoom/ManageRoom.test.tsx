@@ -44,7 +44,7 @@ const mockStudents: StudentType[] = [
 ];
 
 const mockAnswerData: AnswerReceptionFromBackendType = {
-    answer: 'Answer1',
+    answer: ['Answer1'],
     idQuestion: 1,
     idUser: '1',
     username: 'Student 1',
@@ -233,7 +233,7 @@ describe('ManageRoom', () => {
 
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
 
         const launchButton = screen.getByText('Lancer');
@@ -256,6 +256,7 @@ describe('ManageRoom', () => {
         });
 
         await waitFor(() => {
+            // console.info(consoleSpy.mock.calls);
             expect(consoleSpy).toHaveBeenCalledWith(
                 'Received answer from Student 1 for question 1: Answer1'
             );
@@ -355,3 +356,4 @@ describe('ManageRoom', () => {
     });
 
 });
+
