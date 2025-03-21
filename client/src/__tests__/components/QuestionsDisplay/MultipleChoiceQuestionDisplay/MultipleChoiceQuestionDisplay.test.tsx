@@ -57,6 +57,7 @@ describe('MultipleChoiceQuestionDisplay', () => {
             fireEvent.click(submitButton);
         });
         expect(mockHandleOnSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleOnSubmitAnswer.mockClear();
     });
 
     test('submits the selected answer', () => {
@@ -70,7 +71,8 @@ describe('MultipleChoiceQuestionDisplay', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith('Choice 1');
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(['Choice 1']);
+        mockHandleOnSubmitAnswer.mockClear();
     });
 
     test('submits multiple selected answers', () => {
@@ -95,6 +97,7 @@ describe('MultipleChoiceQuestionDisplay', () => {
     
         // Verify that the mockHandleOnSubmitAnswer function is called with both answers
         expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(['Choice 1', 'Choice 2']);
+        mockHandleOnSubmitAnswer.mockClear();
     });
     
     it('should show ✅ next to the correct answer and ❌ next to the wrong answers when showAnswer is true', async () => {

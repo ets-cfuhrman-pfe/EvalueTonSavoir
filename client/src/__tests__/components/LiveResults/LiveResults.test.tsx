@@ -21,7 +21,11 @@ const mockGiftQuestions = parse(
         =Choice 1
         =Choice 2
         ~Choice 3
-    }`);
+        ~Choice 4
+    }
+    
+    ::Sample Question 2:: Question stem {TRUE}
+    `);
 
 const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) => {
     if (question.type !== "Category")
@@ -30,10 +34,13 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
     return { question: newMockQuestion as BaseQuestion };
 });
 
+console.log(`mockQuestions: ${JSON.stringify(mockQuestions)}`);
+
+// each student should have a different score for the tests to pass
 const mockStudents: StudentType[] = [
-    { id: '1', name: 'Student 1', answers: [{ idQuestion: 1, answer: ['Choice 1'], isCorrect: false }] },
-    { id: '2', name: 'Student 2', answers: [{ idQuestion: 1, answer: ['Choice 3'], isCorrect: false }] },
-    { id: '3', name: 'Student 3', answers: [{ idQuestion: 1, answer: ['Choice 1', 'Choice 2'], isCorrect: true }] },
+    { id: '1', name: 'Student 1', answers: [] },
+    { id: '2', name: 'Student 2', answers: [{ idQuestion: 1, answer: ['Choice 3'], isCorrect: false }, { idQuestion: 2, answer: [true], isCorrect: true}] },
+    { id: '3', name: 'Student 3', answers: [{ idQuestion: 1, answer: ['Choice 1', 'Choice 2'], isCorrect: true }, { idQuestion: 2, answer: [true], isCorrect: true}] },
 ];
 
 describe('LiveResults', () => {
@@ -103,10 +110,15 @@ describe('LiveResults', () => {
         fireEvent.click(toggleUsernamesSwitch);
 
         // Check if the student grades are calculated and displayed correctly
+        const getByTextInTableCellBody = (text: string) => {
+            const elements = screen.getAllByText(text); // Get all elements with the specified text
+            return elements.find((element) => element.closest('.MuiTableCell-body')); // don't get the footer element(s)
+        };
         mockStudents.forEach((student) => {
             const grade = student.answers.filter(answer => answer.isCorrect).length / mockQuestions.length * 100;
-            expect(screen.getByText(`${grade.toFixed()} %`)).toBeInTheDocument();
-        });
+            const element = getByTextInTableCellBody(`${grade.toFixed()} %`);
+            expect(element).toBeInTheDocument();
+       });
     });
 
     test('calculates and displays the class average', () => {
