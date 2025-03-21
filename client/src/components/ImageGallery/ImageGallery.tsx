@@ -45,7 +45,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
 
   const fetchImages = async () => {
     setLoading(true);
-    const data = await ApiService.getImages(imgPage, imgLimit);
+    const data = await ApiService.getUserImages(imgPage, imgLimit);
     setImages(data.images);
     setTotalImg(data.total);
     setLoading(false);
@@ -156,7 +156,8 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
                         e.stopPropagation();
                         handleCopyFunction(obj.id);
                         }} 
-                        color="primary" >
+                        color="primary"
+                        data-testid={`gallery-tab-copy-${obj.id}`} >
                         
                         <ContentCopyIcon sx={{ fontSize: 18 }} />
                       </IconButton>
@@ -167,7 +168,8 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
                           setImageToDelete(obj);
                           setOpenDeleteDialog(true);
                         }}
-                        color="error" >
+                        color="error"
+                        data-testid={`gallery-tab-delete-${obj.id}`}  >
 
                         <DeleteIcon sx={{ fontSize: 18 }} />
                       </IconButton>
