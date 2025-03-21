@@ -137,21 +137,15 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                             <span>
                                 <div className="accepted-answers">{answer}</div>
                                 {isMultpleAnswer && (() => {
-                                   const highestPriorityAnswer = correctAnswers
-                                   .filter((correctAnswer) =>
-                                       isAnswerCorrect(answer as number, (correctAnswer as MultipleNumericalAnswer).answer)
-                                   ) // Filter answers that return true for isAnswerCorrect
-                                   .reduce((prev, current) => {
-                                       const prevWeight = (prev as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
-                                       const currentWeight = (current as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
-                               
-                                       // Prioritize undefined weights
-                                       if (prevWeight === -1 && currentWeight !== -1) return prev;
-                                       if (currentWeight === -1 && prevWeight !== -1) return current;
-                               
-                                       // Otherwise, return the one with the smallest weight
-                                       return currentWeight < prevWeight ? current : prev;
-                                   });
+    const highestPriorityAnswer = correctAnswers.reduce((prev, current) => {
+        const prevWeight = (prev as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
+        const currentWeight = (current as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
+
+        // Prioritize undefined weights, otherwise compare weights numerically
+        if (prevWeight === -1 && currentWeight !== -1) return prev;
+        if (currentWeight === -1 && prevWeight !== -1) return current;
+        return currentWeight > prevWeight ? current : prev;
+    });
 
                                     return isAnswerCorrect(answer as number, (highestPriorityAnswer as MultipleNumericalAnswer).answer) && (
                                         <div>
