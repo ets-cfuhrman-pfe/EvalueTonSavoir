@@ -152,7 +152,7 @@ describe('LiveResults', () => {
         expect(classAverageElement).toBeInTheDocument();
     });
 
-    test('displays the correct answers per question', () => {
+    test('displays the correct answers per question in %', () => {
         render(
             <LiveResults
                 socket={mockSocket}
@@ -173,6 +173,69 @@ describe('LiveResults', () => {
             });
             expect(correctAnswersElement).toBeInTheDocument();
         });
+    });
+
+    test('displays the submitted answer(s) in a question cell', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        // Show answers should be enabled
+        const showAnswersSwitch = screen.getByLabelText('Afficher les réponses');
+        // Toggle the display of answers is it's not already enabled
+        if (!(showAnswersSwitch as HTMLInputElement).checked) {
+            fireEvent.click(showAnswersSwitch);
+        }
+
+        mockStudents.forEach((student) => {
+            student.answers.forEach((answer) => {
+                const chosenAnswerElements = screen.getAllByText(answer.answer.join(', '));
+                const chosenAnswerElement = chosenAnswerElements.find((element) => {
+                    return element.closest('td')?.classList.contains('MuiTableCell-root');
+                });
+                expect(chosenAnswerElement).toBeInTheDocument();
+            });
+        });
+    });
+
+    test('highlights the cell of the selected question', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        // Select the first question
+        const questionCell = screen.getByText(`Q${1}`);
+        fireEvent.click(questionCell);
+
+        // Check if the selected question is highlighted
+        expect(questionCell.closest('th')?.classList.contains('selected-question')).toBe(true);
+    });
+
+    test('Show answers should be enabled by default', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        const showAnswersSwitch = screen.getByLabelText('Afficher les réponses');
+        expect((showAnswersSwitch as HTMLInputElement).checked).toBe(true);
     });
 
 });
