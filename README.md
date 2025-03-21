@@ -2,7 +2,7 @@
 [![CI/CD Pipeline for Backend](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml)
 [![CI/CD Pipeline for Nginx Router](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml)
 
-[![fr-ca](https://img.shields.io/badge/lang-fr--ca-green.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/blob/master/README-fr-ca.md)
+[![fr-ca](https://img.shields.io/badge/lang-fr--ca-green.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/blob/main/README.fr-ca.md)
 
 # EvalueTonSavoir
 
