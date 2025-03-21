@@ -17,7 +17,7 @@ interface AnswerWeightOptions extends TemplateOptions {
 export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoiceAnswerOptions) {
     const id = `id${nanoid(8)}`;
 
-    const isMultipleAnswer = choices.filter(({ isCorrect }) => isCorrect === true).length === 0;
+    const isMultipleAnswer = choices.filter(({ isCorrect }) => isCorrect === true).length != 0;
 
     const prompt = `<span style="${ParagraphStyle(state.theme)}">Choisir une réponse${
         isMultipleAnswer ? ` ou plusieurs` : ``
@@ -32,7 +32,7 @@ export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoic
             const inputId = `id${nanoid(6)}`;
 
             const isPositiveWeight = (weight != undefined) && (weight > 0);
-            const isCorrectOption = isMultipleAnswer ? isPositiveWeight : isCorrect;
+            const isCorrectOption = isMultipleAnswer ? isPositiveWeight || isCorrect : isCorrect;
 
             return `
         <div class='multiple-choice-answers-container'>

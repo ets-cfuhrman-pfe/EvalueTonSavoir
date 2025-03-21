@@ -15,7 +15,14 @@ interface Props {
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
+    console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
+
+    const [answer, setAnswer] = useState<AnswerType>(() => {
+        if (passedAnswer && passedAnswer.length > 0) {
+            return passedAnswer;
+        }
+        return [];
+    });
 
     let disableButton = false;
     if (handleOnSubmitAnswer === undefined) {
@@ -23,19 +30,31 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     }
 
     useEffect(() => {
+        console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
+        } else {
+            setAnswer([]);
         }
-    }, [passedAnswer]);
+    }, [passedAnswer, question.id]);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
-            if (prevAnswer.includes(choice)) {
-                // Remove the choice if it's already selected
-                return prevAnswer.filter((selected) => selected !== choice);
+            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+            const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
+
+            if (correctAnswersCount === 1) {
+                // If only one correct answer, replace the current selection
+                return prevAnswer.includes(choice) ? [] : [choice];
             } else {
-                // Add the choice if it's not already selected
-                return [...prevAnswer, choice];
+                // Allow multiple selections if there are multiple correct answers
+                if (prevAnswer.includes(choice)) {
+                    // Remove the choice if it's already selected
+                    return prevAnswer.filter((selected) => selected !== choice);
+                } else {
+                    // Add the choice if it's not already selected
+                    return [...prevAnswer, choice];
+                }
             }
         });
     };
@@ -50,6 +69,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
             </div>
             <div className="choices-wrapper mb-1">
                 {question.choices.map((choice, i) => {
+                    console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
                     const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">

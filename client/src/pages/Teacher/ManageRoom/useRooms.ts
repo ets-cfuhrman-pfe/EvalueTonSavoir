@@ -55,14 +55,15 @@ export function checkIfIsCorrect(
         (!question.isTrue && simpleAnswerText == 'false')
       );
     } else if (question.type === 'MC') {
-      const correctAnswers = question.choices.filter((choice) => choice.isCorrect
+      const correctChoices = question.choices.filter((choice) => choice.isCorrect
         /* || (choice.weight && choice.weight > 0)*/  // handle weighted answers
       );
       const multipleAnswers = Array.isArray(answer) ? answer : [answer as string];
-      if (correctAnswers.length === 0) {
+      if (correctChoices.length === 0) {
         return false;
       }
-      return correctAnswers.every(
+      // check if all (and only) correct choices are in the multipleAnswers array
+      return correctChoices.length === multipleAnswers.length && correctChoices.every(
         (choice) => multipleAnswers.includes(choice.formattedText.text)
       );
     } else if (question.type === 'Numerical') {

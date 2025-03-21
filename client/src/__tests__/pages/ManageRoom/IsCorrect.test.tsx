@@ -30,6 +30,12 @@ describe('checkIfIsCorrect', () => {
         expect(result).toBe(false);
     });
 
+    test('returns false when all correct answers are selected, but one incorrect is also selected', () => {
+        const answer: AnswerType = ['Answer1', 'Answer2', 'Answer3'];
+        const result = checkIfIsCorrect(answer, 1, mockQuestions);
+        expect(result).toBe(false);
+    });
+
     test('returns false when no answers are selected', () => {
         const answer: AnswerType = [];
         const result = checkIfIsCorrect(answer, 1, mockQuestions);
