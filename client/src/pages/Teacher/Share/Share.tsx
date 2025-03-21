@@ -1,18 +1,12 @@
-// EditorQuiz.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import { FolderType } from '../../../Types/FolderType';
-
-
 import './share.css';
 import { Button, NativeSelect } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
-
 import ApiService from '../../../services/ApiService';
 
 const Share: React.FC = () => {
-    console.log('Component rendered');
     const navigate = useNavigate();
     const { id } = useParams<string>();
 
@@ -23,7 +17,6 @@ const Share: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log("QUIZID : " + id)
             if (!id) {
                 window.alert(`Une erreur est survenue.\n Le quiz n'a pas été trouvé\nVeuillez réessayer plus tard`)
                 console.error('Quiz not found for id:', id);
@@ -36,9 +29,17 @@ const Share: React.FC = () => {
                 navigate("/login");
                 return;
             }
+            
+            const quizIds = await ApiService.getAllQuizIds();
+            
+            if (quizIds.includes(id)) {
+                window.alert(`Le quiz que vous essayez d'importer existe déjà sur votre compte.`)
+                navigate('/teacher/dashboard');
+                return;
+            }
 
             const userFolders = await ApiService.getUserFolders();
-
+            
             if (userFolders.length == 0) {
                 window.alert(`Vous n'avez aucun dossier.\nVeuillez en créer un et revenir à ce lien`)
                 navigate('/teacher/dashboard');
@@ -91,42 +92,39 @@ const Share: React.FC = () => {
     };
 
     return (
-        <div className='quizImport'>
-
-            <div className='importHeader'>
-                <ReturnButton />
-
-                <div className='title'>Importer quiz: {quizTitle}</div>
-
-                <div className='dumb'></div>
+<div className='quizImport'>
+    <div className='importHeader'>
+        <ReturnButton />
+        <div className='titleContainer'>
+            <div className='mainTitle'>Importation du Quiz: {quizTitle}</div>
+            <div className='subTitle'>
+                Vous êtes sur le point d'importer le quiz <strong>{quizTitle}</strong>, choisissez un dossier dans lequel enregistrer ce nouveau quiz.
             </div>
-
-            <div className='editSection'>
-
-                <div>
-
-                    <NativeSelect
-                        id="select-folder"
-                        color="primary"
-                        value={selectedFolder}
-                        onChange={handleSelectFolder}
-                    >
-                        <option disabled value=""> Choisir un dossier... </option>
-
-                        {folders.map((folder: FolderType) => (
-                            <option value={folder._id} key={folder._id}> {folder.title} </option>
-                        ))}
-                    </NativeSelect>
-
-                    <Button variant="contained" onClick={handleQuizSave}>
-                        Enregistrer
-                    </Button>
-
-                </div>
-
-            </div>
-
         </div>
+        <div className='dumb'></div>
+    </div>
+
+    <div className='editSection'>
+        <div className='formContainer'>
+            <NativeSelect
+                id="select-folder"
+                color="primary"
+                value={selectedFolder}
+                onChange={handleSelectFolder}
+                className="folderSelect"
+            >
+                <option disabled value=""> Choisir un dossier... </option>
+                {folders.map((folder: FolderType) => (
+                    <option value={folder._id} key={folder._id}> {folder.title} </option>
+                ))}
+            </NativeSelect>
+
+            <Button variant="contained" onClick={handleQuizSave} className="saveButton">
+                Enregistrer
+            </Button>
+        </div>
+    </div>
+</div>
     );
 };
 

@@ -3,19 +3,58 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-content: stretch
+    align-content: stretch;
 }
+
 .quizImport .importHeader .returnButton {
     flex-basis: 10%;
-
     display: flex;
     justify-content: center;
 }
 
-.quizImport .importHeader .title {
+.quizImport .importHeader .titleContainer {
     flex-basis: auto;
+    text-align: center; /* Center the title and subtitle */
+}
+
+.quizImport .importHeader .mainTitle {
+    font-size: 44px; /* Larger font size for the main title */
+    font-weight: bold; /* Remove bold */
+    color: #333; /* Slightly paler color */
+}
+
+.quizImport .importHeader .subTitle {
+    font-size: 14px; /* Smaller font size for the subtitle */
+    color: #666; /* Pale gray color */
+    margin-top: 8px; /* Add some space between the title and subtitle */
 }
 
 .quizImport .importHeader .dumb {
     flex-basis: 10%;
+}
+
+.quizImport .editSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.quizImport .editSection .formContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Adds space between the select and button */
+    width: 100%;
+    max-width: 400px; /* Limits the width of the form container */
+}
+
+.quizImport .editSection .folderSelect {
+    width: 100%; /* Ensures the select element takes the full width of its container */
+}
+
+.quizImport .editSection .saveButton {
+    width: 100%; /* Makes the button take the full width of its container */
+    padding: 10px 20px; /* Increases the button's padding for a larger appearance */
+    font-size: 16px; /* Increases the font size for better visibility */
 }
