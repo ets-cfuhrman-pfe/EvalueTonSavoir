@@ -15,76 +15,95 @@ interface Props {
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
-
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
 
     let disableButton = false;
-    if(handleOnSubmitAnswer === undefined){
+    if (handleOnSubmitAnswer === undefined) {
         disableButton = true;
     }
 
     useEffect(() => {
-    if (passedAnswer !== undefined) {
-        setAnswer(passedAnswer);
-    }
+        if (passedAnswer !== undefined) {
+            setAnswer(passedAnswer);
+        }
     }, [passedAnswer]);
 
     const handleOnClickAnswer = (choice: string) => {
-        setAnswer(choice);
+        setAnswer((prevAnswer) => {
+            if (prevAnswer.includes(choice)) {
+                // Remove the choice if it's already selected
+                return prevAnswer.filter((selected) => selected !== choice);
+            } else {
+                // Add the choice if it's not already selected
+                return [...prevAnswer, choice];
+            }
+        });
     };
+
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
-    return (
 
+    return (
         <div className="question-container">
             <div className="question content">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
-                
                 {question.choices.map((choice, i) => {
-                    const selected = answer === choice.formattedText.text ? 'selected' : '';
+                    const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">
                             <Button
                                 variant="text"
                                 className="button-wrapper"
                                 disabled={disableButton}
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
-                                {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
-                                :``}
+                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
+                            >
+                                {showAnswer ? (
+                                    <div>{choice.isCorrect ? '✅' : '❌'}</div>
+                                ) : (
+                                    ''
+                                )}
                                 <div className={`circle ${selected}`}>{alphabet[i]}</div>
                                 <div className={`answer-text ${selected}`}>
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedText) }} />
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: FormattedTextTemplate(choice.formattedText),
+                                        }}
+                                    />
                                 </div>
                                 {choice.formattedFeedback && showAnswer && (
-                                <div className="feedback-container mb-1 mt-1/2">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
-                                </div>
-                            )}
+                                    <div className="feedback-container mb-1 mt-1/2">
+                                        <div
+                                            dangerouslySetInnerHTML={{
+                                                __html: FormattedTextTemplate(choice.formattedFeedback),
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </Button>
-
                         </div>
                     );
                 })}
             </div>
             {question.formattedGlobalFeedback && showAnswer && (
                 <div className="global-feedback mb-2">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                                    </div>
+                    <div
+                        dangerouslySetInnerHTML={{
+                            __html: FormattedTextTemplate(question.formattedGlobalFeedback),
+                        }}
+                    />
+                </div>
             )}
-            
             {!showAnswer && handleOnSubmitAnswer && (
-                
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer.length > 0 && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                     }
-                    disabled={answer === '' || answer === null}
+                    disabled={answer.length === 0}
                 >
                     Répondre
-                    
                 </Button>
             )}
         </div>

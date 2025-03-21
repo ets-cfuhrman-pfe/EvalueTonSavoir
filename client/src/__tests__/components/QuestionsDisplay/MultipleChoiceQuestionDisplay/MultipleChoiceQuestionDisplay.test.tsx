@@ -73,6 +73,30 @@ describe('MultipleChoiceQuestionDisplay', () => {
         expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith('Choice 1');
     });
 
+    test('submits multiple selected answers', () => {
+        const choiceButton1 = screen.getByText('Choice 1').closest('button');
+        const choiceButton2 = screen.getByText('Choice 2').closest('button');
+    
+        if (!choiceButton1 || !choiceButton2) throw new Error('Choice buttons not found');
+    
+        // Simulate selecting multiple answers
+        act(() => {
+            fireEvent.click(choiceButton1);
+        });
+        act(() => {
+            fireEvent.click(choiceButton2);
+        });
+    
+        // Simulate submitting the answers
+        const submitButton = screen.getByText('Répondre');
+        act(() => {
+            fireEvent.click(submitButton);
+        });
+    
+        // Verify that the mockHandleOnSubmitAnswer function is called with both answers
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(['Choice 1', 'Choice 2']);
+    });
+    
     it('should show ✅ next to the correct answer and ❌ next to the wrong answers when showAnswer is true', async () => {
         const choiceButton = screen.getByText('Choice 1').closest('button');
         if (!choiceButton) throw new Error('Choice button not found');
