@@ -17,6 +17,15 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
 
+    const [answer, setAnswer] = useState<boolean | undefined>(() => {
+
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            return passedAnswer[0];
+        }
+
+        return undefined;
+    });
+
     let disableButton = false;
     if (handleOnSubmitAnswer === undefined) {
         disableButton = true;
@@ -30,15 +39,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
             setAnswer(undefined);
         }
     }, [passedAnswer, question.id]);
-
-    const [answer, setAnswer] = useState<boolean | undefined>(() => {
-
-        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
-            return passedAnswer[0];
-        }
-
-        return undefined;
-    });
 
     const handleOnClickAnswer = (choice: boolean) => {
         setAnswer(choice);
