@@ -22,10 +22,13 @@ beforeAll(() => {
 });
 
 describe("ImageGallery", () => {
+
+  let mockHandleDelete: jest.Mock;
   beforeEach(() => {
     (ApiService.getUserImages as jest.Mock).mockResolvedValue({ images: mockImages, total: 3 });
     (ApiService.deleteImage as jest.Mock).mockResolvedValue(true); 
     (ApiService.uploadImage as jest.Mock).mockResolvedValue('mockImageUrl'); 
+    mockHandleDelete = jest.fn();
 
     render(<ImageGallery />);
   });
@@ -43,13 +46,46 @@ describe("ImageGallery", () => {
     const handleCopyMock = jest.fn();
   
     render(<ImageGallery handleCopy={handleCopyMock} />);
-  
-  const copyButtons = await waitFor(() => screen.findAllByTestId(/gallery-tab-copy-/));
-  await act(async () => {
-    fireEvent.click(copyButtons[0]);
-  });
+
+    const copyButtons = await waitFor(() => screen.findAllByTestId(/gallery-tab-copy-/));
+    await act(async () => {
+      fireEvent.click(copyButtons[0]);
+    });
   
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
+  });
+
+  it("should delete an image and update the gallery", async () => {
+    const fetchImagesMock = jest.fn().mockResolvedValue({ images: mockImages.filter((image) => image.id !== "1"), total: 2 });
+
+    (ApiService.getUserImages as jest.Mock).mockImplementation(fetchImagesMock);
+
+    render(<ImageGallery handleDelete={mockHandleDelete} />);
+
+    await act(async () => {
+      await screen.findByAltText("Image image1.jpg");
+    });
+
+    const deleteButtons = await waitFor(() => screen.findAllByTestId(/gallery-tab-delete-/));
+    fireEvent.click(deleteButtons[0]);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Voulez-vous supprimer cette image?")).toBeInTheDocument();
+    });
+
+    const confirmDeleteButton = screen.getByText("Delete");  
+    await act(async () => {
+      fireEvent.click(confirmDeleteButton);
+    });
+
+    await waitFor(() => {
+      expect(ApiService.deleteImage).toHaveBeenCalledWith("1");
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByAltText("Image image1.jpg")).toBeNull();
+      expect(screen.getByText("Image supprimée avec succès !")).toBeInTheDocument();
+    });
   });
 
 });

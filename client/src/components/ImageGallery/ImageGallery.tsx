@@ -25,9 +25,10 @@ import { Upload } from "@mui/icons-material";
 
 interface ImagesProps {
   handleCopy?: (id: string) => void;
+  handleDelete?: (id: string) => void;
 }
 
-const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
+const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   const [images, setImages] = useState<ImageType[]>([]);
   const [totalImg, setTotalImg] = useState(0);
   const [imgPage, setImgPage] = useState(1);
@@ -55,14 +56,16 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
     fetchImages();
   }, [imgPage]);
 
-  const handleDelete = async () => {
+  const defaultHandleDelete = async (id: string) => {
     if (imageToDelete) {
       setLoading(true);
-      const isDeleted = await ApiService.deleteImage(imageToDelete.id);
+      const isDeleted = await ApiService.deleteImage(id);
       setLoading(false);
 
       if (isDeleted) {
-        setImages(images.filter((image) => image.id !== imageToDelete.id));
+        //setImages(images.filter((image) => image.id !== id));
+        setImgPage(1);
+        fetchImages();
         setSnackbarMessage("Image supprimée avec succès !");
         setSnackbarSeverity("success");
       } else {
@@ -84,6 +87,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
   };
 
   const handleCopyFunction = handleCopy || defaultHandleCopy;
+  const handleDeleteFunction = handleDelete || defaultHandleDelete;
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -264,7 +268,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
           <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
             Annuler
           </Button>
-          <Button onClick={handleDelete} color="error">
+          <Button onClick={() => imageToDelete && handleDeleteFunction(imageToDelete.id)} color="error">
             Delete
           </Button>
         </DialogActions>
