@@ -42,7 +42,11 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
                         const answer = student.answers.find(
                             (answer) => parseInt(answer.idQuestion.toString()) === index + 1
                         );
-                        const answerText = answer ? answer.answer.toString() : '';
+                        const answerText = answer
+                            ? Array.isArray(answer.answer)
+                                ? answer.answer.join(', ') // Join array elements with a space or another delimiter
+                                : "" // never reached
+                            : '';
                         const isCorrect = answer ? answer.isCorrect : false;
 
                         return (
@@ -63,6 +67,7 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
                                 }
                             >
                                 {showCorrectAnswers ? (
+                                    // strips out formatting of answer text here (it will break images, katex, etc.)
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: '', text: answerText }) }}></div>
                                 ) : isCorrect ? (
                                     <FontAwesomeIcon icon={faCheck} aria-label="correct" />

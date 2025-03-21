@@ -152,7 +152,7 @@ describe('LiveResults', () => {
         expect(classAverageElement).toBeInTheDocument();
     });
 
-    test('displays the correct answers per question', () => {
+    test('displays the correct answers per question in %', () => {
         render(
             <LiveResults
                 socket={mockSocket}
@@ -172,6 +172,35 @@ describe('LiveResults', () => {
                 return element.closest('td')?.classList.contains('MuiTableCell-root');
             });
             expect(correctAnswersElement).toBeInTheDocument();
+        });
+    });
+
+    test('displays the chosen answer in a question cell', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        // Show answers should be enabled
+        const showAnswersSwitch = screen.getByLabelText('Afficher les réponses');
+        // Toggle the display of answers is it's not already enabled
+        if (!(showAnswersSwitch as HTMLInputElement).checked) {
+            fireEvent.click(showAnswersSwitch);
+        }
+
+        mockStudents.forEach((student) => {
+            student.answers.forEach((answer) => {
+                const chosenAnswerElements = screen.getAllByText(answer.answer.join(', '));
+                const chosenAnswerElement = chosenAnswerElements.find((element) => {
+                    return element.closest('td')?.classList.contains('MuiTableCell-root');
+                });
+                expect(chosenAnswerElement).toBeInTheDocument();
+            });
         });
     });
 
