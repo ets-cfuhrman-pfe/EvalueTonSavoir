@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
-import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
+import { MultipleNumericalAnswer, NumericalQuestion } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
@@ -19,105 +19,157 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
         props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
     const [isGoodAnswer, setisGoodAnswer] = useState<boolean>(false);
-    const [isMultpleAnswer, setIsMultpleAnswer] = useState<boolean>(false);
-
+    let isMultpleAnswer = false;
     const correctAnswers = question.choices;
-    const correctAnswersList: number[] = [];
     const correctAnswersPhrases: string[] = [];
-
     let correctAnswer = '';
 
+
     useEffect(() => {
-    if (passedAnswer !== null && passedAnswer !== undefined) {
-        setAnswer(passedAnswer);
-    }
+        if (passedAnswer !== null && passedAnswer !== undefined) {
+            setAnswer(passedAnswer);
+        }
     }, [passedAnswer]);
-    
+
     useEffect(() => {
         checkAnswer();
     }, [answer]);
 
-    const checkAnswer = () => {
-        if(isMultpleAnswer) {
-            correctAnswers.forEach((answers) => {
-                if(isSimpleNumericalAnswer(answers) && answer === answers.number) {
-                    setisGoodAnswer(true);
-                } else if(isRangeNumericalAnswer(answers) && answer as number >= answers.number - answers.range && answer as number <= answers.number + answers.range) {
-                    setisGoodAnswer(true);
-                } else if(isHighLowNumericalAnswer(answers) && answer as number >= answers.numberLow && answer as number <= answers.numberHigh) {
-                    setisGoodAnswer(true);
-                }
-            }
-        )
-        ;
-        } else {
-                if(isSimpleNumericalAnswer(answers) && answer === answers.number) {
-                    setisGoodAnswer(true);
-                } else if(isRangeNumericalAnswer(answers) && answer as number >= answers.number - answers.range && answer as number <= answers.number + answers.range) {
-                    setisGoodAnswer(true);
-                } else if(isHighLowNumericalAnswer(answers) && answer as number >= answers.numberLow && answer as number <= answers.numberHigh) {
-                    setisGoodAnswer(true);
-                }
-            };
+    const isValidWeight = (weight?: number) => weight === undefined || weight > 0;
+
+    const isAnswerCorrect = (answer: number, correctAnswer: any): boolean => {
+        if (isSimpleNumericalAnswer(correctAnswer)) {
+            return answer === correctAnswer.number;
+        } else if (isRangeNumericalAnswer(correctAnswer)) {
+            return (
+                answer >= correctAnswer.number - correctAnswer.range &&
+                answer <= correctAnswer.number + correctAnswer.range
+            );
+        } else if (isHighLowNumericalAnswer(correctAnswer)) {
+            return (
+                answer >= correctAnswer.numberLow &&
+                answer <= correctAnswer.numberHigh
+            );
+        }
+        return false;
     };
 
-    //const isSingleAnswer = correctAnswers.length === 1;
+    const formatCorrectAnswer = (correctAnswer: any): string => {
+        if (isSimpleNumericalAnswer(correctAnswer)) {
+            return `${correctAnswer.number}`;
+        } else if (isRangeNumericalAnswer(correctAnswer)) {
+            return `Entre ${correctAnswer.number - correctAnswer.range} et ${correctAnswer.number + correctAnswer.range}`;
+        } else if (isHighLowNumericalAnswer(correctAnswer)) {
+            return `Entre ${correctAnswer.numberLow} et ${correctAnswer.numberHigh}`;
+        }
+        return '';
+    };
 
-    if (isSimpleNumericalAnswer(correctAnswers[0])) {
-        correctAnswer = `${(correctAnswers[0] as SimpleNumericalAnswer).number}`;
-    } else if (isRangeNumericalAnswer(correctAnswers[0])) {
-        const choice = correctAnswers[0] as RangeNumericalAnswer;
-        correctAnswer = `Entre ${choice.number - choice.range} et ${choice.number + choice.range}`;
-    } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
-        const choice = correctAnswers[0] as HighLowNumericalAnswer;
-        correctAnswer = `Entre ${choice.numberLow} et ${choice.numberHigh}`;
-    } else if (isMultipleNumericalAnswer(correctAnswers[0])) {
-        setIsMultpleAnswer(true);
+    const checkAnswer = () => {
+        if (isMultpleAnswer) {
+            correctAnswers.forEach((answers) => {
+                if (
+                    isMultipleNumericalAnswer(answers) &&
+                    isValidWeight(answers.weight) &&
+                    isAnswerCorrect(answer as number, answers.answer)
+                ) {
+                    setisGoodAnswer(true);
+                }
+            });
+        } else {
+            const firstAnswer = correctAnswers[0];
+            if (isAnswerCorrect(answer as number, firstAnswer)) {
+                setisGoodAnswer(true);
+            }
+        }
+    };
+
+    if (isMultipleNumericalAnswer(correctAnswers[0])) {
         correctAnswers.forEach((answers) => {
-            if(isSimpleNumericalAnswer(answers)) {
-                correctAnswersPhrases.push(`${(answers as SimpleNumericalAnswer).number}`);
-            } else if(isRangeNumericalAnswer(answers)) {
-                correctAnswersPhrases.push(`Entre ${answers.number - answers.range} et ${answers.number + answers.range}`);
-            } else if(isHighLowNumericalAnswer(answers)) {
-                correctAnswersPhrases.push(`Entre ${answers.numberLow} et ${answers.numberHigh}`);
+            if (
+                isMultipleNumericalAnswer(answers) &&
+                isValidWeight(answers.weight)
+            ) {
+                correctAnswersPhrases.push(formatCorrectAnswer(answers.answer));
             }
         });
-    }
-     else {
-        throw new Error('Unknown numerical answer type');
+        isMultpleAnswer = true;
+    } else {
+        correctAnswer = formatCorrectAnswer(correctAnswers[0]);
     }
 
     return (
         <div className="question-wrapper">
             {showAnswer && (
-            <div>
-                <div className='question-feedback-validation'>
-                    {isGoodAnswer ? '✅ Correct! ' : '❌ Incorrect!'}    
+                <div>
+                    <div className='question-feedback-validation'>
+                        {isGoodAnswer ? '✅ Correct! ' : '❌ Incorrect!'}
+                    </div>
+                    <div className="question-title">
+                        Question :
+                    </div>
+
                 </div>
-                <div className="question-title">
-                    Question : 
-                </div>
-               
-            </div>
             )}
             <div>
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             {showAnswer ? (
- <>
+                <>
                     <div className="correct-answer-text mb-1">
                         <div>
                             <div className="question-title">
                                 Réponse(s) accepté(es):
                             </div>
-                                <div className="accepted-answers">
-                                    {correctAnswer}
-                                </div>
+                            {isMultpleAnswer ? (
+                                correctAnswersPhrases.map((phrase) => (
+                                    <div key={phrase} className="accepted-answers">
+                                        {phrase}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="accepted-answers">{correctAnswer}</div>
+                            )}
                         </div>
                         <div>
                             <div className="question-title">
                                 Votre réponse est: </div>
-                            <div className="accepted-answers">{answer}</div>
+                            <span>
+                                <div className="accepted-answers">{answer}</div>
+                                {isMultpleAnswer && (() => {
+                                   const highestPriorityAnswer = correctAnswers
+                                   .filter((correctAnswer) =>
+                                       isAnswerCorrect(answer as number, (correctAnswer as MultipleNumericalAnswer).answer)
+                                   ) // Filter answers that return true for isAnswerCorrect
+                                   .reduce((prev, current) => {
+                                       const prevWeight = (prev as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
+                                       const currentWeight = (current as MultipleNumericalAnswer).weight ?? -1; // Treat undefined as highest priority
+                               
+                                       // Prioritize undefined weights
+                                       if (prevWeight === -1 && currentWeight !== -1) return prev;
+                                       if (currentWeight === -1 && prevWeight !== -1) return current;
+                               
+                                       // Otherwise, return the one with the smallest weight
+                                       return currentWeight < prevWeight ? current : prev;
+                                   });
+
+                                    return isAnswerCorrect(answer as number, (highestPriorityAnswer as MultipleNumericalAnswer).answer) && (
+                                        <div>
+                                            {(highestPriorityAnswer as MultipleNumericalAnswer).formattedFeedback && (
+                                                <div className="global-feedback">
+                                                    <div
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: FormattedTextTemplate(
+                                                                (highestPriorityAnswer as MultipleNumericalAnswer).formattedFeedback!
+                                                            ),
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </span>
                         </div>
                     </div>
                     {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
@@ -143,19 +195,19 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                         </div>
                     )}
                     {handleOnSubmitAnswer && (
-                    <div className="submit-button-container">
-                        <Button
-                        className='submit-button'
-                            variant="contained"
-                            onClick={() =>
-                                answer !== undefined &&
-                                handleOnSubmitAnswer &&
-                                handleOnSubmitAnswer(answer)
-                            }
-                            disabled={answer === "" || isNaN(answer as number)}
-                        >
-                            Répondre
-                        </Button>
+                        <div className="submit-button-container">
+                            <Button
+                                className='submit-button'
+                                variant="contained"
+                                onClick={() =>
+                                    answer !== undefined &&
+                                    handleOnSubmitAnswer &&
+                                    handleOnSubmitAnswer(answer)
+                                }
+                                disabled={answer === "" || isNaN(answer as number)}
+                            >
+                                Répondre
+                            </Button>
                         </div>
                     )}
                 </>
