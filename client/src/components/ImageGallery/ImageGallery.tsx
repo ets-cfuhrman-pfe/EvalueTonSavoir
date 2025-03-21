@@ -1,169 +1,280 @@
 import React, { useState, useEffect } from "react";
 import {
+  Box,
+  CircularProgress,
+  Button,
+  IconButton,
+  Card,
+  CardContent,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  IconButton,
-  Paper,
-  Box,
-  CircularProgress
+  DialogTitle,
+  DialogContentText,
+  Tabs,
+  Tab,
+  TextField, Snackbar,
+  Alert
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Images } from "../../Types/Images";
-import ApiService from '../../services/ApiService';
-import { ENV_VARIABLES } from '../../constants';
+import { ImageType } from "../../Types/ImageType";
+import ApiService from "../../services/ApiService";
+import { Upload } from "@mui/icons-material";
 
-type Props = {
-  galleryOpen: boolean;
-  setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setImageLinks: React.Dispatch<React.SetStateAction<string[]>>;
-};
+interface ImagesProps {
+  handleCopy?: (id: string) => void;
+}
 
-const ImageDialog: React.FC<Props> = ({ galleryOpen, setDialogOpen, setImageLinks }) => {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [images, setImages] = useState<Images[]>([]);
+const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
+  const [images, setImages] = useState<ImageType[]>([]);
   const [totalImg, setTotalImg] = useState(0);
   const [imgPage, setImgPage] = useState(1);
-  const [imgLimit] = useState(3);
+  const [imgLimit] = useState(6);
   const [loading, setLoading] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string | null; linked: boolean }>({ id: null, linked: false });
+  const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageType | null>(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [importedImage, setImportedImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
-  const fetchImages = async (page: number, limit: number) => {
-    const data = await ApiService.getImages(page, limit);
+  const fetchImages = async () => {
+    setLoading(true);
+    const data = await ApiService.getImages(imgPage, imgLimit);
     setImages(data.images);
     setTotalImg(data.total);
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchImages(imgPage, imgLimit);
+    fetchImages();
   }, [imgPage]);
 
-  const onCopy = (id: string) => {
-    const escLink = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
-    setCopiedId(id);
-    setImageLinks(prevLinks => [...prevLinks, escLink]);
-  };
-
-  const handleDelete = async (id: string) => {
-    setLoading(true);
-    const isDeleted = await ApiService.deleteImage(id);
-    setLoading(false);
-    if (!isDeleted) {
-      setDeleteConfirm({ id, linked: true });
-    } else {
-      setImages(images.filter(image => image.id !== id));
-      setDeleteConfirm({ id: null, linked: false });
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (deleteConfirm.id) {
+  const handleDelete = async () => {
+    if (imageToDelete) {
       setLoading(true);
-      await ApiService.deleteImage(deleteConfirm.id);
-      setImages(images.filter(image => image.id !== deleteConfirm.id));
-      setDeleteConfirm({ id: null, linked: false });
+      const isDeleted = await ApiService.deleteImage(imageToDelete.id);
       setLoading(false);
+
+      if (isDeleted) {
+        setImages(images.filter((image) => image.id !== imageToDelete.id));
+        setSnackbarMessage("Image supprimée avec succès !");
+        setSnackbarSeverity("success");
+      } else {
+        setSnackbarMessage("Erreur lors de la suppression de l'image. Veuillez réessayer.");
+        setSnackbarSeverity("error");
+      }
+
+      setSnackbarOpen(true);
+      setSelectedImage(null);
+      setImageToDelete(null);
+      setOpenDeleteDialog(false);
     }
   };
 
-  const handleNextPage = () => {
-    if ((imgPage * imgLimit) < totalImg) {
-      setImgPage(prev => prev + 1);
+  const defaultHandleCopy = (id: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(id);
     }
   };
 
-  const handlePrevPage = () => {
-    if (imgPage > 1) {
-      setImgPage(prev => prev - 1);
+  const handleCopyFunction = handleCopy || defaultHandleCopy;
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    setImportedImage(file);
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+    }
+  };
+
+  const handleSaveImage = async () => {
+    try {
+      if (!importedImage) {
+        setSnackbarMessage("Veuillez d'abord choisir une image à téléverser.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      const imageUrl = await ApiService.uploadImage(importedImage);
+
+      if (imageUrl.includes("ERROR")) {
+        setSnackbarMessage("Une erreur est survenue. Veuillez réessayer plus tard.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+      fetchImages();
+
+      setSnackbarMessage("Téléversée avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      // Reset the input field and preview after successful upload
+      setImportedImage(null);
+      setPreview(null);
+    } catch (error) {
+      setSnackbarMessage(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
   return (
-    <Dialog open={galleryOpen} onClose={() => setDialogOpen(false)} maxWidth="xl">
-      <DialogTitle>
-        Images disponibles
-        <IconButton
-          aria-label="close"
-          color="primary"
-          onClick={() => setDialogOpen(false)}
-          style={{ position: "absolute", right: 8, top: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height={200}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableBody>
-                {images.map((obj: Images) => (
-                  <TableRow key={obj.id}>
-                    <TableCell>
+    <Box p={3}>
+      <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+        <Tab label="Gallery" />
+        <Tab label="Import" />
+      </Tabs>
+      {tabValue === 0 && (
+        <>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gridTemplateRows="repeat(2, 1fr)" gap={2} maxWidth="900px" margin="auto">
+                {images.map((obj) => (
+                  <Card key={obj.id} sx={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center" }} onClick={() => setSelectedImage(obj)}>
+                    <CardContent sx={{ p: 0 }}>
                       <img
                         src={`data:${obj.mime_type};base64,${obj.file_content}`}
                         alt={`Image ${obj.file_name}`}
-                        style={{ width: 350, height: "auto", borderRadius: 8 }}
+                        style={{ width: "100%", height: 250, objectFit: "cover", borderRadius: 8 }}
                       />
-                    </TableCell>
-                    <TableCell>{obj.file_name}</TableCell>
-                    <TableCell style={{ minWidth: 150 }}>
-                      {obj.id}
-                      <IconButton onClick={() => onCopy(obj.id)} size="small" data-testid={`copy-button-${obj.id}`}>
-                        <ContentCopyIcon fontSize="small" />
+                    </CardContent>
+                    <Box display="flex" justifyContent="center" mt={1}>
+                      <IconButton onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyFunction(obj.id);
+                        }} 
+                        color="primary" >
+                        
+                        <ContentCopyIcon sx={{ fontSize: 18 }} />
                       </IconButton>
-                      <IconButton onClick={() => handleDelete(obj.id)} size="small" color="primary" data-testid={`delete-button-${obj.id}`}>
-                        <DeleteIcon fontSize="small" />
+
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageToDelete(obj);
+                          setOpenDeleteDialog(true);
+                        }}
+                        color="error" >
+
+                        <DeleteIcon sx={{ fontSize: 18 }} />
                       </IconButton>
-                      {copiedId === obj.id && <span style={{ marginLeft: 8, color: "green" }}>Copié!</span>}
-                    </TableCell>
-                  </TableRow>
+                    </Box>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </DialogContent>
-      {deleteConfirm.linked && (
-        <Dialog open={Boolean(deleteConfirm.id)} onClose={() => setDeleteConfirm({ id: null, linked: false })}>
-          <DialogTitle>Confirmer la suppression</DialogTitle>
-          <DialogContent>
-            Cette image est liée à d'autres objets. Êtes-vous sûr de vouloir la supprimer ?
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteConfirm({ id: null, linked: false })} color="primary">
-              Annuler
-            </Button>
-            <Button onClick={confirmDelete} color="secondary">
-              Supprimer
-            </Button>
-          </DialogActions>
-        </Dialog>
+              </Box>
+              <Box display="flex" justifyContent="center" mt={2}>
+                <Button onClick={() => setImgPage((prev) => Math.max(prev - 1, 1))} disabled={imgPage === 1} color="primary">
+                  Précédent
+                </Button>
+                <Button onClick={() => setImgPage((prev) => (prev * imgLimit < totalImg ? prev + 1 : prev))} disabled={imgPage * imgLimit >= totalImg} color="primary">
+                  Suivant
+                </Button>
+              </Box>
+            </>
+          )}
+        </>
       )}
-      <DialogActions style={{ justifyContent: "center", width: "100%" }}>
-        <Box display="flex" justifyContent="center" width="100%">
-          <Button onClick={handlePrevPage} disabled={imgPage === 1} color="primary">
-            Précédent
-          </Button>
-          <Button onClick={handleNextPage} disabled={(imgPage * imgLimit) >= totalImg} color="primary">
-            Suivant
-          </Button>
+      {tabValue === 1 && (
+        <Box display="flex" flexDirection="column" alignItems="center" width="100%" mt={3}>
+          {/* Image Preview at the top */}
+          {preview && (
+            <Box
+              mt={2}
+              mb={2}
+              sx={{
+                width: "100%",
+                maxWidth: 600,
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={preview}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 8,
+                  maxHeight: "600px", 
+                }}
+              />
+            </Box>
+          )}
+          <Box display="flex" flexDirection="row" alignItems="center" width="100%" maxWidth={400}>
+            <TextField
+              type="file"
+              onChange={handleImageUpload}  
+              slotProps={{
+                htmlInput: {
+                  accept: "image/*",
+                },
+              }}
+              sx={{ flexGrow: 1 }}
+            />
+            <Button
+              variant="outlined"
+              aria-label="Téléverser"
+              onClick={() => { handleSaveImage() }}
+              sx={{ ml: 2, height: "100%" }} 
+            >
+              Téléverser <Upload sx={{ ml: 1 }} />
+            </Button>
+          </Box>    
         </Box>
-      </DialogActions>
-    </Dialog>
+      )}
+      <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} maxWidth="md">
+        <IconButton color="primary" onClick={() => setSelectedImage(null)} sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}>
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          {selectedImage && (
+            <img
+              src={`data:${selectedImage.mime_type};base64,${selectedImage.file_content}`}
+              alt="Enlarged view"
+              style={{ width: "100%", height: "auto", borderRadius: 8, maxHeight: "500px" }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+        <DialogTitle>Supprimer</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Voulez-vous supprimer cette image?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={() => setSnackbarOpen(false)}>
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 
-export default ImageDialog;
+export default ImageGallery;
