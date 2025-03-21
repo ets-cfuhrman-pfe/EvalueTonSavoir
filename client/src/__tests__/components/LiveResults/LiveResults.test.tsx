@@ -175,7 +175,7 @@ describe('LiveResults', () => {
         });
     });
 
-    test('displays the chosen answer in a question cell', () => {
+    test('displays the submitted answer(s) in a question cell', () => {
         render(
             <LiveResults
                 socket={mockSocket}
@@ -202,6 +202,40 @@ describe('LiveResults', () => {
                 expect(chosenAnswerElement).toBeInTheDocument();
             });
         });
+    });
+
+    test('highlights the cell of the selected question', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        // Select the first question
+        const questionCell = screen.getByText(`Q${1}`);
+        fireEvent.click(questionCell);
+
+        // Check if the selected question is highlighted
+        expect(questionCell.closest('th')?.classList.contains('selected-question')).toBe(true);
+    });
+
+    test('Show answers should be enabled by default', () => {
+        render(
+            <LiveResults
+                socket={mockSocket}
+                questions={mockQuestions}
+                showSelectedQuestion={jest.fn()}
+                quizMode="teacher"
+                students={mockStudents}
+            />
+        );
+
+        const showAnswersSwitch = screen.getByLabelText('Afficher les réponses');
+        expect((showAnswersSwitch as HTMLInputElement).checked).toBe(true);
     });
 
 });
