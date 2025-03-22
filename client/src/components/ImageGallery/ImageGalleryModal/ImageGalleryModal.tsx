@@ -25,7 +25,7 @@ const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({ handleCopy }) => 
     <>
       <Button
         variant="outlined"
-        aria-label='Téléverser'
+        aria-label='images-open'
         onClick={() => handleOpen()}>
         Images <ImageSearch /> 
       </Button>    
@@ -34,6 +34,7 @@ const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({ handleCopy }) => 
           <IconButton
             onClick={handleClose}
             color="primary"
+            aria-label="close"
             sx={{
               position: "absolute",
               right: 8,
