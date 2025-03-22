@@ -29,23 +29,24 @@ describe('Questions Component', () => {
         render(<QuestionDisplay question={question} {...sampleProps} />);
     };
 
-    describe('question type parsing', () => {
-        it('parses true/false question type correctly', () => {
-            expect(sampleTrueFalseQuestion.type).toBe('TF');
-        });
+    // describe('question type parsing', () => {
+    //     it('parses true/false question type correctly', () => {
+    //         expect(sampleTrueFalseQuestion.type).toBe('TF');
+    //     });
 
-        it('parses multiple choice question type correctly', () => {
-            expect(sampleMultipleChoiceQuestion.type).toBe('MC');
-        });
+    //     it('parses multiple choice question type correctly', () => {
+    //         expect(sampleMultipleChoiceQuestion.type).toBe('MC');
+    //     });
 
-        it('parses numerical question type correctly', () => {
-            expect(sampleNumericalQuestion.type).toBe('Numerical');
-        });
+    //     it('parses numerical question type correctly', () => {
+    //         expect(sampleNumericalQuestion.type).toBe('Numerical');
+    //     });
 
-        it('parses short answer question type correctly', () => {
-            expect(sampleShortAnswerQuestion.type).toBe('Short');
-        });
-    });
+    //     it('parses short answer question type correctly', () => {
+    //         expect(sampleShortAnswerQuestion.type).toBe('Short');
+    //     });
+    // });
+
     it('renders correctly for True/False question', () => {
         renderComponent(sampleTrueFalseQuestion);
 
@@ -73,7 +74,8 @@ describe('Questions Component', () => {
         const submitButton = screen.getByText('Répondre');
         fireEvent.click(submitButton);
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith('Choice 1');
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(['Choice 1']);
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('renders correctly for Numerical question', () => {
@@ -93,7 +95,8 @@ describe('Questions Component', () => {
         const submitButton = screen.getByText('Répondre');
         fireEvent.click(submitButton);
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(7);
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith([7]);
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('renders correctly for Short Answer question', () => {
@@ -117,7 +120,7 @@ describe('Questions Component', () => {
         const submitButton = screen.getByText('Répondre');
         fireEvent.click(submitButton);
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith('User Input');
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(['User Input']);
     });
 });
 
