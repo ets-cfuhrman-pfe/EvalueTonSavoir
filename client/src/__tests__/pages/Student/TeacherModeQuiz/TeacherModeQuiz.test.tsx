@@ -63,7 +63,8 @@ describe('TeacherModeQuiz', () => {
         act(() => {
             fireEvent.click(screen.getByText('Répondre'));
         });
-        expect(mockSubmitAnswer).toHaveBeenCalledWith('Option A', 1);
+        expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A'], 1);
+        mockSubmitAnswer.mockClear();
     });
 
     test('handles shows feedback for an already answered question', () => {
@@ -74,7 +75,8 @@ describe('TeacherModeQuiz', () => {
         act(() => {
             fireEvent.click(screen.getByText('Répondre'));
         });
-        expect(mockSubmitAnswer).toHaveBeenCalledWith('Option A', 1);
+        expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A'], 1);
+        mockSubmitAnswer.mockClear();
         mockQuestion = mockQuestions[1].question as MultipleChoiceQuestion;
         // Navigate to the next question by re-rendering with new props
         act(() => {

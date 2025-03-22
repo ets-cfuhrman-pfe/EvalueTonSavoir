@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
 import ApiService from '../../../services/ApiService'
 
-export type AnswerType = string | number | boolean;
+export type AnswerType = Array<string | number | boolean>;
 
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
@@ -39,9 +39,8 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        // init the answers array, one for each question
-        setAnswers(Array(questions.length).fill({} as AnswerSubmissionToBackendType));
         console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
+        setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
 
 
@@ -64,6 +63,7 @@ const JoinRoom: React.FC = () => {
             console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
+            setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             // wait for next-question
         });
@@ -72,6 +72,7 @@ const JoinRoom: React.FC = () => {
 
             setQuizMode('student');
             setIsWaitingForTeacher(false);
+            setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             setQuestion(questions[0]);
         });
