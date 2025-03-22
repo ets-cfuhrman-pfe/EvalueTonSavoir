@@ -1,9 +1,10 @@
 import React, { act } from "react";
+import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ImageGallery from "../../../components/ImageGallery/ImageGallery";
 import ApiService from "../../../services/ApiService";
 import { Images } from "../../../Types/Images";
-import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("../../../services/ApiService");
 
@@ -14,6 +15,7 @@ const mockImages: Images[] = [
 ];
 
 beforeAll(() => {
+  global.URL.createObjectURL = jest.fn(() => 'mockedObjectUrl');
   Object.assign(navigator, {
     clipboard: {
       writeText: jest.fn(),
@@ -22,15 +24,16 @@ beforeAll(() => {
 });
 
 describe("ImageGallery", () => {
-
   let mockHandleDelete: jest.Mock;
-  beforeEach(() => {
+  
+  beforeEach(async () => {
     (ApiService.getUserImages as jest.Mock).mockResolvedValue({ images: mockImages, total: 3 });
     (ApiService.deleteImage as jest.Mock).mockResolvedValue(true); 
     (ApiService.uploadImage as jest.Mock).mockResolvedValue('mockImageUrl'); 
+    await act(async () => {
+      render(<ImageGallery />);
+    });
     mockHandleDelete = jest.fn();
-
-    render(<ImageGallery />);
   });
 
   it("should render images correctly", async () => {
@@ -44,8 +47,9 @@ describe("ImageGallery", () => {
 
   it("should handle copy action", async () => {
     const handleCopyMock = jest.fn();
-  
-    render(<ImageGallery handleCopy={handleCopyMock} />);
+    await act(async () => {
+      render(<ImageGallery handleCopy={handleCopyMock} />);
+    });
 
     const copyButtons = await waitFor(() => screen.findAllByTestId(/gallery-tab-copy-/));
     await act(async () => {
@@ -60,7 +64,9 @@ describe("ImageGallery", () => {
 
     (ApiService.getUserImages as jest.Mock).mockImplementation(fetchImagesMock);
 
-    render(<ImageGallery handleDelete={mockHandleDelete} />);
+    await act(async () => {
+      render(<ImageGallery handleDelete={mockHandleDelete} />);
+    });
 
     await act(async () => {
       await screen.findByAltText("Image image1.jpg");
@@ -85,6 +91,56 @@ describe("ImageGallery", () => {
     await waitFor(() => {
       expect(screen.queryByAltText("Image image1.jpg")).toBeNull();
       expect(screen.getByText("Image supprimée avec succès !")).toBeInTheDocument();
+    });
+  });
+
+  it("should upload an image and display success message", async () => {
+    const importTab = screen.getByRole("tab", { name: /import/i });
+    fireEvent.click(importTab);
+
+    const fileInputs = await screen.findAllByTestId("file-input");
+    const fileInput = fileInputs[1];
+
+    expect(fileInput).toBeInTheDocument();
+  
+    const file = new File(["image"], "image.jpg", { type: "image/jpeg" });
+    await userEvent.upload(fileInput, file);
+  
+
+    await waitFor(() => screen.getByAltText("Preview"));
+    const previewImage = screen.getByAltText("Preview");
+  
+    expect(previewImage).toBeInTheDocument();
+    
+    const uploadButton = screen.getByRole('button', { name: /téléverser/i });
+    fireEvent.click(uploadButton);
+    const successMessage = await screen.findByText(/téléversée avec succès/i);
+    expect(successMessage).toBeInTheDocument();
+  });
+
+  it("should close the image preview dialog when close button is clicked", async () => {
+    const imageCard = screen.getByAltText("Image image1.jpg");
+    fireEvent.click(imageCard);
+    
+    const dialogImage = await screen.findByAltText("Enlarged view");
+    expect(dialogImage).toBeInTheDocument();
+    
+    const closeButton = screen.getByTestId("close-button");
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByAltText("Enlarged view")).not.toBeInTheDocument();
+    });
+  });
+  
+  it("should show an error message when no file is selected", async () => {
+    const importTab = screen.getByRole("tab", { name: /import/i });
+    fireEvent.click(importTab);
+    const uploadButton = screen.getByRole('button', { name: /téléverser/i });
+    fireEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Veuillez choisir une image à téléverser.")).toBeInTheDocument();
     });
   });
 

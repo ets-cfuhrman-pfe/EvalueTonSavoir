@@ -101,7 +101,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   const handleSaveImage = async () => {
     try {
       if (!importedImage) {
-        setSnackbarMessage("Veuillez d'abord choisir une image à téléverser.");
+        setSnackbarMessage("Veuillez choisir une image à téléverser.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
         return;
@@ -129,6 +129,10 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -224,9 +228,11 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
           <Box display="flex" flexDirection="row" alignItems="center" width="100%" maxWidth={400}>
             <TextField
               type="file"
+              data-testid="file-input"
               onChange={handleImageUpload}  
               slotProps={{
                 htmlInput: {
+                  "data-testid": "file-input",
                   accept: "image/*",
                 },
               }}
@@ -244,7 +250,8 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
         </Box>
       )}
       <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} maxWidth="md">
-        <IconButton color="primary" onClick={() => setSelectedImage(null)} sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}>
+        <IconButton color="primary" onClick={() => setSelectedImage(null)} sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}
+          data-testid="close-button">
           <CloseIcon />
         </IconButton>
         <DialogContent>
@@ -274,8 +281,15 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={() => setSnackbarOpen(false)}>
-        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+      <Snackbar 
+        open={snackbarOpen}
+        autoHideDuration={4000} 
+        onClose={handleCloseSnackbar}
+        >
+        <Alert 
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
