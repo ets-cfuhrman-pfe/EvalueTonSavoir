@@ -836,36 +836,6 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    async ShareQuiz(quizId: string, email: string): Promise<ApiResponse> {
-        try {
-            if (!quizId || !email) {
-                throw new Error(`quizId and email are required.`);
-            }
-
-            const url: string = this.constructRequestUrl(`/quiz/Share`);
-            const headers = this.constructRequestHeaders();
-            const body = { quizId, email };
-
-            const result: AxiosResponse = await axios.put(url, body, { headers: headers });
-
-            if (result.status !== 200) {
-                throw new Error(`Update and share quiz failed. Status: ${result.status}`);
-            }
-
-            return true;
-        } catch (error) {
-            console.log("Error details: ", error);
-
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Unknown server error during request.';
-            }
-
-            return `An unexpected error occurred.`;
-        }
-    }
-
     async getSharedQuiz(quizId: string): Promise<string> {
         try {
             if (!quizId) {

@@ -5,46 +5,6 @@ import { ENV_VARIABLES } from '../../constants';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('ApiService', () => {
-    describe('shareQuiz', () => {
-        it('should call the API to share a quiz and return true on success', async () => {
-            const quizId = '123';
-            const email = 'test@example.com';
-            const response = { status: 200 };
-            mockedAxios.put.mockResolvedValue(response);
-
-            const result = await ApiService.ShareQuiz(quizId, email);
-
-            expect(mockedAxios.put).toHaveBeenCalledWith(
-                `${ENV_VARIABLES.VITE_BACKEND_URL}/api/quiz/Share`,
-                { quizId, email },
-                { headers: expect.any(Object) }
-            );
-            expect(result).toBe(true);
-        });
-
-        it('should return an error message if the API call fails', async () => {
-            const quizId = '123';
-            const email = 'test@example.com';
-            const errorMessage = 'An unexpected error occurred.';
-            mockedAxios.put.mockRejectedValue({ response: { data: { error: errorMessage } } });
-
-            const result = await ApiService.ShareQuiz(quizId, email);
-
-            expect(result).toBe(errorMessage);
-        });
-
-        it('should return a generic error message if an unexpected error occurs', async () => {
-            const quizId = '123';
-            const email = 'test@example.com';
-            mockedAxios.put.mockRejectedValue(new Error('Unexpected error'));
-
-            const result = await ApiService.ShareQuiz(quizId, email);
-
-            expect(result).toBe('An unexpected error occurred.');
-        });
-    });
-
     describe('getSharedQuiz', () => {
         it('should call the API to get a shared quiz and return the quiz data on success', async () => {
             const quizId = '123';
