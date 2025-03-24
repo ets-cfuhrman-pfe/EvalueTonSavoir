@@ -8,9 +8,17 @@ import { StudentType } from 'src/Types/StudentType';
 import { BaseQuestion, parse } from 'gift-pegjs';
 
 const mockGiftQuestions = parse(
-    `::Sample Question 1:: Sample Question 1 {=Answer 1 ~Answer 2}
+    `::Sample Question 1:: Question stem
+    {
+        =Choice 1
+        =Choice 2
+        ~Choice 3
+        ~Choice 4
+    }
     
-    ::Sample Question 2:: Sample Question 2 {T}`);
+    ::Sample Question 2:: Question stem {TRUE}
+    `);
+
 
 const mockSocket: Socket = {
     on: jest.fn(),
@@ -27,9 +35,13 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
     return { question: newMockQuestion as BaseQuestion };
 });
 
+console.log(`mockQuestions: ${JSON.stringify(mockQuestions)}`);
+
+// each student should have a different score for the tests to pass
 const mockStudents: StudentType[] = [
-    { id: "1", name: 'Student 1', answers: [{ idQuestion: 1, answer: 'Answer 1', isCorrect: true }] },
-    { id: "2", name: 'Student 2', answers: [{ idQuestion: 2, answer: 'Answer 2', isCorrect: false }] },
+    { id: '1', name: 'Student 1', answers: [] },
+    { id: '2', name: 'Student 2', answers: [{ idQuestion: 1, answer: ['Choice 3'], isCorrect: false }, { idQuestion: 2, answer: [true], isCorrect: true}] },
+    { id: '3', name: 'Student 3', answers: [{ idQuestion: 1, answer: ['Choice 1', 'Choice 2'], isCorrect: true }, { idQuestion: 2, answer: [true], isCorrect: true}] },
 ];
 
 const mockShowSelectedQuestion = jest.fn();
@@ -94,6 +106,7 @@ test('calculates and displays the correct student grades', () => {
         />
     );
 
+
     // Toggle the display of usernames
     const toggleUsernamesSwitch = screen.getByLabelText('Afficher les noms');
 
@@ -101,10 +114,15 @@ test('calculates and displays the correct student grades', () => {
     fireEvent.click(toggleUsernamesSwitch);
 
     // Check if the student grades are calculated and displayed correctly
+    const getByTextInTableCellBody = (text: string) => {
+        const elements = screen.getAllByText(text); // Get all elements with the specified text
+        return elements.find((element) => element.closest('.MuiTableCell-body')); // don't get the footer element(s)
+    };
     mockStudents.forEach((student) => {
         const grade = student.answers.filter(answer => answer.isCorrect).length / mockQuestions.length * 100;
-        const gradeElements = screen.getAllByText(`${grade.toFixed()} %`);
-        expect(gradeElements.length).toBeGreaterThan(0);});
+        const element = getByTextInTableCellBody(`${grade.toFixed()} %`);
+        expect(element).toBeInTheDocument();
+   });
 });
 
 test('calculates and displays the class average', () => {
@@ -160,6 +178,8 @@ test('displays the correct answers per question', () => {
         expect(correctAnswersElement).toBeInTheDocument();
     });
 });
+
+
 test('renders LiveResults component', () => {
     render(
         <LiveResults

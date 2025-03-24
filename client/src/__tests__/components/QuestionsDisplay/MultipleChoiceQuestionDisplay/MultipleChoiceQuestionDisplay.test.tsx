@@ -12,14 +12,23 @@ const questions = parse(
     {
         =Choice 1
         ~Choice 2
-    }`) as MultipleChoiceQuestion[];
+    }
+    
+    ::Sample Question 2:: Question stem
+    {
+        =Choice 1
+        =Choice 2
+        ~Choice 3
+    }
+    `) as MultipleChoiceQuestion[];
 
-const question = questions[0];
+const questionWithOneCorrectChoice = questions[0];
+const questionWithMultipleCorrectChoices = questions[1];
 
 describe('MultipleChoiceQuestionDisplay', () => {
     const mockHandleOnSubmitAnswer = jest.fn();
 
-    const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
+    const TestWrapper = ({ showAnswer, question }: { showAnswer: boolean; question: MultipleChoiceQuestion }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
         const handleOnSubmitAnswer = (answer: AnswerType) => {
@@ -38,28 +47,51 @@ describe('MultipleChoiceQuestionDisplay', () => {
         );
     };
 
-    const choices = question.choices;
+    const twoChoices = questionWithOneCorrectChoice.choices;
+    const threeChoices = questionWithMultipleCorrectChoices.choices;
 
-    beforeEach(() => {
-        render(<TestWrapper showAnswer={false} />);
-    });
+    test('renders a question (that has only one correct choice) and its choices', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
 
-    test('renders the question and choices', () => {
-        expect(screen.getByText(question.formattedStem.text)).toBeInTheDocument();
-        choices.forEach((choice) => {
+        expect(screen.getByText(questionWithOneCorrectChoice.formattedStem.text)).toBeInTheDocument();
+        twoChoices.forEach((choice) => {
             expect(screen.getByText(choice.formattedText.text)).toBeInTheDocument();
         });
     });
 
+    test('only allows one choice to be selected when question only has one correct answer', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
+
+        const choiceButton1 = screen.getByText('Choice 1').closest('button');
+        const choiceButton2 = screen.getByText('Choice 2').closest('button');
+
+        if (!choiceButton1 || !choiceButton2) throw new Error('Choice buttons not found');
+
+        // Simulate selecting multiple answers
+        act(() => {
+            fireEvent.click(choiceButton1);
+        });
+        act(() => {
+            fireEvent.click(choiceButton2);
+        });
+
+        // Verify that only the last answer is selected
+        expect(choiceButton1.querySelector('.answer-text.selected')).not.toBeInTheDocument();
+        expect(choiceButton2.querySelector('.answer-text.selected')).toBeInTheDocument();
+    });
+
     test('does not submit when no answer is selected', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
         const submitButton = screen.getByText('Répondre');
         act(() => {
             fireEvent.click(submitButton);
         });
         expect(mockHandleOnSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleOnSubmitAnswer.mockClear();
     });
 
     test('submits the selected answer', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
         const choiceButton = screen.getByText('Choice 1').closest('button');
         if (!choiceButton) throw new Error('Choice button not found');
         act(() => {
@@ -70,10 +102,68 @@ describe('MultipleChoiceQuestionDisplay', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith('Choice 1');
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(['Choice 1']);
+        mockHandleOnSubmitAnswer.mockClear();
+    });
+
+
+    test('renders a question (that has multiple correct choices) and its choices', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithMultipleCorrectChoices} />);
+        expect(screen.getByText(questionWithMultipleCorrectChoices.formattedStem.text)).toBeInTheDocument();
+        threeChoices.forEach((choice) => {
+            expect(screen.getByText(choice.formattedText.text)).toBeInTheDocument();
+        });
+    });
+
+    test('allows multiple choices to be selected when question has multiple correct answers', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithMultipleCorrectChoices} />);
+        const choiceButton1 = screen.getByText('Choice 1').closest('button');
+        const choiceButton2 = screen.getByText('Choice 2').closest('button');
+        const choiceButton3 = screen.getByText('Choice 3').closest('button');
+
+        if (!choiceButton1 || !choiceButton2 || !choiceButton3) throw new Error('Choice buttons not found');
+
+        act(() => {
+            fireEvent.click(choiceButton1);
+        });
+        act(() => {
+            fireEvent.click(choiceButton2);
+        });
+
+        expect(choiceButton1.querySelector('.answer-text.selected')).toBeInTheDocument();
+        expect(choiceButton2.querySelector('.answer-text.selected')).toBeInTheDocument();
+        expect(choiceButton3.querySelector('.answer-text.selected')).not.toBeInTheDocument(); // didn't click
+    
+    });
+
+    test('submits multiple selected answers', () => {
+        render(<TestWrapper showAnswer={false} question={questionWithMultipleCorrectChoices} />);
+        const choiceButton1 = screen.getByText('Choice 1').closest('button');
+        const choiceButton2 = screen.getByText('Choice 2').closest('button');
+
+        if (!choiceButton1 || !choiceButton2) throw new Error('Choice buttons not found');
+
+        // Simulate selecting multiple answers
+        act(() => {
+            fireEvent.click(choiceButton1);
+        });
+        act(() => {
+            fireEvent.click(choiceButton2);
+        });
+
+        // Simulate submitting the answers
+        const submitButton = screen.getByText('Répondre');
+        act(() => {
+            fireEvent.click(submitButton);
+        });
+
+        // Verify that the mockHandleOnSubmitAnswer function is called with both answers
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(['Choice 1', 'Choice 2']);
+        mockHandleOnSubmitAnswer.mockClear();
     });
 
     it('should show ✅ next to the correct answer and ❌ next to the wrong answers when showAnswer is true', async () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
         const choiceButton = screen.getByText('Choice 1').closest('button');
         if (!choiceButton) throw new Error('Choice button not found');
 
@@ -89,16 +179,17 @@ describe('MultipleChoiceQuestionDisplay', () => {
         });
 
         // Wait for the DOM to update
-            const correctAnswer = screen.getByText("Choice 1").closest('button');
-            expect(correctAnswer).toBeInTheDocument();
-            expect(correctAnswer?.textContent).toContain('✅');
+        const correctAnswer = screen.getByText("Choice 1").closest('button');
+        expect(correctAnswer).toBeInTheDocument();
+        expect(correctAnswer?.textContent).toContain('✅');
 
-            const wrongAnswer1 = screen.getByText("Choice 2").closest('button');
-            expect(wrongAnswer1).toBeInTheDocument();
-            expect(wrongAnswer1?.textContent).toContain('❌');
+        const wrongAnswer1 = screen.getByText("Choice 2").closest('button');
+        expect(wrongAnswer1).toBeInTheDocument();
+        expect(wrongAnswer1?.textContent).toContain('❌');
     });
 
-    it('should not show ✅ or ❌ when repondre button is not clicked', async () => {
+    it('should not show ✅ or ❌ when Répondre button is not clicked', async () => {
+        render(<TestWrapper showAnswer={false} question={questionWithOneCorrectChoice} />);
         const choiceButton = screen.getByText('Choice 1').closest('button');
         if (!choiceButton) throw new Error('Choice button not found');
 
@@ -118,5 +209,5 @@ describe('MultipleChoiceQuestionDisplay', () => {
         expect(wrongAnswer1?.textContent).not.toContain('❌');
     });
 
-    });
+});
 

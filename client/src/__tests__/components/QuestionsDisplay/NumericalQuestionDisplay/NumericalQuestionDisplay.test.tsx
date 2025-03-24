@@ -67,6 +67,7 @@ describe('NumericalQuestion Component', () => {
         fireEvent.click(submitButton);
 
         expect(mockHandleOnSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleOnSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly', () => {
@@ -77,6 +78,7 @@ describe('NumericalQuestion Component', () => {
 
         fireEvent.click(submitButton);
 
-        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith(7);
+        expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith([7]);
+        mockHandleOnSubmitAnswer.mockClear();
     });
 });

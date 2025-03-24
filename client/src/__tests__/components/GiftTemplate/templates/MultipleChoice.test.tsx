@@ -29,7 +29,7 @@ const katekMock: TemplateOptions & MultipleChoiceQuestion = {
     formattedStem: { format: 'plain' , text: '$$\\frac{zzz}{yyy}$$'},
     choices: [
         { formattedText: { format: 'plain' , text: 'Choice 1'}, isCorrect: true, formattedFeedback: { format: 'plain' , text: 'Correct!'}, weight: 1 },
-        { formattedText: { format: 'plain', text: 'Choice 2' }, isCorrect: true, formattedFeedback: { format: 'plain' , text: 'Correct!'}, weight: 1 }
+        { formattedText: { format: 'plain', text: 'Choice 2' }, isCorrect: false, formattedFeedback: { format: 'plain' , text: 'Correct!'}, weight: 0 }
     ],
     formattedGlobalFeedback:   { format: 'plain', text: 'Sample Global Feedback' } 
 };

@@ -1,5 +1,5 @@
 // TrueFalseQuestion.tsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
@@ -8,37 +8,37 @@ import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer:  AnswerType) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer} =
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
 
+    const [answer, setAnswer] = useState<boolean | undefined>(() => {
+
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            return passedAnswer[0];
+        }
+
+        return undefined;
+    });
+
     let disableButton = false;
-    if(handleOnSubmitAnswer === undefined){
+    if (handleOnSubmitAnswer === undefined) {
         disableButton = true;
     }
 
     useEffect(() => {
-        console.log("passedAnswer", answer);
-                if (passedAnswer === true || passedAnswer === false) {
-                    setAnswer(passedAnswer);
-                } else {
-                    setAnswer(undefined);
-                }
-            }, [passedAnswer, question.id]);
-
-    const [answer, setAnswer] = useState<boolean | undefined>(() => {
-
-        if (passedAnswer === true || passedAnswer === false) {
-            return passedAnswer;
+        console.log("passedAnswer", passedAnswer);
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            setAnswer(passedAnswer[0]);
+        } else {
+            setAnswer(undefined);
         }
-
-        return undefined;
-    }); 
+    }, [passedAnswer, question.id]);
 
     const handleOnClickAnswer = (choice: boolean) => {
         setAnswer(choice);
@@ -49,7 +49,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     return (
         <div className="question-container">
             <div className="question content">
-            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
                 <Button
@@ -58,15 +58,15 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     fullWidth
                     disabled={disableButton}
                 >
-                    {showAnswer? (<div> {(question.isTrue ? '✅' : '❌')}</div>):``}                    
+                    {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`circle ${selectedTrue}`}>V</div>
                     <div className={`answer-text ${selectedTrue}`}>Vrai</div>
 
                     {showAnswer && answer && question.trueFormattedFeedback && (
-                    <div className="true-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
-                    </div>
-            )}
+                        <div className="true-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
+                        </div>
+                    )}
                 </Button>
                 <Button
                     className="button-wrapper"
@@ -75,15 +75,15 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     disabled={disableButton}
 
                 >
-                    {showAnswer? (<div> {(!question.isTrue ? '✅' : '❌')}</div>):``}                    
+                    {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`circle ${selectedFalse}`}>F</div>
                     <div className={`answer-text ${selectedFalse}`}>Faux</div>
 
                     {showAnswer && !answer && question.falseFormattedFeedback && (
-                    <div className="false-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
-                    </div>
-            )}
+                        <div className="false-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
+                        </div>
+                    )}
                 </Button>
             </div>
             {question.formattedGlobalFeedback && showAnswer && (
@@ -95,8 +95,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
-
+                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
                     }
                     disabled={answer === undefined}
                 >
