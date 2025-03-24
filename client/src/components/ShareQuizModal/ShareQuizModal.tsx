@@ -1,67 +1,90 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogActions, Button, Tooltip, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogActions, Button, Tooltip, IconButton, Typography, Box } from '@mui/material';
 import { Share } from '@mui/icons-material';
 import { QuizType } from '../../Types/QuizType';
-import ApiService from '../../services/ApiService';
 
 interface ShareQuizModalProps {
     quiz: QuizType;
 }
 
 const ShareQuizModal: React.FC<ShareQuizModalProps> = ({ quiz }) => {
-    const [open, setOpen] = useState(false);
-
-    const handleOpenModal = () => setOpen(true);
+    const [_open, setOpen] = useState(false);
+    const [feedback, setFeedback] = useState({
+        open: false,
+        title: '',
+        isError: false
+    });
 
     const handleCloseModal = () => setOpen(false);
-
-    const handleShareByEmail = async () => {
-        const email = prompt(`Veuillez saisir l'email de la personne avec qui vous souhaitez partager ce quiz`, "");
-
-        if (email) {
-            try {
-                const result = await ApiService.ShareQuiz(quiz._id, email);
-
-                if (!result) {
-                    window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`);
-                    return;
-                }
-
-                window.alert(`Quiz partagé avec succès!`);
-            } catch (error) {
-                console.error('Erreur lors du partage du quiz:', error);
-            }
-        }
-
-        handleCloseModal();
-    };
 
     const handleShareByUrl = () => {
         const quizUrl = `${window.location.origin}/teacher/share/${quiz._id}`;
         navigator.clipboard.writeText(quizUrl)
             .then(() => {
-                window.alert('URL a été copiée avec succès.');
+                setFeedback({
+                    open: true,
+                    title: 'L\'URL de partage pour le quiz',
+                    isError: false
+                });
             })
             .catch(() => {
-                window.alert('Une erreur est survenue lors de la copie de l\'URL.');
+                setFeedback({
+                    open: true,
+                    title: 'Une erreur est survenue lors de la copie de l\'URL.',
+                    isError: true
+                });
             });
 
         handleCloseModal();
     };
 
+    const closeFeedback = () => {
+        setFeedback(prev => ({ ...prev, open: false }));
+    };
+
     return (
         <>
-            <Tooltip title="Partager quiz" placement="top">
-                <IconButton color="primary" onClick={handleOpenModal} aria-label="partager quiz">
+            <Tooltip title="Partager" placement="top">
+                <IconButton color="primary" onClick={handleShareByUrl} aria-label="partager quiz">
                     <Share />
                 </IconButton>
             </Tooltip>
 
-            <Dialog open={open} onClose={handleCloseModal} fullWidth maxWidth="xs">
-                <DialogTitle sx={{ textAlign: "center" }}>Choisissez une méthode de partage</DialogTitle>
-                <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-                    <Button onClick={handleShareByEmail}>Partager par email</Button>
-                    <Button onClick={handleShareByUrl}>Partager par URL</Button>
+            {/* Feedback Dialog */}
+            <Dialog 
+                open={feedback.open} 
+                onClose={closeFeedback} 
+                fullWidth 
+                maxWidth="xs"
+            >
+                <DialogTitle sx={{ textAlign: "center" }}>
+                    <Box>
+                        {feedback.isError ? (
+                            <Typography color="error.main">
+                                {feedback.title}
+                            </Typography>
+                        ) : (
+                            <>
+                                <Typography component="span">
+                                    L'URL de partage pour le quiz{' '}
+                                </Typography>
+                                <Typography component="span" fontWeight="bold">
+                                    {quiz.title}
+                                </Typography>
+                                <Typography component="span">
+                                    {' '}a été copiée.
+                                </Typography>
+                            </>
+                        )}
+                    </Box>
+                </DialogTitle>
+                <DialogActions sx={{ display: "flex", justifyContent: "center" }}>
+                    <Button 
+                        onClick={closeFeedback} 
+                        variant="contained"
+                    >
+                        OK
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

@@ -564,7 +564,7 @@ const Dashboard: React.FC = () => {
                             {quizzesByFolder[folderName].map((quiz: QuizType) => (
                                 <div className="quiz" key={quiz._id}>
                                     <div className="title">
-                                        <Tooltip title="Lancer quiz" placement="top">
+                                        <Tooltip title="Démarrer" placement="top">
                                             <div>
                                                 <Button
                                                     variant="outlined"
@@ -580,7 +580,7 @@ const Dashboard: React.FC = () => {
                                     </div>
 
                                     <div className="actions">
-                                        <Tooltip title="Télécharger quiz" placement="top">
+                                        <Tooltip title="Télécharger" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => downloadTxtFile(quiz)}
@@ -590,7 +590,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Modifier quiz" placement="top">
+                                        <Tooltip title="Modifier" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => handleEditQuiz(quiz)}
@@ -600,7 +600,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Dupliquer quiz" placement="top">
+                                        <Tooltip title="Dupliquer" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => handleDuplicateQuiz(quiz)}
@@ -610,7 +610,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Supprimer quiz" placement="top">
+                                        <Tooltip title="Supprimer" placement="top">
                                             <IconButton
                                                 aria-label="delete"
                                                 color="primary"
