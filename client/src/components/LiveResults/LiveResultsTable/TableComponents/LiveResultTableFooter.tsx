@@ -51,7 +51,7 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
                             borderWidth: 1,
                             borderColor: 'rgba(224, 224, 224, 1)',
                             fontWeight: 'bold',
-                            color: 'rgba(0, 0, 0)'
+                            color: 'rgba(0, 0, 0)',
                         }}
                     >
                         {students.length > 0
@@ -67,7 +67,7 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
                         borderColor: 'rgba(224, 224, 224, 1)',
                         fontWeight: 'bold',
                         fontSize: '1rem',
-                        color: 'rgba(0, 0, 0)'
+                        color: 'rgba(0, 0, 0)',
                     }}
                 >
                     {students.length > 0 ? `${classAverage.toFixed()} %` : '-'}
