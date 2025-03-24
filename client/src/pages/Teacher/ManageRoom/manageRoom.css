@@ -37,8 +37,12 @@
     /* align-items: center; */
 }
 
-
-
+.room .finishQuizButton {
+    display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
+    width: 100%;
+}
 
 
 
