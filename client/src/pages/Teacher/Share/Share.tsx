@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FolderType } from '../../../Types/FolderType';
 import './share.css';
-import { Button, NativeSelect, Typography, Box, Divider } from '@mui/material';
+import { Button, NativeSelect, Typography, Box } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 import ApiService from '../../../services/ApiService';
 
@@ -20,14 +20,12 @@ const Share: React.FC = () => {
         const fetchData = async () => {
             try {
                 if (!id) {
-                    window.alert(`Une erreur est survenue.\n Le quiz n'a pas été trouvé\nVeuillez réessayer plus tard`)
                     console.error('Quiz not found for id:', id);
                     navigate('/teacher/dashboard');
                     return;
                 }
 
                 if (!ApiService.isLoggedIn()) {
-                    window.alert(`Vous n'êtes pas connecté.\nVeuillez vous connecter et revenir à ce lien`);
                     navigate("/login");
                     return;
                 }
@@ -43,7 +41,6 @@ const Share: React.FC = () => {
                 const userFolders = await ApiService.getUserFolders();
                 
                 if (userFolders.length == 0) {
-                    window.alert(`Vous n'avez aucun dossier.\nVeuillez en créer un et revenir à ce lien`)
                     navigate('/teacher/dashboard');
                     return;
                 }
@@ -53,7 +50,6 @@ const Share: React.FC = () => {
                 const title = await ApiService.getSharedQuiz(id);
 
                 if (!title) {
-                    window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
                     console.error('Quiz not found for id:', id);
                     navigate('/teacher/dashboard');
                     return;
@@ -83,7 +79,6 @@ const Share: React.FC = () => {
             }
             
             if (!id) {
-                window.alert(`Une erreur est survenue.\n Le quiz n'a pas été trouvé\nVeuillez réessayer plus tard`)
                 console.error('Quiz not found for id:', id);
                 navigate('/teacher/dashboard');
                 return;
@@ -93,7 +88,6 @@ const Share: React.FC = () => {
             navigate('/teacher/dashboard');
 
         } catch (error) {
-            window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
             console.log(error)
         }
     };
