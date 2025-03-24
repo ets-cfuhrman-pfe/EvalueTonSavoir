@@ -29,9 +29,9 @@ import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
-    const [students, setStudents] = useState<StudentType[]>([]);
-    const [allStudents, setAllStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const [connectedStudents, setConnectedStudents] = useState<StudentType[]>([]);
+    const [totalStudents, setTotalStudents] = useState<StudentType[]>([]);
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string, roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -46,15 +46,15 @@ const ManageRoom: React.FC = () => {
     useEffect(() => {
         if (newlyConnectedUser) {
             console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
-            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
-            setAllStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+            setConnectedStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+            setTotalStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
 
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
                 console.log(`!quizStarted: returning.... `);
                 return;
             }
-    
+
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
@@ -67,7 +67,7 @@ const ManageRoom: React.FC = () => {
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
-    
+
             // Reset the newly connected user state
             setNewlyConnectedUser(null);
         }
@@ -98,7 +98,7 @@ const ManageRoom: React.FC = () => {
         return () => {
             disconnectWebSocket();
         };
-      }, [roomName, navigate]);
+    }, [roomName, navigate]);
 
     useEffect(() => {
         if (quizId) {
@@ -135,8 +135,8 @@ const ManageRoom: React.FC = () => {
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
-            setStudents(new Array<StudentType>());
-            setAllStudents(new Array<StudentType>());
+            setConnectedStudents(new Array<StudentType>());
+            setTotalStudents(new Array<StudentType>());
 
         }
     };
@@ -181,7 +181,7 @@ const ManageRoom: React.FC = () => {
 
         socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            setConnectedStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         });
 
         setSocket(socket);
@@ -202,7 +202,7 @@ const ManageRoom: React.FC = () => {
                 }
 
                 // Update the students state using the functional form of setStudents
-                setStudents((prevStudents) => {
+                setConnectedStudents((prevStudents) => {
                     console.log('Current students:');
                     prevStudents.forEach((student) => {
                         console.log(student.name);
@@ -222,14 +222,14 @@ const ManageRoom: React.FC = () => {
                                     console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
                                     return ans.idQuestion === idQuestion
                                         ? {
-                                              ...ans,
-                                              answer,
-                                              isCorrect: checkIfIsCorrect(
-                                                  answer,
-                                                  idQuestion,
-                                                  quizQuestions!
-                                              )
-                                          }
+                                            ...ans,
+                                            answer,
+                                            isCorrect: checkIfIsCorrect(
+                                                answer,
+                                                idQuestion,
+                                                quizQuestions!
+                                            )
+                                        }
                                         : ans;
                                 });
                             } else {
@@ -249,7 +249,7 @@ const ManageRoom: React.FC = () => {
                     }
                     return updatedStudents;
                 });
-                setAllStudents((prevStudents) => {
+                setTotalStudents((prevStudents) => {
                     let foundStudent = false;
                     const updatedStudents = prevStudents.map((student) => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
@@ -264,14 +264,14 @@ const ManageRoom: React.FC = () => {
                                     console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
                                     return ans.idQuestion === idQuestion
                                         ? {
-                                              ...ans,
-                                              answer,
-                                              isCorrect: checkIfIsCorrect(
-                                                  answer,
-                                                  idQuestion,
-                                                  quizQuestions!
-                                              )
-                                          }
+                                            ...ans,
+                                            answer,
+                                            isCorrect: checkIfIsCorrect(
+                                                answer,
+                                                idQuestion,
+                                                quizQuestions!
+                                            )
+                                        }
                                         : ans;
                                 });
                             } else {
@@ -304,10 +304,12 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
-                                       questionIndex: nextQuestionIndex, 
-                                       isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const previousQuestion = () => {
@@ -317,7 +319,7 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false });
     };
 
     const initializeQuizQuestion = () => {
@@ -345,7 +347,7 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
+        webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true });
     };
 
     const launchStudentMode = () => {
@@ -382,7 +384,7 @@ const ManageRoom: React.FC = () => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
+                webSocketService.nextQuestion({ roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false });
             }
         }
     };
@@ -496,7 +498,7 @@ const ManageRoom: React.FC = () => {
                             style={{ display: "flex", justifyContent: "flex-end" }}
                         >
                             <GroupIcon style={{ marginRight: '5px' }} />
-                            {students.length}/60
+                            {connectedStudents.length}/60
                         </div>
                     )}
                 </div>
@@ -533,7 +535,7 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
-                                        
+
                                     />
                                 )}
 
@@ -542,7 +544,7 @@ const ManageRoom: React.FC = () => {
                                     socket={socket}
                                     questions={quizQuestions}
                                     showSelectedQuestion={showSelectedQuestion}
-                                    students={allStudents}
+                                    students={totalStudents}
                                 ></LiveResultsComponent>
                             </div>
                         </div>
@@ -578,7 +580,7 @@ const ManageRoom: React.FC = () => {
                     </div>
                 ) : (
                     <StudentWaitPage
-                        students={students}
+                        students={connectedStudents}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
                     />
