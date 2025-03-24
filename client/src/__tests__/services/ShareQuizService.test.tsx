@@ -40,4 +40,3 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
             expect(result).toBe('An unexpected error occurred.');
         });
     });
-});
