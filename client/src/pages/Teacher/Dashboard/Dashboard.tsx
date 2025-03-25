@@ -66,6 +66,7 @@ const Dashboard: React.FC = () => {
     const [selectedRoom, selectRoom] = useState<RoomType>(); // menu
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorDialog, setShowErrorDialog] = useState(false);
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
 
     // Filter quizzes based on search term
     // const filteredQuizzes = quizzes.filter(quiz =>
@@ -119,6 +120,9 @@ const Dashboard: React.FC = () => {
         } else {
             selectRoomByName(event.target.value);
         }
+    };
+    const toggleSearchVisibility = () => {
+        setIsSearchVisible(!isSearchVisible); // Alterne entre afficher et cacher la barre de recherche
     };
 
     // Créer une salle
@@ -511,62 +515,87 @@ const Dashboard: React.FC = () => {
             <div
                 style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-end',
                     alignItems: 'center',
-                    marginBottom: '20px'
+                    width: '100%',
+                    gap: '20px'
                 }}
             >
-                <div className="search-bar" style={{ flexGrow: 1, maxWidth: '400px' }}>
-                    <TextField
-                        onChange={handleSearch}
-                        value={searchTerm}
-                        placeholder="Rechercher un quiz par son titre"
-                        fullWidth
-                        variant="outlined"
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton>
-                                        <Search />
-                                    </IconButton>
-                                </InputAdornment>
-                            )
-                        }}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
+                {/* Barre de recherche avec un bouton d'icône qui s'affiche ou se cache */}
+                <div
+                    className="search-bar"
+                    style={{ display: 'flex', gap: '20px', alignItems: 'center' }}
+                >
+                    {!isSearchVisible ? (
+                        <IconButton
+                            onClick={toggleSearchVisibility}
+                            sx={{
                                 borderRadius: '8px',
-                                '& fieldset': {
-                                    borderColor: '#e0e0e0'
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: '#5271FF'
-                                }
-                            }
-                        }}
-                    />
+                                border: '1px solid #ccc',
+                                padding: '8px 12px',
+                                backgroundColor: '#fff',
+                                color: '#5271FF'
+                            }}
+                        >
+                            <Search />
+                        </IconButton>
+                    ) : (
+                        // Barre de recherche visible
+                        <TextField
+                            onChange={handleSearch}
+                            value={searchTerm}
+                            placeholder="Rechercher un quiz"
+                            fullWidth
+                            autoFocus
+                            sx={{
+                                borderRadius: '8px',
+                                border: '1px solid #ccc',
+                                padding: '8px 12px',
+                                backgroundColor: '#fff',
+                                maxWidth: '1000px',
+                                width: '100%',
+                                fontWeight: 500
+                            }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={toggleSearchVisibility}
+                                            sx={{
+                                                borderRadius: '8px',
+                                                border: '1px solid #ccc',
+                                                backgroundColor: '#fff',
+                                                color: '#5271FF'
+                                            }}
+                                        >
+                                            <Search />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<Add />}
-                        onClick={handleCreateQuiz}
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Add />}
+                    onClick={handleCreateQuiz}
                         sx={{ borderRadius: '8px' }}
-                    >
-                        Ajouter nouveau quiz
-                    </Button>
+                >
+                    Ajouter nouveau quiz
+                </Button>
 
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<Upload />}
-                        onClick={handleOnImport}
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Upload />}
+                    onClick={handleOnImport}
                         sx={{ borderRadius: '8px' }}
-                    >
-                        Importer
-                    </Button>
-                </div>
+                >
+                    Importer
+                </Button>
             </div>
 
             {/* Conteneur principal avec les actions et la liste des quiz */}
