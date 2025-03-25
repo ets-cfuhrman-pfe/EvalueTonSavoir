@@ -584,7 +584,7 @@ const Dashboard: React.FC = () => {
                     onClick={handleCreateQuiz}
                         sx={{ borderRadius: '8px' }}
                 >
-                    Ajouter nouveau quiz
+                    Nouveau quiz
                 </Button>
 
                 <Button
@@ -741,22 +741,20 @@ const Dashboard: React.FC = () => {
                                                     <ContentCopy />
                                                 </IconButton>
                                             </Tooltip>
-
-                                            <Tooltip title="Supprimer quiz" placement="top">
-                                                <IconButton
-                                                    color="primary"
-                                                    onClick={() => handleRemoveQuiz(quiz)}
-                                                >
-                                                    <DeleteOutline />
-                                                </IconButton>
-                                            </Tooltip>
-
                                             <Tooltip title="Partager quiz" placement="top">
                                                 <IconButton
                                                     color="primary"
                                                     onClick={() => handleShareQuiz(quiz)}
                                                 >
                                                     <Share />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Supprimer quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleRemoveQuiz(quiz)}
+                                                >
+                                                    <DeleteOutline />
                                                 </IconButton>
                                             </Tooltip>
                                         </div>
