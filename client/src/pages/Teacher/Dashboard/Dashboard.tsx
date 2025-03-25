@@ -659,7 +659,7 @@ const Dashboard: React.FC = () => {
                         </Tooltip>
                         <Tooltip title="Supprimer dossier" placement="top">
                             <IconButton
-                                color="primary"
+                                color="error"
                                 onClick={handleDeleteFolder}
                                 disabled={selectedFolderId === ''}
                             >
@@ -751,7 +751,7 @@ const Dashboard: React.FC = () => {
                                             </Tooltip>
                                             <Tooltip title="Supprimer quiz" placement="top">
                                                 <IconButton
-                                                    color="primary"
+                                                    color="error"
                                                     onClick={() => handleRemoveQuiz(quiz)}
                                                 >
                                                     <DeleteOutline />
