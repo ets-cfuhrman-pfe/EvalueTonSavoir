@@ -1,6 +1,7 @@
 // GiftCheatSheet.tsx
 import React, { useState } from 'react';
 import './giftCheatSheet.css';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
 const GiftCheatSheet: React.FC = () => {
     const [copySuccess, setCopySuccess] = useState(false);
@@ -19,7 +20,7 @@ const GiftCheatSheet: React.FC = () => {
                 console.error('Erreur lors de la copie dans le presse-papiers : ', error);
             });
     };
-    
+
 
     const QuestionVraiFaux = "::Exemple de question vrai/faux:: \n 2+2 \\= 4 ? {T}  //Utilisez les valeurs {T}, {F}, {TRUE} et {FALSE}.";
     const QuestionChoixMul = "::Ville capitale du Canada:: \nQuelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Rétroaction spécifique.\n}  // Commentaire non visible (au besoin)";
@@ -42,7 +43,10 @@ const GiftCheatSheet: React.FC = () => {
                     </code>
 
                 </pre>
-                <button onClick={() => copyToClipboard(QuestionVraiFaux)}>Copier</button>
+                <button onClick={() => copyToClipboard(QuestionVraiFaux)}>
+                    <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                    Copier
+                </button>
             </div>
 
             <div className="question-type">
@@ -54,7 +58,10 @@ const GiftCheatSheet: React.FC = () => {
                         }
                     </code>
                 </pre>
-                <button onClick={() => copyToClipboard(QuestionChoixMul)}>Copier</button>
+                <button onClick={() => copyToClipboard(QuestionChoixMul)}>
+                    {' '}
+                    <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} /> Copier
+                </button>
             </div>
             <div className="question-type">
                 <h4>3. Questions à choix multiple avec plusieurs réponses</h4>
@@ -65,7 +72,10 @@ const GiftCheatSheet: React.FC = () => {
                         }
                     </code>
                 </pre>
-                <button onClick={() => copyToClipboard(QuestionChoixMulMany)}>Copier</button>
+                <button onClick={() => copyToClipboard(QuestionChoixMulMany)}>
+                    <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                    Copier
+                </button>
             </div>
 
             <div className="question-type">
@@ -75,7 +85,10 @@ const GiftCheatSheet: React.FC = () => {
                         {QuestionCourte}
                     </code>
                 </pre>
-                <button onClick={() => copyToClipboard(QuestionCourte)}>Copier</button>
+                <button onClick={() => copyToClipboard(QuestionCourte)}>
+                    {' '}
+                    <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} /> Copier
+                </button>
             </div>
 
             <div className="question-type">
@@ -87,7 +100,10 @@ const GiftCheatSheet: React.FC = () => {
                         }
                     </code>                    
                 </pre>
-                <button onClick={() => copyToClipboard(QuestionNum)}>Copier</button>
+                <button onClick={() => copyToClipboard(QuestionNum)}>
+                    {' '}
+                    <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} /> Copier
+                </button>
             </div>
 
             <div className="question-type">
@@ -185,7 +201,7 @@ const GiftCheatSheet: React.FC = () => {
                     Attention: l&apos;ancienne fonctionnalité avec les balises <code>{'<img>'}</code> n&apos;est plus
                     supportée.
                 </p>
-                </div>
+            </div>
             <div className="question-type">
                 <h4> 10. Informations supplémentaires </h4>
                 <p>
@@ -199,6 +215,6 @@ const GiftCheatSheet: React.FC = () => {
             </div>
         </div>
     );
-};  
+};
 
 export default GiftCheatSheet;

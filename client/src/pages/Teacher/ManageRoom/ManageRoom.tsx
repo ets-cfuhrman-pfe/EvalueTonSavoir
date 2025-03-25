@@ -35,19 +35,19 @@ const ManageRoom: React.FC = () => {
     const [formattedRoomName, setFormattedRoomName] = useState("");
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
 
-    // Handle the newly connected user in useEffect, because it needs state info 
+    // Handle the newly connected user in useEffect, because it needs state info
     // not available in the socket.on() callback
     useEffect(() => {
         if (newlyConnectedUser) {
             console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
             setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
-    
+
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
                 console.log(`!quizStarted: returning.... `);
                 return;
             }
-    
+
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
@@ -60,7 +60,7 @@ const ManageRoom: React.FC = () => {
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
-    
+
             // Reset the newly connected user state
             setNewlyConnectedUser(null);
         }
@@ -91,7 +91,7 @@ const ManageRoom: React.FC = () => {
         return () => {
             disconnectWebSocket();
         };
-      }, [roomName, navigate]);
+    }, [roomName, navigate]);
 
     useEffect(() => {
         if (quizId) {
@@ -138,8 +138,8 @@ const ManageRoom: React.FC = () => {
         setFormattedRoomName(roomNameUpper);
         console.log(`Creating WebSocket room named ${roomNameUpper}`);
 
-        /** 
-         * ATTENTION: Lire les variables d'état dans 
+        /**
+         * ATTENTION: Lire les variables d'état dans
          * les .on() n'est pas une bonne pratique.
          * Les valeurs sont celles au moment de la création
          * de la fonction et non au moment de l'exécution.
@@ -254,8 +254,8 @@ const ManageRoom: React.FC = () => {
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
         webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
-                                       questionIndex: nextQuestionIndex, 
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
                                        isLaunch: false});
     };
 
@@ -382,15 +382,19 @@ const ManageRoom: React.FC = () => {
                         width: '100%'
                     }}
                 >
-                    {(
+                    {
                         <div
                             className="userCount subtitle smallText"
-                            style={{ display: "flex", justifyContent: "flex-end" }}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                alignItems: 'center'
+                            }}
                         >
                             <GroupIcon style={{ marginRight: '5px' }} />
                             {students.length}/60
                         </div>
-                    )}
+                    }
                 </div>
 
                 <div className="dumb"></div>

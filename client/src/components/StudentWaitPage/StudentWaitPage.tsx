@@ -21,16 +21,15 @@ const StudentWaitPage: React.FC<Props> = ({ students, launchQuiz, setQuizMode })
 
     return (
         <div className="wait">
-            <div className='button'>
+            <div className="button" style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <Button
                     variant="contained"
                     onClick={handleLaunchClick}
                     startIcon={<PlayArrow />}
-                    fullWidth
-                    sx={{ fontWeight: 600, fontSize: 20 }}
+                    sx={{ fontWeight: 600, fontSize: 20, width: 'auto' }}
                 >
-                    Lancer 
-                </Button> 
+                    Lancer
+                </Button>
             </div>
 
             <div className="students">

@@ -10,6 +10,7 @@ import { Button, NativeSelect } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 
 import ApiService from '../../../services/ApiService';
+import SaveIcon from '@mui/icons-material/Save';
 
 const Share: React.FC = () => {
     console.log('Component rendered');
@@ -119,6 +120,7 @@ const Share: React.FC = () => {
                     </NativeSelect>
 
                     <Button variant="contained" onClick={handleQuizSave}>
+                        {<SaveIcon sx={{ fontSize: 20, marginRight: '8px' }} />}
                         Enregistrer
                     </Button>
 

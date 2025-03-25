@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
 
         fetchData();
     }, []);
-    
+
     useEffect(() => {
         if (rooms.length > 0 && !selectedRoom) {
             selectRoom(rooms[rooms.length - 1]);
@@ -121,41 +121,41 @@ const Dashboard: React.FC = () => {
         }
     };
 
-  // Créer une salle
-  const createRoom = async (title: string) => {
-    // Créer la salle et récupérer l'objet complet
-    const newRoom = await ApiService.createRoom(title);
-    
-    // Mettre à jour la liste des salles
-    const updatedRooms = await ApiService.getUserRooms();
-    setRooms(updatedRooms as RoomType[]);
-    
-    // Sélectionner la nouvelle salle avec son ID
-    selectRoomByName(newRoom); // Utiliser l'ID de l'objet retourné
-  };
+    // Créer une salle
+    const createRoom = async (title: string) => {
+        // Créer la salle et récupérer l'objet complet
+        const newRoom = await ApiService.createRoom(title);
+
+        // Mettre à jour la liste des salles
+        const updatedRooms = await ApiService.getUserRooms();
+        setRooms(updatedRooms as RoomType[]);
+
+        // Sélectionner la nouvelle salle avec son ID
+        selectRoomByName(newRoom); // Utiliser l'ID de l'objet retourné
+    };
 
 
-  // Sélectionner une salle
-  const selectRoomByName = (roomId: string) => {
+    // Sélectionner une salle
+    const selectRoomByName = (roomId: string) => {
     const room = rooms.find(r => r._id === roomId);
-    selectRoom(room);
-    localStorage.setItem('selectedRoomId', roomId);
-  };
+        selectRoom(room);
+        localStorage.setItem('selectedRoomId', roomId);
+    };
 
-  const handleCreateRoom = async () => {
-    if (newRoomTitle.trim()) {
-      try {
+    const handleCreateRoom = async () => {
+        if (newRoomTitle.trim()) {
+            try {
                 await createRoom(newRoomTitle);
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
-        setOpenAddRoomDialog(false);
-        setNewRoomTitle('');
-      } catch (error) {
+                setOpenAddRoomDialog(false);
+                setNewRoomTitle('');
+            } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : "Erreur inconnue");
-        setShowErrorDialog(true);
-      }
-    }
-  };
+                setShowErrorDialog(true);
+            }
+        }
+    };
 
     const handleSelectFolder = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedFolderId(event.target.value);
@@ -398,7 +398,7 @@ const Dashboard: React.FC = () => {
         } else {
             const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
             navigate(`/teacher/manage-room/${quiz._id}/${randomSixDigit}`);
-        }    
+        }
     };
 
     const handleShareQuiz = async (quiz: QuizType) => {
@@ -425,30 +425,63 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="dashboard">
-            <div className="title">Tableau de bord</div>
+            {/* Conteneur pour le titre et le sélecteur de salle */}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
+                {/* Titre tableau de bord */}
+                <div className="title" style={{ fontSize: '30px', fontWeight: 'bold' }}>
+                    Tableau de bord
+                </div>
 
-            <div className="roomSelection">
-                <label htmlFor="select-room">Sélectionner une salle: </label>
-                <select value={selectedRoom?._id || ''} onChange={(e) => handleSelectRoom(e)}>
-                    <option value="" disabled>
-                        -- Sélectionner une salle --
-                    </option>
-                    {rooms.map((room) => (
-                        <option key={room._id} value={room._id}>
-                            {room.title}
+                {/* Sélecteur de salle */}
+                <div
+                    className="roomSelection"
+                    style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px' }}
+                >
+                    <select
+                        value={selectedRoom?._id || ''}
+                        onChange={(e) => handleSelectRoom(e)}
+                        id="room-select"
+                        style={{
+                            padding: '8px 12px',
+                            fontSize: '14px',
+                            borderRadius: '8px',
+                            border: '1px solid #ccc',
+                            backgroundColor: '#fff',
+                            maxWidth: '200px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
+                        }}
+                    >
+                        <option value="" disabled>
+                            Sélectionner une salle
                         </option>
-                    ))}
-                    <option value="add-room">Ajouter salle</option>
-                </select>
-
+                        {rooms.map((room) => (
+                            <option key={room._id} value={room._id}>
+                                {room.title}
+                            </option>
+                        ))}
+                        <option
+                            value="add-room"
+                            style={{
+                                color: 'black',
+                                backgroundColor: '#f0f0f0',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Ajouter une salle
+                        </option>
+                    </select>
+                </div>
             </div>
 
-            {selectedRoom && (
-                <div className="roomTitle">
-                    <h2>Salle sélectionnée: {selectedRoom.title}</h2>
-                </div>
-            )}
-
+            {/* Dialog pour créer une salle */}
             <Dialog open={openAddRoomDialog} onClose={() => setOpenAddRoomDialog(false)}>
                 <DialogTitle>Créer une nouvelle salle</DialogTitle>
                 <DialogContent>
@@ -463,6 +496,8 @@ const Dashboard: React.FC = () => {
                     <Button onClick={handleCreateRoom}>Créer</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Dialog d'erreur */}
             <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
                 <DialogTitle>Erreur</DialogTitle>
                 <DialogContent>
@@ -473,193 +508,238 @@ const Dashboard: React.FC = () => {
                 </DialogActions>
             </Dialog>
 
-            <div className="search-bar">
-                <TextField
-                    onChange={handleSearch}
-                    value={searchTerm}
-                    placeholder="Rechercher un quiz par son titre"
-                    fullWidth
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton>
-                                    <Search />
-                                </IconButton>
-                            </InputAdornment>
-                        )
-                    }}
-                />
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
+                <div className="search-bar" style={{ flexGrow: 1, maxWidth: '400px' }}>
+                    <TextField
+                        onChange={handleSearch}
+                        value={searchTerm}
+                        placeholder="Rechercher un quiz par son titre"
+                        fullWidth
+                        variant="outlined"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton>
+                                        <Search />
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '8px',
+                                '& fieldset': {
+                                    borderColor: '#e0e0e0'
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: '#5271FF'
+                                }
+                            }
+                        }}
+                    />
+                </div>
+
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<Add />}
+                        onClick={handleCreateQuiz}
+                        sx={{ borderRadius: '8px' }}
+                    >
+                        Ajouter nouveau quiz
+                    </Button>
+
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<Upload />}
+                        onClick={handleOnImport}
+                        sx={{ borderRadius: '8px' }}
+                    >
+                        Importer
+                    </Button>
+                </div>
             </div>
 
-            <div className="folder">
-                <div className="select">
+            {/* Conteneur principal avec les actions et la liste des quiz */}
+            <div className="folder" style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* Barre d'outils pour le sélecteur de dossier et les actions */}
+                <div
+                    className="folder-toolbar"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '20px'
+                    }}
+                >
+                    {/* Sélecteur de dossier */}
                     <NativeSelect
                         id="select-folder"
                         color="primary"
                         value={selectedFolderId}
                         onChange={handleSelectFolder}
+                        sx={{
+                            padding: '6px 12px',
+                            maxWidth: '180px',
+                            borderRadius: '8px',
+                            borderColor: '#e0e0e0',
+                            '&:hover': { borderColor: '#5271FF' }
+                        }}
                     >
-                        <option value=""> Tous les dossiers... </option>
-
-                        {folders.map((folder: FolderType) => (
+                        <option value="">Tous les dossiers...</option>
+                        {folders.map((folder) => (
                             <option value={folder._id} key={folder._id}>
-                                {' '}
-                                {folder.title}{' '}
+                                {folder.title}
                             </option>
                         ))}
                     </NativeSelect>
+
+                    {/* Actions dossiers */}
+                    <div style={{ display: 'flex', gap: '15px' }}>
+                        <Tooltip title="Ajouter dossier" placement="top">
+                            <IconButton color="primary" onClick={handleCreateFolder}>
+                                <Add />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Renommer dossier" placement="top">
+                            <IconButton
+                                color="primary"
+                                onClick={handleRenameFolder}
+                                disabled={selectedFolderId === ''}
+                            >
+                                <Edit />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Dupliquer dossier" placement="top">
+                            <IconButton
+                                color="primary"
+                                onClick={handleDuplicateFolder}
+                                disabled={selectedFolderId === ''}
+                            >
+                                <FolderCopy />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Supprimer dossier" placement="top">
+                            <IconButton
+                                color="primary"
+                                onClick={handleDeleteFolder}
+                                disabled={selectedFolderId === ''}
+                            >
+                                <DeleteOutline />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
                 </div>
 
-                <div className="actions">
-                    <Tooltip title="Ajouter dossier" placement="top">
-                        <IconButton color="primary" onClick={handleCreateFolder}>
-                            {' '}
-                            <Add />{' '}
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Renommer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            color="primary"
-                            onClick={handleRenameFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
+                {/* Liste des quiz organisés par dossier */}
+                <div className="list" style={{ marginTop: '20px' }}>
+                    {Object.keys(quizzesByFolder).map((folderName) => (
+                        <CustomCard
+                            key={folderName}
+                            className="folder-card"
+                            sx={{ marginBottom: '20px' }}
                         >
-                            {' '}
-                            <Edit />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
-
-                    <Tooltip title="Dupliquer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            color="primary"
-                            onClick={handleDuplicateFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
-                        >
-                            {' '}
-                            <FolderCopy />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
-
-                    <Tooltip title="Supprimer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            aria-label="delete"
-                            color="primary"
-                            onClick={handleDeleteFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
-                        >
-                            {' '}
-                            <DeleteOutline />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
-                </div>
-            </div>
-
-            <div className="ajouter">
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Add />}
-                    onClick={handleCreateQuiz}
-                >
-                    Ajouter un nouveau quiz
-                </Button>
-
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Upload />}
-                    onClick={handleOnImport}
-                >
-                    Import
-                </Button>
-            </div>
-            <div className="list">
-                {Object.keys(quizzesByFolder).map((folderName) => (
-                    <CustomCard key={folderName} className="folder-card">
-                        <div className="folder-tab">{folderName}</div>
-                        <CardContent>
-                            {quizzesByFolder[folderName].map((quiz: QuizType) => (
-                                <div className="quiz" key={quiz._id}>
-                                    <div className="title">
-                                        <Tooltip title="Lancer quiz" placement="top">
-                                            <div>
+                            <div
+                                className="folder-tab"
+                                style={{
+                                    fontWeight: 'bold',
+                                    padding: '10px',
+                                    backgroundColor: '#f5f5f5'
+                                }}
+                            >
+                                {folderName}
+                            </div>
+                            <CardContent>
+                                {quizzesByFolder[folderName].map((quiz) => (
+                                    <div
+                                        className="quiz"
+                                        key={quiz._id}
+                                        style={{ marginBottom: '10px' }}
+                                    >
+                                        <div className="title">
+                                            <Tooltip title="Lancer quiz" placement="top">
                                                 <Button
                                                     variant="outlined"
                                                     onClick={() => handleLancerQuiz(quiz)}
                                                     disabled={!validateQuiz(quiz.content)}
+                                                    sx={{ width: '100%' }}
                                                 >
-                                                    {`${quiz.title} (${quiz.content.length} question${
+                                                    {`${quiz.title} (${
+                                                        quiz.content.length
+                                                    } question${
                                                         quiz.content.length > 1 ? 's' : ''
                                                     })`}
                                                 </Button>
-                                            </div>
-                                        </Tooltip>
+                                            </Tooltip>
+                                        </div>
+
+                                        <div
+                                            className="actions"
+                                            style={{ display: 'flex', gap: '10px' }}
+                                        >
+                                            <Tooltip title="Télécharger quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => downloadTxtFile(quiz)}
+                                                >
+                                                    <FileDownload />
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            <Tooltip title="Modifier quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleEditQuiz(quiz)}
+                                                >
+                                                    <Edit />
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            <Tooltip title="Dupliquer quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleDuplicateQuiz(quiz)}
+                                                >
+                                                    <ContentCopy />
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            <Tooltip title="Supprimer quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleRemoveQuiz(quiz)}
+                                                >
+                                                    <DeleteOutline />
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            <Tooltip title="Partager quiz" placement="top">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleShareQuiz(quiz)}
+                                                >
+                                                    <Share />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </div>
                                     </div>
-
-                                    <div className="actions">
-                                        <Tooltip title="Télécharger quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => downloadTxtFile(quiz)}
-                                            >
-                                                {' '}
-                                                <FileDownload />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Modifier quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleEditQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <Edit />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Dupliquer quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleDuplicateQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <ContentCopy />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Supprimer quiz" placement="top">
-                                            <IconButton
-                                                aria-label="delete"
-                                                color="primary"
-                                                onClick={() => handleRemoveQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <DeleteOutline />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Partager quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleShareQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <Share />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </CustomCard>
-                ))}
+                                ))}
+                            </CardContent>
+                        </CustomCard>
+                    ))}
+                </div>
             </div>
+
+            {/* Modal d'importation */}
             <ImportModal
                 open={showImportModal}
                 handleOnClose={() => setShowImportModal(false)}

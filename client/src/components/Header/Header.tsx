@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as React from 'react';
 import './header.css';
 import { Button } from '@mui/material';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -28,8 +29,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                         handleLogout();
                         navigate('/');
                     }}
+                    startIcon={<ExitToAppIcon />} 
                 >
-                    Logout
+                    Déconnexion
                 </Button>
             )}
 

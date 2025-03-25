@@ -17,6 +17,7 @@ import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { Upload } from '@mui/icons-material';
+import SaveIcon from '@mui/icons-material/Save';
 
 interface EditQuizParams {
     id: string;
@@ -244,6 +245,7 @@ const QuizForm: React.FC = () => {
             </NativeSelect></label>
 
             <Button variant="contained" onClick={handleQuizSave}>
+            {<SaveIcon sx={{ fontSize: 20, marginRight: '8px' }} />}
                 Enregistrer
             </Button>
 
