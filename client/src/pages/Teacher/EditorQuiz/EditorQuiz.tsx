@@ -225,8 +225,11 @@ const QuizForm: React.FC = () => {
 
             <div className='editHeader'>
                 <ReturnButton
-                    askConfirm
-                    message={`Êtes-vous sûr de vouloir quitter l'éditeur sans sauvegarder le questionnaire?`}
+                    quizTitle={quizTitle}
+                    quizContent={filteredValue}
+                    quizFolder={selectedFolder}
+                    quizId={quiz?._id}
+                    isNewQuiz={isNewQuiz}
                 />
 
                 <div className='title'>Éditeur de Quiz</div>
