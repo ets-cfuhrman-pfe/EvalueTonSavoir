@@ -11,7 +11,7 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 import { QuizType } from '../../../Types/QuizType';
 
 import './editorQuiz.css';
-import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent } from '@mui/material';
+import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, Snackbar } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 
 import ApiService from '../../../services/ApiService';
@@ -41,6 +41,12 @@ const QuizForm: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
+
+    const [isImagesCollapsed, setIsImagesCollapsed] = useState(true);
+    const [isCheatSheetCollapsed, setIsCheatSheetCollapsed] = useState(true);
+    const [isUploadCollapsed, setIsUploadCollapsed] = useState(true);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -149,7 +155,8 @@ const QuizForm: React.FC = () => {
                 }
             }
 
-            navigate('/teacher/dashboard');
+            setSnackbarMessage('Quiz enregistré avec succès!');
+            setSnackbarOpen(true);
         } catch (error) {
             window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
             console.log(error)
@@ -160,6 +167,10 @@ const QuizForm: React.FC = () => {
     if (!isNewQuiz && !quiz) {
         return <div>Chargement...</div>;
     }
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
 
     const handleSaveImage = async () => {
         try {
@@ -199,7 +210,15 @@ const QuizForm: React.FC = () => {
         navigator.clipboard.writeText(link);
     }
 
-    
+    const handleFocusQuestion = (index: number) => {
+        const previewElement = document.querySelector('.preview-column');
+        if (previewElement) {
+            const questionElements = previewElement.querySelectorAll('.question-item');
+            if (questionElements[index]) {
+                questionElements[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    };
 
     return (
         <div className='quizEditor'>
@@ -252,75 +271,119 @@ const QuizForm: React.FC = () => {
                     <Editor
                         label="Contenu GIFT de chaque question:"
                         values={values}
-                        onValuesChange={handleUpdatePreview} />
+                        onValuesChange={handleUpdatePreview}
+                        onFocusQuestion={handleFocusQuestion} />
                     <Button variant="contained" onClick={handleAddQuestion}>
-                        Ajouter une question
+                        Ajouter une question 
                     </Button>
-
-                    <div className='images'>
-                        <div className='upload'>
-                            <label className="dropArea">
-                                <input type="file" id="file-input" className="file-input"
-                                accept="image/jpeg, image/png"
-                                multiple 
-                                ref={fileInputRef} />
-
-                                <Button
+ 
+                 <div className="images">
+                        {/* Collapsible Upload Section */}
+                        <div style={{ marginTop: '8px' }}>
+                            <Button
                                 variant="outlined"
-                                aria-label='Téléverser'
-                                onClick={handleSaveImage}>
-                                    Téléverser <Upload /> 
-                                </Button>
-
-                            </label>
-                            <Dialog
-                                open={dialogOpen}
-                                onClose={() => setDialogOpen(false)} >
-                                <DialogTitle>Erreur</DialogTitle>
-                                <DialogContent>
-                                    Veuillez d&apos;abord choisir une image à téléverser.
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={() => setDialogOpen(false)} color="primary">
-                                        OK
-                                    </Button>
-                                </DialogActions>
-                            </Dialog>
+                                onClick={() => setIsUploadCollapsed(!isUploadCollapsed)}
+                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
+                            >
+                                {isUploadCollapsed ? 'Afficher Téléverser image' : 'Masquer Téléverser image'}
+                            </Button>
+                            {!isUploadCollapsed && (
+                                <div className="upload">
+                                    <label className="dropArea">
+                                        <input
+                                            type="file"
+                                            id="file-input"
+                                            className="file-input"
+                                            accept="image/jpeg, image/png"
+                                            multiple
+                                            ref={fileInputRef}
+                                        />
+                                        <Button
+                                            variant="outlined"
+                                            aria-label="Téléverser"
+                                            onClick={handleSaveImage}
+                                        >
+                                            Téléverser <Upload />
+                                        </Button>
+                                    </label>
+                                    <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                                        <DialogTitle>Erreur</DialogTitle>
+                                        <DialogContent>
+                                            Veuillez d'abord choisir une image à téléverser.
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button onClick={() => setDialogOpen(false)} color="primary">
+                                                OK
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </div>
+                            )}
                         </div>
 
-                        <h4>Mes images :</h4>
-                        <div>
+                        {/* Collapsible Images Section */}
+                        <div style={{ marginTop: '2px' }}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => setIsImagesCollapsed(!isImagesCollapsed)}
+                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
+                            >
+                                {isImagesCollapsed ? 'Afficher Mes images' : 'Masquer Mes images'}
+                            </Button>
+                            {!isImagesCollapsed && (
                                 <div>
-                                <div style={{ display: "inline" }}>(Voir section </div>
-                                    <a href="#images-section"style={{ textDecoration: "none" }} onClick={scrollToImagesSection}>
-                                        <u><em><h4 style={{ display: "inline" }}> 9. Images </h4></em></u>
-                                    </a>
-                                <div style={{ display: "inline" }}> ci-dessous</div>
-                                <div style={{ display: "inline" }}>)</div>
-                                <br />
-                                <em> - Cliquez sur un lien pour le copier</em>
-                                </div>                            
-                                <ul>
-                                {imageLinks.map((link, index) => {
-                                    const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
-                                    return (
-                                        <li key={index}>
-                                            <code
-                                                onClick={() => handleCopyToClipboard(imgTag)}>
-                                                {imgTag}
-                                            </code>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
+                                    <h4>Mes images :</h4>
+                                    <div>
+                                        <div>
+                                            <div style={{ display: 'inline' }}>(Voir section </div>
+                                            <a
+                                                href="#images-section"
+                                                style={{ textDecoration: 'none' }}
+                                                onClick={scrollToImagesSection}
+                                            >
+                                                <u>
+                                                    <em>
+                                                        <h4 style={{ display: 'inline' }}> 9. Images </h4>
+                                                    </em>
+                                                </u>
+                                            </a>
+                                            <div style={{ display: 'inline' }}> ci-dessous</div>
+                                            <div style={{ display: 'inline' }}>)</div>
+                                            <br />
+                                            <em> - Cliquez sur un lien pour le copier</em>
+                                        </div>
+                                        <ul>
+                                            {imageLinks.map((link, index) => {
+                                                const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
+                                                return (
+                                                    <li key={index}>
+                                                        <code onClick={() => handleCopyToClipboard(imgTag)}>
+                                                            {imgTag}
+                                                        </code>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Collapsible CheatSheet Section */}
+                        <div style={{ marginTop: '2px' }}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => setIsCheatSheetCollapsed(!isCheatSheetCollapsed)}
+                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
+                            >
+                                {isCheatSheetCollapsed ? 'Afficher CheatSheet' : 'Masquer CheatSheet'}
+                            </Button>
+                            {!isCheatSheetCollapsed && <GiftCheatSheet />}
                         </div>
                     </div>
-
-                    <GiftCheatSheet />
-
                 </div>
 
-                <div className='preview'>
+                <div className="preview">
                     <div className="preview-column">
                         <h4>Prévisualisation</h4>
                         <div>
@@ -328,7 +391,6 @@ const QuizForm: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {showScrollButton && (
@@ -342,9 +404,17 @@ const QuizForm: React.FC = () => {
                     ↑
                 </Button>
             )}
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000} // Hide after 3 seconds
+                onClose={handleSnackbarClose}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Lower-right corner
+            />
         </div>
     );
-};
+}; 
 
 const scrollToTopButtonStyle: CSSProperties = {
     position: 'fixed',
