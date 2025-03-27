@@ -22,6 +22,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ImageType } from "../../Types/ImageType";
 import ApiService from "../../services/ApiService";
 import { Upload } from "@mui/icons-material";
+import { ENV_VARIABLES } from '../../constants';
+import { escapeForGIFT } from "src/utils/giftUtils";
 
 interface ImagesProps {
   handleCopy?: (id: string) => void;
@@ -63,10 +65,9 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
       setLoading(false);
 
       if (isDeleted) {
-        //setImages(images.filter((image) => image.id !== id));
         setImgPage(1);
         fetchImages();
-        setSnackbarMessage("Image supprimée avec succès !");
+        setSnackbarMessage("Image supprimée avec succès!");
         setSnackbarSeverity("success");
       } else {
         setSnackbarMessage("Erreur lors de la suppression de l'image. Veuillez réessayer.");
@@ -82,11 +83,18 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
 
   const defaultHandleCopy = (id: string) => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(id);
+      const link = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
+      const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle") {T}`;
+      setSnackbarMessage("Le lien Markdown de l’image a été copié dans le presse-papiers");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      navigator.clipboard.writeText(imgTag);
+    }
+    if(handleCopy) {
+      handleCopy(id);
     }
   };
 
-  const handleCopyFunction = handleCopy || defaultHandleCopy;
   const handleDeleteFunction = handleDelete || defaultHandleDelete;
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,9 +129,9 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
 
-      // Reset the input field and preview after successful upload
       setImportedImage(null);
       setPreview(null);
+      setTabValue(0);
     } catch (error) {
       setSnackbarMessage(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`);
       setSnackbarSeverity("error");
@@ -134,6 +142,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
+
 
   return (
     <Box p={3}>
@@ -162,7 +171,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
                     <Box display="flex" justifyContent="center" mt={1}>
                       <IconButton onClick={(e) => {
                         e.stopPropagation();
-                        handleCopyFunction(obj.id);
+                        defaultHandleCopy(obj.id);
                         }} 
                         color="primary"
                         data-testid={`gallery-tab-copy-${obj.id}`} >

@@ -82,7 +82,7 @@ class Images {
         if (!total || total === 0) return { images: [], total };
 
         const result = await imagesCollection.find({ userId: uid })
-        .sort({ created_at: 1 })
+        .sort({ created_at: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .toArray();

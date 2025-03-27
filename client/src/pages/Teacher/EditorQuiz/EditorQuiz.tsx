@@ -171,7 +171,6 @@ const QuizForm: React.FC = () => {
 
     const handleCopyImage = (id: string) => {
         const escLink = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
-        navigator.clipboard.writeText(id);
         setImageLinks(prevLinks => [...prevLinks, escLink]);
     }
 
