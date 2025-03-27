@@ -13,14 +13,14 @@ type AnswerFeedbackOptions = TemplateOptions & Pick<TextChoice, 'formattedFeedba
 interface AnswerWeightOptions extends TemplateOptions {
     weight: TextChoice['weight'];
 }
-
+// careful -- this template is re-used by True/False questions!
 export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoiceAnswerOptions) {
     const id = `id${nanoid(8)}`;
 
-    const isMultipleAnswer = choices.filter(({ isCorrect }) => isCorrect === true).length === 0;
+    const hasManyCorrectChoices = choices.filter(({ isCorrect }) => isCorrect === true).length > 1;
 
     const prompt = `<span style="${ParagraphStyle(state.theme)}">Choisir une réponse${
-        isMultipleAnswer ? ` ou plusieurs` : ``
+        hasManyCorrectChoices ? ` ou plusieurs` : ``
     }:</span>`;
     const result = choices
         .map(({ weight, isCorrect, formattedText, formattedFeedback }) => {
@@ -32,12 +32,12 @@ export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoic
             const inputId = `id${nanoid(6)}`;
 
             const isPositiveWeight = (weight != undefined) && (weight > 0);
-            const isCorrectOption = isMultipleAnswer ? isPositiveWeight : isCorrect;
+            const isCorrectOption = hasManyCorrectChoices ? isPositiveWeight || isCorrect : isCorrect;
 
             return `
         <div class='multiple-choice-answers-container'>
           <input class="gift-input" type="${
-              isMultipleAnswer ? 'checkbox' : 'radio'
+              hasManyCorrectChoices ? 'checkbox' : 'radio'
           }" id="${inputId}" name="${id}">
           ${AnswerWeight({ weight: weight })}
             <label style="${CustomLabel} ${ParagraphStyle(state.theme)}" for="${inputId}">

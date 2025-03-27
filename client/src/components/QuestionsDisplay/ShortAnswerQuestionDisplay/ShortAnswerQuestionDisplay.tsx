@@ -16,7 +16,7 @@ interface Props {
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
 
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
     if (passedAnswer !== undefined) {
@@ -58,7 +58,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                             id={question.formattedStem.text}
                             name={question.formattedStem.text}
                             onChange={(e) => {
-                                setAnswer(e.target.value);
+                                setAnswer([e.target.value]);
                             }}
                             disabled={showAnswer}
                             aria-label="short-answer-input"
@@ -72,7 +72,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                                 handleOnSubmitAnswer &&
                                 handleOnSubmitAnswer(answer)
                             }
-                            disabled={answer === null || answer === ''}
+                            disabled={answer === null || answer === undefined || answer.length === 0}
                         >
                             Répondre
                         </Button>

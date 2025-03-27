@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
-import {
-    isSimpleNumericalAnswer,
-    isRangeNumericalAnswer,
-    isHighLowNumericalAnswer
-} from 'gift-pegjs/typeGuards';
+import { BaseQuestion, parse, Question } from 'gift-pegjs';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 import webSocketService, {
     AnswerReceptionFromBackendType
@@ -24,7 +19,7 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button } from '@mui/material';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { checkIfIsCorrect } from './useRooms';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -36,8 +31,40 @@ const ManageRoom: React.FC = () => {
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
-    const [quizStarted, setQuizStarted] = useState(false);
+    const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
+    const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+
+    // Handle the newly connected user in useEffect, because it needs state info 
+    // not available in the socket.on() callback
+    useEffect(() => {
+        if (newlyConnectedUser) {
+            console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
+            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+    
+            // only send nextQuestion if the quiz has started
+            if (!quizStarted) {
+                console.log(`!quizStarted: returning.... `);
+                return;
+            }
+    
+            if (quizMode === 'teacher') {
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex: Number(currentQuestion?.question.id) - 1,
+                    isLaunch: true // started late
+                });
+            } else if (quizMode === 'student') {
+                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+            } else {
+                console.error('Invalid quiz mode:', quizMode);
+            }
+    
+            // Reset the newly connected user state
+            setNewlyConnectedUser(null);
+        }
+    }, [newlyConnectedUser]);
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -110,6 +137,17 @@ const ManageRoom: React.FC = () => {
         const roomNameUpper = roomName.toUpperCase();
         setFormattedRoomName(roomNameUpper);
         console.log(`Creating WebSocket room named ${roomNameUpper}`);
+
+        /** 
+         * ATTENTION: Lire les variables d'état dans 
+         * les .on() n'est pas une bonne pratique.
+         * Les valeurs sont celles au moment de la création
+         * de la fonction et non au moment de l'exécution.
+         * Il faut utiliser des refs pour les valeurs qui
+         * changent fréquemment. Sinon, utiliser un trigger
+         * de useEffect pour mettre déclencher un traitement
+         * (voir user-joined plus bas).
+         */
         socket.on('connect', () => {
             webSocketService.createRoom(roomNameUpper);
         });
@@ -124,23 +162,9 @@ const ManageRoom: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
-            console.log(`Student joined: name = ${student.name}, id = ${student.id}, quizMode = ${quizMode}, quizStarted = ${quizStarted}`);
-
-            setStudents((prevStudents) => [...prevStudents, student]);
-
-            // only send nextQuestion if the quiz has started
-            if (!quizStarted) return;
-
-            if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(
-                    {roomName: formattedRoomName, 
-                     questions: quizQuestions, 
-                     questionIndex: Number(currentQuestion?.question.id) - 1, 
-                     isLaunch: false});
-            } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
-            }
+            setNewlyConnectedUser(student);
         });
+
         socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
@@ -286,21 +310,19 @@ const ManageRoom: React.FC = () => {
     };
 
     const launchQuiz = () => {
+        setQuizStarted(true);
         if (!socket || !formattedRoomName || !quiz?.content || quiz?.content.length === 0) {
             // TODO: This error happens when token expires! Need to handle it properly
             console.log(
                 `Error launching quiz. socket: ${socket}, roomName: ${formattedRoomName}, quiz: ${quiz}`
             );
-            setQuizStarted(true);
-
             return;
         }
+        console.log(`Launching quiz in ${quizMode} mode...`);
         switch (quizMode) {
             case 'student':
-                setQuizStarted(true);
                 return launchStudentMode();
             case 'teacher':
-                setQuizStarted(true);
                 return launchTeacherMode();
         }
     };
@@ -318,63 +340,6 @@ const ManageRoom: React.FC = () => {
         disconnectWebSocket();
         navigate('/teacher/dashboard');
     };
-
-    function checkIfIsCorrect(
-        answer: AnswerType,
-        idQuestion: number,
-        questions: QuestionType[]
-    ): boolean {
-        const questionInfo = questions.find((q) =>
-            q.question.id ? q.question.id === idQuestion.toString() : false
-        ) as QuestionType | undefined;
-
-        const answerText = answer.toString();
-        if (questionInfo) {
-            const question = questionInfo.question as ParsedGIFTQuestion;
-            if (question.type === 'TF') {
-                return (
-                    (question.isTrue && answerText == 'true') ||
-                    (!question.isTrue && answerText == 'false')
-                );
-            } else if (question.type === 'MC') {
-                return question.choices.some(
-                    (choice) => choice.isCorrect && choice.formattedText.text === answerText
-                );
-            } else if (question.type === 'Numerical') {
-                if (isHighLowNumericalAnswer(question.choices[0])) {
-                    const choice = question.choices[0];
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= choice.numberHigh && answerNumber >= choice.numberLow
-                        );
-                    }
-                }
-                if (isRangeNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    const range = question.choices[0].range;
-                    const correctAnswer = question.choices[0].number;
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= correctAnswer + range &&
-                            answerNumber >= correctAnswer - range
-                        );
-                    }
-                }
-                if (isSimpleNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return answerNumber === question.choices[0].number;
-                    }
-                }
-            } else if (question.type === 'Short') {
-                return question.choices.some(
-                    (choice) => choice.text.toUpperCase() === answerText.toUpperCase()
-                );
-            }
-        }
-        return false;
-    }
 
     if (!formattedRoomName) {
         return (

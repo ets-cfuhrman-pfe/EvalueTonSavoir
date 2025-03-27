@@ -17,7 +17,7 @@ interface Props {
 const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
 
@@ -69,7 +69,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                             id={question.formattedStem.text}
                             name={question.formattedStem.text}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                setAnswer(e.target.valueAsNumber);
+                                setAnswer([e.target.valueAsNumber]);
                             }}
                             inputProps={{ 'data-testid': 'number-input' }}
                         />
@@ -87,7 +87,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                                 handleOnSubmitAnswer &&
                                 handleOnSubmitAnswer(answer)
                             }
-                            disabled={answer === "" || isNaN(answer as number)}
+                            disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
                         >
                             Répondre
                         </Button>
