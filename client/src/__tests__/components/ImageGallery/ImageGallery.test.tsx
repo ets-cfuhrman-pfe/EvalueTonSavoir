@@ -90,7 +90,7 @@ describe("ImageGallery", () => {
 
     await waitFor(() => {
       expect(screen.queryByAltText("Image image1.jpg")).toBeNull();
-      expect(screen.getByText("Image supprimée avec succès !")).toBeInTheDocument();
+      expect(screen.getByText("Image supprimée avec succès!")).toBeInTheDocument();
     });
   });
 
