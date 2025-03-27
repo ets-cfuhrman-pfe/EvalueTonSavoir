@@ -21,7 +21,7 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
     useEffect(() => {
         try {
             const previewItems: string[] = [];
-            questions.forEach((giftQuestion, index) => {
+            questions.forEach((giftQuestion) => {
                 try {
                     const question = parse(giftQuestion);
                     const html = Template(question[0], {
