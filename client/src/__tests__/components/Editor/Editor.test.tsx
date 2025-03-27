@@ -5,15 +5,18 @@ import Editor from '../../../components/Editor/Editor';
 
 describe('Editor Component', () => {
     const mockOnValuesChange = jest.fn();
+    const mockOnFocusQuestion = jest.fn();
 
     const sampleProps = {
         label: 'Sample Label',
         values: ['Question 1', 'Question 2'],
-        onValuesChange: mockOnValuesChange
+        onValuesChange: mockOnValuesChange,
+        onFocusQuestion: mockOnFocusQuestion,
     };
 
     beforeEach(() => {
         mockOnValuesChange.mockClear();
+        mockOnFocusQuestion.mockClear();
     });
 
     test('renders the label correctly', () => {
@@ -37,7 +40,7 @@ describe('Editor Component', () => {
 
     test('calls onValuesChange with updated values when a question is deleted', () => {
         render(<Editor {...sampleProps} />);
-        const deleteButton = screen.getAllByLabelText('delete')[0];
+        const deleteButton = screen.getAllByLabelText('delete')[0]; // Match original aria-label
         fireEvent.click(deleteButton);
         expect(mockOnValuesChange).toHaveBeenCalledWith(['Question 2']);
     });
@@ -46,5 +49,25 @@ describe('Editor Component', () => {
         render(<Editor {...sampleProps} />);
         const deleteButtons = screen.getAllByLabelText('delete');
         expect(deleteButtons.length).toBe(2);
+    });
+
+    test('calls onFocusQuestion with correct index when focus button is clicked', () => {
+        render(<Editor {...sampleProps} />);
+        const focusButton = screen.getAllByLabelText('focus question')[1];
+        fireEvent.click(focusButton);
+        expect(mockOnFocusQuestion).toHaveBeenCalledWith(1);
+    });
+
+    test('renders focus buttons for each question', () => {
+        render(<Editor {...sampleProps} />);
+        const focusButtons = screen.getAllByLabelText('focus question');
+        expect(focusButtons.length).toBe(2);
+    });
+
+    test('does not throw error when onFocusQuestion is not provided', () => {
+        const { onFocusQuestion, ...propsWithoutFocus } = sampleProps;
+        render(<Editor {...propsWithoutFocus} />);
+        const focusButton = screen.getAllByLabelText('focus question')[0];
+        expect(() => fireEvent.click(focusButton)).not.toThrow();
     });
 });
