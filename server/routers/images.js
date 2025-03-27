@@ -13,7 +13,7 @@ const upload = multer({ storage: storage });
 router.post("/upload", jwt.authenticate, upload.single('image'), asyncHandler(images.upload));
 router.get("/get/:id", asyncHandler(images.get));
 router.get("/getImages", asyncHandler(images.getImages));
-router.get("/getUserImages", asyncHandler(images.getUserImages));
-router.delete("/delete", asyncHandler(images.delete));
+router.get("/getUserImages", jwt.authenticate, asyncHandler(images.getUserImages));
+router.delete("/delete", jwt.authenticate, asyncHandler(images.delete));
 
 module.exports = router;
