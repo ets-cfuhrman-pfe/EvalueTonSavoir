@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Paper, Grid, Typography, CircularProgress, Box } from "@mui/material";
+import { Paper, Grid, Typography, CircularProgress, Box, Card, CardContent} from "@mui/material";
 import ApiService from '../../services/ApiService';
 import { AdminTableType } from "../../Types/AdminTableType";
 import AdminTable from "../../components/AdminTable/AdminTable";
 
+
+const styles = {
+  cardBg: 'rgba(82, 113, 255, 1)',
+  cardHover: 'rgba(65, 105, 225, 0.7)',
+};
 
 const Users: React.FC = () => {
   const [quizzes, setQuizzes] = useState<AdminTableType[]>([]);
@@ -49,6 +54,13 @@ const Users: React.FC = () => {
     );
   }
 
+  const stats = [
+    { label: "Quiz du Mois", value: monthlyQuizzes },
+    { label: "Quiz total", value: totalQuizzes },
+    { label: "Enseignants", value: totalUsers },
+    { label: "Enseignants du Mois", value: totalUsers },
+  ];
+
   const labelMap = {
     _id: "ID",
     email: "Enseignant",
@@ -58,36 +70,30 @@ const Users: React.FC = () => {
   };
   
   return (
-    <Paper className="p-4" sx={{ boxShadow: 'none' }}>
-      <Grid container spacing={8} justifyContent="center">
-        <Grid item>
-          <Typography variant="h6" align="center">Quiz du Mois</Typography>
-          <Box position="relative" display="inline-flex">
-            <CircularProgress variant="determinate" value={monthlyQuizzes === 0 ? 0 : monthlyQuizzes} size={80} thickness={5} />
-            <Box position="absolute" top={0} left={0} bottom={0} right={0} display="flex" alignItems="center" justifyContent="center">
-              <Typography variant="h6">{monthlyQuizzes}</Typography>
-            </Box>
-          </Box>
+    <Paper className="p-4" sx={{ boxShadow: 'none', padding: 3 }}>
+    <Grid container spacing={3} justifyContent="center">
+      {stats.map((stat, index) => (
+        <Grid item xs={12} sm={3} key={index}>
+          <Card
+              sx={{
+                textAlign: "center",
+                padding: 2,
+                backgroundColor: styles.cardBg,
+                color: "white",
+                transition: "background-color 0.3s ease",
+                "&:hover": { backgroundColor: styles.cardHover },
+              }}>
+            <CardContent>
+                <Typography variant="h6" sx={{ color: "white" }}>{stat.label}</Typography>
+                <Typography variant="h4" sx={{ color: "white" }}>
+                {stat.value}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid item>
-          <Typography variant="h6" align="center">Quiz total</Typography>
-          <Box position="relative" display="inline-flex">
-            <CircularProgress variant="determinate" value={totalQuizzes} size={80} thickness={5} />
-            <Box position="absolute" top={0} left={0} bottom={0} right={0} display="flex" alignItems="center" justifyContent="center">
-              <Typography variant="h6">{totalQuizzes}</Typography>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid item>
-          <Typography variant="h6" align="center">Enseignants</Typography>
-          <Box position="relative" display="inline-flex">
-            <CircularProgress variant="determinate" value={totalUsers} size={80} thickness={5} />
-            <Box position="absolute" top={0} left={0} bottom={0} right={0} display="flex" alignItems="center" justifyContent="center">
-              <Typography variant="h6">{totalUsers}</Typography>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
+      ))}
+    </Grid>
+
 
       <AdminTable 
         data={quizzes} 

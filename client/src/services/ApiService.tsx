@@ -5,7 +5,7 @@ import { ENV_VARIABLES } from '../constants';
 import { FolderType } from 'src/Types/FolderType';
 import { QuizType, QuizResponse } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
-import { AdminTableType } from 'src/Types/LabelMap';
+import { AdminTableType } from 'src/Types/AdminTableType';
 import { ImagesResponse, ImagesParams } from 'src/Types/ImageType';
 
 type ApiResponse = boolean | string;
