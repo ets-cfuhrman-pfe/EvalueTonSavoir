@@ -10,7 +10,7 @@ const styles = {
   cardHover: 'rgba(65, 105, 225, 0.7)',
 };
 
-const Users: React.FC = () => {
+const Stats: React.FC = () => {
   const [quizzes, setQuizzes] = useState<AdminTableType[]>([]);
   const [monthlyQuizzes, setMonthlyQuizzes] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -30,7 +30,7 @@ const Users: React.FC = () => {
           return quizDate.getMonth() === currentMonth && quizDate.getFullYear() === currentYear;
         });
 
-        setMonthlyQuizzes(filteredMonthlyQuizzes.length === 0 ? 10 : 0);
+        setMonthlyQuizzes(filteredMonthlyQuizzes.length === 0 ? 0 : filteredMonthlyQuizzes.length);
       } catch (error) {
         console.error("Error fetching quizzes:", error);
       } finally {
@@ -58,7 +58,7 @@ const Users: React.FC = () => {
     { label: "Quiz du Mois", value: monthlyQuizzes },
     { label: "Quiz total", value: totalQuizzes },
     { label: "Enseignants", value: totalUsers },
-    { label: "Enseignants du Mois", value: totalUsers },
+    { label: "Enseignants du Mois", value: 0 },
   ];
 
   const labelMap = {
@@ -105,4 +105,4 @@ const Users: React.FC = () => {
   );
 };
 
-export default Users;
+export default Stats;
