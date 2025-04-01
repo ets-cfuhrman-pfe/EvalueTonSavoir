@@ -14,18 +14,22 @@ interface Props {
     passedAnswer?: AnswerType;
     students?: StudentType[];
     isDisplayOnly?: boolean;
+    showResults?: boolean;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, students, showResults, passedAnswer } = props;
     const [answer, setAnswer] = useState<AnswerType>(() => {
         if (passedAnswer && passedAnswer.length > 0) {
             return passedAnswer;
         }
         return [];
     });
-    const [pickRates, setPickRates] = useState<{ percentages: number[], counts: number[], totalCount: number }>({ percentages: [], counts: [], totalCount: 0 });
-    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+    const [pickRates, setPickRates] = useState<{ percentages: number[], counts: number[], totalCount: number }>({
+        percentages: [], 
+        counts: [], 
+        totalCount: 0 
+    });
 
     let disableButton = false;
     if (handleOnSubmitAnswer === undefined) {
@@ -51,10 +55,6 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 }
             }
         });
-    };
-
-    const toggleShowCorrectAnswers = () => {
-        setShowCorrectAnswers(!showCorrectAnswers);
     };
     
     const calculatePickRates = () => {
@@ -88,11 +88,12 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
             setAnswer([]);
             calculatePickRates();
         }
-    }, [passedAnswer, students, question.id, showCorrectAnswers]);
+    }, [passedAnswer, students, question.id]);
     
 
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
+    
     return (
         <div className="container">
             <div className="row justify-content-center">
@@ -103,7 +104,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     <div className="choices-wrapper mb-1">
                         {question.choices.map((choice, i) => {
                             const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
-                            const rateStyle = showCorrectAnswers ? {
+                            const rateStyle = showResults ? {
                                 backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'lightgreen' : 'lightcoral'} ${pickRates.percentages[i]}%, transparent ${pickRates.percentages[i]}%)`,
                                 color: 'black'
                             } : {};
@@ -134,7 +135,12 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                                 />
                                             </div>
                                         )}
-                                        {showCorrectAnswers && <div className="pick-rate">{choice.isCorrect ? '✅' : '❌'} {`${pickRates.counts[i]}/${pickRates.totalCount} (${pickRates.percentages[i].toFixed(1)}%)`}</div>}
+                                        {showResults && pickRates.percentages.length > i && (
+                                            <div className="pick-rate">
+                                                {choice.isCorrect ? '✅' : '❌'} 
+                                                {`${pickRates.counts[i]}/${pickRates.totalCount} (${pickRates.percentages[i].toFixed(1)}%)`}
+                                            </div>
+                                        )}
                                     </Button>
                                 </div>
                             );
@@ -162,17 +168,6 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                         </Button>
                     )}
                 </div>
-                {isDisplayOnly && (
-                        <div className="col-auto d-flex align-items-center justify-content-end">
-                            <Button
-                            variant="outlined"
-                            onClick={toggleShowCorrectAnswers}
-                            color="primary"
-                        >
-                            {showCorrectAnswers ? "Masquer les résultats" : "Afficher les résultats"}
-                        </Button>
-                        </div>
-                    )}
             </div>
         </div>
     );

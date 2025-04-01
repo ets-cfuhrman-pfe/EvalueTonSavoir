@@ -12,33 +12,28 @@ interface Props {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     students?: StudentType[];
-    isDisplayOnly?: boolean;
+    showResults?: boolean;
 }
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, isDisplayOnly } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, students, showResults, passedAnswer } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
-    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [correctAnswerRate, setCorrectAnswerRate] = useState<number>(0);
     const [submissionCounts, setSubmissionCounts] = useState({
         correctSubmissions: 0,
         totalSubmissions: 0
     });
 
-    const toggleShowCorrectAnswers = () => {
-        setShowCorrectAnswers(!showCorrectAnswers);
-    };
-
     useEffect(() => {
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
         }
     
-        if (showCorrectAnswers && students) {
+        if (showResults && students) {
             calculateCorrectAnswerRate();
         }
     
-    }, [passedAnswer, showCorrectAnswers, students, answer]);
+    }, [passedAnswer, showResults, students, answer]);
     console.log("Answer", answer);
 
     const calculateCorrectAnswerRate = () => {
@@ -67,7 +62,9 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
             <div className="container question-wrapper">
                 <div className="row justify-content-center">
                     <div className="col-auto">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                        <div>
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                        </div>
                         {showAnswer ? (
                             <>
                             <div className="correct-answer-text mb-1">
@@ -104,7 +101,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                                     />
                                 </div>
                                 {handleOnSubmitAnswer && (
-                                    <div className="col-auto d-flex flex-column align-items-center">
+                                    <div className="">
                                         <Button
                                             variant="contained"
                                             onClick={() =>
@@ -121,33 +118,19 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                             </>
                         )}
                 </div>
-                {isDisplayOnly && (
-                    <>
-                        <div className="col-auto d-flex flex-column align-items-center">                   
-                            <Button
-                                style={{ marginTop: '10px' }}
-                                variant="outlined"
-                                onClick={toggleShowCorrectAnswers}
-                                color="primary"
-                            >
-                                {showCorrectAnswers ? "Masquer les résultats" : "Afficher les résultats"}
-                            </Button>
-                            {showCorrectAnswers && (
-                                <div>
-                                    <div>
-                                        Taux de réponse correcte: {submissionCounts.correctSubmissions}/{submissionCounts.totalSubmissions}
-                                    </div>
-                                    <div className="progress-bar-container">
-                                        <div className="progress-bar-fill" style={{ width: `${correctAnswerRate}%` }}></div>
-                                        <div className="progress-bar-text">
-                                            {correctAnswerRate.toFixed(1)}%
-                                        </div>
-                                    </div>
-                                </div>
-                            )}   
+                {showResults && (
+                    <div className="col-auto">
+                        <div>
+                            Taux de réponse correcte: {submissionCounts.correctSubmissions}/{submissionCounts.totalSubmissions}
                         </div>
-                    </>
-                )}
+                        <div className="progress-bar-container">
+                            <div className="progress-bar-fill" style={{ width: `${correctAnswerRate}%` }}></div>
+                            <div className="progress-bar-text">
+                                {correctAnswerRate.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                )} 
             </div>
         </div>
         </>

@@ -13,11 +13,11 @@ interface Props {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;    
     students?: StudentType[];
-    isDisplayOnly?: boolean;
+    showResults?: boolean;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, isDisplayOnly } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, showResults } = props;
     const [pickRates, setPickRates] = useState<{ trueRate: number, falseRate: number, trueCount: number, falseCount: number, totalCount: number }>({ 
         trueRate: 0, 
         falseRate: 0, 
@@ -25,7 +25,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
         falseCount: 0, 
         totalCount: 0 
     });
-    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
 
@@ -61,10 +60,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
 
-    const toggleShowCorrectAnswers = () => {
-        setShowCorrectAnswers(!showCorrectAnswers);
-    };
-
     // Calcul le pick rate de chaque réponse
     const calculatePickRates = () => {
         if (!students) {
@@ -75,12 +70,14 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
         const totalAnswers = students.length;
         const trueAnswers = students.filter(student =>
             student.answers.some(ans =>
-                ans.idQuestion === Number(question.id) && ans.answer === true
-            )).length;
+                ans.idQuestion === Number(question.id) && ans.answer.some(a => a === true)
+            )
+        ).length;
         const falseAnswers = students.filter(student =>
             student.answers.some(ans =>
-                ans.idQuestion === Number(question.id) && ans.answer === false
-            )).length;
+                ans.idQuestion === Number(question.id) && ans.answer.some(a => a === false)
+            )
+        ).length;
     
         setPickRates({
             trueRate: (trueAnswers / totalAnswers) * 100,
@@ -92,99 +89,91 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     };
 
     return (
-        <div className="question-container">
-            <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-            </div>
-            <div className="choices-wrapper mb-1">
-                <Button
-                    className="button-wrapper"
-                    onClick={() => !showAnswer && handleOnClickAnswer(true)}
-                    fullWidth
-                    disabled={disableButton}
-                >
-                    {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
-                    <div className={`circle ${selectedTrue}`}>V</div>
-                    <div className={`answer-text ${selectedTrue}`}
-                        style={showCorrectAnswers ? {
-                            backgroundImage: `linear-gradient(to right, ${question.isTrue ? 'royalblue' : 'orange'} ${pickRates.trueRate}%, transparent ${pickRates.trueRate}%)`
-                        } : {}}
-                    >
-                        Vrai
+        <div className="container">
+            <div className="row justify-content-center">
+                <div className="col-auto question-container">
+                    <div className="question content">
+                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
                     </div>
-                    {showCorrectAnswers && (
-                        <>
-                            <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueCount}/{pickRates.totalCount} ({pickRates.trueRate.toFixed(1)}%)</div>
-                        </>
-                    )}
+                    <div className="choices-wrapper mb-1">
+                        <Button
+                            className="button-wrapper"
+                            onClick={() => !showAnswer && handleOnClickAnswer(true)}
+                            fullWidth
+                            disabled={disableButton}
+                        >
+                            {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
+                            <div className={`circle ${selectedTrue}`}>V</div>
+                            <div className={`answer-text ${selectedTrue}`}
+                                style={showResults ? {
+                                    backgroundImage: `linear-gradient(to right, ${question.isTrue ? 'lightgreen' : 'lightcoral'} ${pickRates.trueRate}%, transparent ${pickRates.trueRate}%)`
+                                } : {}}
+                            >
+                                Vrai
+                            </div>
+                            {showResults && (
+                                <>
+                                    <div className="pick-rate">{question.isTrue ? '✅' : '❌'} {pickRates.trueCount}/{pickRates.totalCount} ({pickRates.trueRate.toFixed(1)}%)</div>
+                                </>
+                            )}
 
-                    {showAnswer && answer && question.trueFormattedFeedback && (
-                        <div className="true-feedback mb-2">
-                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
+                            {showAnswer && answer && question.trueFormattedFeedback && (
+                                <div className="true-feedback mb-2">
+                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
+                                </div>
+                            )}
+                        </Button>
+                        <Button
+                            className={`button-wrapper ${selectedFalse}`}
+                            onClick={() => !showResults && handleOnClickAnswer(false)}
+                            fullWidth
+                            disabled={disableButton}
+
+                        >
+                            {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
+                            <div className={`circle ${selectedFalse}`}>F</div>
+                            <div
+                                className={`answer-text ${selectedFalse}`}
+                                style={showResults ? {
+                                    backgroundImage: `linear-gradient(to right, ${!question.isTrue ? 'lightgreen' : 'lightcoral'} ${pickRates.falseRate}%, transparent ${pickRates.falseRate}%)`,
+                                } : {}}
+                            >
+                                Faux
+                            </div>
+
+                            {showResults && (
+                                <>
+                                    <div className="pick-rate">{!question.isTrue ? '✅' : '❌'} {pickRates.falseCount}/{pickRates.totalCount} ({pickRates.falseRate.toFixed(1)}%)</div>
+                                </>
+                            )}
+
+                            {showAnswer && !answer && question.falseFormattedFeedback && (
+                                <div className="false-feedback mb-2">
+                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
+                                </div>
+                            )}
+                        </Button>
+
+
+                    </div>
+                    {question.formattedGlobalFeedback && showAnswer && (
+                        <div className="global-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                         </div>
                     )}
-                </Button>
-                <Button
-                    className={`button-wrapper ${selectedFalse}`}
-                    onClick={() => !showCorrectAnswers && handleOnClickAnswer(false)}
-                    fullWidth
-                    disabled={disableButton}
-
-                >
-                    {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
-                    <div className={`circle ${selectedFalse}`}>F</div>
-                    <div
-                        className={`answer-text ${selectedFalse}`}
-                        style={showCorrectAnswers ? {
-                            backgroundImage: `linear-gradient(to right, ${!question.isTrue ? 'royalblue' : 'orange'} ${pickRates.falseRate}%, transparent ${pickRates.falseRate}%)`,
-                        } : {}}
-                    >
-                        Faux
-                    </div>
-
-                    {showCorrectAnswers && (
-                        <>
-                            <div className="pick-rate">{!question.isTrue ? '✅' : '❌'} {pickRates.falseCount}/{pickRates.totalCount} ({pickRates.falseRate.toFixed(1)}%)</div>
-                        </>
+                    {!showAnswer && handleOnSubmitAnswer && (
+                        <Button
+                            variant="contained"
+                            onClick={() =>
+                                answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
+                            }
+                            disabled={answer === undefined}
+                        >
+                            Répondre
+                        </Button>
                     )}
-
-                    {showAnswer && !answer && question.falseFormattedFeedback && (
-                        <div className="false-feedback mb-2">
-                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
-                        </div>
-                    )}
-                </Button>
-
-
+                </div>
             </div>
-            {question.formattedGlobalFeedback && showAnswer && (
-                <div className="global-feedback mb-2">
-                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                </div>
-            )}
-            {!showAnswer && handleOnSubmitAnswer && (
-                <Button
-                    variant="contained"
-                    onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
-                    }
-                    disabled={answer === undefined}
-                >
-                    Répondre
-                </Button>
-            )}
-
-            {isDisplayOnly && (
-                <div>
-                    <Button
-                    variant="outlined"
-                    onClick={toggleShowCorrectAnswers}
-                    color="primary"
-                >
-                    {showCorrectAnswers ? "Masquer les résultats" : "Afficher les résultats"}
-                </Button>
-                </div>
-            )}
         </div>
     );
 };

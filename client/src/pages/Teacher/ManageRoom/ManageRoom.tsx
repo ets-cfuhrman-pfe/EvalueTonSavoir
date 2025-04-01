@@ -18,7 +18,7 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button } from '@mui/material';
+import { Button, FormControlLabel, Switch } from '@mui/material';
 import { checkIfIsCorrect } from './useRooms';
 
 const ManageRoom: React.FC = () => {
@@ -34,6 +34,7 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const [showResults, setShowResults] = useState<boolean>(false);
 
     // Handle the newly connected user in useEffect, because it needs state info 
     // not available in the socket.on() callback
@@ -407,7 +408,17 @@ const ManageRoom: React.FC = () => {
                                 {quizQuestions?.length}
                             </strong>
                         )}
-
+                        <FormControlLabel
+                        label={<div className="text-sm">Afficher les résultats</div>}
+                        control={
+                            <Switch
+                                value={showResults}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    setShowResults(e.target.checked)
+                                }
+                                />
+                            }
+                        />
                         {quizMode === 'teacher' && (
                             <div className="mb-1">
                                 {/* <QuestionNavigation
@@ -426,7 +437,7 @@ const ManageRoom: React.FC = () => {
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
                                         students={students}
-                                        isDisplayOnly={true}
+                                        showResults={showResults}
                                     />
                                 )}
 

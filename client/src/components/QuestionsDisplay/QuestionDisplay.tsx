@@ -15,7 +15,7 @@ interface QuestionProps {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     students?: StudentType[];
-    isDisplayOnly?: boolean;
+    showResults?: boolean;
     answer?: AnswerType;
 
 }
@@ -24,7 +24,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     handleOnSubmitAnswer,
     showAnswer,
     students,
-    isDisplayOnly = false,
+    showResults,
     answer,
 }) => {
     // const isMobile = useCheckMobileScreen();
@@ -41,7 +41,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     students={students}
-                    isDisplayOnly={isDisplayOnly}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
@@ -54,7 +54,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     students={students}
-                    isDisplayOnly={isDisplayOnly}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
@@ -68,7 +68,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             showAnswer={showAnswer}
                             passedAnswer={answer}
                             students={students}
-                            isDisplayOnly={isDisplayOnly}
+                            showResults={showResults}
                         />
                     );
             }
@@ -80,7 +80,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     students={students}
-                    isDisplayOnly={isDisplayOnly}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
