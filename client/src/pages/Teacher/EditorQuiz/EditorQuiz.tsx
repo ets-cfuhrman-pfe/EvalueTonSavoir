@@ -248,6 +248,7 @@ const QuizForm: React.FC = () => {
                 <TextField
                     onChange={handleQuizTitleChange}
                     value={quizTitle}
+                    color="primary"
                     placeholder="Titre du quiz"
                     label="Titre du quiz"
                     sx={{ width: '200px', marginTop: '50px' }}
@@ -259,7 +260,7 @@ const QuizForm: React.FC = () => {
                     value={selectedFolder}
                     onChange={handleSelectFolder}
                     disabled={!isNewQuiz}
-                    style={{ marginBottom: '16px', width: '200px', marginTop: '50px' }}
+                    style={{ marginBottom: '16px', width: '200px', marginTop: '10px' }}
                 >
                     <option disabled value="">
                         Choisir un dossier...

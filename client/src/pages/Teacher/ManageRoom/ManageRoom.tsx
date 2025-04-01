@@ -381,34 +381,6 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginBottom: '10px'
-                }}
-            >
-                <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
-                    Salle : {formattedRoomName}
-                    <div
-                        className="userCount subtitle"
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            marginLeft: '10px',
-                            marginBottom: '0px'
-                        }}
-                    >
-                        <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
-                        {students.length}/60
-                    </div>
-                </h1>
-            </div>
-
             <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
@@ -427,6 +399,33 @@ const ManageRoom: React.FC = () => {
                 ></div>
 
                 <div className="dumb"></div>
+            </div>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginBottom: '10px'
+                }}
+            >
+                <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                    Salle : {formattedRoomName}
+                    <div
+                        className="userCount subtitle"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            marginLeft: '20px',
+                            marginBottom: '0px'
+                        }}
+                    >
+                        <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
+                        {students.length}/60
+                    </div>
+                </h1>
             </div>
 
             {/* the following breaks the css (if 'room' classes are nested) */}
