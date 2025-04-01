@@ -11,7 +11,16 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 import { QuizType } from '../../../Types/QuizType';
 
 import './editorQuiz.css';
-import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent } from '@mui/material';
+import {
+    Button,
+    TextField,
+    NativeSelect,
+    Divider,
+    Dialog,
+    DialogTitle,
+    DialogActions,
+    DialogContent
+} from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 
 import ApiService from '../../../services/ApiService';
@@ -62,7 +71,7 @@ const QuizForm: React.FC = () => {
         };
     }, []);
 
-    const scrollToImagesSection = (event: { preventDefault: () => void; }) => {
+    const scrollToImagesSection = (event: { preventDefault: () => void }) => {
         event.preventDefault();
         const section = document.getElementById('images-section');
         if (section) {
@@ -87,10 +96,12 @@ const QuizForm: React.FC = () => {
                     return;
                 }
 
-                const quiz = await ApiService.getQuiz(id) as QuizType;
+                const quiz = (await ApiService.getQuiz(id)) as QuizType;
 
                 if (!quiz) {
-                    window.alert(`Une erreur est survenue.\n Le quiz ${id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
+                    window.alert(
+                        `Une erreur est survenue.\n Le quiz ${id} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                    );
                     console.error('Quiz not found for id:', id);
                     navigate('/teacher/dashboard');
                     return;
@@ -103,9 +114,8 @@ const QuizForm: React.FC = () => {
                 setSelectedFolder(folderId);
                 setFilteredValue(content);
                 setValue(quiz.content.join('\n\n'));
-
             } catch (error) {
-                window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
+                window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`);
                 console.error('Error fetching quiz:', error);
                 navigate('/teacher/dashboard');
             }
@@ -120,7 +130,7 @@ const QuizForm: React.FC = () => {
         }
 
         // split value when there is at least one blank line
-        const linesArray = value.split(/\n{2,}/); 
+        const linesArray = value.split(/\n{2,}/);
 
         // if the first item in linesArray is blank, remove it
         if (linesArray[0] === '') linesArray.shift();
@@ -138,12 +148,12 @@ const QuizForm: React.FC = () => {
         try {
             // check if everything is there
             if (quizTitle == '') {
-                alert("Veuillez choisir un titre");
+                alert('Veuillez choisir un titre');
                 return;
             }
 
             if (selectedFolder == '') {
-                alert("Veuillez choisir un dossier");
+                alert('Veuillez choisir un dossier');
                 return;
             }
 
@@ -157,8 +167,8 @@ const QuizForm: React.FC = () => {
 
             navigate('/teacher/dashboard');
         } catch (error) {
-            window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
-            console.log(error)
+            window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`);
+            console.log(error);
         }
     };
 
@@ -177,107 +187,122 @@ const QuizForm: React.FC = () => {
             }
 
             if (!inputElement.files || inputElement.files.length === 0) {
-                window.alert("Veuillez d'abord choisir une image à téléverser.")
+                window.alert("Veuillez d'abord choisir une image à téléverser.");
                 return;
             }
 
             const imageUrl = await ApiService.uploadImage(inputElement.files[0]);
 
             // Check for errors
-            if(imageUrl.indexOf("ERROR") >= 0) {
-                window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
+            if (imageUrl.indexOf('ERROR') >= 0) {
+                window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`);
                 return;
             }
 
-            setImageLinks(prevLinks => [...prevLinks, imageUrl]);
+            setImageLinks((prevLinks) => [...prevLinks, imageUrl]);
 
             // Reset the file input element
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
         } catch (error) {
-            window.alert(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`)
-
+            window.alert(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`);
         }
     };
 
     const handleCopyToClipboard = async (link: string) => {
         navigator.clipboard.writeText(link);
-    }
+    };
 
     return (
-        <div className='quizEditor'>
-
-            <div className='editHeader'>
+        <div className="quizEditor">
+            <div
+                className="editHeader"
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '32px'
+                }}
+            >
                 <ReturnButton
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter l'éditeur sans sauvegarder le questionnaire?`}
                 />
 
-                <div className='title'>Éditeur de quiz</div>
-
-                <div className='dumb'></div>
+                <Button
+                    variant="contained"
+                    onClick={handleQuizSave}
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                    <SaveIcon sx={{ fontSize: 20 }} />
+                    Enregistrer
+                </Button>
             </div>
 
-            {/* <h2 className="subtitle">Éditeur</h2> */}
+            <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                <div className="title">Éditeur de quiz</div>
+            </div>
 
-            <TextField
-                onChange={handleQuizTitleChange}
-                value={quizTitle}
-                placeholder="Titre du quiz"
-                label="Titre du quiz"
-                fullWidth
-            />
-            <label>Choisir un dossier:
-            <NativeSelect
-                id="select-folder"
-                color="primary"
-                value={selectedFolder}
-                onChange={handleSelectFolder}
-                disabled={!isNewQuiz}
-                style={{ marginBottom: '16px' }} // Ajout de marge en bas
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <TextField
+                    onChange={handleQuizTitleChange}
+                    value={quizTitle}
+                    placeholder="Titre du quiz"
+                    label="Titre du quiz"
+                    sx={{ width: '200px', marginTop: '50px' }}
+                />
+
+                <NativeSelect
+                    id="select-folder"
+                    color="primary"
+                    value={selectedFolder}
+                    onChange={handleSelectFolder}
+                    disabled={!isNewQuiz}
+                    style={{ marginBottom: '16px', width: '200px', marginTop: '50px' }}
                 >
-                <option disabled value=""> Choisir un dossier... </option>
-
-                {folders.map((folder: FolderType) => (
-                    <option value={folder._id} key={folder._id}> {folder.title} </option>
-                ))}
-            </NativeSelect></label>
-
-            <Button variant="contained" onClick={handleQuizSave}>
-            {<SaveIcon sx={{ fontSize: 20, marginRight: '8px' }} />}
-                Enregistrer
-            </Button>
+                    <option disabled value="">
+                        Choisir un dossier...
+                    </option>
+                    {folders.map((folder: FolderType) => (
+                        <option value={folder._id} key={folder._id}>
+                            {folder.title}
+                        </option>
+                    ))}
+                </NativeSelect>
+            </div>
 
             <Divider style={{ margin: '16px 0' }} />
 
-            <div className='editSection'>
-
-                <div className='edit'>
+            <div className="editSection">
+                <div className="edit">
                     <Editor
                         label="Contenu GIFT du quiz:"
                         initialValue={value}
-                        onEditorChange={handleUpdatePreview} />
+                        onEditorChange={handleUpdatePreview}
+                    />
 
-                    <div className='images'>
-                        <div className='upload'>
+                    <div className="images">
+                        <div className="upload">
                             <label className="dropArea">
-                                <input type="file" id="file-input" className="file-input"
-                                accept="image/jpeg, image/png"
-                                multiple 
-                                ref={fileInputRef} />
+                                <input
+                                    type="file"
+                                    id="file-input"
+                                    className="file-input"
+                                    accept="image/jpeg, image/png"
+                                    multiple
+                                    ref={fileInputRef}
+                                />
 
                                 <Button
-                                variant="outlined"
-                                aria-label='Téléverser'
-                                onClick={handleSaveImage}>
-                                    Téléverser <Upload /> 
+                                    variant="outlined"
+                                    aria-label="Téléverser"
+                                    onClick={handleSaveImage}
+                                >
+                                    Téléverser <Upload />
                                 </Button>
-
                             </label>
-                            <Dialog
-                                open={dialogOpen}
-                                onClose={() => setDialogOpen(false)} >
+                            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                                 <DialogTitle>Erreur</DialogTitle>
                                 <DialogContent>
                                     Veuillez d&apos;abord choisir une image à téléverser.
@@ -292,23 +317,32 @@ const QuizForm: React.FC = () => {
 
                         <h4>Mes images :</h4>
                         <div>
-                                <div>
-                                <div style={{ display: "inline" }}>(Voir section </div>
-                                    <a href="#images-section"style={{ textDecoration: "none" }} onClick={scrollToImagesSection}>
-                                        <u><em><h4 style={{ display: "inline" }}> 9. Images </h4></em></u>
-                                    </a>
-                                <div style={{ display: "inline" }}> ci-dessous</div>
-                                <div style={{ display: "inline" }}>)</div>
+                            <div>
+                                <div style={{ display: 'inline' }}>(Voir section </div>
+                                <a
+                                    href="#images-section"
+                                    style={{ textDecoration: 'none' }}
+                                    onClick={scrollToImagesSection}
+                                >
+                                    <u>
+                                        <em>
+                                            <h4 style={{ display: 'inline' }}> 9. Images </h4>
+                                        </em>
+                                    </u>
+                                </a>
+                                <div style={{ display: 'inline' }}> ci-dessous</div>
+                                <div style={{ display: 'inline' }}>)</div>
                                 <br />
                                 <em> - Cliquez sur un lien pour le copier</em>
-                                </div>                            
-                                <ul>
+                            </div>
+                            <ul>
                                 {imageLinks.map((link, index) => {
-                                    const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
+                                    const imgTag = `![alt_text](${escapeForGIFT(
+                                        link
+                                    )} "texte de l'infobulle")`;
                                     return (
                                         <li key={index}>
-                                            <code
-                                                onClick={() => handleCopyToClipboard(imgTag)}>
+                                            <code onClick={() => handleCopyToClipboard(imgTag)}>
                                                 {imgTag}
                                             </code>
                                         </li>
@@ -319,10 +353,9 @@ const QuizForm: React.FC = () => {
                     </div>
 
                     <GiftCheatSheet />
-
                 </div>
 
-                <div className='preview'>
+                <div className="preview">
                     <div className="preview-column">
                         <h4>Prévisualisation</h4>
                         <div>
@@ -330,7 +363,6 @@ const QuizForm: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {showScrollButton && (
@@ -358,7 +390,7 @@ const scrollToTopButtonStyle: CSSProperties = {
     backgroundColor: '#5271ff',
     border: 'none',
     cursor: 'pointer',
-    zIndex: 1000,
+    zIndex: 1000
 };
 
 export default QuizForm;

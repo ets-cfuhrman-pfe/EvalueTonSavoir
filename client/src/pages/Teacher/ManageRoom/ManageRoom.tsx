@@ -25,14 +25,14 @@ const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
-    const [formattedRoomName, setFormattedRoomName] = useState("");
+    const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
 
     // Handle the newly connected user in useEffect, because it needs state info
@@ -179,7 +179,6 @@ const ManageRoom: React.FC = () => {
     };
 
     useEffect(() => {
-
         if (socket) {
             console.log(`Listening for submit-answer-room in room ${formattedRoomName}`);
             socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
@@ -253,10 +252,12 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, 
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
             questions: quizQuestions,
             questionIndex: nextQuestionIndex,
-                                       isLaunch: false});
+            isLaunch: false
+        });
     };
 
     const previousQuestion = () => {
@@ -266,7 +267,12 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: prevQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const initializeQuizQuestion = () => {
@@ -294,7 +300,12 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: 0,
+            isLaunch: true
+        });
     };
 
     const launchStudentMode = () => {
@@ -331,7 +342,12 @@ const ManageRoom: React.FC = () => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex,
+                    isLaunch: false
+                });
             }
         }
     };
@@ -365,7 +381,34 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <h1>Salle : {formattedRoomName}</h1>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginBottom: '10px'
+                }}
+            >
+                <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                    Salle : {formattedRoomName}
+                    <div
+                        className="userCount subtitle"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            marginLeft: '10px',
+                            marginBottom: '0px'
+                        }}
+                    >
+                        <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
+                        {students.length}/60
+                    </div>
+                </h1>
+            </div>
+
             <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
@@ -381,21 +424,7 @@ const ManageRoom: React.FC = () => {
                         alignItems: 'center',
                         width: '100%'
                     }}
-                >
-                    {
-                        <div
-                            className="userCount subtitle smallText"
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <GroupIcon style={{ marginRight: '5px' }} />
-                            {students.length}/60
-                        </div>
-                    }
-                </div>
+                ></div>
 
                 <div className="dumb"></div>
             </div>
@@ -429,7 +458,6 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
-                                        
                                     />
                                 )}
 
