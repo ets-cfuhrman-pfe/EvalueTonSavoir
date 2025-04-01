@@ -18,17 +18,39 @@ interface Props {
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, students, isDisplayOnly, passedAnswer } = props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(() => {
+        if (passedAnswer && passedAnswer.length > 0) {
+            return passedAnswer;
+        }
+        return [];
+    });
     const [pickRates, setPickRates] = useState<{ percentages: number[], counts: number[], totalCount: number }>({ percentages: [], counts: [], totalCount: 0 });
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     let disableButton = false;
-    if(handleOnSubmitAnswer === undefined){
+    if (handleOnSubmitAnswer === undefined) {
         disableButton = true;
     }
 
     const handleOnClickAnswer = (choice: string) => {
-        setAnswer(choice);
+        setAnswer((prevAnswer) => {
+            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+            const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
+
+            if (correctAnswersCount === 1) {
+                // If only one correct answer, replace the current selection
+                return prevAnswer.includes(choice) ? [] : [choice];
+            } else {
+                // Allow multiple selections if there are multiple correct answers
+                if (prevAnswer.includes(choice)) {
+                    // Remove the choice if it's already selected
+                    return prevAnswer.filter((selected) => selected !== choice);
+                } else {
+                    // Add the choice if it's not already selected
+                    return [...prevAnswer, choice];
+                }
+            }
+        });
     };
 
     const toggleShowCorrectAnswers = () => {
@@ -48,7 +70,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
         question.choices.forEach(choice => {
             const choiceCount = students.filter(student =>
                 student.answers.some(ans =>
-                    ans.idQuestion === Number(question.id) && ans.answer === choice.formattedText.text
+                    ans.idQuestion === Number(question.id) && ans.answer.includes(choice.formattedText.text)
                 )
             ).length;
             totalResponses += choiceCount;
@@ -63,10 +85,10 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
         } else {
-            setAnswer('');
+            setAnswer([]);
             calculatePickRates();
         }
-    }, [passedAnswer, students, question, showCorrectAnswers]);
+    }, [passedAnswer, students, question.id, showCorrectAnswers]);
     
 
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
@@ -79,38 +101,25 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
                     </div>
                     <div className="choices-wrapper mb-1">
-                        
                         {question.choices.map((choice, i) => {
-                            const selected = answer === choice.formattedText.text ? 'selected' : '';
+                            const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                             const rateStyle = showCorrectAnswers ? {
                                 backgroundImage: `linear-gradient(to right, ${choice.isCorrect ? 'lightgreen' : 'lightcoral'} ${pickRates.percentages[i]}%, transparent ${pickRates.percentages[i]}%)`,
                                 color: 'black'
                             } : {};
                             return (
                                 <div key={choice.formattedText.text + i} className="choice-container">
-                                    {/* <Button
-                                        variant="text"
-                                        className="button-wrapper"
-                                        disabled={disableButton}
-                                        onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}>
-                                        {showAnswer? (<div> {(choice.isCorrect ? '✅' : '❌')}</div>)
-                                        :``}
-                                        <div className={`circle ${selected}`}>{alphabet[i]}</div>
-                                        <div className={`answer-text ${selected}`}>
-                                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedText) }} />
-                                        </div>
-                                        {choice.formattedFeedback && showAnswer && (
-                                        <div className="feedback-container mb-1 mt-1/2">
-                                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
-                                        </div>
-                                    )}
-                                    </Button> */}
                                     <Button
                                         variant="text"
                                         className={`button-wrapper ${selected}`}
                                         disabled={disableButton}
                                         onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                                         >
+                                        {showAnswer ? (
+                                            <div>{choice.isCorrect ? '✅' : '❌'}</div>
+                                        ) : (
+                                            ''
+                                        )}
                                         <div className={`circle ${selected}`}>{alphabet[i]}</div>
                                         <div className={`answer-text ${selected}`}
                                         style={rateStyle}>
@@ -118,7 +127,11 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                         </div>
                                         {choice.formattedFeedback && showAnswer && (
                                             <div className="feedback-container mb-1 mt-1/2">
-                                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(choice.formattedFeedback) }} />
+                                                <div
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: FormattedTextTemplate(choice.formattedFeedback),
+                                                    }}
+                                                />
                                             </div>
                                         )}
                                         {showCorrectAnswers && <div className="pick-rate">{choice.isCorrect ? '✅' : '❌'} {`${pickRates.counts[i]}/${pickRates.totalCount} (${pickRates.percentages[i].toFixed(1)}%)`}</div>}
@@ -129,21 +142,23 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     </div>
                     {question.formattedGlobalFeedback && showAnswer && (
                         <div className="global-feedback mb-2">
-                                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                                            </div>
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html: FormattedTextTemplate(question.formattedGlobalFeedback),
+                                }}
+                            />
+                        </div>
                     )}
                     
                     {!showAnswer && handleOnSubmitAnswer && (
-                        
                         <Button
                             variant="contained"
                             onClick={() =>
-                                answer !== "" && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                                answer.length > 0 && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
                             }
-                            disabled={answer === '' || answer === null}
+                            disabled={answer.length === 0}
                         >
                             Répondre
-                            
                         </Button>
                     )}
                 </div>

@@ -17,7 +17,7 @@ interface Props {
 
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, isDisplayOnly } = props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || '');
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [correctAnswerRate, setCorrectAnswerRate] = useState<number>(0);
     const [submissionCounts, setSubmissionCounts] = useState({
@@ -63,18 +63,16 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
     };
 
     return (
-            <><div className="container question-wrapper">
+        <>
+            <div className="container question-wrapper">
                 <div className="row justify-content-center">
                     <div className="col-auto">
-                    <div>
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-                    </div>
-                    {showAnswer ? (
-                        <>
+                        {showAnswer ? (
+                            <>
                             <div className="correct-answer-text mb-1">
                                 <span>
                                     <strong>La bonne réponse est: </strong>
-
                                     {question.choices.map((choice) => (
                                         <div key={choice.text} className="mb-1">
                                             {choice.text}
@@ -84,39 +82,44 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                                 <span>
                                     <strong>Votre réponse est: </strong>{answer}
                                 </span>
-                            </div>
-                            {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
-                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                            </div>}
-                        </>
-                    ) : (
-                        <>
-                            <div className="answer-wrapper mb-1">
-                                <TextField
-                                    type="text"
-                                    id={question.formattedStem.text}
-                                    name={question.formattedStem.text}
-                                    onChange={(e) => {
-                                        setAnswer(e.target.value);
-                                    } }
-                                    disabled={showAnswer}
-                                    aria-label="short-answer-input" />
-                            </div>
-                            {handleOnSubmitAnswer && (
-                                <div className="col-auto d-flex flex-column align-items-center"> 
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => answer !== undefined &&
-                                            handleOnSubmitAnswer &&
-                                            handleOnSubmitAnswer(answer)}
-                                        disabled={answer === null || answer === ''}
-                                    >
-                                        Répondre
-                                    </Button>
                                 </div>
+                                {question.formattedGlobalFeedback && (
+                                    <div className="global-feedback mb-2">
+                                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <div className="answer-wrapper mb-1">
+                                    <TextField
+                                        type="text"
+                                        id={question.formattedStem.text}
+                                        name={question.formattedStem.text}
+                                        onChange={(e) => {
+                                            setAnswer([e.target.value]);
+                                        }}
+                                        disabled={showAnswer}
+                                        aria-label="short-answer-input"
+                                    />
+                                </div>
+                                {handleOnSubmitAnswer && (
+                                    <div className="col-auto d-flex flex-column align-items-center">
+                                        <Button
+                                            variant="contained"
+                                            onClick={() =>
+                                                answer !== undefined &&
+                                                handleOnSubmitAnswer &&
+                                                handleOnSubmitAnswer(answer)
+                                            }
+                                            disabled={answer === null || answer === undefined || answer.length === 0}
+                                        >
+                                            Répondre
+                                        </Button>
+                                    </div>
                             )}
-                        </>
-                    )}
+                            </>
+                        )}
                 </div>
                 {isDisplayOnly && (
                     <>
@@ -146,7 +149,8 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                     </>
                 )}
             </div>
-        </div></>
+        </div>
+        </>
     );
 };
 

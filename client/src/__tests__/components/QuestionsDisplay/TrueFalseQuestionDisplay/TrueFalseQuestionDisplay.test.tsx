@@ -56,6 +56,7 @@ describe('TrueFalseQuestion Component', () => {
         });
 
         expect(mockHandleSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly for True', () => {
@@ -70,7 +71,8 @@ describe('TrueFalseQuestion Component', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(true);
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith([true]);
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly for False', () => {
@@ -83,7 +85,8 @@ describe('TrueFalseQuestion Component', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(false);
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith([false]);
+        mockHandleSubmitAnswer.mockClear();
     });
 
 
@@ -112,7 +115,7 @@ describe('TrueFalseQuestion Component', () => {
                 expect(wrongAnswer1?.textContent).toContain('❌');
         });
     
-        it('should not show ✅ or ❌ when repondre button is not clicked', async () => {
+        it('should not show ✅ or ❌ when Répondre button is not clicked', async () => {
             const choiceButton = screen.getByText('Vrai').closest('button');
             if (!choiceButton) throw new Error('Choice button not found');
     

@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
 import ApiService from '../../../services/ApiService'
 
-export type AnswerType = string | number | boolean;
+export type AnswerType = Array<string | number | boolean>;
 
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');

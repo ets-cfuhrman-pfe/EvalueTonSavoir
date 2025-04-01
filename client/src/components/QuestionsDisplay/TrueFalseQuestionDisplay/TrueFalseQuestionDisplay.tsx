@@ -1,5 +1,5 @@
 // TrueFalseQuestion.tsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
@@ -9,7 +9,7 @@ import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer:  AnswerType) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;    
     students?: StudentType[];
@@ -18,7 +18,6 @@ interface Props {
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, students, passedAnswer, isDisplayOnly } = props;
-    const [answer, setAnswer] = useState<boolean | undefined>(undefined);
     const [pickRates, setPickRates] = useState<{ trueRate: number, falseRate: number, trueCount: number, falseCount: number, totalCount: number }>({ 
         trueRate: 0, 
         falseRate: 0, 
@@ -28,8 +27,17 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     });
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
+    const [answer, setAnswer] = useState<boolean | undefined>(() => {
+
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            return passedAnswer[0];
+        }
+
+        return undefined;
+    });
+
     let disableButton = false;
-    if(handleOnSubmitAnswer === undefined){
+    if (handleOnSubmitAnswer === undefined) {
         disableButton = true;
     }
 
@@ -38,8 +46,8 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
     };
 
     useEffect(() => {
-        if (passedAnswer === true || passedAnswer === false) {
-            setAnswer(passedAnswer);
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            setAnswer(passedAnswer[0]);
         } else {
             setAnswer(undefined);
         }
@@ -48,7 +56,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
             setAnswer(undefined);
             calculatePickRates();
         }
-    }, [passedAnswer, question, students]);
+    }, [passedAnswer,  question.id, students]);
 
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
@@ -95,6 +103,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     fullWidth
                     disabled={disableButton}
                 >
+                    {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`circle ${selectedTrue}`}>V</div>
                     <div className={`answer-text ${selectedTrue}`}
                         style={showCorrectAnswers ? {
@@ -122,6 +131,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     disabled={disableButton}
 
                 >
+                    {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`circle ${selectedFalse}`}>F</div>
                     <div
                         className={`answer-text ${selectedFalse}`}
@@ -156,8 +166,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
-
+                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
                     }
                     disabled={answer === undefined}
                 >

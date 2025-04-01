@@ -47,6 +47,7 @@ describe('ShortAnswerQuestion Component', () => {
         fireEvent.click(submitButton);
 
         expect(mockHandleSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly', () => {
@@ -60,6 +61,7 @@ describe('ShortAnswerQuestion Component', () => {
 
         fireEvent.click(submitButton);
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith('User Input');
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(['User Input']);
+        mockHandleSubmitAnswer.mockClear();
     });
 });
