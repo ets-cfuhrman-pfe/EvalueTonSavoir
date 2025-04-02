@@ -276,6 +276,10 @@ const QuizForm: React.FC = () => {
                     displayEmpty
                     onChange={(e) => handleSelectChange(e.target.value, templates.find(t => t.value === e.target.value)?.label || '')}
                     style={{ width: '210px' }}
+                    inputProps={{
+                        'data-testid': 'template-select'
+                    }}
+
                 >
                     <MenuItem value="" disabled>Modèles de questions</MenuItem>
                     {templates.map((template, index) => (

@@ -60,3 +60,21 @@ describe('QuizForm Component', () => {
   });
 
 });
+
+test('template-select is present', async () => {
+    render(
+        <MemoryRouter initialEntries={['/teacher/editor-quiz']}>
+            <QuizForm />
+        </MemoryRouter>
+    );
+
+    expect(screen.queryByText('Modèles de questions')).toBeInTheDocument();
+    const templateButton = screen.getByTestId('template-select');
+    fireEvent.mouseDown(templateButton);
+
+    await waitFor(() => {
+        const vraiFauxTemplate = screen.queryAllByText(/Vrai\/Faux/i);
+        expect(vraiFauxTemplate.length).toBeGreaterThan(0);
+    });
+
+});
