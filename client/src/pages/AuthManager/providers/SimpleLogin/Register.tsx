@@ -1,32 +1,35 @@
-// JoinRoom.tsx
-import React, { useEffect, useState } from 'react';
-
-import { TextField, FormLabel, RadioGroup, FormControlLabel, Radio, Box } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-
+import React, { useState, useEffect } from 'react';
+import {
+    TextField,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Box,
+    Button,
+    CircularProgress
+} from '@mui/material';
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer';
 import ApiService from '../../../../services/ApiService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Register: React.FC = () => {
-
-    const [name, setName] = useState(''); // State for name
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [roles, setRoles] = useState<string[]>(['teacher']); // Set 'student' as the default role
-
+    const [roles, setRoles] = useState<string[]>(['teacher']);
     const [connectionError, setConnectionError] = useState<string>('');
-    const [isConnecting] = useState<boolean>(false);
+    const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
     useEffect(() => {
         return () => { };
     }, []);
 
     const handleRoleChange = (role: string) => {
-        setRoles([role]); // Update the roles array to contain the selected role
+        setRoles([role]);
     };
 
     const isValidEmail = (email: string) => {
-        // Basic email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
@@ -37,7 +40,9 @@ const Register: React.FC = () => {
             return;
         }
 
+        setIsConnecting(true);
         const result = await ApiService.register(name, email, password, roles);
+        setIsConnecting(false);
 
         if (result !== true) {
             setConnectionError(result);
@@ -46,46 +51,49 @@ const Register: React.FC = () => {
     };
 
     return (
-        <LoginContainer
-            title="Créer un compte"
-            error={connectionError}
-        >
+        <LoginContainer title="Créer un compte" error={connectionError}>
+            {/* Name Field */}
             <TextField
                 label="Nom"
                 variant="outlined"
+                className="mb-3 w-100"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Votre nom"
-                sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
 
+            {/* Email Field */}
             <TextField
                 label="Email"
                 variant="outlined"
+                className="mb-3 w-100"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Adresse courriel"
-                sx={{ marginBottom: '1rem' }}
                 fullWidth
-                type="email" 
-                error={!!connectionError && !isValidEmail(email)} 
+                type="email"
+                error={!!connectionError && !isValidEmail(email)}
                 helperText={connectionError && !isValidEmail(email) ? "Adresse email invalide." : ""}
             />
 
+            {/* Password Field */}
             <TextField
                 label="Mot de passe"
                 variant="outlined"
+                className="mb-3 w-100"
                 value={password}
                 type="password"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
-                sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                <FormLabel component="legend" sx={{ marginRight: '1rem' }}>Choisir votre rôle</FormLabel>
+            {/* Role Selection */}
+            <Box className="d-flex align-items-center mb-3">
+                <FormLabel component="legend" className="me-3">
+                    Choisir votre rôle
+                </FormLabel>
                 <RadioGroup
                     row
                     aria-label="role"
@@ -98,15 +106,17 @@ const Register: React.FC = () => {
                 </RadioGroup>
             </Box>
 
-            <LoadingButton
-                loading={isConnecting}
-                onClick={register}
+            {/* Register Button */}
+            <Button
                 variant="contained"
-                sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                disabled={!name || !email || !password}
+                className={`w-100 mb-${connectionError ? '4' : '3'}`}
+                onClick={register}
+                disabled={!name || !email || !password || isConnecting}
+                startIcon={isConnecting ? <CircularProgress size={20} /> : null}
+                size="large"
             >
                 S'inscrire
-            </LoadingButton>
+            </Button>
         </LoginContainer>
     );
 };

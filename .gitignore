@@ -132,3 +132,4 @@ launch.json
 .yarn/install-state.gz
 .pnp.*
 db-backup/
+/.vs

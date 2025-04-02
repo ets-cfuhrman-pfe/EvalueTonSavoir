@@ -1,6 +1,6 @@
 import React from 'react';
 import { ENV_VARIABLES } from '../../../../constants';
-import '../css/buttonAuth.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface ButtonAuthContainerProps {
     providerName: string;
@@ -13,14 +13,16 @@ const handleAuthLogin = (provider: string) => {
 
 const ButtonAuth: React.FC<ButtonAuthContainerProps> = ({ providerName, providerType }) => {
     return (
-        <>
-            <div className={`${providerName}-${providerType}-container button-container`}>
-                <h2>Se connecter avec {providerType.toUpperCase()}</h2>
-                <button key={providerName} className={`provider-btn ${providerType}-btn`} onClick={() => handleAuthLogin(providerName)}>
-                    Continuer avec {providerName}
-                </button>
-            </div>
-        </>
+        <div className={`border rounded-3 p-3 my-3 mx-auto shadow-sm ${providerName}-${providerType}-container`} style={{ maxWidth: '400px' }}>
+            <h2 className="h5 mb-3">Se connecter avec {providerType.toUpperCase()}</h2>
+            <button
+                key={providerName}
+                className={`btn btn-outline-secondary w-100 ${providerType}-btn`}
+                onClick={() => handleAuthLogin(providerName)}
+            >
+                Continuer avec {providerName}
+            </button>
+        </div>
     );
 };
 
