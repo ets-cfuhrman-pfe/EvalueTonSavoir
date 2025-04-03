@@ -33,7 +33,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                 <TrueFalseQuestionDisplay
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
-                    showAnswer={showAnswer}
+                    // showAnswer={showAnswer}
                     passedAnswer={answer}
                 />
             );

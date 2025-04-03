@@ -16,6 +16,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
 import ApiService from '../../../services/ApiService'
+import { QuizProvider } from './QuizProvider';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -177,12 +178,14 @@ const JoinRoom: React.FC = () => {
     switch (quizMode) {
         case 'student':
             return (
-                <StudentModeQuiz
-                    questions={questions}
-                    answers={answers}
-                    submitAnswer={handleOnSubmitAnswer}
-                    disconnectWebSocket={disconnect}
-                />
+                <QuizProvider>
+                    <StudentModeQuiz
+                        questions={questions}
+                        answers={answers}
+                        submitAnswer={handleOnSubmitAnswer}
+                        disconnectWebSocket={disconnect}
+                    />
+                </QuizProvider>
             );
         case 'teacher':
             return (
