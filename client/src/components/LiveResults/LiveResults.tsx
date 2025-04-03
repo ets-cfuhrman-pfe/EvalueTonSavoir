@@ -1,5 +1,7 @@
 // LiveResults.tsx
 import React, { useState } from 'react';
+
+import { Accordion } from 'react-bootstrap';
 import { Socket } from 'socket.io-client';
 import { QuestionType } from '../../Types/QuestionType';
 import './liveResult.css';
@@ -24,50 +26,56 @@ interface LiveResultsProps {
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(true);
+
 
     return (
+        <Accordion defaultActiveKey="0" alwaysOpen>
+            <Accordion.Item eventKey="0">
+                <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
+                    <div className="text-2xl text-bold">Résultats du quiz</div>
+                </Accordion.Header>
+                <Accordion.Body>
+                        <div className="action-bar mb-1">
+                            <FormGroup row>
+                                <FormControlLabel
+                                    label={<div className="text-sm">Afficher les noms</div>}
+                                    control={
+                                        <Switch
+                                            value={showUsernames}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                setShowUsernames(e.target.checked)
+                                            }
+                                        />
+                                    }
+                                />
+                                <FormControlLabel
+                                    label={<div className="text-sm">Afficher les réponses</div>}
+                                    control={
+                                        <Switch
+                                            value={showCorrectAnswers}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                setShowCorrectAnswers(e.target.checked)
+                                            }
+                                        />
+                                    }
+                                />
+                            </FormGroup>
+                        </div>
 
-        
-        <div>
-            <div className="action-bar mb-1">
-                <div className="text-2xl text-bold">Résultats du quiz</div>
-                <FormGroup row>
-                    <FormControlLabel
-                        label={<div className="text-sm">Afficher les noms</div>}
-                        control={
-                            <Switch
-                                value={showUsernames}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setShowUsernames(e.target.checked)
-                                }
+                        <div className="table-container">
+
+                            <LiveResultsTable
+                                students={students}
+                                questions={questions}
+                                showCorrectAnswers={showCorrectAnswers}
+                                showSelectedQuestion={showSelectedQuestion}
+                                showUsernames={showUsernames}
                             />
-                        }
-                    />
-                    <FormControlLabel
-                        label={<div className="text-sm">Afficher les réponses</div>}
-                        control={
-                            <Switch
-                                value={showCorrectAnswers}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setShowCorrectAnswers(e.target.checked)
-                                }
-                            />
-                        }
-                    />
-                </FormGroup>
-            </div>
-
-            <div className="table-container">
-
-                <LiveResultsTable
-                    students={students}
-                    questions={questions}
-                    showCorrectAnswers={showCorrectAnswers}
-                    showSelectedQuestion={showSelectedQuestion}
-                    showUsernames={showUsernames}
-                />
-            </div>
-        </div>
+                        </div>
+                </Accordion.Body>
+            </Accordion.Item>
+        </Accordion>
     );
 };
 

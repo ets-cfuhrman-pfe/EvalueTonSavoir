@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Question } from 'gift-pegjs';
+
+import { Accordion } from 'react-bootstrap';
+import { FormControlLabel, Switch } from '@mui/material';
 
 import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuestionDisplay';
 import MultipleChoiceQuestionDisplay from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
@@ -24,13 +27,15 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     handleOnSubmitAnswer,
     showAnswer,
     students,
-    showResults,
     answer,
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
     //     return isMobile ? '100%' : '20%';
     // }, [isMobile]);
+    
+    const [isOpen, setIsOpen] = useState<boolean>(true);
+    const [showResults, setShowResults] = useState<boolean>(false);
 
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -87,15 +92,35 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
             break;
     }
     return (
-        <div className="question-container">
-            {questionTypeComponent ? (
-                <>
-                    {questionTypeComponent}
-                </>
-            ) : (
-                <div>Question de type inconnue</div>
-            )}
-        </div>
+        <Accordion defaultActiveKey="0" alwaysOpen>
+            <Accordion.Item eventKey="0">
+                <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
+                    {isOpen ? 'Masquer les questions' : 'Afficher les questions'}
+                </Accordion.Header>
+                <Accordion.Body>
+                    <FormControlLabel
+                    label={<div className="text-sm">Afficher les résultats</div>}
+                    control={
+                        <Switch
+                            value={showResults}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setShowResults(e.target.checked)
+                            }
+                            />
+                        }
+                    />
+                    <div className="question-container">
+                        {questionTypeComponent ? (
+                            <>
+                                {questionTypeComponent}
+                            </>
+                        ) : (
+                            <div>Question de type inconnue</div>
+                        )}
+                    </div>
+                </Accordion.Body>
+            </Accordion.Item>
+        </Accordion>
     );
 };
 

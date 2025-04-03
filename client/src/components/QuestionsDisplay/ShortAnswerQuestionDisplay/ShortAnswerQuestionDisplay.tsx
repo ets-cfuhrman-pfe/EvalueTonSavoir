@@ -101,7 +101,7 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                                     />
                                 </div>
                                 {handleOnSubmitAnswer && (
-                                    <div className="">
+                                    <div className="col-auto d-flex flex-column align-items-center">
                                         <Button
                                             variant="contained"
                                             onClick={() =>
