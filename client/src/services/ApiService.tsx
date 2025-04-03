@@ -120,6 +120,27 @@ class ApiService {
         }
     }
 
+    public isAdmin(): boolean {
+        let isAdmin = false;
+        const token = this.getToken();
+
+        if (token == null) {
+            return isAdmin;
+        }
+
+        try {
+            const jsonObj = jwtDecode(token) as { roles: string[] };
+
+            if (jsonObj.roles.includes('admin')) {
+                isAdmin = true;
+            }
+            return isAdmin;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            return isAdmin;
+        }
+    }
+
     public saveUsername(username: string): void {
         if (!username || username.length === 0) {
             return;
