@@ -1,15 +1,10 @@
-// EditorQuiz.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import { FolderType } from '../../../Types/FolderType';
-
-
-import './share.css';
 import { Button, NativeSelect } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
-
 import ApiService from '../../../services/ApiService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Share: React.FC = () => {
     console.log('Component rendered');
@@ -18,7 +13,6 @@ const Share: React.FC = () => {
 
     const [quizTitle, setQuizTitle] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<string>('');
-
     const [folders, setFolders] = useState<FolderType[]>([]);
 
     useEffect(() => {
@@ -68,12 +62,11 @@ const Share: React.FC = () => {
 
     const handleQuizSave = async () => {
         try {
-
             if (selectedFolder == '') {
                 alert("Veuillez choisir un dossier");
                 return;
             }
-            
+
             if (!id) {
                 window.alert(`Une erreur est survenue.\n Le quiz n'a pas été trouvé\nVeuillez réessayer plus tard`)
                 console.error('Quiz not found for id:', id);
@@ -91,41 +84,39 @@ const Share: React.FC = () => {
     };
 
     return (
-        <div className='quizImport'>
-
-            <div className='importHeader'>
+        <div className="container-fluid p-4">
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <ReturnButton />
-
-                <div className='title'>Importer quiz: {quizTitle}</div>
-
-                <div className='dumb'></div>
+                <h2 className="text-center mb-0 flex-grow-1">Importer quiz: {quizTitle}</h2>
+                <div style={{ width: '10%' }}></div> {/* Spacer for alignment */}
             </div>
 
-            <div className='editSection'>
-
-                <div>
-
+            {/* Main Content */}
+            <div className="d-flex flex-column align-items-center">
+                <div className="w-100 mb-3">
                     <NativeSelect
                         id="select-folder"
                         color="primary"
                         value={selectedFolder}
                         onChange={handleSelectFolder}
+                        className="w-100 mb-3"
                     >
-                        <option disabled value=""> Choisir un dossier... </option>
-
+                        <option disabled value="">Choisir un dossier...</option>
                         {folders.map((folder: FolderType) => (
-                            <option value={folder._id} key={folder._id}> {folder.title} </option>
+                            <option value={folder._id} key={folder._id}>{folder.title}</option>
                         ))}
                     </NativeSelect>
-
-                    <Button variant="contained" onClick={handleQuizSave}>
-                        Enregistrer
-                    </Button>
-
                 </div>
 
+                <Button
+                    variant="contained"
+                    onClick={handleQuizSave}
+                    className="w-100"
+                >
+                    Enregistrer
+                </Button>
             </div>
-
         </div>
     );
 };

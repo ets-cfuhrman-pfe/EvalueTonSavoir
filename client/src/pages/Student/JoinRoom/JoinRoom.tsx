@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from 'react';
-
 import { Socket } from 'socket.io-client';
 import { ENV_VARIABLES } from 'src/constants';
-
 import StudentModeQuiz from 'src/components/StudentModeQuiz/StudentModeQuiz';
 import TeacherModeQuiz from 'src/components/TeacherModeQuiz/TeacherModeQuiz';
 import webSocketService, { AnswerSubmissionToBackendType } from '../../../services/WebsocketService';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
-
-import './joinRoom.css';
 import { QuestionType } from '../../../Types/QuestionType';
-import { TextField } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-
-import LoginContainer from 'src/components/LoginContainer/LoginContainer'
-
-import ApiService from '../../../services/ApiService'
+import { TextField, Button, CircularProgress } from '@mui/material';
+import LoginContainer from 'src/components/LoginContainer/LoginContainer';
+import ApiService from '../../../services/ApiService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -39,69 +33,63 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
 
-
     const handleCreateSocket = () => {
-        console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
 
-        socket.on('join-success', (roomJoinedName) => {
+        socket.on('join-success', () => {
             setIsWaitingForTeacher(true);
             setIsConnecting(false);
-            console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
         });
+
         socket.on('next-question', (question: QuestionType) => {
-            console.log('JoinRoom: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
+
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
-            setQuestions([]);  // clear out from last time (in case quiz is repeated)
+            setQuestions([]);
             setQuestions(questions);
-            // wait for next-question
         });
-        socket.on('launch-student-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-student-mode): Received launch-student-mode:', questions);
 
+        socket.on('launch-student-mode', (questions: QuestionType[]) => {
             setQuizMode('student');
             setIsWaitingForTeacher(false);
-            setQuestions([]);  // clear out from last time (in case quiz is repeated)
+            setQuestions([]);
             setQuestions(questions);
             setQuestion(questions[0]);
         });
+
         socket.on('end-quiz', () => {
             disconnect();
         });
+
         socket.on('join-failure', (message) => {
-            console.log('Failed to join the room.');
             setConnectionError(`Erreur de connexion : ${message}`);
             setIsConnecting(false);
         });
+
         socket.on('connect_error', (error) => {
             switch (error.message) {
                 case 'timeout':
-                    setConnectionError("JoinRoom: timeout: Le serveur n'est pas disponible");
+                    setConnectionError("Le serveur n'est pas disponible");
                     break;
                 case 'websocket error':
-                    setConnectionError("JoinRoom: websocket error: Le serveur n'est pas disponible");
+                    setConnectionError("Le serveur n'est pas disponible");
                     break;
             }
             setIsConnecting(false);
-            console.log('Connection Error:', error.message);
         });
 
         setSocket(socket);
     };
 
     const disconnect = () => {
-//        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -120,28 +108,22 @@ const JoinRoom: React.FC = () => {
         }
 
         if (username && roomName) {
-            console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
-
             webSocketService.joinRoom(roomName, username);
         }
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
-        console.info(`JoinRoom: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
             username: username,
             idQuestion: idQuestion
         };
-        // localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
         setAnswers((prevAnswers) => {
-            console.log(`JoinRoom: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
-            const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
-            newAnswers[idQuestion - 1] = answerData; // Update the specific answer
-            return newAnswers; // Return the new array
+            const newAnswers = [...prevAnswers];
+            newAnswers[idQuestion - 1] = answerData;
+            return newAnswers;
         });
-        console.log(`JoinRoom: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
         webSocketService.submitAnswer(answerData);
     };
 
@@ -153,22 +135,20 @@ const JoinRoom: React.FC = () => {
 
     if (isWaitingForTeacher) {
         return (
-            <div className='room'>
-                <div className='roomHeader'>
-
+            <div className="d-flex flex-column vh-100">
+                <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
                     <DisconnectButton
                         onReturn={disconnect}
                         message={`Êtes-vous sûr de vouloir quitter?`} />
 
-                    <div className='centerTitle'>
-                        <div className='title'>Salle: {roomName}</div>
-                        <div className='userCount subtitle'>
+                    <div className="text-center">
+                        <h2 className="mb-1">Salle: {roomName}</h2>
+                        <p className="text-muted mb-0">
                             En attente que le professeur lance le questionnaire...
-                        </div>
+                        </p>
                     </div>
 
-                    <div className='dumb'></div>
-
+                    <div style={{ width: '48px' }}></div> {/* Spacer for balance */}
                 </div>
             </div>
         );
@@ -197,41 +177,39 @@ const JoinRoom: React.FC = () => {
             );
         default:
             return (
-                <LoginContainer
-                    title='Rejoindre une salle'
-                    error={connectionError}>
-
+                <LoginContainer title='Rejoindre une salle' error={connectionError}>
                     <TextField
                         type="text"
                         label="Nom de la salle"
                         variant="outlined"
+                        className="mb-3 w-100"
                         value={roomName}
                         onChange={(e) => setRoomName(e.target.value.toUpperCase())}
                         placeholder="Nom de la salle"
-                        sx={{ marginBottom: '1rem' }}
-                        fullWidth={true}
+                        fullWidth
                         onKeyDown={handleReturnKey}
                     />
 
                     <TextField
                         label="Nom d'utilisateur"
                         variant="outlined"
+                        className="mb-3 w-100"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Nom d'utilisateur"
-                        sx={{ marginBottom: '1rem' }}
-                        fullWidth={true}
+                        fullWidth
                         onKeyDown={handleReturnKey}
                     />
 
-                    <LoadingButton
-                        loading={isConnecting}
-                        onClick={handleSocket}
+                    <Button
                         variant="contained"
-                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                        disabled={!username || !roomName}
-                    >Rejoindre</LoadingButton>
-
+                        className="w-100"
+                        onClick={handleSocket}
+                        disabled={!username || !roomName || isConnecting}
+                        startIcon={isConnecting ? <CircularProgress size={20} /> : null}
+                    >
+                        Rejoindre
+                    </Button>
                 </LoginContainer>
             );
     }

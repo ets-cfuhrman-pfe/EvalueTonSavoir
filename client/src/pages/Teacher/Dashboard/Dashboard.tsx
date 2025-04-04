@@ -1,19 +1,12 @@
-// Dashboard.tsx
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import { parse } from 'gift-pegjs';
-
 import Template from 'src/components/GiftTemplate/templates';
 import { QuizType } from '../../../Types/QuizType';
 import { FolderType } from '../../../Types/FolderType';
-// import { QuestionService } from '../../../services/QuestionService';
 import ApiService from '../../../services/ApiService';
-
-import './dashboard.css';
 import ImportModal from 'src/components/ImportModal/ImportModal';
-//import axios from 'axios';
 import { RoomType } from 'src/Types/RoomType';
-// import { useRooms } from '../ManageRoom/RoomContext';
 import {
     Dialog,
     DialogActions,
@@ -40,17 +33,31 @@ import {
     ContentCopy,
     Edit,
     Share
-    // DriveFileMove
 } from '@mui/icons-material';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Create a custom-styled Card component
-const CustomCard = styled(Card)({
-    overflow: 'visible', // Override the overflow property
+const CustomCard = styled(Card)(({ theme }) => ({
+    overflow: 'visible',
     position: 'relative',
-    margin: '40px 0 20px 0', // Add top margin to make space for the tab
+    margin: '40px 0 20px 0',
     borderRadius: '8px',
-    paddingTop: '20px' // Ensure content inside the card doesn't overlap with the tab
-});
+    paddingTop: '20px',
+    border: `2px solid ${theme.palette.divider}`,
+    '& .folder-tab': {
+        position: 'absolute',
+        top: '-33px',
+        left: '9px',
+        padding: '5px 10px',
+        borderRadius: '8px 8px 0 0',
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap',
+        display: 'inline-block',
+        border: `2px solid ${theme.palette.divider}`,
+        borderBottom: 'none',
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.primary.main
+    }
+}));
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -58,19 +65,14 @@ const Dashboard: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showImportModal, setShowImportModal] = useState<boolean>(false);
     const [folders, setFolders] = useState<FolderType[]>([]);
-    const [selectedFolderId, setSelectedFolderId] = useState<string>(''); // Selected folder
+    const [selectedFolderId, setSelectedFolderId] = useState<string>('');
     const [rooms, setRooms] = useState<RoomType[]>([]);
     const [openAddRoomDialog, setOpenAddRoomDialog] = useState(false);
     const [newRoomTitle, setNewRoomTitle] = useState('');
-    // const { selectedRoom, selectRoom, createRoom } = useRooms();
-    const [selectedRoom, selectRoom] = useState<RoomType>(); // menu
+    const [selectedRoom, selectRoom] = useState<RoomType>();
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorDialog, setShowErrorDialog] = useState(false);
 
-    // Filter quizzes based on search term
-    // const filteredQuizzes = quizzes.filter(quiz =>
-    //     quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
     const filteredQuizzes = useMemo(() => {
         return quizzes.filter(
             (quiz) =>
@@ -78,7 +80,6 @@ const Dashboard: React.FC = () => {
         );
     }, [quizzes, searchTerm]);
 
-    // Group quizzes by folder
     const quizzesByFolder = filteredQuizzes.reduce((acc, quiz) => {
         if (!acc[quiz.folderName]) {
             acc[quiz.folderName] = [];
@@ -90,28 +91,18 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             const isLoggedIn = await ApiService.isLoggedIn();
-            console.log(`Dashboard: isLoggedIn: ${isLoggedIn}`);
             if (!isLoggedIn) {
                 navigate('/teacher/login');
                 return;
             } else {
                 const userRooms = await ApiService.getUserRooms();
                 setRooms(userRooms as RoomType[]);
-
                 const userFolders = await ApiService.getUserFolders();
                 setFolders(userFolders as FolderType[]);
             }
         };
-
         fetchData();
-    }, []);
-    
-    useEffect(() => {
-        if (rooms.length > 0 && !selectedRoom) {
-            selectRoom(rooms[rooms.length - 1]);
-            localStorage.setItem('selectedRoomId', rooms[rooms.length - 1]._id);
-        }
-    }, [rooms, selectedRoom]);
+    }, [navigate]);
 
     const handleSelectRoom = (event: React.ChangeEvent<HTMLSelectElement>) => {
         if (event.target.value === 'add-room') {
@@ -424,31 +415,38 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="dashboard">
-            <div className="title">Tableau de bord</div>
+        <div className="container-fluid py-4">
+            <h1 className="mb-4">Tableau de bord</h1>
 
-            <div className="roomSelection">
-                <label htmlFor="select-room">Sélectionner une salle: </label>
-                <select value={selectedRoom?._id || ''} onChange={(e) => handleSelectRoom(e)}>
-                    <option value="" disabled>
-                        -- Sélectionner une salle --
-                    </option>
-                    {rooms.map((room) => (
-                        <option key={room._id} value={room._id}>
-                            {room.title}
-                        </option>
-                    ))}
-                    <option value="add-room">Ajouter salle</option>
-                </select>
-
+            {/* Room Selection */}
+            <div className="row mb-4">
+                <div className="col-md-6">
+                    <div className="d-flex align-items-center">
+                        <label htmlFor="select-room" className="me-2 fw-medium">Sélectionner une salle:</label>
+                        <select
+                            className="form-select flex-grow-1"
+                            value={selectedRoom?._id || ''}
+                            onChange={(e) => handleSelectRoom(e)}
+                        >
+                            <option value="" disabled>-- Sélectionner une salle --</option>
+                            {rooms.map((room) => (
+                                <option key={room._id} value={room._id}>
+                                    {room.title}
+                                </option>
+                            ))}
+                            <option value="add-room">Ajouter salle</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             {selectedRoom && (
-                <div className="roomTitle">
+                <div className="mb-4">
                     <h2>Salle sélectionnée: {selectedRoom.title}</h2>
                 </div>
             )}
 
+            {/* Dialogs */}
             <Dialog open={openAddRoomDialog} onClose={() => setOpenAddRoomDialog(false)}>
                 <DialogTitle>Créer une nouvelle salle</DialogTitle>
                 <DialogContent>
@@ -463,6 +461,7 @@ const Dashboard: React.FC = () => {
                     <Button onClick={handleCreateRoom}>Créer</Button>
                 </DialogActions>
             </Dialog>
+
             <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
                 <DialogTitle>Erreur</DialogTitle>
                 <DialogContent>
@@ -473,193 +472,189 @@ const Dashboard: React.FC = () => {
                 </DialogActions>
             </Dialog>
 
-            <div className="search-bar">
-                <TextField
-                    onChange={handleSearch}
-                    value={searchTerm}
-                    placeholder="Rechercher un quiz par son titre"
-                    fullWidth
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton>
-                                    <Search />
-                                </IconButton>
-                            </InputAdornment>
-                        )
-                    }}
-                />
+            {/* Search Bar */}
+            <div className="row mb-4">
+                <div className="col-12">
+                    <TextField
+                        onChange={handleSearch}
+                        value={searchTerm}
+                        placeholder="Rechercher un quiz par son titre"
+                        fullWidth
+                        className="w-100"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton>
+                                        <Search />
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </div>
             </div>
 
-            <div className="folder">
-                <div className="select">
+            {/* Folder Selection and Actions */}
+            <div className="row mb-4 align-items-center">
+                <div className="col-md-8 col-lg-9 mb-2 mb-md-0">
                     <NativeSelect
                         id="select-folder"
                         color="primary"
                         value={selectedFolderId}
                         onChange={handleSelectFolder}
+                        className="w-100"
+                        fullWidth
                     >
-                        <option value=""> Tous les dossiers... </option>
-
+                        <option value="">Tous les dossiers...</option>
                         {folders.map((folder: FolderType) => (
                             <option value={folder._id} key={folder._id}>
-                                {' '}
-                                {folder.title}{' '}
+                                {folder.title}
                             </option>
                         ))}
                     </NativeSelect>
                 </div>
-
-                <div className="actions">
-                    <Tooltip title="Ajouter dossier" placement="top">
-                        <IconButton color="primary" onClick={handleCreateFolder}>
-                            {' '}
-                            <Add />{' '}
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Renommer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            color="primary"
-                            onClick={handleRenameFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
-                        >
-                            {' '}
-                            <Edit />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
-
-                    <Tooltip title="Dupliquer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            color="primary"
-                            onClick={handleDuplicateFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
-                        >
-                            {' '}
-                            <FolderCopy />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
-
-                    <Tooltip title="Supprimer dossier" placement="top">
-                        <div>
-                        <IconButton
-                            aria-label="delete"
-                            color="primary"
-                            onClick={handleDeleteFolder}
-                            disabled={selectedFolderId == ''} // cannot action on all
-                        >
-                            {' '}
-                            <DeleteOutline />{' '}
-                        </IconButton>
-                        </div>
-                    </Tooltip>
+                <div className="col-md-4 col-lg-3">
+                    <div className="d-flex justify-content-end gap-2">
+                        <Tooltip title="Ajouter dossier">
+                            <IconButton color="primary" onClick={handleCreateFolder} className="border">
+                                <Add />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Renommer dossier">
+                            <IconButton
+                                color="primary"
+                                onClick={handleRenameFolder}
+                                disabled={selectedFolderId === ''}
+                                className="border"
+                            >
+                                <Edit />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Dupliquer dossier">
+                            <IconButton
+                                color="primary"
+                                onClick={handleDuplicateFolder}
+                                disabled={selectedFolderId === ''}
+                                className="border"
+                            >
+                                <FolderCopy />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Supprimer dossier">
+                            <IconButton
+                                color="error"
+                                onClick={handleDeleteFolder}
+                                disabled={selectedFolderId === ''}
+                                className="border"
+                            >
+                                <DeleteOutline />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
 
-            <div className="ajouter">
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Add />}
-                    onClick={handleCreateQuiz}
-                >
-                    Ajouter un nouveau quiz
-                </Button>
-
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Upload />}
-                    onClick={handleOnImport}
-                >
-                    Import
-                </Button>
+            {/* Add Quiz and Import Buttons */}
+            <div className="row mb-4 g-2">
+                <div className="col-md-10">
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<Add />}
+                        onClick={handleCreateQuiz}
+                        className="w-100 py-2"
+                    >
+                        Ajouter un nouveau quiz
+                    </Button>
+                </div>
+                <div className="col-md-2">
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<Upload />}
+                        onClick={handleOnImport}
+                        className="w-100 py-2"
+                    >
+                        Importer
+                    </Button>
+                </div>
             </div>
-            <div className="list">
+
+            {/* Quiz List */}
+            <div className="row">
                 {Object.keys(quizzesByFolder).map((folderName) => (
-                    <CustomCard key={folderName} className="folder-card">
-                        <div className="folder-tab">{folderName}</div>
-                        <CardContent>
-                            {quizzesByFolder[folderName].map((quiz: QuizType) => (
-                                <div className="quiz" key={quiz._id}>
-                                    <div className="title">
-                                        <Tooltip title="Lancer quiz" placement="top">
-                                            <div>
-                                                <Button
-                                                    variant="outlined"
-                                                    onClick={() => handleLancerQuiz(quiz)}
-                                                    disabled={!validateQuiz(quiz.content)}
-                                                >
-                                                    {`${quiz.title} (${quiz.content.length} question${
-                                                        quiz.content.length > 1 ? 's' : ''
+                    <div className="col-12 mb-4" key={folderName}>
+                        <CustomCard>
+                            <div className="folder-tab">{folderName}</div>
+                            <CardContent className="p-3">
+                                {quizzesByFolder[folderName].map((quiz: QuizType) => (
+                                    <div className="d-flex align-items-center mb-3 p-2 bg-light rounded" key={quiz._id}>
+                                        <div className="flex-grow-1 me-3 text-truncate">
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() => handleLancerQuiz(quiz)}
+                                                disabled={!validateQuiz(quiz.content)}
+                                                className="w-100 text-truncate text-start py-2"
+                                            >
+                                                {`${quiz.title} (${quiz.content.length} question${quiz.content.length > 1 ? 's' : ''
                                                     })`}
-                                                </Button>
-                                            </div>
-                                        </Tooltip>
+                                            </Button>
+                                        </div>
+                                        <div className="d-flex gap-1">
+                                            <Tooltip title="Télécharger quiz">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => downloadTxtFile(quiz)}
+                                                    className="border"
+                                                >
+                                                    <FileDownload />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Modifier quiz">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleEditQuiz(quiz)}
+                                                    className="border"
+                                                >
+                                                    <Edit />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Dupliquer quiz">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleDuplicateQuiz(quiz)}
+                                                    className="border"
+                                                >
+                                                    <ContentCopy />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Supprimer quiz">
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => handleRemoveQuiz(quiz)}
+                                                    className="border"
+                                                >
+                                                    <DeleteOutline />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Partager quiz">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleShareQuiz(quiz)}
+                                                    className="border"
+                                                >
+                                                    <Share />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </div>
                                     </div>
-
-                                    <div className="actions">
-                                        <Tooltip title="Télécharger quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => downloadTxtFile(quiz)}
-                                            >
-                                                {' '}
-                                                <FileDownload />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Modifier quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleEditQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <Edit />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Dupliquer quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleDuplicateQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <ContentCopy />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Supprimer quiz" placement="top">
-                                            <IconButton
-                                                aria-label="delete"
-                                                color="primary"
-                                                onClick={() => handleRemoveQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <DeleteOutline />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-
-                                        <Tooltip title="Partager quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleShareQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <Share />{' '}
-                                            </IconButton>
-                                        </Tooltip>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </CustomCard>
+                                ))}
+                            </CardContent>
+                        </CustomCard>
+                    </div>
                 ))}
             </div>
+
             <ImportModal
                 open={showImportModal}
                 handleOnClose={() => setShowImportModal(false)}
@@ -670,11 +665,13 @@ const Dashboard: React.FC = () => {
     );
 };
 
-export default Dashboard;
+// Helper function
 function addFolderTitleToQuizzes(folderQuizzes: string | QuizType[], folderName: string) {
-    if (Array.isArray(folderQuizzes))
+    if (Array.isArray(folderQuizzes)) {
         folderQuizzes.forEach((quiz) => {
             quiz.folderName = folderName;
-            console.log(`quiz: ${quiz.title} folder: ${quiz.folderName}`);
         });
+    }
 }
+
+export default Dashboard;

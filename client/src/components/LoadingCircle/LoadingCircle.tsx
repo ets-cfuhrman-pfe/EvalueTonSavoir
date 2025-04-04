@@ -1,6 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
-import './loadingCircle.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface Props {
     text: string;
@@ -8,8 +8,8 @@ interface Props {
 
 const LoadingCircle: React.FC<Props> = ({ text }) => {
     return (
-        <div className="loading-circle">
-            <div className="text-base">{text}</div>
+        <div className="d-flex flex-column align-items-center gap-2">
+            <div className="fs-6">{text}</div>
             <CircularProgress />
         </div>
     );

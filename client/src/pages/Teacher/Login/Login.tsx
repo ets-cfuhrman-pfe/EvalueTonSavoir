@@ -1,39 +1,35 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-
-import './Login.css';
-import { TextField } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-
-import LoginContainer from 'src/components/LoginContainer/LoginContainer'
+import { TextField, Button, CircularProgress } from '@mui/material';
+import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 import ApiService from '../../../services/ApiService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [connectionError, setConnectionError] = useState<string>('');
-    const [isConnecting] = useState<boolean>(false);
+    const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
     useEffect(() => {
         return () => {
-
+            // Cleanup if needed
         };
     }, []);
 
     const login = async () => {
-        const result = await ApiService.login(email, password);
-
-        if (typeof result === "string") {
-            setConnectionError(result);
-            return;
+        setIsConnecting(true);
+        try {
+            const result = await ApiService.login(email, password);
+            if (typeof result === "string") {
+                setConnectionError(result);
+            } else {
+                navigate("/teacher/Dashboard");
+            }
+        } finally {
+            setIsConnecting(false);
         }
-        else {
-            navigate("/teacher/Dashboard")
-        }
-
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -43,55 +39,58 @@ const Login: React.FC = () => {
     };
 
     return (
-        <LoginContainer
-            title='Login'
-            error={connectionError}>
-
+        <LoginContainer title='Login' error={connectionError}>
+            {/* Email Field */}
             <TextField
                 label="Email"
                 variant="outlined"
+                className="mb-3 w-100"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Adresse courriel"
-                sx={{ marginBottom: '1rem' }}
-                fullWidth={true}
-                onKeyDown={handleReturnKey} // Add this line as well
+                fullWidth
+                onKeyDown={handleReturnKey}
             />
 
+            {/* Password Field */}
             <TextField
                 label="Mot de passe"
                 variant="outlined"
                 type="password"
+                className="mb-3 w-100"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
-                sx={{ marginBottom: '1rem' }}
-                fullWidth={true}
-                onKeyDown={handleReturnKey} // Add this line as well
+                fullWidth
+                onKeyDown={handleReturnKey}
             />
 
-            <LoadingButton
-                loading={isConnecting}
-                onClick={login}
+            {/* Login Button */}
+            <Button
                 variant="contained"
-                sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                disabled={!email || !password}
+                className={`w-100 mb-${connectionError ? '4' : '3'}`}
+                onClick={login}
+                disabled={!email || !password || isConnecting}
+                startIcon={isConnecting ? <CircularProgress size={20} /> : null}
             >
                 Login
-            </LoadingButton>
+            </Button>
 
-            <div className="login-links">
-
-                <Link to="/teacher/resetPassword">
+            {/* Links Section */}
+            <div className="d-flex flex-column align-items-center pt-3">
+                <Link
+                    to="/teacher/resetPassword"
+                    className="mb-2 text-decoration-none text-primary"
+                >
                     Réinitialiser le mot de passe
                 </Link>
-
-                <Link to="/teacher/register">
+                <Link
+                    to="/teacher/register"
+                    className="text-decoration-none text-primary"
+                >
                     Créer un compte
                 </Link>
-
             </div>
-
         </LoginContainer>
     );
 };
