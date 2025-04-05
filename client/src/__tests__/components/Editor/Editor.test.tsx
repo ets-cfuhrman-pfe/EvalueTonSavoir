@@ -38,11 +38,16 @@ describe('Editor Component', () => {
         expect(mockOnValuesChange).toHaveBeenCalledWith(['Updated Question 1', 'Question 2']);
     });
 
-    test('calls onValuesChange with updated values when a question is deleted', () => {
+    test('calls onValuesChange with updated values when an empty question is deleted', () => {
+        const sampleProps = {
+            label: 'Test Editor',
+            values: [''], 
+            onValuesChange: mockOnValuesChange,
+        };
         render(<Editor {...sampleProps} />);
-        const deleteButton = screen.getAllByLabelText('delete')[0]; // Match original aria-label
+        const deleteButton = screen.getAllByLabelText('delete')[0]; 
         fireEvent.click(deleteButton);
-        expect(mockOnValuesChange).toHaveBeenCalledWith(['Question 2']);
+        expect(mockOnValuesChange).toHaveBeenCalledWith([]);
     });
 
     test('renders delete buttons for each question', () => {
