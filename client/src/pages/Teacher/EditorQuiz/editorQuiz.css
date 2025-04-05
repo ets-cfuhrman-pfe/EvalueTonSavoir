@@ -80,6 +80,12 @@ input[type="file"] {
 .quizEditor .editSection .preview {
     flex: 50%;
     padding: 5px;
-
     overflow: auto;
+    height: 100%;
+    position: relative;
+}
+
+.quizEditor {
+    margin: 0 -2rem; /* Counteract the padding */
+    width: calc(100% + 4rem); /* Expand to fill padded area */
 }
