@@ -11,6 +11,7 @@ import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { Upload } from '@mui/icons-material';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import SaveIcon from '@mui/icons-material/Save';
 
 interface EditQuizParams {
     id: string;
@@ -199,7 +200,7 @@ const QuizForm: React.FC = () => {
                 </div>
             </div>
 
-            <Button variant="contained" onClick={handleQuizSave} className="mb-4">
+            <Button variant="contained" onClick={handleQuizSave} className="mb-4" startIcon={<SaveIcon />} >
                 Enregistrer
             </Button>
 

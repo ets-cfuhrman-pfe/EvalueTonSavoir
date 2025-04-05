@@ -8,7 +8,7 @@ const Footer: React.FC<FooterProps> = () => {
         <footer className="py-4 mt-auto">
             <div className="container text-center">
                 <div className="mb-2">
-                    Réalisé avec ❤ à Montréal par des finissant•e•s de l&apos;ETS
+                    Réalisé avec ❤ à Montréal par des finissant•e•s de l&apos;ÉTS
                 </div>
                 <div className="d-flex justify-content-center align-items-center">
                     <a

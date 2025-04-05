@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Button } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
+import LoginIcon from '@mui/icons-material/Login';
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -13,7 +14,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
     const navigate = useNavigate();
 
     return (
-        <header className="d-flex justify-content-between align-items-center p-3 bg-white shadow-sm">
+        <header className="d-flex justify-content-between align-items-center p-3">
             <img
                 src="/logo.png"
                 alt="Logo"
@@ -25,22 +26,21 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                 {isLoggedIn ? (
                     <Button
                         variant="outlined"
-                        color="primary"
                         onClick={() => {
                             handleLogout();
                             navigate('/');
                         }}
-                        className="ms-2"
+                        className="mb-4"
                         startIcon={<ExitToAppIcon />} 
                     >
-                        Logout
+                        Déconnexion
                     </Button>
                 ) : (
                     <Link to="/login" className="text-decoration-none">
-                        <button className="btn btn-outline-primary ms-2">
-                            Connexion
-                        </button>
-                    </Link>
+                            <Button variant="contained" className="mb-4" startIcon={<LoginIcon />} >
+                                Connexion
+                            </Button>
+                        </Link>
                 )}
             </div>
         </header>

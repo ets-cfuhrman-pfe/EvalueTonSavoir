@@ -4,6 +4,7 @@ import { TextField, Button, CircularProgress } from '@mui/material';
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer';
 import ApiService from '../../../../services/ApiService';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import LoginIcon from '@mui/icons-material/Login';
 
 const SimpleLogin: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -32,7 +33,7 @@ const SimpleLogin: React.FC = () => {
         <LoginContainer title='' error={connectionError}>
             {/* Email Input */}
             <TextField
-                label="Email"
+                label="Courriel"
                 variant="outlined"
                 className="mb-3 w-100" // Bootstrap classes for spacing and width
                 value={email}
@@ -61,8 +62,9 @@ const SimpleLogin: React.FC = () => {
                 disabled={!email || !password || isConnecting}
                 startIcon={isConnecting ? <CircularProgress size={20} /> : null}
                 size="large"
+                startIcon={<LoginIcon />}
             >
-                Login
+                Se connecter
             </Button>
 
             {/* Links Section */}

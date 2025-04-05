@@ -44,7 +44,7 @@ class Users {
     let created_user = await userCollection.insertOne(newUser);
     let user = await this.getById(created_user.insertedId)
 
-    const folderTitle = "Dossier par Défaut";
+    const folderTitle = "Dossier par défaut";
     
     const userId = newUser._id ? newUser._id.toString() : 'x';
     await this.folders.create(folderTitle, userId);

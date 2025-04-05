@@ -50,7 +50,7 @@ describe('Users', () => {
             password: 'hashedPassword',
             created_at: expect.any(Date),
         });
-        expect(users.folders.create).toHaveBeenCalledWith('Dossier par Défaut', expect.any(String));
+        expect(users.folders.create).toHaveBeenCalledWith('Dossier par défaut', expect.any(String));
         expect(result.insertedId).toBeDefined(); // Ensure result has insertedId
     });
 

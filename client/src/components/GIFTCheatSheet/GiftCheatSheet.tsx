@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Button } from '@mui/material';
 
 const GiftCheatSheet: React.FC = () => {
     const [copySuccess, setCopySuccess] = useState(false);
@@ -58,13 +59,9 @@ const GiftCheatSheet: React.FC = () => {
                                     {QuestionVraiFaux}
                                 </code>
                             </pre>
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={() => copyToClipboard(QuestionVraiFaux)}
-                            >
-                                <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                            <Button variant="contained" onClick={() => copyToClipboard(QuestionVraiFaux)} className="mb-4" startIcon={<FileCopyIcon />} >
                                 Copier
-                            </button>
+                            </Button>
                         </>
                     )}
 
@@ -76,13 +73,9 @@ const GiftCheatSheet: React.FC = () => {
                                     {QuestionChoixMul}
                                 </code>
                             </pre>
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={() => copyToClipboard(QuestionChoixMul)}
-                            >
-                                <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                            <Button variant="contained" onClick={() => copyToClipboard(QuestionChoixMul)} className="mb-4" startIcon={<FileCopyIcon />} >
                                 Copier
-                            </button>
+                            </Button>
                         </>
                     )}
 
@@ -94,13 +87,9 @@ const GiftCheatSheet: React.FC = () => {
                                     {QuestionChoixMulMany}
                                 </code>
                             </pre>
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={() => copyToClipboard(QuestionChoixMulMany)}
-                            >
-                                <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                            <Button variant="contained" onClick={() => copyToClipboard(QuestionChoixMulMany)} className="mb-4" startIcon={<FileCopyIcon />} >
                                 Copier
-                            </button>
+                            </Button>
                         </>
                     )}
 
@@ -112,13 +101,9 @@ const GiftCheatSheet: React.FC = () => {
                                     {QuestionCourte}
                                 </code>
                             </pre>
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={() => copyToClipboard(QuestionCourte)}
-                            >
-                                <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                            <Button variant="contained" onClick={() => copyToClipboard(QuestionCourte)} className="mb-4" startIcon={<FileCopyIcon />} >
                                 Copier
-                            </button>
+                            </Button>
                         </>
                     )}
 
@@ -130,13 +115,9 @@ const GiftCheatSheet: React.FC = () => {
                                     {QuestionNum}
                                 </code>
                             </pre>
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={() => copyToClipboard(QuestionNum)}
-                            >
-                                <FileCopyIcon style={{ fontSize: 18, marginRight: '5px' }} />
+                            <Button variant="contained" onClick={() => copyToClipboard(QuestionNum)} className="mb-4" startIcon={<FileCopyIcon />} >
                                 Copier
-                            </button>
+                            </Button>
                         </>
                     )}
 

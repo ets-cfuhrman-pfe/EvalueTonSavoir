@@ -588,7 +588,7 @@ const Dashboard: React.FC = () => {
                             <div className="folder-tab">{folderName}</div>
                             <CardContent className="p-3">
                                 {quizzesByFolder[folderName].map((quiz: QuizType) => (
-                                    <div className="d-flex align-items-center mb-3 p-2 bg-light rounded" key={quiz._id}>
+                                    <div className="d-flex align-items-center mb-3 p-2 rounded" key={quiz._id}>
                                         <div className="flex-grow-1 me-3 text-truncate">
                                             <Button
                                                 variant="outlined"
