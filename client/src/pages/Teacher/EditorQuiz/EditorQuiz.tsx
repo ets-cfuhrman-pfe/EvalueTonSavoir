@@ -272,7 +272,7 @@ const QuizForm: React.FC = () => {
 
                 <div className='edit'>
                     <Editor
-                        label="Contenu GIFT de chaque question:"
+                        label=""
                         values={values}
                         onValuesChange={handleUpdatePreview}
                         onFocusQuestion={handleFocusQuestion} />
