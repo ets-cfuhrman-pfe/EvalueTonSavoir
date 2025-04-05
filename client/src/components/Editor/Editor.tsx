@@ -105,7 +105,7 @@ const Editor: React.FC<EditorProps> = ({ label, values, onValuesChange, onFocusQ
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
                                             sx={{
-                                                marginBottom: '24px',
+                                                marginBottom: '8px',
                                                 boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
                                                 border: '1px solid rgba(0, 0, 0, 0.1)',
                                                 padding: '16px',
