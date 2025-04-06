@@ -25,7 +25,12 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
     return (
         <TableBody>
             {students.map((student) => (
-                <TableRow key={student.id}>
+                <TableRow 
+                    key={student.id}
+                    style={{ 
+                        opacity: student.isActive === false ? 0.5 : 1,
+                    }}
+                >
                     <TableCell
                         className="sticky-column"
                         sx={{

@@ -172,7 +172,12 @@ const ManageRoom: React.FC = () => {
 
         socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            //setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            setStudents(prevStudents =>
+                prevStudents.map(student =>
+                    student.id === userId ? { ...student, isActive: false } : student
+                )
+            );
         });
 
         setSocket(socket);
