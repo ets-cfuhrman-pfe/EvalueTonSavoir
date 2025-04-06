@@ -423,6 +423,7 @@ const ManageRoom: React.FC = () => {
                                 {currentQuestion && (
                                     <QuestionDisplay
                                         showAnswer={false}
+                                        showAnswerToggle={true}
                                         question={currentQuestion?.question as Question}
                                         students={students}
                                     />

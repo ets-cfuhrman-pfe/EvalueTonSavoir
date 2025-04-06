@@ -33,7 +33,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
         <Accordion defaultActiveKey="0" alwaysOpen>
             <Accordion.Item eventKey="0">
                 <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
-                    <div className="text-2xl text-bold">Résultats du quiz</div>
+                    <div className="text-2xl text-bold">{isOpen ? 'Résultats du quiz' : 'Masquer les résultats'}</div>
                 </Accordion.Header>
                 <Accordion.Body>
                         <div className="action-bar mb-1">

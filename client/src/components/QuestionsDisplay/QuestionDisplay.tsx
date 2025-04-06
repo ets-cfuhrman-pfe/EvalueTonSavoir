@@ -19,6 +19,7 @@ interface QuestionProps {
     showAnswer?: boolean;
     students?: StudentType[];
     showResults?: boolean;
+    showAnswerToggle?: boolean;
     answer?: AnswerType;
 
 }
@@ -26,6 +27,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    showAnswerToggle = false,
     students,
     answer,
 }) => {
@@ -92,35 +94,49 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
             break;
     }
     return (
-        <Accordion defaultActiveKey="0" alwaysOpen>
-            <Accordion.Item eventKey="0">
-                <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
-                    {isOpen ? 'Masquer les questions' : 'Afficher les questions'}
-                </Accordion.Header>
-                <Accordion.Body>
-                    <FormControlLabel
-                    label={<div className="text-sm">Afficher les résultats</div>}
-                    control={
-                        <Switch
-                            value={showResults}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                setShowResults(e.target.checked)
-                            }
+        <>
+            {showAnswerToggle ? (
+                <Accordion defaultActiveKey="0" alwaysOpen>
+                    <Accordion.Item eventKey="0">
+                        <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? 'Afficher les questions' : 'Masquer les questions'}
+                        </Accordion.Header>
+                        <Accordion.Body>
+                            <FormControlLabel
+                            label={<div className="text-sm">Afficher les résultats</div>}
+                            control={
+                                <Switch
+                                    value={showResults}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setShowResults(e.target.checked)
+                                    }
+                                    />
+                                }
                             />
-                        }
-                    />
-                    <div className="question-container">
-                        {questionTypeComponent ? (
-                            <>
-                                {questionTypeComponent}
-                            </>
-                        ) : (
-                            <div>Question de type inconnue</div>
-                        )}
-                    </div>
-                </Accordion.Body>
-            </Accordion.Item>
-        </Accordion>
+                            <div className="question-container">
+                                {questionTypeComponent ? (
+                                    <>
+                                        {questionTypeComponent}
+                                    </>
+                                ) : (
+                                    <div>Question de type inconnue</div>
+                                )}
+                            </div>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                </Accordion>
+            ) : (
+                <div className="question-container">
+                {questionTypeComponent ? (
+                    <>
+                        {questionTypeComponent}
+                    </>
+                ) : (
+                    <div>Question de type inconnue</div>
+                )}
+                </div>
+            )}
+        </>
     );
 };
 
