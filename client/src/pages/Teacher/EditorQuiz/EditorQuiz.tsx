@@ -11,7 +11,7 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 import { QuizType } from '../../../Types/QuizType';
 
 import './editorQuiz.css';
-import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, Snackbar } from '@mui/material';
+import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, MenuItem, Select, Snackbar } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 
 import ApiService from '../../../services/ApiService';
@@ -48,6 +48,21 @@ const QuizForm: React.FC = () => {
     const [isUploadCollapsed, setIsUploadCollapsed] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [copySuccess, setCopySuccess] = useState<string | null>(null);
+
+    const QuestionVraiFaux = "::Exemple de question vrai/faux:: \n 2+2 \\= 4 ? {T}  //Utilisez les valeurs {T}, {F}, {TRUE} et {FALSE}.";
+    const QuestionChoixMul = "::Ville capitale du Canada:: \nQuelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Rétroaction spécifique.\n}  // Commentaire non visible (au besoin)";
+    const QuestionChoixMulMany = "::Villes canadiennes:: \n Quelles villes trouve-t-on au Canada? { \n~ %33.3% Montréal \n ~ %33.3% Ottawa \n ~ %33.3% Vancouver \n ~ %-100% New York \n ~ %-100% Paris \n#### Rétroaction globale de la question. \n}  // Utilisez tilde (signe de vague) pour toutes les réponses. // On doit indiquer le pourcentage de chaque réponse.";
+    const QuestionCourte = "::Clé et porte:: \n Avec quoi ouvre-t-on une porte? { \n= clé \n= clef \n} // Permet de fournir plusieurs bonnes réponses. // Note: La casse n'est pas prise en compte.";
+    const QuestionNum = "::Question numérique avec marge:: \nQuel est un nombre de 1 à 5 ? {\n#3:2\n}\n \n// Plage mathématique spécifiée avec des points de fin d'intervalle. \n ::Question numérique avec plage:: \n Quel est un nombre de 1 à 5 ? {\n#1..5\n} \n\n// Réponses numériques multiples avec crédit partiel et commentaires.\n::Question numérique avec plusieurs réponses::\nQuand est né Ulysses S. Grant ? {\n# =1822:0 # Correct ! Crédit complet. \n=%50%1822:2 # Il est né en 1822. Demi-crédit pour être proche.\n}";
+
+    const templates = [
+        { label: 'Vrai/Faux', value: QuestionVraiFaux },
+        { label: 'Choix multiples R1', value: QuestionChoixMul },
+        { label: 'Choix multiples R2+', value: QuestionChoixMulMany },
+        { label: 'Réponse courte', value: QuestionCourte },
+        { label: 'Numérique', value: QuestionNum },
+    ];
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -221,6 +236,18 @@ const QuizForm: React.FC = () => {
         }
     };
 
+    const copyToClipboard = (text: string, label: string) => {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                setCopySuccess(`Copié dans le presse-papier: ${label}`);
+            })
+            .catch((error) => console.error('Clipboard error:', error));
+    };
+
+    const handleSelectChange = (value: string, label: string) => {
+        copyToClipboard(value, label);
+    };
+
     return (
         <div className='quizEditor'>
 
@@ -271,6 +298,23 @@ const QuizForm: React.FC = () => {
                 ))}
             </NativeSelect></label>
 
+
+                        <div className='sticky-buttons'>
+                <Select
+                    value=""
+                    displayEmpty
+                    onChange={(e) => handleSelectChange(e.target.value, templates.find(t => t.value === e.target.value)?.label || '')}
+                    style={{ width: '210px' }}
+                    inputProps={{
+                        'data-testid': 'template-select'
+                    }}
+
+                >
+                    <MenuItem value="" disabled>Modèles de questions</MenuItem>
+                    {templates.map((template, index) => (
+                        <MenuItem key={index} value={template.value}>{template.label}</MenuItem>
+                    ))}
+                </Select>
                 <Button
                     variant="contained"
                     onClick={handleQuizSave}
@@ -279,7 +323,17 @@ const QuizForm: React.FC = () => {
                     <SaveIcon sx={{ fontSize: 20 }} />
                     Enregistrer
                 </Button>
+            </div>
 
+            <Snackbar
+                open={!!copySuccess}
+                autoHideDuration={3000}
+                onClose={() => setCopySuccess(null)}
+                message={copySuccess}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                key={copySuccess ? 'open' : 'close'}
+            />
+            
             <Divider style={{ margin: '16px 0' }} />
 
             <div className='editSection'>
