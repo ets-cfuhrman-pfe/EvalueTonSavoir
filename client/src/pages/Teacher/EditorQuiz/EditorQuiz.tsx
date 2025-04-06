@@ -17,6 +17,7 @@ import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { Upload } from '@mui/icons-material';
+import SaveIcon from '@mui/icons-material/Save';
 
 interface EditQuizParams {
     id: string;
@@ -223,7 +224,13 @@ const QuizForm: React.FC = () => {
     return (
         <div className='quizEditor'>
 
-            <div className='editHeader'>
+            <div className='editHeader'
+            style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '32px'
+            }}>
                 <ReturnButton
                     quizTitle={quizTitle}
                     quizContent={filteredValue}
@@ -231,6 +238,8 @@ const QuizForm: React.FC = () => {
                     quizId={quiz?._id}
                     isNewQuiz={isNewQuiz}
                 />
+
+
 
                 <div className='title'>Éditeur de Quiz</div>
 
@@ -262,9 +271,14 @@ const QuizForm: React.FC = () => {
                 ))}
             </NativeSelect></label>
 
-            <Button variant="contained" onClick={handleQuizSave}>
-                Enregistrer
-            </Button>
+                <Button
+                    variant="contained"
+                    onClick={handleQuizSave}
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                    <SaveIcon sx={{ fontSize: 20 }} />
+                    Enregistrer
+                </Button>
 
             <Divider style={{ margin: '16px 0' }} />
 
