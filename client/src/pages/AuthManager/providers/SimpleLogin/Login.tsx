@@ -60,9 +60,8 @@ const SimpleLogin: React.FC = () => {
                 className={`w-100 mb-${connectionError ? '4' : '3'}`} // Dynamic margin-bottom
                 onClick={login}
                 disabled={!email || !password || isConnecting}
-                startIcon={isConnecting ? <CircularProgress size={20} /> : null}
+                startIcon={isConnecting ? <CircularProgress size={20} /> : <LoginIcon />}
                 size="large"
-                startIcon={<LoginIcon />}
             >
                 Se connecter
             </Button>

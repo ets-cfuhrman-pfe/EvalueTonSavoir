@@ -4,6 +4,7 @@ import { TextField, Button, CircularProgress } from '@mui/material';
 import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 import ApiService from '../../../services/ApiService';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import LoginIcon from '@mui/icons-material/Login';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -71,7 +72,7 @@ const Login: React.FC = () => {
                 className={`w-100 mb-${connectionError ? '4' : '3'}`}
                 onClick={login}
                 disabled={!email || !password || isConnecting}
-                startIcon={isConnecting ? <CircularProgress size={20} /> : null}
+                startIcon={isConnecting ? <CircularProgress size={20} /> : <LoginIcon/>}
             >
                 Login
             </Button>
