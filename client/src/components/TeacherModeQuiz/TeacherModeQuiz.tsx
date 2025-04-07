@@ -1,7 +1,6 @@
 // TeacherModeQuiz.tsx
 import React, { useEffect, useState } from 'react';
 import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
-import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';

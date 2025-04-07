@@ -1,7 +1,6 @@
 // StudentModeQuiz.tsx
 import React, { useEffect, useState } from 'react';
 import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
-import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
 //import QuestionNavigation from '../QuestionNavigation/QuestionNavigation';

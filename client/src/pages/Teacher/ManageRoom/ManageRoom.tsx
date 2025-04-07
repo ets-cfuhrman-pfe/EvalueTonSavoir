@@ -8,7 +8,6 @@ import webSocketService, {
 } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
-import './manageRoom.css';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
@@ -20,12 +19,13 @@ import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button } from '@mui/material';
 import { checkIfIsCorrect } from './useRooms';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Add Bootstrap CSS import
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string, roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -343,13 +343,13 @@ const ManageRoom: React.FC = () => {
 
     if (!formattedRoomName) {
         return (
-            <div className="center">
+            <div className="d-flex flex-column justify-content-center align-items-center vh-100">
                 {!connectingError ? (
                     <LoadingCircle text="Veuillez attendre la connexion au serveur..." />
                 ) : (
-                    <div className="center-v-align">
+                    <div className="d-flex flex-column align-items-center gap-3">
                         <Error sx={{ padding: 0 }} />
-                        <div className="text-base">{connectingError}</div>
+                        <div className="text-center">{connectingError}</div>
                         <Button
                             variant="contained"
                             startIcon={<Refresh />}
@@ -364,118 +364,82 @@ const ManageRoom: React.FC = () => {
     }
 
     return (
-        <div className="room">
-            <h1>Salle : {formattedRoomName}</h1>
-            <div className="roomHeader">
+        <div className="container-fluid p-3">
+            <h1 className="text-center mb-4">Salle : {formattedRoomName}</h1>
+
+            {/* Room Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter?`}
                 />
 
-                <div
-                    className="headerContent"
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%'
-                    }}
-                >
-                    {(
-                        <div
-                            className="userCount subtitle smallText"
-                            style={{ display: "flex", justifyContent: "flex-end" }}
-                        >
-                            <GroupIcon style={{ marginRight: '5px' }} />
-                            {students.length}/60
+                <div className="d-flex align-items-center ms-auto">
+                    <GroupIcon className="me-2" />
+                    <span className="text-muted">{students.length}/60</span>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            {quizQuestions ? (
+                <div className="d-flex flex-column">
+                    <h2 className="text-center mb-3">{quiz?.title}</h2>
+                    {!isNaN(Number(currentQuestion?.question.id)) && (
+                        <p className="text-center fw-bold mb-3">
+                            Question {Number(currentQuestion?.question.id)}/{quizQuestions?.length}
+                        </p>
+                    )}
+
+                    <div className="mb-4" style={{ height: '70vh', overflow: 'auto' }}>
+                        <div className="d-flex flex-column gap-4">
+                            {currentQuestion && (
+                                <QuestionDisplay
+                                    showAnswer={false}
+                                    question={currentQuestion?.question as Question}
+                                />
+                            )}
+
+                            <LiveResultsComponent
+                                quizMode={quizMode}
+                                socket={socket}
+                                questions={quizQuestions}
+                                showSelectedQuestion={showSelectedQuestion}
+                                students={students}
+                            />
+                        </div>
+                    </div>
+
+                    {quizMode === 'teacher' && (
+                        <div className="d-flex justify-content-center gap-3 mb-4">
+                            <Button
+                                onClick={previousQuestion}
+                                variant="contained"
+                                disabled={Number(currentQuestion?.question.id) <= 1}
+                                className="px-4"
+                            >
+                                Question précédente
+                            </Button>
+                            <Button
+                                onClick={nextQuestion}
+                                variant="contained"
+                                disabled={
+                                    Number(currentQuestion?.question.id) >= quizQuestions.length
+                                }
+                                className="px-4"
+                            >
+                                Prochaine question
+                            </Button>
                         </div>
                     )}
                 </div>
-
-                <div className="dumb"></div>
-            </div>
-
-            {/* the following breaks the css (if 'room' classes are nested) */}
-            <div className="">
-                {quizQuestions ? (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div className="title center-h-align mb-2">{quiz?.title}</div>
-                        {!isNaN(Number(currentQuestion?.question.id)) && (
-                            <strong className="number of questions">
-                                Question {Number(currentQuestion?.question.id)}/
-                                {quizQuestions?.length}
-                            </strong>
-                        )}
-
-                        {quizMode === 'teacher' && (
-                            <div className="mb-1">
-                                {/* <QuestionNavigation
-                                    currentQuestionId={Number(currentQuestion?.question.id)}
-                                    questionsLength={quizQuestions?.length}
-                                    previousQuestion={previousQuestion}
-                                    nextQuestion={nextQuestion}
-                                /> */}
-                            </div>
-                        )}
-
-                        <div className="mb-2 flex-column-wrapper">
-                            <div className="preview-and-result-container">
-                                {currentQuestion && (
-                                    <QuestionDisplay
-                                        showAnswer={false}
-                                        question={currentQuestion?.question as Question}
-                                        
-                                    />
-                                )}
-
-                                <LiveResultsComponent
-                                    quizMode={quizMode}
-                                    socket={socket}
-                                    questions={quizQuestions}
-                                    showSelectedQuestion={showSelectedQuestion}
-                                    students={students}
-                                ></LiveResultsComponent>
-                            </div>
-                        </div>
-
-                        {quizMode === 'teacher' && (
-                            <div
-                                className="questionNavigationButtons"
-                                style={{ display: 'flex', justifyContent: 'center' }}
-                            >
-                                <div className="previousQuestionButton">
-                                    <Button
-                                        onClick={previousQuestion}
-                                        variant="contained"
-                                        disabled={Number(currentQuestion?.question.id) <= 1}
-                                    >
-                                        Question précédente
-                                    </Button>
-                                </div>
-                                <div className="nextQuestionButton">
-                                    <Button
-                                        onClick={nextQuestion}
-                                        variant="contained"
-                                        disabled={
-                                            Number(currentQuestion?.question.id) >=
-                                            quizQuestions.length
-                                        }
-                                    >
-                                        Prochaine question
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <StudentWaitPage
-                        students={students}
-                        launchQuiz={launchQuiz}
-                        setQuizMode={setQuizMode}
-                    />
-                )}
-            </div>
+            ) : (
+                <StudentWaitPage
+                    students={students}
+                    launchQuiz={launchQuiz}
+                    setQuizMode={setQuizMode}
+                />
+            )}
         </div>
     );
 };

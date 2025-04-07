@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import * as React from 'react';
-import './header.css';
 import { Button } from '@mui/material';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import LogoutIcon from '@mui/icons-material/Logout'; 
+import LoginIcon from '@mui/icons-material/Login';
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -12,35 +14,36 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="header">
+        <header className="d-flex justify-content-between align-items-center p-3">
             <img
-                className="logo"
                 src="/logo.png"
                 alt="Logo"
+                className="cursor-pointer"
                 onClick={() => navigate('/')}
             />
 
-            {isLoggedIn && (
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => {
-                        handleLogout();
-                        navigate('/');
-                    }}
-                >
-                    Logout
-                </Button>
-            )}
-
-            {!isLoggedIn && (
-                <div className="auth-selection-btn">
-                    <Link to="/login">
-                        <button className="auth-btn">Connexion</button>
-                    </Link>
-                </div>
-            )}
-        </div>
+            <div>
+                {isLoggedIn ? (
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            handleLogout();
+                            navigate('/');
+                        }}
+                        className="mb-4"
+                        startIcon={<LogoutIcon />} 
+                    >
+                        Déconnexion
+                    </Button>
+                ) : (
+                    <Link to="/login" className="text-decoration-none">
+                            <Button variant="contained" className="mb-4" startIcon={<LoginIcon />} >
+                                Connexion
+                            </Button>
+                        </Link>
+                )}
+            </div>
+        </header>
     );
 };
 
