@@ -38,7 +38,7 @@ describe("ImageGallery", () => {
 
   it("should render images correctly", async () => {
     await act(async () => {
-      await screen.findByText("Gallery");
+      await screen.findByText("Galerie");
     });
 
     expect(screen.getByAltText("Image image1.jpg")).toBeInTheDocument();

@@ -147,7 +147,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   return (
     <Box p={3}>
       <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-        <Tab label="Gallery" />
+        <Tab label="Galerie" />
         <Tab label="Import" />
       </Tabs>
       {tabValue === 0 && (
