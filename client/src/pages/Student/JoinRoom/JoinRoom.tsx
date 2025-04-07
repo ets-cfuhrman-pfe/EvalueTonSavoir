@@ -210,7 +210,7 @@ const JoinRoom: React.FC = () => {
         default:
             return (
                 <LoginContainer
-                    title={isQRCodeJoin ? `Rejoindre la ${roomName}` : 'Rejoindre une salle'}
+                    title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
                     error={connectionError}
                 >
                     {/* Afficher champ salle SEULEMENT si pas de QR code */}
