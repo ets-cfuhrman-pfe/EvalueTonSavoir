@@ -5,6 +5,7 @@ import './share.css';
 import { Button, NativeSelect, Typography, Box } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 import ApiService from '../../../services/ApiService';
+import SaveIcon from '@mui/icons-material/Save';
 
 const Share: React.FC = () => {
     const navigate = useNavigate();
@@ -167,6 +168,7 @@ const Share: React.FC = () => {
                     </NativeSelect>
 
                     <Button variant="contained" onClick={handleQuizSave} className="saveButton">
+                    {<SaveIcon sx={{ fontSize: 20, marginRight: '8px' }} />}
                         Enregistrer
                     </Button>
                 </div>

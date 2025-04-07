@@ -9,7 +9,7 @@ import GiftCheatSheet from 'src/components/GIFTCheatSheet/GiftCheatSheet';
 import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview';
 
 import { QuizType } from '../../../Types/QuizType';
-
+import SaveIcon from '@mui/icons-material/Save';
 import './editorQuiz.css';
 import { Button, TextField, NativeSelect, Divider } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
@@ -214,6 +214,7 @@ const QuizForm: React.FC = () => {
             </NativeSelect></label>
 
             <Button variant="contained" onClick={handleQuizSave}>
+            <SaveIcon sx={{ fontSize: 20 }} />
                 Enregistrer
             </Button>
 

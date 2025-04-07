@@ -59,7 +59,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     disabled={disableButton}
                 >
                     {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
-                    <div className={`circle ${selectedTrue}`}>V</div>
                     <div className={`answer-text ${selectedTrue}`}>Vrai</div>
 
                     {showAnswer && answer && question.trueFormattedFeedback && (
@@ -76,7 +75,6 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
 
                 >
                     {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
-                    <div className={`circle ${selectedFalse}`}>F</div>
                     <div className={`answer-text ${selectedFalse}`}>Faux</div>
 
                     {showAnswer && !answer && question.falseFormattedFeedback && (
