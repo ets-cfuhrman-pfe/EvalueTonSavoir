@@ -711,21 +711,20 @@ const Dashboard: React.FC = () => {
                                                 <ContentCopy />{' '}
                                             </IconButton>
                                         </Tooltip>
+                                        <div className="quiz-share">
+                                            <ShareQuizModal quiz={quiz} />
+                                        </div>
 
                                         <Tooltip title="Supprimer" placement="top">
                                             <IconButton
                                                 aria-label="delete"
-                                                color="primary"
+                                                color="error"
                                                 onClick={() => handleRemoveQuiz(quiz)}
                                             >
                                                 {' '}
                                                 <DeleteOutline />{' '}
                                             </IconButton>
                                         </Tooltip>
-
-                                        <div className="quiz-share">
-                                            <ShareQuizModal quiz={quiz} />
-                                        </div>
                                     </div>
                                 </div>
                             ))}
