@@ -1,5 +1,5 @@
 // EditorQuiz.tsx
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -13,11 +13,14 @@ import { QuizType } from '../../../Types/QuizType';
 import './editorQuiz.css';
 import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, MenuItem, Select, Snackbar } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
+import ImageGalleryModal from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModal';
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
+
 import { Upload } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
+import { ENV_VARIABLES } from 'src/constants';
 
 interface EditQuizParams {
     id: string;
@@ -39,8 +42,6 @@ const QuizForm: React.FC = () => {
     const handleSelectFolder = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedFolder(event.target.value);
     };
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
 
     const [isImagesCollapsed, setIsImagesCollapsed] = useState(true);
@@ -221,7 +222,7 @@ const QuizForm: React.FC = () => {
 
         }
     };
-
+  
     const handleCopyToClipboard = async (link: string) => {
         navigator.clipboard.writeText(link);
     }
@@ -247,6 +248,11 @@ const QuizForm: React.FC = () => {
     const handleSelectChange = (value: string, label: string) => {
         copyToClipboard(value, label);
     };
+
+    const handleCopyImage = (id: string) => {
+        const escLink = `${ENV_VARIABLES.BACKEND_URL}/api/image/get/${id}`;
+        setImageLinks(prevLinks => [...prevLinks, escLink]);
+    }
 
     return (
         <div className='quizEditor'>
