@@ -1,4 +1,4 @@
-import marked from 'src/markedConfig';
+import marked, {attachImageModalListeners} from 'src/markedConfig';
 
 import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
@@ -53,6 +53,7 @@ export function FormattedTextTemplate(formattedText: TextFormat): string {
             break;
         case 'markdown':
             parsedText = marked.parse(formatText, { breaks: true, gfm: true }) as string; // <br> for newlines
+            attachImageModalListeners();
             result = parsedText.replace(/(^<p>)(.*?)(<\/p>)$/gm, '$2');
             break;
         default:
