@@ -22,7 +22,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ImageType } from "../../Types/ImageType";
 import ApiService from "../../services/ApiService";
 import { Upload } from "@mui/icons-material";
-import { ENV_VARIABLES } from '../../constants';
 import { escapeForGIFT } from "src/utils/giftUtils";
 
 interface ImagesProps {
@@ -83,9 +82,9 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
 
   const defaultHandleCopy = (id: string) => {
     if (navigator.clipboard) {
-      const link = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
-      const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle") {T}`;
-      setSnackbarMessage("Le lien Markdown de l’image a été copié dans le presse-papiers");
+      const link = `api/image/get/${id}`;
+      const imgTag = `[markdown] ![texte alternatif d'écrivant l'image pour les personnes qui ne peuvent pas voir l'image](${escapeForGIFT(link)} "texte de l'infobulle (ne fonctionne pas sur écran tactile généralement)") `;
+      setSnackbarMessage("Le lien Markdown de l'image a été copié dans le presse-papiers");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       navigator.clipboard.writeText(imgTag);
