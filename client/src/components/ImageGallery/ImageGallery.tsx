@@ -23,6 +23,7 @@ import { ImageType } from "../../Types/ImageType";
 import ApiService from "../../services/ApiService";
 import { Upload } from "@mui/icons-material";
 import { escapeForGIFT } from "src/utils/giftUtils";
+import { ENV_VARIABLES } from "src/constants";
 
 interface ImagesProps {
   handleCopy?: (id: string) => void;
@@ -82,7 +83,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
 
   const defaultHandleCopy = (id: string) => {
     if (navigator.clipboard) {
-      const link = `api/image/get/${id}`;
+      const link = `${ENV_VARIABLES.BACKEND_URL}/api/image/get/${id}`;
       const imgTag = `[markdown] ![texte alternatif d'écrivant l'image pour les personnes qui ne peuvent pas voir l'image](${escapeForGIFT(link)} "texte de l'infobulle (ne fonctionne pas sur écran tactile généralement)") `;
       setSnackbarMessage("Le lien Markdown de l'image a été copié dans le presse-papiers");
       setSnackbarSeverity("success");
