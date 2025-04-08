@@ -299,6 +299,37 @@ describe('ManageRoom', () => {
             expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
         });
     });
+
+    test('terminates the quiz and navigates to teacher dashboard when the "Terminer le quiz" button is clicked', async () => {
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <ManageRoom />
+                </MemoryRouter>
+            );
+        });
+    
+        await act(async () => {
+            const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
+            createSuccessCallback('Test Room');
+        });
+    
+        fireEvent.click(screen.getByText('Lancer'));
+        fireEvent.click(screen.getByText('Rythme du professeur'));
+        fireEvent.click(screen.getAllByText('Lancer')[1]);
+    
+        await waitFor(() => {
+            expect(screen.getByText('Test Quiz')).toBeInTheDocument();
+        });
+    
+        const finishQuizButton = screen.getByText('Terminer le quiz');
+        fireEvent.click(finishQuizButton);
+    
+        await waitFor(() => {
+            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard');
+        });
+    });
+    
     test("Affiche la modale QR Code lorsqu’on clique sur le bouton", async () => {
         render(<MemoryRouter><ManageRoom /></MemoryRouter>);
     

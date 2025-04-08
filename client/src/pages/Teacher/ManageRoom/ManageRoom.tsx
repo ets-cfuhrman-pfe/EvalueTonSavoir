@@ -382,6 +382,11 @@ const ManageRoom: React.FC = () => {
         }
     };
 
+    const finishQuiz = () => {
+        disconnectWebSocket();
+        navigate('/teacher/dashboard');
+    };
+
     const handleReturn = () => {
         disconnectWebSocket();
         navigate('/teacher/dashboard');
@@ -567,6 +572,11 @@ const ManageRoom: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                        <div className="finishQuizButton">
+                            <Button onClick={finishQuiz} variant="contained">
+                                Terminer le quiz
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     <StudentWaitPage

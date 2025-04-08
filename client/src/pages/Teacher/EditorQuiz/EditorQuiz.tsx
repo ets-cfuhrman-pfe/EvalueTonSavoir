@@ -1,5 +1,5 @@
 // EditorQuiz.tsx
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -11,12 +11,13 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 import { QuizType } from '../../../Types/QuizType';
 
 import './editorQuiz.css';
-import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent } from '@mui/material';
+import { Button, TextField, NativeSelect, Divider } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
+import ImageGalleryModal from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModal';
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
-import { Upload } from '@mui/icons-material';
+import { ENV_VARIABLES } from '../../../constants';
 
 interface EditQuizParams {
     id: string;
@@ -38,8 +39,6 @@ const QuizForm: React.FC = () => {
     const handleSelectFolder = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedFolder(event.target.value);
     };
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
 
     const scrollToTop = () => {
@@ -166,42 +165,13 @@ const QuizForm: React.FC = () => {
         return <div>Chargement...</div>;
     }
 
-    const handleSaveImage = async () => {
-        try {
-            const inputElement = document.getElementById('file-input') as HTMLInputElement;
-
-            if (!inputElement?.files || inputElement.files.length === 0) {
-                setDialogOpen(true);
-                return;
-            }
-
-            if (!inputElement.files || inputElement.files.length === 0) {
-                window.alert("Veuillez d'abord choisir une image à téléverser.")
-                return;
-            }
-
-            const imageUrl = await ApiService.uploadImage(inputElement.files[0]);
-
-            // Check for errors
-            if(imageUrl.indexOf("ERROR") >= 0) {
-                window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
-                return;
-            }
-
-            setImageLinks(prevLinks => [...prevLinks, imageUrl]);
-
-            // Reset the file input element
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-        } catch (error) {
-            window.alert(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`)
-
-        }
-    };
-
     const handleCopyToClipboard = async (link: string) => {
         navigator.clipboard.writeText(link);
+    }
+
+    const handleCopyImage = (id: string) => {
+        const escLink = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
+        setImageLinks(prevLinks => [...prevLinks, escLink]);
     }
 
     return (
@@ -258,37 +228,11 @@ const QuizForm: React.FC = () => {
                         onEditorChange={handleUpdatePreview} />
 
                     <div className='images'>
-                        <div className='upload'>
-                            <label className="dropArea">
-                                <input type="file" id="file-input" className="file-input"
-                                accept="image/jpeg, image/png"
-                                multiple 
-                                ref={fileInputRef} />
-
-                                <Button
-                                variant="outlined"
-                                aria-label='Téléverser'
-                                onClick={handleSaveImage}>
-                                    Téléverser <Upload /> 
-                                </Button>
-
-                            </label>
-                            <Dialog
-                                open={dialogOpen}
-                                onClose={() => setDialogOpen(false)} >
-                                <DialogTitle>Erreur</DialogTitle>
-                                <DialogContent>
-                                    Veuillez d&apos;abord choisir une image à téléverser.
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={() => setDialogOpen(false)} color="primary">
-                                        OK
-                                    </Button>
-                                </DialogActions>
-                            </Dialog>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <h4>Mes images :</h4>
+                                <ImageGalleryModal handleCopy={handleCopyImage} />
                         </div>
-
-                        <h4>Mes images :</h4>
+                                
                         <div>
                                 <div>
                                 <div style={{ display: "inline" }}>(Voir section </div>
@@ -302,7 +246,7 @@ const QuizForm: React.FC = () => {
                                 </div>                            
                                 <ul>
                                 {imageLinks.map((link, index) => {
-                                    const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
+                                    const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle") {T}`;
                                     return (
                                         <li key={index}>
                                             <code
