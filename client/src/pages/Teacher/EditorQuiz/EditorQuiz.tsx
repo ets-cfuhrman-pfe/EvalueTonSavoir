@@ -175,48 +175,65 @@ const QuizForm: React.FC = () => {
     }
 
     return (
-        <div className='quizEditor'>
-
-            <div className='editHeader'>
+        <div className="quizEditor">
+            <div
+                className="editHeader"
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '32px'
+                }}
+            >
                 <ReturnButton
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter l'éditeur sans sauvegarder le questionnaire?`}
                 />
 
-                <div className='title'>Éditeur de quiz</div>
+<Button
+                    variant="contained"
+                    onClick={handleQuizSave}
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                    <SaveIcon sx={{ fontSize: 20 }} />
+                    Enregistrer
+                </Button>
+            </div>
 
-                <div className='dumb'></div>
+            <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                <div className="title">Éditeur de quiz</div>
             </div>
 
             {/* <h2 className="subtitle">Éditeur</h2> */}
 
-            <TextField
-                onChange={handleQuizTitleChange}
-                value={quizTitle}
-                placeholder="Titre du quiz"
-                label="Titre du quiz"
-                fullWidth
-            />
-            <label>Choisir un dossier:
-            <NativeSelect
-                id="select-folder"
-                color="primary"
-                value={selectedFolder}
-                onChange={handleSelectFolder}
-                disabled={!isNewQuiz}
-                style={{ marginBottom: '16px' }} // Ajout de marge en bas
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <TextField
+                    onChange={handleQuizTitleChange}
+                    value={quizTitle}
+                    color="primary"
+                    placeholder="Titre du quiz"
+                    label="Titre du quiz"
+                    sx={{ width: '200px', marginTop: '50px' }}
+                />
+             <NativeSelect
+                    id="select-folder"
+                    color="primary"
+                    value={selectedFolder}
+                    onChange={handleSelectFolder}
+                    disabled={!isNewQuiz}
+                    style={{ marginBottom: '16px', width: '200px', marginTop: '10px' }}
                 >
-                <option disabled value=""> Choisir un dossier... </option>
+                    <option disabled value="">
+                        Choisir un dossier...
+                    </option>
+                    {folders.map((folder: FolderType) => (
+                        <option value={folder._id} key={folder._id}>
+                            {folder.title}
+                        </option>
+                    ))}
+                </NativeSelect>
+            </div>
 
-                {folders.map((folder: FolderType) => (
-                    <option value={folder._id} key={folder._id}> {folder.title} </option>
-                ))}
-            </NativeSelect></label>
-
-            <Button variant="contained" onClick={handleQuizSave}>
-            <SaveIcon sx={{ fontSize: 20 }} />
-                Enregistrer
-            </Button>
 
             <Divider style={{ margin: '16px 0' }} />
 

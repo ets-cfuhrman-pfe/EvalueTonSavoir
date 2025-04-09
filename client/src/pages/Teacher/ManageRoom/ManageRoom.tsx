@@ -386,32 +386,41 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <h1>Salle : {formattedRoomName}</h1>
-            <div className="roomHeader">
+            <div className="disconnectWrapper" style={{ marginBottom: '20px' }}>
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter?`}
                 />
+            </div>
 
+            <div className="roomHeader">
                 <div
-                    className="headerContent"
                     style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
+                        justifyContent: 'center',
                         alignItems: 'center',
-                        width: '100%'
+                        width: '100%',
+                        marginBottom: '10px'
                     }}
                 >
-                    {
+                    <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                        Salle : {formattedRoomName}
                         <div
-                            className="userCount subtitle smallText"
-                            style={{ display: 'flex', justifyContent: 'flex-end' }}
+                            className="userCount subtitle"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                marginLeft: '20px',
+                                marginBottom: '0px'
+                            }}
                         >
-                            <GroupIcon style={{ marginRight: '5px' }} />
+                            <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
                             {students.length}/60
                         </div>
-                    }
+                    </h1>
                 </div>
 
                 <div className="dumb"></div>
