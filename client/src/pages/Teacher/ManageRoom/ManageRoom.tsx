@@ -29,8 +29,7 @@ import {
 } from '@mui/material';
 import { checkIfIsCorrect } from './useRooms';
 import { QRCodeCanvas } from 'qrcode.react';
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -416,7 +415,7 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            {/* En-tête avec titre et bouton QR code*/}
+            {/* En-tête avec bouton Disconnect à gauche et QR code à droite */}
             <div
                 style={{
                     display: 'flex',
@@ -425,7 +424,11 @@ const ManageRoom: React.FC = () => {
                     marginBottom: '20px'
                 }}
             >
-                <h1 style={{ margin: 0 }}>Salle : {formattedRoomName}</h1>
+                <DisconnectButton
+                    onReturn={handleReturn}
+                    askConfirm
+                    message={`Êtes-vous sûr de vouloir quitter?`}
+                />
 
                 <Button
                     variant="contained"
@@ -437,13 +440,14 @@ const ManageRoom: React.FC = () => {
                 </Button>
             </div>
 
-            {/* Modale QR Code */}
             <Dialog
                 open={showQrModal}
                 onClose={() => setShowQrModal(false)}
                 aria-labelledby="qr-modal-title"
             >
-                <DialogTitle id="qr-modal-title">Rejoindre la salle: {formattedRoomName}</DialogTitle>
+                <DialogTitle id="qr-modal-title">
+                    Rejoindre la salle: {formattedRoomName}
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :
@@ -457,13 +461,13 @@ const ManageRoom: React.FC = () => {
                         <h3>URL de participation :</h3>
                         <p>{roomUrl}</p>
                         <Button
-                        variant="contained"
-                        startIcon={<ContentCopyIcon />}
-                        onClick={handleCopy}
-                        style={{ marginTop: '10px' }}
-                    >
-                        {copied ? "Copié !" : "Copier le lien"}
-                    </Button>
+                            variant="contained"
+                            startIcon={<ContentCopyIcon />}
+                            onClick={handleCopy}
+                            style={{ marginTop: '10px' }}
+                        >
+                            {copied ? 'Copié !' : 'Copier le lien'}
+                        </Button>
                     </div>
                 </DialogContent>
                 <DialogActions>
@@ -472,13 +476,6 @@ const ManageRoom: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-            <div className="roomHeader">
-                <DisconnectButton
-                    onReturn={handleReturn}
-                    askConfirm
-                    message={`Êtes-vous sûr de vouloir quitter?`}
-                />
-            </div>
 
             <div className="roomHeader">
                 <div
