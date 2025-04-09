@@ -17,7 +17,7 @@ import ImageGalleryModal from 'src/components/ImageGallery/ImageGalleryModal/Ima
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
-import { ENV_VARIABLES } from '../../../constants';
+import { ENV_VARIABLES } from 'src/constants';
 
 interface EditQuizParams {
     id: string;
@@ -170,7 +170,7 @@ const QuizForm: React.FC = () => {
     }
 
     const handleCopyImage = (id: string) => {
-        const escLink = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
+        const escLink = `${ENV_VARIABLES.BACKEND_URL}/api/image/get/${id}`;
         setImageLinks(prevLinks => [...prevLinks, escLink]);
     }
 

@@ -9,6 +9,7 @@ import webSocketService, {
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
 import './manageRoom.css';
+import QRCodeIcon from '@mui/icons-material/QrCode';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
@@ -18,8 +19,18 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
+} from '@mui/material';
 import { checkIfIsCorrect } from './useRooms';
+import { QRCodeCanvas } from 'qrcode.react';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
@@ -34,6 +45,16 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(roomUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
 
     // Handle the newly connected user in useEffect, because it needs state info
     // not available in the socket.on() callback
@@ -76,6 +97,15 @@ const ManageRoom: React.FC = () => {
 
         verifyLogin();
     }, []);
+
+    useEffect(() => {
+        if (!roomName) {
+            console.error('Room name is missing!');
+            return;
+        }
+
+        console.log(`Joining room: ${roomName}`);
+    }, [roomName]);
 
     useEffect(() => {
         if (!roomName || !quizId) {
@@ -386,7 +416,63 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <div className="disconnectWrapper" style={{ marginBottom: '20px' }}>
+            {/* En-tête avec titre et bouton QR code*/}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
+                <h1 style={{ margin: 0 }}>Salle : {formattedRoomName}</h1>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowQrModal(true)}
+                    startIcon={<QRCodeIcon />}
+                >
+                    Lien de participation
+                </Button>
+            </div>
+
+            {/* Modale QR Code */}
+            <Dialog
+                open={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                aria-labelledby="qr-modal-title"
+            >
+                <DialogTitle id="qr-modal-title">Rejoindre la salle: {formattedRoomName}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :
+                    </DialogContentText>
+
+                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                        <QRCodeCanvas value={roomUrl} size={256} />
+                    </div>
+
+                    <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>
+                        <h3>URL de participation :</h3>
+                        <p>{roomUrl}</p>
+                        <Button
+                        variant="contained"
+                        startIcon={<ContentCopyIcon />}
+                        onClick={handleCopy}
+                        style={{ marginTop: '10px' }}
+                    >
+                        {copied ? "Copié !" : "Copier le lien"}
+                    </Button>
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowQrModal(false)} color="primary">
+                        Fermer
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <div className="roomHeader">
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
