@@ -11,6 +11,7 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 
 import { QuizType } from '../../../Types/QuizType';
 
+import SaveIcon from '@mui/icons-material/Save';
 import './EditorQuiz.css';
 import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, MenuItem, Select, Snackbar } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
