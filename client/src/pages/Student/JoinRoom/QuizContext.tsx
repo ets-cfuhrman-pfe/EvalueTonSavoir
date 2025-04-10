@@ -7,6 +7,7 @@ export const QuizContext = React.createContext<{
   }>({
     showAnswer: false,
     setShowAnswer: () => {},
+
   });
   
 export const useQuizContext = () => {

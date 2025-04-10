@@ -8,6 +8,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 // import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface TeacherModeQuizProps {
@@ -23,6 +24,8 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     submitAnswer,
     disconnectWebSocket
 }) => {
+    const { setShowAnswer } = useQuizContext(); // Access setShowAnswer from context
+    
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -35,6 +38,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
         const oldAnswer = answers[Number(questionInfos.question.id) -1 ]?.answer;
         console.log(`TeacherModeQuiz: useEffect: oldAnswer: ${oldAnswer}`);
         setAnswer(oldAnswer);
+        setShowAnswer(false);
         setIsFeedbackDialogOpen(false);
     }, [questionInfos.question, answers]);
 
@@ -48,12 +52,13 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     useEffect(() => {
         console.log(`TeacherModeQuiz: useEffect: isAnswerSubmitted: ${isAnswerSubmitted}`);
         setIsFeedbackDialogOpen(isAnswerSubmitted);
+        setShowAnswer(isAnswerSubmitted);
     }, [isAnswerSubmitted]);
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
-        // setAnswer(answer);
+        setAnswer(answer);
         setIsFeedbackDialogOpen(true);
     };
 

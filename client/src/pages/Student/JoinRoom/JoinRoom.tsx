@@ -190,12 +190,14 @@ const JoinRoom: React.FC = () => {
         case 'teacher':
             return (
                 question && (
+                    <QuizProvider>
                     <TeacherModeQuiz
                         questionInfos={question}
                         answers={answers}
                         submitAnswer={handleOnSubmitAnswer}
                         disconnectWebSocket={disconnect}
                     />
+                    </QuizProvider>
                 )
             );
         default:
