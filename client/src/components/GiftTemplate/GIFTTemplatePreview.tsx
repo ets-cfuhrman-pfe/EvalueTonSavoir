@@ -12,43 +12,47 @@ interface GIFTTemplatePreviewProps {
 
 const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
     questions,
-    hideAnswers = false
+    hideAnswers = false,
 }) => {
     const [error, setError] = useState('');
     const [isPreviewReady, setIsPreviewReady] = useState(false);
-    const [items, setItems] = useState('');
+    const [questionItems, setQuestionItems] = useState<string[]>([]); // Array of HTML strings for each question
 
     useEffect(() => {
         try {
-            let previewHTML = '';
+            const previewItems: string[] = [];
             questions.forEach((giftQuestion) => {
                 try {
                     const question = parse(giftQuestion);
-                    previewHTML += Template(question[0], {
+                    const html = Template(question[0], {
                         preview: true,
-                        theme: 'light'
+                        theme: 'light',
                     });
+                    previewItems.push(html);
                 } catch (error) {
                     let errorMsg: string;
                     if (error instanceof UnsupportedQuestionTypeError) {
                         errorMsg = ErrorTemplate(giftQuestion, `Erreur: ${error.message}`);
                     } else if (error instanceof Error) {
-                            errorMsg = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
+                        errorMsg = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
                     } else {
-                            errorMsg = ErrorTemplate(giftQuestion, 'Erreur inconnue');
+                        errorMsg = ErrorTemplate(giftQuestion, 'Erreur inconnue');
                     }
-                    previewHTML += `<div label="error-message">${errorMsg}</div>`;
+                    previewItems.push(`<div label="error-message">${errorMsg}</div>`);
                 }
             });
 
             if (hideAnswers) {
-                const svgRegex = /<svg[^>]*>([\s\S]*?)<\/svg>/gi;
-                previewHTML = previewHTML.replace(svgRegex, '');
-                const placeholderRegex = /(placeholder=")[^"]*(")/gi;
-                previewHTML = previewHTML.replace(placeholderRegex, '$1$2');
+                previewItems.forEach((item, index) => {
+                    const svgRegex = /<svg[^>]*>([\s\S]*?)<\/svg>/gi;
+                    const placeholderRegex = /(placeholder=")[^"]*(")/gi;
+                    previewItems[index] = item
+                        .replace(svgRegex, '')
+                        .replace(placeholderRegex, '$1$2');
+                });
             }
 
-            setItems(previewHTML);
+            setQuestionItems(previewItems);
             setIsPreviewReady(true);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -57,7 +61,7 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
                 setError('Une erreur est survenue durant le chargement de la prévisualisation.');
             }
         }
-    }, [questions]);
+    }, [questions, hideAnswers]);
 
     const PreviewComponent = () => (
         <React.Fragment>
@@ -65,8 +69,13 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
                 <div className="error">{error}</div>
             ) : isPreviewReady ? (
                 <div data-testid="preview-container">
-
-                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: items }) }}></div>
+                    {questionItems.map((item, index) => (
+                        <div
+                            key={index}
+                            className="question-item"
+                            dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: item }) }}
+                        />
+                    ))}
                 </div>
             ) : (
                 <div className="loading">Chargement de la prévisualisation...</div>

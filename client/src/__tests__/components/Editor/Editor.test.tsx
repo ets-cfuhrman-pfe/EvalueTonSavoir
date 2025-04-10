@@ -1,80 +1,78 @@
-// Editor.test.tsx
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Editor from 'src/components/Editor/Editor';
+import Editor from '../../../components/Editor/newEditor';
 
 describe('Editor Component', () => {
-    const mockOnEditorChange = jest.fn();
+    const mockOnValuesChange = jest.fn();
+    const mockOnFocusQuestion = jest.fn();
 
     const sampleProps = {
         label: 'Sample Label',
-        initialValue: 'Sample Initial Value',
-        onEditorChange: mockOnEditorChange
+        values: ['Question 1', 'Question 2'],
+        onValuesChange: mockOnValuesChange,
+        onFocusQuestion: mockOnFocusQuestion,
     };
 
     beforeEach(() => {
+        mockOnValuesChange.mockClear();
+        mockOnFocusQuestion.mockClear();
+    });
+
+    test('renders the label correctly', () => {
         render(<Editor {...sampleProps} />);
+        const label = screen.getByText('Sample Label');
+        expect(label).toBeInTheDocument();
     });
 
-    it('renders correctly with initial value', () => {
-        const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
-        expect(editorTextarea).toBeInTheDocument();
-        expect(editorTextarea.value).toBe('Sample Initial Value');
+    test('renders the correct number of questions', () => {
+        render(<Editor {...sampleProps} />);
+        const questions = screen.getAllByRole('textbox');
+        expect(questions.length).toBe(2);
     });
 
-    it('calls onEditorChange callback when editor value changes', () => {
-        const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
-        fireEvent.change(editorTextarea, { target: { value: 'Updated Value' } });
-        expect(mockOnEditorChange).toHaveBeenCalledWith('Updated Value');
+    test('calls onValuesChange with updated values when a question is changed', () => {
+        render(<Editor {...sampleProps} />);
+        const questionInput = screen.getAllByRole('textbox')[0];
+        fireEvent.change(questionInput, { target: { value: 'Updated Question 1' } });
+        expect(mockOnValuesChange).toHaveBeenCalledWith(['Updated Question 1', 'Question 2']);
     });
 
-    it('updates editor value when initialValue prop changes', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
+    test('calls onValuesChange with updated values when an empty question is deleted', () => {
+        const sampleProps = {
+            label: 'Test Editor',
+            values: [''], 
+            onValuesChange: mockOnValuesChange,
         };
-
-        render(<Editor {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
-
-        expect(editorTextarea.value).toBe('Updated Initial Value');
+        render(<Editor {...sampleProps} />);
+        const deleteButton = screen.getAllByLabelText('delete')[0]; 
+        fireEvent.click(deleteButton);
+        expect(mockOnValuesChange).toHaveBeenCalledWith([]);
     });
 
-    test('should call change text with the correct value on textarea change', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
-        };
-
-        render(<Editor {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
-        fireEvent.change(editorTextarea, { target: { value: 'New value' } });
-
-        expect(editorTextarea.value).toBe('New value');
+    test('renders delete buttons for each question', () => {
+        render(<Editor {...sampleProps} />);
+        const deleteButtons = screen.getAllByLabelText('delete');
+        expect(deleteButtons.length).toBe(2);
     });
 
-    test('should call onEditorChange with an empty string if textarea value is falsy', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
-        };
-
-        render(<Editor {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
-        fireEvent.change(editorTextarea, { target: { value: '' } });
-
-        expect(editorTextarea.value).toBe('');
+    test('calls onFocusQuestion with correct index when focus button is clicked', () => {
+        render(<Editor {...sampleProps} />);
+        const focusButton = screen.getAllByLabelText('focus question')[1];
+        fireEvent.click(focusButton);
+        expect(mockOnFocusQuestion).toHaveBeenCalledWith(1);
     });
 
+    test('renders focus buttons for each question', () => {
+        render(<Editor {...sampleProps} />);
+        const focusButtons = screen.getAllByLabelText('focus question');
+        expect(focusButtons.length).toBe(2);
+    });
 
+    test('does not throw error when onFocusQuestion is not provided', () => {
+        const { onFocusQuestion, ...propsWithoutFocus } = sampleProps;
+        render(<Editor {...propsWithoutFocus} />);
+        const focusButton = screen.getAllByLabelText('focus question')[0];
+        expect(() => fireEvent.click(focusButton)).not.toThrow();
+    });
 });

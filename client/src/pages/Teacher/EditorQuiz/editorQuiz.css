@@ -80,6 +80,24 @@ input[type="file"] {
 .quizEditor .editSection .preview {
     flex: 50%;
     padding: 5px;
-
     overflow: auto;
+    height: 100%;
+    position: relative;
+}
+
+.quizEditor {
+    margin: 0 -2rem; /* Counteract the padding */
+    width: calc(100% + 4rem); /* Expand to fill padded area */
+}
+
+.sticky-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    padding: 8px 0;
 }

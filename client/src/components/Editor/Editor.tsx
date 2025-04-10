@@ -1,21 +1,18 @@
-// Editor.tsx
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import './editor.css';
 import { TextareaAutosize } from '@mui/material';
 
 interface EditorProps {
     label: string;
-    initialValue: string;
+    values: string[];
     onEditorChange: (value: string) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) => {
-    const [value, setValue] = useState(initialValue);
+const Editor: React.FC<EditorProps> = ({ label, values, onEditorChange }) => {
     const editorRef = useRef<HTMLTextAreaElement | null>(null);
 
     function handleEditorChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
         const text = event.target.value;
-        setValue(text);
         onEditorChange(text || '');
     }
 
@@ -26,7 +23,7 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) 
                 id="editor-textarea"
                 ref={editorRef}
                 onChange={handleEditorChange}
-                value={value}
+                value={values}
                 className="editor"
                 minRows={5}
             />
