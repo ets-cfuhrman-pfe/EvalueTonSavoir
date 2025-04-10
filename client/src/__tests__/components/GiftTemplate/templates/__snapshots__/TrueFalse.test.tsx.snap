@@ -150,7 +150,7 @@ exports[`TrueFalse snapshot test with katex 1`] = `
 " for="idmocked-id"&gt;
             Vrai
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -174,7 +174,7 @@ exports[`TrueFalse snapshot test with katex 1`] = `
 " for="idmocked-id"&gt;
             Faux
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -265,7 +265,7 @@ exports[`TrueFalse snapshot test with moodle 1`] = `
 " for="idmocked-id"&gt;
             Vrai
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -289,7 +289,7 @@ exports[`TrueFalse snapshot test with moodle 1`] = `
 " for="idmocked-id"&gt;
             Faux
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -380,7 +380,7 @@ exports[`TrueFalse snapshot test with plain text 1`] = `
 " for="idmocked-id"&gt;
             Vrai
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -404,7 +404,7 @@ exports[`TrueFalse snapshot test with plain text 1`] = `
 " for="idmocked-id"&gt;
             Faux
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;

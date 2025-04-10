@@ -64,7 +64,7 @@ exports[`MultipleChoice snapshot test 1`] = `
 " for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -88,7 +88,7 @@ exports[`MultipleChoice snapshot test 1`] = `
 " for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -180,7 +180,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
             Choice 1
 
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -205,7 +205,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
             Choice 2
 
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -229,7 +229,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
 " for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -321,7 +321,7 @@ exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
 " for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -345,7 +345,7 @@ exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
 " for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -436,7 +436,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
 " for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -460,7 +460,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
 " for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -484,7 +484,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
 " for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -577,7 +577,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
             Choice 1
 
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -602,7 +602,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
             Choice 2
 
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -626,7 +626,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
 " for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -718,7 +718,7 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
 " for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -733,7 +733,7 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
         
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
+          
             &lt;label style="
           display: inline-block;
           padding: 0.2em 0 0.2em 0;
@@ -742,15 +742,15 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
 " for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
   margin-right: 0.2rem;
  
-    width: 1em;
-    color: hsl(120, 39%, 54%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
+    width: 0.75em;
+    color: hsl(2, 64%, 58%);
+  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
           &lt;span class="feedback-container"&gt;Correct!&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
@@ -833,7 +833,7 @@ exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
 " for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="correct-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;
@@ -857,7 +857,7 @@ exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
 " for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
-          &lt;svg style="
+          &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
   display: inline-block;
   margin-left: 0.1rem;

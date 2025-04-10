@@ -1,9 +1,9 @@
 // GIFTTemplatePreview.tsx
 import React, { useEffect, useState } from 'react';
-import Template, { ErrorTemplate } from './templates';
+import Template, { ErrorTemplate, UnsupportedQuestionTypeError } from './templates';
 import { parse } from 'gift-pegjs';
 import './styles.css';
-import DOMPurify from 'dompurify';
+import { FormattedTextTemplate } from './templates/TextTypeTemplate';
 
 interface GIFTTemplatePreviewProps {
     questions: string[];
@@ -22,19 +22,6 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
         try {
             let previewHTML = '';
             questions.forEach((giftQuestion) => {
-                // TODO : afficher un message que les images spécifiées par <img> sont dépréciées et qu'il faut utiliser [markdown] et la syntaxe ![alt](url)
-
-                // const isImage = item.includes('<img');
-                // if (isImage) {
-                //     const imageUrlMatch = item.match(/<img[^>]+>/i);
-                //     if (imageUrlMatch) {
-                //         let imageUrl = imageUrlMatch[0];
-                //         imageUrl = imageUrl.replace('img', 'img style="width:10vw;" src=');
-                //         item = item.replace(imageUrlMatch[0], '');
-                //         previewHTML += `${imageUrl}`;
-                //     }
-                // }
-
                 try {
                     const question = parse(giftQuestion);
                     previewHTML += Template(question[0], {
@@ -42,11 +29,15 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
                         theme: 'light'
                     });
                 } catch (error) {
-                    if (error instanceof Error) {
-                        previewHTML += ErrorTemplate(giftQuestion + '\n' + error.message);
+                    let errorMsg: string;
+                    if (error instanceof UnsupportedQuestionTypeError) {
+                        errorMsg = ErrorTemplate(giftQuestion, `Erreur: ${error.message}`);
+                    } else if (error instanceof Error) {
+                            errorMsg = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
                     } else {
-                        previewHTML += ErrorTemplate(giftQuestion + '\n' + 'Erreur inconnue');
+                            errorMsg = ErrorTemplate(giftQuestion, 'Erreur inconnue');
                     }
+                    previewHTML += `<div label="error-message">${errorMsg}</div>`;
                 }
             });
 
@@ -74,7 +65,8 @@ const GIFTTemplatePreview: React.FC<GIFTTemplatePreviewProps> = ({
                 <div className="error">{error}</div>
             ) : isPreviewReady ? (
                 <div data-testid="preview-container">
-                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(items) }}></div>
+
+                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: items }) }}></div>
                 </div>
             ) : (
                 <div className="loading">Chargement de la prévisualisation...</div>

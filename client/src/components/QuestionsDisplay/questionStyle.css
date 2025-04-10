@@ -27,7 +27,6 @@
 }
 
 .question-wrapper .katex {
-    display: block;
     text-align: center;
 }
 
@@ -120,9 +119,9 @@
 }
 
 .feedback-container {
-    margin-left: 1.1rem;
-    display: inline-flex !important; /* override the parent */
+    display: inline-block !important; /* override the parent */
     align-items: center;
+    margin-left: 1.1rem;
     position: relative;
     padding: 0 0.5rem;
     background-color: hsl(43, 100%, 94%);
@@ -139,6 +138,25 @@
 
 
 .global-feedback {
+    position: relative;
+    padding: 0 1rem;
+    background-color: hsl(43, 100%, 94%);
+    color: hsl(43, 95%, 9%);
+    border: hsl(36, 84%, 93%) 1px solid;
+    border-radius: 6px;
+    box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+}
+
+.true-feedback {
+    position: relative;
+    padding: 0 1rem;
+    background-color: hsl(43, 100%, 94%);
+    color: hsl(43, 95%, 9%);
+    border: hsl(36, 84%, 93%) 1px solid;
+    border-radius: 6px;
+    box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+}
+.false-feedback {
     position: relative;
     padding: 0 1rem;
     background-color: hsl(43, 100%, 94%);

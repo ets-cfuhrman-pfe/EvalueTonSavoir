@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import TrueFalseQuestionDisplay from 'src/components/QuestionsDisplay/TrueFalseQuestionDisplay/TrueFalseQuestionDisplay';
 import { parse, TrueFalseQuestion } from 'gift-pegjs';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 describe('TrueFalseQuestion Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
@@ -16,7 +17,7 @@ describe('TrueFalseQuestion Component', () => {
     const TestWrapper = ({ showAnswer }: { showAnswer: boolean }) => {
         const [showAnswerState, setShowAnswerState] = useState(showAnswer);
 
-        const handleOnSubmitAnswer = (answer: boolean) => {
+        const handleOnSubmitAnswer = (answer: AnswerType) => {
             mockHandleSubmitAnswer(answer);
             setShowAnswerState(true);
         };
@@ -55,6 +56,7 @@ describe('TrueFalseQuestion Component', () => {
         });
 
         expect(mockHandleSubmitAnswer).not.toHaveBeenCalled();
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly for True', () => {
@@ -69,7 +71,8 @@ describe('TrueFalseQuestion Component', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(true);
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith([true]);
+        mockHandleSubmitAnswer.mockClear();
     });
 
     it('submits answer correctly for False', () => {
@@ -82,7 +85,8 @@ describe('TrueFalseQuestion Component', () => {
             fireEvent.click(submitButton);
         });
 
-        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(false);
+        expect(mockHandleSubmitAnswer).toHaveBeenCalledWith([false]);
+        mockHandleSubmitAnswer.mockClear();
     });
 
 
@@ -111,7 +115,7 @@ describe('TrueFalseQuestion Component', () => {
                 expect(wrongAnswer1?.textContent).toContain('❌');
         });
     
-        it('should not show ✅ or ❌ when repondre button is not clicked', async () => {
+        it('should not show ✅ or ❌ when Répondre button is not clicked', async () => {
             const choiceButton = screen.getByText('Vrai').closest('button');
             if (!choiceButton) throw new Error('Choice button not found');
     

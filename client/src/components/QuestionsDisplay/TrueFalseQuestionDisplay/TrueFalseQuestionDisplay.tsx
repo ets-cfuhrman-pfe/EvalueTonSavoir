@@ -4,61 +4,86 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer: boolean) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    passedAnswer?: AnswerType;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
-    const [answer, setAnswer] = useState<boolean | undefined>(undefined);
+
+    const [answer, setAnswer] = useState<boolean | undefined>(() => {
+
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            return passedAnswer[0];
+        }
+
+        return undefined;
+    });
+
+    let disableButton = false;
+    if (handleOnSubmitAnswer === undefined) {
+        disableButton = true;
+    }
 
     useEffect(() => {
-        setAnswer(undefined);
-    }, [question]);
+        console.log("passedAnswer", passedAnswer);
+        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
+            setAnswer(passedAnswer[0]);
+        } else {
+            setAnswer(undefined);
+        }
+    }, [passedAnswer, question.id]);
+
+    const handleOnClickAnswer = (choice: boolean) => {
+        setAnswer(choice);
+    };
 
     const selectedTrue = answer ? 'selected' : '';
     const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
     return (
         <div className="question-container">
             <div className="question content">
-            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
             <div className="choices-wrapper mb-1">
                 <Button
                     className="button-wrapper"
-                    onClick={() => !showAnswer && setAnswer(true)}
+                    onClick={() => !showAnswer && handleOnClickAnswer(true)}
                     fullWidth
+                    disabled={disableButton}
                 >
-                    {showAnswer? (<div> {(question.isTrue ? '✅' : '❌')}</div>):``}                    
-                    <div className={`circle ${selectedTrue}`}>V</div>
+                    {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`answer-text ${selectedTrue}`}>Vrai</div>
+
+                    {showAnswer && answer && question.trueFormattedFeedback && (
+                        <div className="true-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
+                        </div>
+                    )}
                 </Button>
                 <Button
                     className="button-wrapper"
-                    onClick={() => !showAnswer && setAnswer(false)}
+                    onClick={() => !showAnswer && handleOnClickAnswer(false)}
                     fullWidth
+                    disabled={disableButton}
+
                 >
-                    {showAnswer? (<div> {(!question.isTrue ? '✅' : '❌')}</div>):``}                    
-                    <div className={`circle ${selectedFalse}`}>F</div>
+                    {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
                     <div className={`answer-text ${selectedFalse}`}>Faux</div>
+
+                    {showAnswer && !answer && question.falseFormattedFeedback && (
+                        <div className="false-feedback mb-2">
+                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
+                        </div>
+                    )}
                 </Button>
             </div>
-            {/* selected TRUE, show True feedback if it exists */}
-            {showAnswer && answer && question.trueFormattedFeedback && (
-                <div className="true-feedback mb-2">
-                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
-                </div>
-            )}
-            {/* selected FALSE, show False feedback if it exists */}
-            {showAnswer && !answer && question.falseFormattedFeedback && (
-                <div className="false-feedback mb-2">
-                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
-                </div>
-            )}
             {question.formattedGlobalFeedback && showAnswer && (
                 <div className="global-feedback mb-2">
                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
@@ -68,7 +93,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
                     }
                     disabled={answer === undefined}
                 >

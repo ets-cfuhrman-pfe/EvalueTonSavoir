@@ -4,14 +4,24 @@ import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
-export function formatLatex(text: string): string {
-    return text
+function formatLatex(text: string): string {
+
+    let renderedText = '';
+
+    try {
+    renderedText = text
         .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
         .replace(/\\\[(.*?)\\\]/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
         .replace(/\\\((.*?)\\\)/g, (_, inner) =>
             katex.renderToString(inner, { displayMode: false })
         );
+    } catch (error) {
+        console.log('Error rendering LaTeX (KaTeX):', error);
+        renderedText = text;
+    }
+
+    return renderedText;
 }
 
 /**

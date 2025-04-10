@@ -1,26 +1,32 @@
 // NumericalQuestion.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: NumericalQuestion;
-    handleOnSubmitAnswer?: (answer: number) => void;
+    handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    passedAnswer?: AnswerType;
 }
 
 const NumericalQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
-
-    const [answer, setAnswer] = useState<number>();
-
+    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
 
+    useEffect(() => {
+    if (passedAnswer !== null && passedAnswer !== undefined) {
+        setAnswer(passedAnswer);
+    }
+    }, [passedAnswer]);
+    
     //const isSingleAnswer = correctAnswers.length === 1;
 
     if (isSimpleNumericalAnswer(correctAnswers[0])) {
@@ -44,10 +50,16 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
             </div>
             {showAnswer ? (
                 <>
-                    <div className="correct-answer-text mb-2">{correctAnswer}</div>
+                    <div className="correct-answer-text mb-2">
+                    <strong>La bonne réponse est: </strong>
+                    {correctAnswer}</div>
+                    <span>
+                        <strong>Votre réponse est: </strong>{answer.toString()}
+                    </span>
                     {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>}
+
                 </>
             ) : (
                 <>
@@ -57,7 +69,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                             id={question.formattedStem.text}
                             name={question.formattedStem.text}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                setAnswer(e.target.valueAsNumber);
+                                setAnswer([e.target.valueAsNumber]);
                             }}
                             inputProps={{ 'data-testid': 'number-input' }}
                         />
@@ -75,7 +87,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                                 handleOnSubmitAnswer &&
                                 handleOnSubmitAnswer(answer)
                             }
-                            disabled={answer === undefined || isNaN(answer)}
+                            disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
                         >
                             Répondre
                         </Button>

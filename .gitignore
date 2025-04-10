@@ -41,6 +41,7 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+mongo-backup/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -121,6 +122,9 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+.env
+launch.json
 
 # yarn v2
 .yarn/cache

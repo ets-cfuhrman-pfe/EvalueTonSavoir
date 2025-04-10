@@ -1,69 +1,150 @@
-// ManageRoom.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
-import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer } from "gift-pegjs/typeGuards";
+import { BaseQuestion, parse, Question } from 'gift-pegjs';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
-// import { QuestionService } from '../../../services/QuestionService';
-import webSocketService, { AnswerReceptionFromBackendType } from '../../../services/WebsocketService';
+import webSocketService, {
+    AnswerReceptionFromBackendType
+} from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
-
+import GroupIcon from '@mui/icons-material/Group';
 import './manageRoom.css';
+import QRCodeIcon from '@mui/icons-material/QrCode';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
-import { Button } from '@mui/material';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 import { Refresh, Error } from '@mui/icons-material';
 import StudentWaitPage from 'src/components/StudentWaitPage/StudentWaitPage';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
-//import QuestionNavigation from 'src/components/QuestionNavigation/QuestionNavigation';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
+} from '@mui/material';
+import { checkIfIsCorrect } from './useRooms';
+import { QRCodeCanvas } from 'qrcode.react';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
-    const [roomName, setRoomName] = useState<string>('');
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const quizId = useParams<{ id: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
+    const [quizStarted, setQuizStarted] = useState<boolean>(false);
+    const [formattedRoomName, setFormattedRoomName] = useState('');
+    const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(roomUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
+    // Handle the newly connected user in useEffect, because it needs state info
+    // not available in the socket.on() callback
+    useEffect(() => {
+        if (newlyConnectedUser) {
+            console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
+            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
+
+            // only send nextQuestion if the quiz has started
+            if (!quizStarted) {
+                console.log(`!quizStarted: returning.... `);
+                return;
+            }
+
+            if (quizMode === 'teacher') {
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex: Number(currentQuestion?.question.id) - 1,
+                    isLaunch: true // started late
+                });
+            } else if (quizMode === 'student') {
+                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+            } else {
+                console.error('Invalid quiz mode:', quizMode);
+            }
+
+            // Reset the newly connected user state
+            setNewlyConnectedUser(null);
+        }
+    }, [newlyConnectedUser]);
 
     useEffect(() => {
-        if (quizId.id) {
-            const fetchquiz = async () => {
+        const verifyLogin = async () => {
+            if (!ApiService.isLoggedIn()) {
+                navigate('/teacher/login');
+                return;
+            }
+        };
 
-                const quiz = await ApiService.getQuiz(quizId.id as string);
+        verifyLogin();
+    }, []);
+
+    useEffect(() => {
+        if (!roomName) {
+            console.error('Room name is missing!');
+            return;
+        }
+
+        console.log(`Joining room: ${roomName}`);
+    }, [roomName]);
+
+    useEffect(() => {
+        if (!roomName || !quizId) {
+            window.alert(
+                `Une erreur est survenue.\n La salle ou le quiz n'a pas été spécifié.\nVeuillez réessayer plus tard.`
+            );
+            console.error(`Room "${roomName}" or Quiz "${quizId}" not found.`);
+            navigate('/teacher/dashboard');
+        }
+        if (roomName && !socket) {
+            createWebSocketRoom();
+        }
+        return () => {
+            disconnectWebSocket();
+        };
+    }, [roomName, navigate]);
+
+    useEffect(() => {
+        if (quizId) {
+            const fetchQuiz = async () => {
+                const quiz = await ApiService.getQuiz(quizId);
 
                 if (!quiz) {
-                    window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
-                    console.error('Quiz not found for id:', quizId.id);
+                    window.alert(
+                        `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                    );
+                    console.error('Quiz not found for id:', quizId);
                     navigate('/teacher/dashboard');
                     return;
                 }
 
                 setQuiz(quiz as QuizType);
-
-                if (!socket) {
-                    console.log(`no socket in ManageRoom, creating one.`);
-                    createWebSocketRoom();
-                }
-
-                // return () => {
-                //     webSocketService.disconnect();
-                // };
             };
 
-            fetchquiz();
-
+            fetchQuiz();
         } else {
-            window.alert(`Une erreur est survenue.\n Le quiz ${quizId.id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
-            console.error('Quiz not found for id:', quizId.id);
+            window.alert(
+                `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
+            );
+            console.error('Quiz not found for id:', quizId);
             navigate('/teacher/dashboard');
             return;
         }
@@ -71,109 +152,115 @@ const ManageRoom: React.FC = () => {
 
     const disconnectWebSocket = () => {
         if (socket) {
-            webSocketService.endQuiz(roomName);
+            webSocketService.endQuiz(formattedRoomName);
             webSocketService.disconnect();
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
             setStudents(new Array<StudentType>());
-            setRoomName('');
         }
     };
 
     const createWebSocketRoom = () => {
-        console.log('Creating WebSocket room...');
-        setConnectingError('');
-        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_SOCKET_URL);
+        const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
+        const roomNameUpper = roomName.toUpperCase();
+        setFormattedRoomName(roomNameUpper);
+        console.log(`Creating WebSocket room named ${roomNameUpper}`);
 
+        /**
+         * ATTENTION: Lire les variables d'état dans
+         * les .on() n'est pas une bonne pratique.
+         * Les valeurs sont celles au moment de la création
+         * de la fonction et non au moment de l'exécution.
+         * Il faut utiliser des refs pour les valeurs qui
+         * changent fréquemment. Sinon, utiliser un trigger
+         * de useEffect pour mettre déclencher un traitement
+         * (voir user-joined plus bas).
+         */
         socket.on('connect', () => {
-            webSocketService.createRoom();
+            webSocketService.createRoom(roomNameUpper);
         });
+
         socket.on('connect_error', (error) => {
             setConnectingError('Erreur lors de la connexion... Veuillez réessayer');
             console.error('ManageRoom: WebSocket connection error:', error);
         });
-        socket.on('create-success', (roomName: string) => {
-            setRoomName(roomName);
+
+        socket.on('create-success', (createdRoomName: string) => {
+            console.log(`Room created: ${createdRoomName}`);
         });
-        socket.on('create-failure', () => {
-            console.log('Error creating room.');
-        });
+
         socket.on('user-joined', (student: StudentType) => {
-            console.log(`Student joined: name = ${student.name}, id = ${student.id}`);
-
-            setStudents((prevStudents) => [...prevStudents, student]);
-
-            if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(roomName, currentQuestion);
-            } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-            }
+            setNewlyConnectedUser(student);
         });
+
         socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
         });
+
         socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
             setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         });
+
         setSocket(socket);
     };
 
     useEffect(() => {
-        // This is here to make sure the correct value is sent when user join
         if (socket) {
-            console.log(`Listening for user-joined in room ${roomName}`);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            socket.on('user-joined', (_student: StudentType) => {
-                if (quizMode === 'teacher') {
-                    webSocketService.nextQuestion(roomName, currentQuestion);
-                } else if (quizMode === 'student') {
-                    webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
-                }
-            });
-        }
-
-        if (socket) {
-            // handle the case where user submits an answer
-            console.log(`Listening for submit-answer-room in room ${roomName}`);
+            console.log(`Listening for submit-answer-room in room ${formattedRoomName}`);
             socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
                 const { answer, idQuestion, idUser, username } = answerData;
-                console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
+                console.log(
+                    `Received answer from ${username} for question ${idQuestion}: ${answer}`
+                );
                 if (!quizQuestions) {
                     console.log('Quiz questions not found (cannot update answers without them).');
                     return;
                 }
-    
+
                 // Update the students state using the functional form of setStudents
                 setStudents((prevStudents) => {
-                    // print the list of current student names
                     console.log('Current students:');
                     prevStudents.forEach((student) => {
                         console.log(student.name);
                     });
-    
+
                     let foundStudent = false;
                     const updatedStudents = prevStudents.map((student) => {
                         console.log(`Comparing ${student.id} to ${idUser}`);
                         if (student.id === idUser) {
                             foundStudent = true;
-                            const existingAnswer = student.answers.find((ans) => ans.idQuestion === idQuestion);
+                            const existingAnswer = student.answers.find(
+                                (ans) => ans.idQuestion === idQuestion
+                            );
                             let updatedAnswers: Answer[] = [];
                             if (existingAnswer) {
-                                // Update the existing answer
                                 updatedAnswers = student.answers.map((ans) => {
                                     console.log(`Comparing ${ans.idQuestion} to ${idQuestion}`);
-                                    return (ans.idQuestion === idQuestion ? { ...ans, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) } : ans);
+                                    return ans.idQuestion === idQuestion
+                                        ? {
+                                              ...ans,
+                                              answer,
+                                              isCorrect: checkIfIsCorrect(
+                                                  answer,
+                                                  idQuestion,
+                                                  quizQuestions!
+                                              )
+                                          }
+                                        : ans;
                                 });
                             } else {
-                                // Add a new answer
-                                const newAnswer = { idQuestion, answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!) };
+                                const newAnswer = {
+                                    idQuestion,
+                                    answer,
+                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
+                                };
                                 updatedAnswers = [...student.answers, newAnswer];
                             }
                             return { ...student, answers: updatedAnswers };
-                                    }
+                        }
                         return student;
                     });
                     if (!foundStudent) {
@@ -184,72 +271,7 @@ const ManageRoom: React.FC = () => {
             });
             setSocket(socket);
         }
-
     }, [socket, currentQuestion, quizQuestions]);
-
-    // useEffect(() => {
-    //     if (socket) {
-    //         const submitAnswerHandler = (answerData: answerSubmissionType) => {
-    //             const { answer, idQuestion, username } = answerData;
-    //             console.log(`Received answer from ${username} for question ${idQuestion}: ${answer}`);
-
-    //             // print the list of current student names
-    //             console.log('Current students:');
-    //             students.forEach((student) => {
-    //                 console.log(student.name);
-    //             });
-
-    //             // Update the students state using the functional form of setStudents
-    //             setStudents((prevStudents) => {
-    //                 let foundStudent = false;
-    //                 const updatedStudents = prevStudents.map((student) => {
-    //                     if (student.id === username) {
-    //                         foundStudent = true;
-    //                         const updatedAnswers = student.answers.map((ans) => {
-    //                             const newAnswer: Answer = { answer, isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!), idQuestion };
-    //                             console.log(`Updating answer for ${student.name} for question ${idQuestion} to ${answer}`);
-    //                             return (ans.idQuestion === idQuestion ? { ...ans, newAnswer } : ans);
-    //                         }
-    //                         );
-    //                         return { ...student, answers: updatedAnswers };
-    //                     }
-    //                     return student;
-    //                 });
-    //                 if (!foundStudent) {
-    //                     console.log(`Student ${username} not found in the list of students in LiveResults`);
-    //                 }
-    //                 return updatedStudents;
-    //             });
-
-
-    //             // make a copy of the students array so we can update it
-    //             // const updatedStudents = [...students];
-
-    //             // const student = updatedStudents.find((student) => student.id === idUser);
-    //             // if (!student) {
-    //             //     // this is a bad thing if an answer was submitted but the student isn't in the list
-    //             //     console.log(`Student ${idUser} not found in the list of students in LiveResults`);
-    //             //     return;
-    //             // }
-
-    //             // const isCorrect = checkIfIsCorrect(answer, idQuestion);
-    //             // const newAnswer: Answer = { answer, isCorrect, idQuestion };
-    //             // student.answers.push(newAnswer);
-    //             // // print list of answers
-    //             // console.log('Answers:');
-    //             // student.answers.forEach((answer) => {
-    //             //     console.log(answer.answer);
-    //             // });
-    //             // setStudents(updatedStudents); // update the state
-    //         };
-
-    //         socket.on('submit-answer', submitAnswerHandler);
-    //         return () => {
-    //             socket.off('submit-answer');
-    //         };
-    //     }
-    // }, [socket]);
-
 
     const nextQuestion = () => {
         if (!quizQuestions || !currentQuestion || !quiz?.content) return;
@@ -259,7 +281,12 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion(roomName, quizQuestions[nextQuestionIndex]);
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const previousQuestion = () => {
@@ -269,7 +296,12 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion(roomName, quizQuestions[prevQuestionIndex]);
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: prevQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const initializeQuizQuestion = () => {
@@ -297,7 +329,12 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion(roomName, quizQuestions[0]);
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: 0,
+            isLaunch: true
+        });
     };
 
     const launchStudentMode = () => {
@@ -309,15 +346,19 @@ const ManageRoom: React.FC = () => {
             return;
         }
         setQuizQuestions(quizQuestions);
-        webSocketService.launchStudentModeQuiz(roomName, quizQuestions);
+        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
     };
 
     const launchQuiz = () => {
-        if (!socket || !roomName || !quiz?.content || quiz?.content.length === 0) {
+        setQuizStarted(true);
+        if (!socket || !formattedRoomName || !quiz?.content || quiz?.content.length === 0) {
             // TODO: This error happens when token expires! Need to handle it properly
-            console.log(`Error launching quiz. socket: ${socket}, roomName: ${roomName}, quiz: ${quiz}`);
+            console.log(
+                `Error launching quiz. socket: ${socket}, roomName: ${formattedRoomName}, quiz: ${quiz}`
+            );
             return;
         }
+        console.log(`Launching quiz in ${quizMode} mode...`);
         switch (quizMode) {
             case 'student':
                 return launchStudentMode();
@@ -329,11 +370,20 @@ const ManageRoom: React.FC = () => {
     const showSelectedQuestion = (questionIndex: number) => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
-
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion(roomName, quizQuestions[questionIndex]);
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex,
+                    isLaunch: false
+                });
             }
         }
+    };
+
+    const finishQuiz = () => {
+        disconnectWebSocket();
+        navigate('/teacher/dashboard');
     };
 
     const handleReturn = () => {
@@ -341,62 +391,7 @@ const ManageRoom: React.FC = () => {
         navigate('/teacher/dashboard');
     };
 
-    function checkIfIsCorrect(answer: string | number | boolean, idQuestion: number, questions: QuestionType[]): boolean {
-        const questionInfo = questions.find((q) =>
-            q.question.id ? q.question.id === idQuestion.toString() : false
-        ) as QuestionType | undefined;
-
-        const answerText = answer.toString();
-        if (questionInfo) {
-            const question = questionInfo.question as ParsedGIFTQuestion;
-            if (question.type === 'TF') {
-                return (
-                    (question.isTrue && answerText == 'true') ||
-                    (!question.isTrue && answerText == 'false')
-                );
-            } else if (question.type === 'MC') {
-                return question.choices.some(
-                    (choice) => choice.isCorrect && choice.formattedText.text === answerText
-                );
-            } else if (question.type === 'Numerical') {
-                if (isHighLowNumericalAnswer(question.choices[0])) {
-                    const choice = question.choices[0];
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= choice.numberHigh &&
-                            answerNumber >= choice.numberLow
-                        );
-                    }
-                }
-                if (isRangeNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    const range = question.choices[0].range;
-                    const correctAnswer = question.choices[0].number;
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= correctAnswer + range &&
-                            answerNumber >= correctAnswer - range
-                        );
-                    }
-                }
-                if (isSimpleNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return answerNumber === question.choices[0].number;
-                    }
-                }
-            } else if (question.type === 'Short') {
-                return question.choices.some(
-                    (choice) => choice.text.toUpperCase() === answerText.toUpperCase()
-                );
-            }
-        }
-        return false;
-    }
-
-
-    if (!roomName) {
+    if (!formattedRoomName) {
         return (
             <div className="center">
                 {!connectingError ? (
@@ -419,33 +414,114 @@ const ManageRoom: React.FC = () => {
     }
 
     return (
-        <div className='room'>
-            <div className='roomHeader'>
-
+        <div className="room">
+            {/* En-tête avec bouton Disconnect à gauche et QR code à droite */}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
-                    message={`Êtes-vous sûr de vouloir quitter?`} />
+                    message={`Êtes-vous sûr de vouloir quitter?`}
+                />
 
-                <div className='centerTitle'>
-                    <div className='title'>Salle: {roomName}</div>
-                    <div className='userCount subtitle'>Utilisateurs: {students.length}/60</div>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowQrModal(true)}
+                    startIcon={<QRCodeIcon />}
+                >
+                    Lien de participation
+                </Button>
+            </div>
+
+            <Dialog
+                open={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                aria-labelledby="qr-modal-title"
+            >
+                <DialogTitle id="qr-modal-title">
+                    Rejoindre la salle: {formattedRoomName}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :
+                    </DialogContentText>
+
+                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                        <QRCodeCanvas value={roomUrl} size={256} />
+                    </div>
+
+                    <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>
+                        <h3>URL de participation :</h3>
+                        <p>{roomUrl}</p>
+                        <Button
+                            variant="contained"
+                            startIcon={<ContentCopyIcon />}
+                            onClick={handleCopy}
+                            style={{ marginTop: '10px' }}
+                        >
+                            {copied ? 'Copié !' : 'Copier le lien'}
+                        </Button>
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowQrModal(false)} color="primary">
+                        Fermer
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <div className="roomHeader">
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                        marginBottom: '10px'
+                    }}
+                >
+                    <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                        Salle : {formattedRoomName}
+                        <div
+                            className="userCount subtitle"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                marginLeft: '20px',
+                                marginBottom: '0px'
+                            }}
+                        >
+                            <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
+                            {students.length}/60
+                        </div>
+                    </h1>
                 </div>
 
-                <div className='dumb'></div>
-
+                <div className="dumb"></div>
             </div>
+
             {/* the following breaks the css (if 'room' classes are nested) */}
-            <div className=''>
-
+            <div className="">
                 {quizQuestions ? (
-
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
+                        {!isNaN(Number(currentQuestion?.question.id)) && (
+                            <strong className="number of questions">
+                                Question {Number(currentQuestion?.question.id)}/
+                                {quizQuestions?.length}
+                            </strong>
+                        )}
 
                         {quizMode === 'teacher' && (
-
                             <div className="mb-1">
                                 {/* <QuestionNavigation
                                     currentQuestionId={Number(currentQuestion?.question.id)}
@@ -454,12 +530,10 @@ const ManageRoom: React.FC = () => {
                                     nextQuestion={nextQuestion}
                                 /> */}
                             </div>
-
                         )}
 
                         <div className="mb-2 flex-column-wrapper">
                             <div className="preview-and-result-container">
-
                                 {currentQuestion && (
                                     <QuestionDisplay
                                         showAnswer={false}
@@ -474,42 +548,51 @@ const ManageRoom: React.FC = () => {
                                     showSelectedQuestion={showSelectedQuestion}
                                     students={students}
                                 ></LiveResultsComponent>
-
                             </div>
                         </div>
 
                         {quizMode === 'teacher' && (
-                        <div className="questionNavigationButtons" style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div className="previousQuestionButton">
-                                <Button onClick={previousQuestion} 
-                                variant="contained" 
-                                disabled={Number(currentQuestion?.question.id) <= 1}>
-                                    Question précédente
-                                </Button>
+                            <div
+                                className="questionNavigationButtons"
+                                style={{ display: 'flex', justifyContent: 'center' }}
+                            >
+                                <div className="previousQuestionButton">
+                                    <Button
+                                        onClick={previousQuestion}
+                                        variant="contained"
+                                        disabled={Number(currentQuestion?.question.id) <= 1}
+                                    >
+                                        Question précédente
+                                    </Button>
+                                </div>
+                                <div className="nextQuestionButton">
+                                    <Button
+                                        onClick={nextQuestion}
+                                        variant="contained"
+                                        disabled={
+                                            Number(currentQuestion?.question.id) >=
+                                            quizQuestions.length
+                                        }
+                                    >
+                                        Prochaine question
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="nextQuestionButton">
-                                <Button onClick={nextQuestion} 
-                                variant="contained" 
-                                disabled={Number(currentQuestion?.question.id) >=quizQuestions.length}
-                                >
-                                    Prochaine question
-                                </Button>
-                            </div>
-                        </div> )}
-
+                        )}
+                        <div className="finishQuizButton">
+                            <Button onClick={finishQuiz} variant="contained">
+                                Terminer le quiz
+                            </Button>
+                        </div>
                     </div>
-
                 ) : (
-
                     <StudentWaitPage
                         students={students}
                         launchQuiz={launchQuiz}
                         setQuizMode={setQuizMode}
                     />
-
                 )}
             </div>
-
         </div>
     );
 };
