@@ -1,1 +1,0 @@
-//TESTS ON ImageGallery.test.tsx

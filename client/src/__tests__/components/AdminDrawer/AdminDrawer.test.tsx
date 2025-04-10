@@ -1,11 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AdminDrawer from '../../../components/AdminDrawer/AdminDrawer';
+import { BrowserRouter as Router } from 'react-router-dom'; // Import Router
 import '@testing-library/jest-dom';
 
 describe('AdminDrawer Component', () => {
   test('renders the Admin button', () => {
-    render(<AdminDrawer />);
+    render(
+      <Router>
+        <AdminDrawer />
+      </Router>
+    );
     
     // Check if the "Admin" button is in the document
     const button = screen.getByRole('button', { name: /admin/i });
@@ -13,7 +18,11 @@ describe('AdminDrawer Component', () => {
   });
 
   test('opens the drawer when the button is clicked', () => {
-    render(<AdminDrawer />);
+    render(
+      <Router>
+        <AdminDrawer />
+      </Router>
+    );
     
     // Click the "Admin" button
     const button = screen.getByRole('button', { name: /admin/i });
@@ -43,7 +52,11 @@ describe('AdminDrawer Component', () => {
   });
 */
   test('menu items render correctly', () => {
-    render(<AdminDrawer />);
+    render(
+      <Router>
+        <AdminDrawer />
+      </Router>
+    );
     
     // Open the drawer
     const button = screen.getByRole('button', { name: /admin/i });

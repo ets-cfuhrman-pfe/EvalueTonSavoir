@@ -50,10 +50,10 @@ describe("AdminTable Component", () => {
     const deleteButton = screen.getAllByRole("button")[0];
     
     fireEvent.click(deleteButton);
-    expect(screen.getByText("Confirm Deletion")).toBeInTheDocument();
+    expect(screen.getByText("Confirmation")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
     await waitFor(() => {
-      expect(screen.queryByText("Confirm Deletion")).not.toBeInTheDocument();
+      expect(screen.queryByText("Confirmation")).not.toBeInTheDocument();
     });
   });
 
