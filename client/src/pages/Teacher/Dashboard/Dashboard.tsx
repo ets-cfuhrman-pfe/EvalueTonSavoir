@@ -39,9 +39,8 @@ import {
     FolderCopy,
     ContentCopy,
     Edit,
-    Share
-    // DriveFileMove
 } from '@mui/icons-material';
+import ShareQuizModal from 'src/components/ShareQuizModal/ShareQuizModal';
 
 // Create a custom-styled Card component
 const CustomCard = styled(Card)({
@@ -401,28 +400,6 @@ const Dashboard: React.FC = () => {
         }    
     };
 
-    const handleShareQuiz = async (quiz: QuizType) => {
-        try {
-            const email = prompt(
-                `Veuillez saisir l'email de la personne avec qui vous souhaitez partager ce quiz`,
-                ''
-            );
-
-            if (email) {
-                const result = await ApiService.ShareQuiz(quiz._id, email);
-
-                if (!result) {
-                    window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`);
-                    return;
-                }
-
-                window.alert(`Quiz partagé avec succès!`);
-            }
-        } catch (error) {
-            console.error('Erreur lors du partage du quiz:', error);
-        }
-    };
-
     return (
         <div className="dashboard">
             <div className="title">Tableau de bord</div>
@@ -587,7 +564,7 @@ const Dashboard: React.FC = () => {
                             {quizzesByFolder[folderName].map((quiz: QuizType) => (
                                 <div className="quiz" key={quiz._id}>
                                     <div className="title">
-                                        <Tooltip title="Lancer quiz" placement="top">
+                                        <Tooltip title="Démarrer" placement="top">
                                             <div>
                                                 <Button
                                                     variant="outlined"
@@ -603,7 +580,7 @@ const Dashboard: React.FC = () => {
                                     </div>
 
                                     <div className="actions">
-                                        <Tooltip title="Télécharger quiz" placement="top">
+                                        <Tooltip title="Télécharger" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => downloadTxtFile(quiz)}
@@ -613,7 +590,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Modifier quiz" placement="top">
+                                        <Tooltip title="Modifier" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => handleEditQuiz(quiz)}
@@ -623,7 +600,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Dupliquer quiz" placement="top">
+                                        <Tooltip title="Dupliquer" placement="top">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => handleDuplicateQuiz(quiz)}
@@ -633,7 +610,7 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Supprimer quiz" placement="top">
+                                        <Tooltip title="Supprimer" placement="top">
                                             <IconButton
                                                 aria-label="delete"
                                                 color="primary"
@@ -644,15 +621,9 @@ const Dashboard: React.FC = () => {
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Partager quiz" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleShareQuiz(quiz)}
-                                            >
-                                                {' '}
-                                                <Share />{' '}
-                                            </IconButton>
-                                        </Tooltip>
+                                        <div className="quiz-share">
+                                                    <ShareQuizModal quiz={quiz} />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
