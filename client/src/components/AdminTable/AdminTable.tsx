@@ -149,10 +149,10 @@ const AdminTable: React.FC<AdminTableProps> = ({
       />
       
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this record?
+            Voulez-vous vraiment supprimer?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

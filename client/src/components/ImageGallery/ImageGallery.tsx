@@ -13,7 +13,8 @@ import {
   DialogContentText,
   Tabs,
   Tab,
-  TextField
+  TextField, Snackbar,
+  Alert
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -21,12 +22,15 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ImageType } from "../../Types/ImageType";
 import ApiService from "../../services/ApiService";
 import { Upload } from "@mui/icons-material";
+import { ENV_VARIABLES } from '../../constants';
+import { escapeForGIFT } from "src/utils/giftUtils";
 
 interface ImagesProps {
   handleCopy?: (id: string) => void;
+  handleDelete?: (id: string) => void;
 }
 
-const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
+const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   const [images, setImages] = useState<ImageType[]>([]);
   const [totalImg, setTotalImg] = useState(0);
   const [imgPage, setImgPage] = useState(1);
@@ -38,39 +42,60 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
   const [tabValue, setTabValue] = useState(0);
   const [importedImage, setImportedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+  const fetchImages = async () => {
+    setLoading(true);
+    const data = await ApiService.getImages(imgPage, imgLimit);
+    setImages(data.images);
+    setTotalImg(data.total);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchImages = async () => {
-      setLoading(true);
-      const data = await ApiService.getImages(imgPage, imgLimit);
-      setImages(data.images);
-      setTotalImg(data.total);
-      setLoading(false);
-    };
     fetchImages();
   }, [imgPage]);
 
-  const handleDelete = async () => {
+  const defaultHandleDelete = async (id: string) => {
     if (imageToDelete) {
       setLoading(true);
-      const isDeleted = await ApiService.deleteImage(imageToDelete.id);
+      const isDeleted = await ApiService.deleteImage(id);
       setLoading(false);
+
       if (isDeleted) {
-        setImages(images.filter((image) => image.id !== imageToDelete.id));
-        setSelectedImage(null);
-        setImageToDelete(null);
-        setOpenDeleteDialog(false);
+        setImgPage(1);
+        fetchImages();
+        setSnackbarMessage("Image supprimée avec succès!");
+        setSnackbarSeverity("success");
+      } else {
+        setSnackbarMessage("Erreur lors de la suppression de l'image. Veuillez réessayer.");
+        setSnackbarSeverity("error");
       }
+
+      setSnackbarOpen(true);
+      setSelectedImage(null);
+      setImageToDelete(null);
+      setOpenDeleteDialog(false);
     }
   };
 
   const defaultHandleCopy = (id: string) => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(id);
+      const link = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
+      const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
+      setSnackbarMessage("Le lien Markdown de l’image a été copié dans le presse-papiers");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      navigator.clipboard.writeText(imgTag);
+    }
+    if(handleCopy) {
+      handleCopy(id);
     }
   };
 
-  const handleCopyFunction = handleCopy || defaultHandleCopy;
+  const handleDeleteFunction = handleDelete || defaultHandleDelete;
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -80,6 +105,44 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
       setPreview(objectUrl);
     }
   };
+
+  const handleSaveImage = async () => {
+    try {
+      if (!importedImage) {
+        setSnackbarMessage("Veuillez choisir une image à téléverser.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      const imageUrl = await ApiService.uploadImage(importedImage);
+
+      if (imageUrl.includes("ERROR")) {
+        setSnackbarMessage("Une erreur est survenue. Veuillez réessayer plus tard.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+      fetchImages();
+
+      setSnackbarMessage("Téléversée avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      setImportedImage(null);
+      setPreview(null);
+      setTabValue(0);
+    } catch (error) {
+      setSnackbarMessage(`Une erreur est survenue.\n${error}\nVeuillez réessayer plus tard.`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
 
   return (
     <Box p={3}>
@@ -97,7 +160,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
             <>
               <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gridTemplateRows="repeat(2, 1fr)" gap={2} maxWidth="900px" margin="auto">
                 {images.map((obj) => (
-                  <Card key={obj.id} sx={{ cursor: "pointer" }} onClick={() => setSelectedImage(obj)}>
+                  <Card key={obj.id} sx={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center" }} onClick={() => setSelectedImage(obj)}>
                     <CardContent sx={{ p: 0 }}>
                       <img
                         src={`data:${obj.mime_type};base64,${obj.file_content}`}
@@ -105,6 +168,29 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
                         style={{ width: "100%", height: 250, objectFit: "cover", borderRadius: 8 }}
                       />
                     </CardContent>
+                    <Box display="flex" justifyContent="center" mt={1}>
+                      <IconButton onClick={(e) => {
+                        e.stopPropagation();
+                        defaultHandleCopy(obj.id);
+                        }} 
+                        color="primary"
+                        data-testid={`gallery-tab-copy-${obj.id}`} >
+                        
+                        <ContentCopyIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageToDelete(obj);
+                          setOpenDeleteDialog(true);
+                        }}
+                        color="error"
+                        data-testid={`gallery-tab-delete-${obj.id}`}  >
+
+                        <DeleteIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Box>
                   </Card>
                 ))}
               </Box>
@@ -146,16 +232,16 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
                   maxHeight: "600px", 
                 }}
               />
-              
             </Box>
-            
           )}
           <Box display="flex" flexDirection="row" alignItems="center" width="100%" maxWidth={400}>
             <TextField
               type="file"
+              data-testid="file-input"
               onChange={handleImageUpload}  
               slotProps={{
                 htmlInput: {
+                  "data-testid": "file-input",
                   accept: "image/*",
                 },
               }}
@@ -164,7 +250,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
             <Button
               variant="outlined"
               aria-label="Téléverser"
-              onClick={() => { console.log("save..."); }}
+              onClick={() => { handleSaveImage() }}
               sx={{ ml: 2, height: "100%" }} 
             >
               Téléverser <Upload sx={{ ml: 1 }} />
@@ -173,7 +259,8 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
         </Box>
       )}
       <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} maxWidth="md">
-        <IconButton color="primary" onClick={() => setSelectedImage(null)} sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}>
+        <IconButton color="primary" onClick={() => setSelectedImage(null)} sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}
+          data-testid="close-button">
           <CloseIcon />
         </IconButton>
         <DialogContent>
@@ -185,39 +272,36 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy }) => {
             />
           )}
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          {selectedImage && (
-            <IconButton onClick={() => handleCopyFunction(selectedImage.id)} color="primary">
-              <ContentCopyIcon />
-            </IconButton>
-          )}
-          <IconButton
-            onClick={() => {
-              setImageToDelete(selectedImage);
-              setOpenDeleteDialog(true);
-            }}
-            color="error"
-          >
-            <DeleteIcon />
-          </IconButton>
-        </DialogActions>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>Supprimer</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure you want to delete this image?</DialogContentText>
+          <DialogContentText>Voulez-vous supprimer cette image?</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
-          <Button onClick={handleDelete} color="error">
+          <Button onClick={() => imageToDelete && handleDeleteFunction(imageToDelete.id)} color="error">
             Delete
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar 
+        open={snackbarOpen}
+        autoHideDuration={4000} 
+        onClose={handleCloseSnackbar}
+        >
+        <Alert 
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

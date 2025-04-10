@@ -7,8 +7,15 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageGallery from "../ImageGallery";
+import { ImageSearch } from "@mui/icons-material";
 
-const ImageGalleryModal: React.FC = () => {
+
+interface ImageGalleryModalProps {
+  handleCopy?: (id: string) => void;
+}
+
+
+const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({ handleCopy }) => {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleOpen = () => setOpen(true);
@@ -16,14 +23,18 @@ const ImageGalleryModal: React.FC = () => {
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleOpen}>
-        Open Image Manager
-      </Button>
+      <Button
+        variant="outlined"
+        aria-label='images-open'
+        onClick={() => handleOpen()}>
+        Images <ImageSearch /> 
+      </Button>    
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 3 }}>
           <IconButton
             onClick={handleClose}
             color="primary"
+            aria-label="close"
             sx={{
               position: "absolute",
               right: 8,
@@ -34,7 +45,7 @@ const ImageGalleryModal: React.FC = () => {
             <CloseIcon />
           </IconButton>
 
-          <ImageGallery />
+          <ImageGallery handleCopy={handleCopy}/>
         </DialogContent>
       </Dialog>
     </>
