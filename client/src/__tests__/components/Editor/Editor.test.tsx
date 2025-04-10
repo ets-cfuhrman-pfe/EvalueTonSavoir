@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Editor from '../../../components/Editor/Editor';
+import Editor from '../../../components/Editor/newEditor';
 
 describe('Editor Component', () => {
     const mockOnValuesChange = jest.fn();

@@ -1,16 +1,17 @@
-// EditorQuiz.tsx
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
 
+import NewEditor from 'src/components/Editor/newEditor';
 import Editor from 'src/components/Editor/Editor';
+
 import GiftCheatSheet from 'src/components/GIFTCheatSheet/GiftCheatSheet';
 import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview';
 
 import { QuizType } from '../../../Types/QuizType';
 
-import './editorQuiz.css';
+import './EditorQuiz.css';
 import { Button, TextField, NativeSelect, Divider, Dialog, DialogTitle, DialogActions, DialogContent, MenuItem, Select, Snackbar } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 
@@ -49,6 +50,8 @@ const QuizForm: React.FC = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [copySuccess, setCopySuccess] = useState<string | null>(null);
+
+    const [useNewEditor, setUserNewEditor] = useState(false);
 
     const QuestionVraiFaux = "::Exemple de question vrai/faux:: \n 2+2 \\= 4 ? {T}  //Utilisez les valeurs {T}, {F}, {TRUE} et {FALSE}.";
     const QuestionChoixMul = "::Ville capitale du Canada:: \nQuelle ville est la capitale du Canada? {\n~ Toronto\n~ Montréal\n= Ottawa #Rétroaction spécifique.\n}  // Commentaire non visible (au besoin)";
@@ -142,10 +145,26 @@ const QuizForm: React.FC = () => {
         console.log("Updated values:", [...values, '']); // Log new state
     };
 
-    const handleUpdatePreview = (newValues: string[]) => {
+    const newHandleUpdatePreview = (newValues: string[]) => {
         setValues(newValues);
         setFilteredValue(newValues.filter(value => value.trim() !== ''));
     };
+
+    const handleUpdatePreview = (value: string) => {
+        if (value !== '') {
+            setValues([value]);
+        }
+
+        // split value when there is at least one blank line
+        const linesArray = value.split(/\n{2,}/);
+
+        // if the first item in linesArray is blank, remove it
+        if (linesArray[0] === '') linesArray.shift();
+
+        if (linesArray[linesArray.length - 1] === '') linesArray.pop();
+
+        setFilteredValue(linesArray);
+    }
 
     const handleQuizTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuizTitle(event.target.value);
@@ -205,7 +224,7 @@ const QuizForm: React.FC = () => {
             const imageUrl = await ApiService.uploadImage(inputElement.files[0]);
 
             // Check for errors
-            if(imageUrl.indexOf("ERROR") >= 0) {
+            if (imageUrl.indexOf("ERROR") >= 0) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
                 return;
             }
@@ -248,157 +267,103 @@ const QuizForm: React.FC = () => {
         copyToClipboard(value, label);
     };
 
+    const toggleEditor = () => {
+        setUserNewEditor(!useNewEditor);
+    }
+
     return (
         <div className='quizEditor'>
-
-            <div className='editHeader'
-            style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '32px'
-            }}>
-                <ReturnButton
-                    quizTitle={quizTitle}
-                    quizContent={filteredValue}
-                    quizFolder={selectedFolder}
-                    quizId={quiz?._id}
-                    isNewQuiz={isNewQuiz}
-                />
-
-
-
+            <div className='editHeader' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <ReturnButton quizTitle={quizTitle} quizContent={filteredValue} quizFolder={selectedFolder} quizId={quiz?._id} isNewQuiz={isNewQuiz} />
                 <div className='title'>Éditeur de Quiz</div>
+                <Button
+                    variant="outlined"
+                    onClick={toggleEditor}
+                    size="small"
+                    style={{
+                        fontSize: '10px', // Smaller font
+                        padding: '2px 6px', // Reduced padding
+                        minWidth: 'auto', // Allow button to shrink
+                        height: 'fit-content', // Match height to content
+                    }}
+                >
+                    {useNewEditor ? 'Ancien éditeur' : 'Nouvel éditeur'}
+                </Button>
 
-                <div className='dumb'></div>
             </div>
 
-            {/* <h2 className="subtitle">Éditeur</h2> */}
-
-            <TextField
-                onChange={handleQuizTitleChange}
-                value={quizTitle}
-                placeholder="Titre du quiz"
-                label="Titre du quiz"
-                fullWidth
-            />
+            <TextField onChange={handleQuizTitleChange} value={quizTitle} placeholder="Titre du quiz" label="Titre du quiz" fullWidth />
             <label>Choisir un dossier:
-            <NativeSelect
-                id="select-folder"
-                color="primary"
-                value={selectedFolder}
-                onChange={handleSelectFolder}
-                disabled={!isNewQuiz}
-                style={{ marginBottom: '16px' }} // Ajout de marge en bas
-                >
-                <option disabled value=""> Choisir un dossier... </option>
+                <NativeSelect id="select-folder" color="primary" value={selectedFolder} onChange={handleSelectFolder} disabled={!isNewQuiz} style={{ marginBottom: '16px' }}>
+                    <option disabled value=""> Choisir un dossier... </option>
+                    {folders.map((folder: FolderType) => (
+                        <option value={folder._id} key={folder._id}> {folder.title} </option>
+                    ))}
+                </NativeSelect>
+            </label>
 
-                {folders.map((folder: FolderType) => (
-                    <option value={folder._id} key={folder._id}> {folder.title} </option>
-                ))}
-            </NativeSelect></label>
-
-
-                        <div className='sticky-buttons'>
+            <div className='sticky-buttons'>
                 <Select
                     value=""
                     displayEmpty
                     onChange={(e) => handleSelectChange(e.target.value, templates.find(t => t.value === e.target.value)?.label || '')}
                     style={{ width: '210px' }}
-                    inputProps={{
-                        'data-testid': 'template-select'
-                    }}
-
+                    inputProps={{ 'data-testid': 'template-select' }}
                 >
                     <MenuItem value="" disabled>Modèles de questions</MenuItem>
                     {templates.map((template, index) => (
                         <MenuItem key={index} value={template.value}>{template.label}</MenuItem>
                     ))}
                 </Select>
-                <Button
-                    variant="contained"
-                    onClick={handleQuizSave}
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                >
+
+                <Button variant="contained" onClick={handleQuizSave} sx={{ display: 'flex', alignItems: 'center' }}>
                     <SaveIcon sx={{ fontSize: 20 }} />
                     Enregistrer
                 </Button>
             </div>
 
-            <Snackbar
-                open={!!copySuccess}
-                autoHideDuration={3000}
-                onClose={() => setCopySuccess(null)}
-                message={copySuccess}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                key={copySuccess ? 'open' : 'close'}
-            />
-            
+            <Snackbar open={!!copySuccess} autoHideDuration={3000} onClose={() => setCopySuccess(null)} message={copySuccess} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} key={copySuccess ? 'open' : 'close'} />
+
             <Divider style={{ margin: '16px 0' }} />
 
             <div className='editSection'>
-
                 <div className='edit'>
-                    <Editor
-                        label=""
-                        values={values}
-                        onValuesChange={handleUpdatePreview}
-                        onFocusQuestion={handleFocusQuestion} />
-                    <Button variant="contained" onClick={handleAddQuestion}>
-                        Ajouter une question 
-                    </Button>
- 
-                 <div className="images">
-                        {/* Collapsible Upload Section */}
+                    {useNewEditor ? (
+                        <NewEditor label="" values={values} onValuesChange={newHandleUpdatePreview} onFocusQuestion={handleFocusQuestion} />
+                    ) : (
+                        <Editor label="" values={values} onEditorChange={handleUpdatePreview} />
+                    )}
+                    {useNewEditor && (
+                        <Button variant="contained" onClick={handleAddQuestion}>
+                            Ajouter une question
+                        </Button>
+                    )}
+                    <div className="images">
                         <div style={{ marginTop: '8px' }}>
-                            <Button
-                                variant="outlined"
-                                onClick={() => setIsUploadCollapsed(!isUploadCollapsed)}
-                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
-                            >
+                            <Button variant="outlined" onClick={() => setIsUploadCollapsed(!isUploadCollapsed)} style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}>
                                 {isUploadCollapsed ? 'Afficher Téléverser image' : 'Masquer Téléverser image'}
                             </Button>
                             {!isUploadCollapsed && (
                                 <div className="upload">
                                     <label className="dropArea">
-                                        <input
-                                            type="file"
-                                            id="file-input"
-                                            className="file-input"
-                                            accept="image/jpeg, image/png"
-                                            multiple
-                                            ref={fileInputRef}
-                                        />
-                                        <Button
-                                            variant="outlined"
-                                            aria-label="Téléverser"
-                                            onClick={handleSaveImage}
-                                        >
+                                        <input type="file" id="file-input" className="file-input" accept="image/jpeg, image/png" multiple ref={fileInputRef} />
+                                        <Button variant="outlined" aria-label="Téléverser" onClick={handleSaveImage}>
                                             Téléverser <Upload />
                                         </Button>
                                     </label>
                                     <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                                         <DialogTitle>Erreur</DialogTitle>
-                                        <DialogContent>
-                                            Veuillez d'abord choisir une image à téléverser.
-                                        </DialogContent>
+                                        <DialogContent>Veuillez d'abord choisir une image à téléverser.</DialogContent>
                                         <DialogActions>
-                                            <Button onClick={() => setDialogOpen(false)} color="primary">
-                                                OK
-                                            </Button>
+                                            <Button onClick={() => setDialogOpen(false)} color="primary">OK</Button>
                                         </DialogActions>
                                     </Dialog>
                                 </div>
                             )}
                         </div>
 
-                        {/* Collapsible Images Section */}
                         <div style={{ marginTop: '2px' }}>
-                            <Button
-                                variant="outlined"
-                                onClick={() => setIsImagesCollapsed(!isImagesCollapsed)}
-                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
-                            >
+                            <Button variant="outlined" onClick={() => setIsImagesCollapsed(!isImagesCollapsed)} style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}>
                                 {isImagesCollapsed ? 'Afficher Mes images' : 'Masquer Mes images'}
                             </Button>
                             {!isImagesCollapsed && (
@@ -407,16 +372,8 @@ const QuizForm: React.FC = () => {
                                     <div>
                                         <div>
                                             <div style={{ display: 'inline' }}>(Voir section </div>
-                                            <a
-                                                href="#images-section"
-                                                style={{ textDecoration: 'none' }}
-                                                onClick={scrollToImagesSection}
-                                            >
-                                                <u>
-                                                    <em>
-                                                        <h4 style={{ display: 'inline' }}> 9. Images </h4>
-                                                    </em>
-                                                </u>
+                                            <a href="#images-section" style={{ textDecoration: 'none' }} onClick={scrollToImagesSection}>
+                                                <u><em><h4 style={{ display: 'inline' }}> 9. Images </h4></em></u>
                                             </a>
                                             <div style={{ display: 'inline' }}> ci-dessous</div>
                                             <div style={{ display: 'inline' }}>)</div>
@@ -428,9 +385,7 @@ const QuizForm: React.FC = () => {
                                                 const imgTag = `![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
                                                 return (
                                                     <li key={index}>
-                                                        <code onClick={() => handleCopyToClipboard(imgTag)}>
-                                                            {imgTag}
-                                                        </code>
+                                                        <code onClick={() => handleCopyToClipboard(imgTag)}>{imgTag}</code>
                                                     </li>
                                                 );
                                             })}
@@ -440,13 +395,8 @@ const QuizForm: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Collapsible CheatSheet Section */}
                         <div style={{ marginTop: '2px' }}>
-                            <Button
-                                variant="outlined"
-                                onClick={() => setIsCheatSheetCollapsed(!isCheatSheetCollapsed)}
-                                style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}
-                            >
+                            <Button variant="outlined" onClick={() => setIsCheatSheetCollapsed(!isCheatSheetCollapsed)} style={{ padding: '4px 8px', fontSize: '12px', marginBottom: '4px', width: '40%' }}>
                                 {isCheatSheetCollapsed ? 'Afficher CheatSheet' : 'Masquer CheatSheet'}
                             </Button>
                             {!isCheatSheetCollapsed && <GiftCheatSheet />}
@@ -465,27 +415,15 @@ const QuizForm: React.FC = () => {
             </div>
 
             {showScrollButton && (
-                <Button
-                    onClick={scrollToTop}
-                    variant="contained"
-                    color="primary"
-                    style={scrollToTopButtonStyle}
-                    title="Scroll to top"
-                >
+                <Button onClick={scrollToTop} variant="contained" color="primary" style={scrollToTopButtonStyle} title="Scroll to top">
                     ↑
                 </Button>
             )}
 
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000} // Hide after 3 seconds
-                onClose={handleSnackbarClose}
-                message={snackbarMessage}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Lower-right corner
-            />
+            <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} message={snackbarMessage} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />
         </div>
     );
-}; 
+};
 
 const scrollToTopButtonStyle: CSSProperties = {
     position: 'fixed',
