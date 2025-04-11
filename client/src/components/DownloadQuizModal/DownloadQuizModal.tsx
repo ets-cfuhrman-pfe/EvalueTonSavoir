@@ -65,7 +65,7 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             if (!selectedQuiz) throw new Error('Quiz not found');
 
 
-            let previewHTML = '';
+            let previewHTML = '<h2>' + selectedQuiz.title + '</h2>';
             selectedQuiz.content.forEach((giftQuestion) => {
                 try {
                     const question = parse(giftQuestion);
@@ -76,9 +76,9 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
                     });
                 } catch (error) {
                     if (error instanceof Error) {
-                        previewHTML += ErrorTemplate(giftQuestion + '\n' + error.message);
+                        previewHTML += ErrorTemplate(giftQuestion, error.message );
                     } else {
-                        previewHTML += ErrorTemplate(giftQuestion + '\n' + 'Erreur inconnue');
+                        previewHTML += ErrorTemplate(giftQuestion, 'Erreur inconnue');
                     }
                 }
             });
@@ -107,11 +107,12 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             tempDiv.innerHTML = sanitizedHTML;
             document.body.appendChild(tempDiv);
 
-            const canvas = await html2canvas(tempDiv, { scale: 2 });
+            // allowTaint and useCORS are set to true to allow cross-origin images to be used in the canvas
+            const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true });
 
             document.body.removeChild(tempDiv);
 
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdf = new jsPDF('p', 'mm', 'letter');
             const pageWidth = pdf.internal.pageSize.width;
             const pageHeight = pdf.internal.pageSize.height;
             const margin = 10;
