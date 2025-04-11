@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { ParsedGIFTQuestion, BaseQuestion, parse, Question } from 'gift-pegjs';
-import {
-    isSimpleNumericalAnswer,
-    isRangeNumericalAnswer,
-    isHighLowNumericalAnswer
-} from 'gift-pegjs/typeGuards';
+import { BaseQuestion, parse, Question } from 'gift-pegjs';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 import webSocketService, {
     AnswerReceptionFromBackendType
@@ -14,6 +9,7 @@ import webSocketService, {
 import { QuizType } from '../../../Types/QuizType';
 import GroupIcon from '@mui/icons-material/Group';
 import './manageRoom.css';
+import QRCodeIcon from '@mui/icons-material/QrCode';
 import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
@@ -23,36 +19,55 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button } from '@mui/material';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
+} from '@mui/material';
+import { checkIfIsCorrect } from './useRooms';
+import { QRCodeCanvas } from 'qrcode.react';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
-    const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
+    const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
-    const [formattedRoomName, setFormattedRoomName] = useState("");
+    const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-    // Handle the newly connected user in useEffect, because it needs state info 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(roomUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
+    // Handle the newly connected user in useEffect, because it needs state info
     // not available in the socket.on() callback
     useEffect(() => {
         if (newlyConnectedUser) {
             console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
             setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
-    
+
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
                 console.log(`!quizStarted: returning.... `);
                 return;
             }
-    
+
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
@@ -65,7 +80,7 @@ const ManageRoom: React.FC = () => {
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
-    
+
             // Reset the newly connected user state
             setNewlyConnectedUser(null);
         }
@@ -83,6 +98,15 @@ const ManageRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        if (!roomName) {
+            console.error('Room name is missing!');
+            return;
+        }
+
+        console.log(`Joining room: ${roomName}`);
+    }, [roomName]);
+
+    useEffect(() => {
         if (!roomName || !quizId) {
             window.alert(
                 `Une erreur est survenue.\n La salle ou le quiz n'a pas été spécifié.\nVeuillez réessayer plus tard.`
@@ -96,7 +120,7 @@ const ManageRoom: React.FC = () => {
         return () => {
             disconnectWebSocket();
         };
-      }, [roomName, navigate]);
+    }, [roomName, navigate]);
 
     useEffect(() => {
         if (quizId) {
@@ -143,8 +167,8 @@ const ManageRoom: React.FC = () => {
         setFormattedRoomName(roomNameUpper);
         console.log(`Creating WebSocket room named ${roomNameUpper}`);
 
-        /** 
-         * ATTENTION: Lire les variables d'état dans 
+        /**
+         * ATTENTION: Lire les variables d'état dans
          * les .on() n'est pas une bonne pratique.
          * Les valeurs sont celles au moment de la création
          * de la fonction et non au moment de l'exécution.
@@ -184,7 +208,6 @@ const ManageRoom: React.FC = () => {
     };
 
     useEffect(() => {
-
         if (socket) {
             console.log(`Listening for submit-answer-room in room ${formattedRoomName}`);
             socket.on('submit-answer-room', (answerData: AnswerReceptionFromBackendType) => {
@@ -258,10 +281,12 @@ const ManageRoom: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
-                                       questionIndex: nextQuestionIndex, 
-                                       isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: nextQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const previousQuestion = () => {
@@ -271,7 +296,12 @@ const ManageRoom: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: prevQuestionIndex,
+            isLaunch: false
+        });
     };
 
     const initializeQuizQuestion = () => {
@@ -299,7 +329,12 @@ const ManageRoom: React.FC = () => {
         }
 
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
+        webSocketService.nextQuestion({
+            roomName: formattedRoomName,
+            questions: quizQuestions,
+            questionIndex: 0,
+            isLaunch: true
+        });
     };
 
     const launchStudentMode = () => {
@@ -336,72 +371,25 @@ const ManageRoom: React.FC = () => {
         if (quiz?.content && quizQuestions) {
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
+                webSocketService.nextQuestion({
+                    roomName: formattedRoomName,
+                    questions: quizQuestions,
+                    questionIndex,
+                    isLaunch: false
+                });
             }
         }
+    };
+
+    const finishQuiz = () => {
+        disconnectWebSocket();
+        navigate('/teacher/dashboard');
     };
 
     const handleReturn = () => {
         disconnectWebSocket();
         navigate('/teacher/dashboard');
     };
-
-    function checkIfIsCorrect(
-        answer: AnswerType,
-        idQuestion: number,
-        questions: QuestionType[]
-    ): boolean {
-        const questionInfo = questions.find((q) =>
-            q.question.id ? q.question.id === idQuestion.toString() : false
-        ) as QuestionType | undefined;
-
-        const answerText = answer.toString();
-        if (questionInfo) {
-            const question = questionInfo.question as ParsedGIFTQuestion;
-            if (question.type === 'TF') {
-                return (
-                    (question.isTrue && answerText == 'true') ||
-                    (!question.isTrue && answerText == 'false')
-                );
-            } else if (question.type === 'MC') {
-                return question.choices.some(
-                    (choice) => choice.isCorrect && choice.formattedText.text === answerText
-                );
-            } else if (question.type === 'Numerical') {
-                if (isHighLowNumericalAnswer(question.choices[0])) {
-                    const choice = question.choices[0];
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= choice.numberHigh && answerNumber >= choice.numberLow
-                        );
-                    }
-                }
-                if (isRangeNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    const range = question.choices[0].range;
-                    const correctAnswer = question.choices[0].number;
-                    if (!isNaN(answerNumber)) {
-                        return (
-                            answerNumber <= correctAnswer + range &&
-                            answerNumber >= correctAnswer - range
-                        );
-                    }
-                }
-                if (isSimpleNumericalAnswer(question.choices[0])) {
-                    const answerNumber = parseFloat(answerText);
-                    if (!isNaN(answerNumber)) {
-                        return answerNumber === question.choices[0].number;
-                    }
-                }
-            } else if (question.type === 'Short') {
-                return question.choices.some(
-                    (choice) => choice.text.toUpperCase() === answerText.toUpperCase()
-                );
-            }
-        }
-        return false;
-    }
 
     if (!formattedRoomName) {
         return (
@@ -427,32 +415,95 @@ const ManageRoom: React.FC = () => {
 
     return (
         <div className="room">
-            <h1>Salle : {formattedRoomName}</h1>
-            <div className="roomHeader">
+            {/* En-tête avec bouton Disconnect à gauche et QR code à droite */}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
                 <DisconnectButton
                     onReturn={handleReturn}
                     askConfirm
                     message={`Êtes-vous sûr de vouloir quitter?`}
                 />
 
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowQrModal(true)}
+                    startIcon={<QRCodeIcon />}
+                >
+                    Lien de participation
+                </Button>
+            </div>
+
+            <Dialog
+                open={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                aria-labelledby="qr-modal-title"
+            >
+                <DialogTitle id="qr-modal-title">
+                    Rejoindre la salle: {formattedRoomName}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Scannez ce QR code ou partagez le lien ci-dessous pour rejoindre la salle :
+                    </DialogContentText>
+
+                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                        <QRCodeCanvas value={roomUrl} size={256} />
+                    </div>
+
+                    <div style={{ wordBreak: 'break-all', textAlign: 'center' }}>
+                        <h3>URL de participation :</h3>
+                        <p>{roomUrl}</p>
+                        <Button
+                            variant="contained"
+                            startIcon={<ContentCopyIcon />}
+                            onClick={handleCopy}
+                            style={{ marginTop: '10px' }}
+                        >
+                            {copied ? 'Copié !' : 'Copier le lien'}
+                        </Button>
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowQrModal(false)} color="primary">
+                        Fermer
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <div className="roomHeader">
                 <div
-                    className="headerContent"
                     style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
+                        justifyContent: 'center',
                         alignItems: 'center',
-                        width: '100%'
+                        width: '100%',
+                        marginBottom: '10px'
                     }}
                 >
-                    {(
+                    <h1 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                        Salle : {formattedRoomName}
                         <div
-                            className="userCount subtitle smallText"
-                            style={{ display: "flex", justifyContent: "flex-end" }}
+                            className="userCount subtitle"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                marginLeft: '20px',
+                                marginBottom: '0px'
+                            }}
                         >
-                            <GroupIcon style={{ marginRight: '5px' }} />
+                            <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
                             {students.length}/60
                         </div>
-                    )}
+                    </h1>
                 </div>
 
                 <div className="dumb"></div>
@@ -487,7 +538,6 @@ const ManageRoom: React.FC = () => {
                                     <QuestionDisplay
                                         showAnswer={false}
                                         question={currentQuestion?.question as Question}
-                                        
                                     />
                                 )}
 
@@ -529,6 +579,11 @@ const ManageRoom: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                        <div className="finishQuizButton">
+                            <Button onClick={finishQuiz} variant="contained">
+                                Terminer le quiz
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     <StudentWaitPage

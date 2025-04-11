@@ -3,6 +3,7 @@ import * as React from 'react';
 import './header.css';
 import { Button } from '@mui/material';
 import AdminDrawer from '../AdminDrawer/AdminDrawer';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -26,7 +27,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAdmin, handleLogout }) =>
                 <div className="button-group">
                     
                     { isAdmin && <AdminDrawer /> }
-
                     <Button
                         variant="outlined"
                         color="primary"
@@ -34,8 +34,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAdmin, handleLogout }) =>
                             handleLogout();
                             navigate('/');
                         }}
+                        startIcon={<ExitToAppIcon />}
                     >
-                        Logout
+                        Déconnexion
                     </Button>
                 </div>
             )}

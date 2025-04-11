@@ -22,8 +22,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ImageType } from "../../Types/ImageType";
 import ApiService from "../../services/ApiService";
 import { Upload } from "@mui/icons-material";
-import { ENV_VARIABLES } from '../../constants';
 import { escapeForGIFT } from "src/utils/giftUtils";
+import { ENV_VARIABLES } from "src/constants";
 
 interface ImagesProps {
   handleCopy?: (id: string) => void;
@@ -83,9 +83,9 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
 
   const defaultHandleCopy = (id: string) => {
     if (navigator.clipboard) {
-      const link = `${ENV_VARIABLES.IMG_URL}/api/image/get/${id}`;
-      const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle")`;
-      setSnackbarMessage("Le lien Markdown de l’image a été copié dans le presse-papiers");
+      const link = `${ENV_VARIABLES.BACKEND_URL}/api/image/get/${id}`;
+      const imgTag = `[markdown] ![texte alternatif d'écrivant l'image pour les personnes qui ne peuvent pas voir l'image](${escapeForGIFT(link)} "texte de l'infobulle (ne fonctionne pas sur écran tactile généralement)") `;
+      setSnackbarMessage("Le lien Markdown de l'image a été copié dans le presse-papiers");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       navigator.clipboard.writeText(imgTag);
@@ -147,7 +147,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
   return (
     <Box p={3}>
       <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-        <Tab label="Gallery" />
+        <Tab label="Galerie" />
         <Tab label="Import" />
       </Tabs>
       {tabValue === 0 && (

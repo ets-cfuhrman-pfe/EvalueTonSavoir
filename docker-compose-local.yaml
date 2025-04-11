@@ -55,7 +55,7 @@ services:
     image: mongo
     container_name: mongo
     ports:
-      - "27017:27017"
+      - "27019:27017"
     tty: true
     volumes:
       - mongodb_data:/data/db

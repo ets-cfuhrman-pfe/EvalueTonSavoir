@@ -116,7 +116,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleFeedbackDialogClose} color="primary">
-                        OK
+                        Fermer
                     </Button>
                 </DialogActions>
             </Dialog>

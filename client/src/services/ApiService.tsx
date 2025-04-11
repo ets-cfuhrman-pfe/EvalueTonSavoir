@@ -76,8 +76,6 @@ class ApiService {
             return false;
         }
 
-        console.log("ApiService: isLoggedIn: Token:", token);
-
         // Update token expiry
         this.saveToken(token);
 
@@ -93,7 +91,6 @@ class ApiService {
         }
 
         try {
-            console.log("ApiService: isLoggedInTeacher: Token:", token);
             const decodedToken = jwtDecode(token) as { roles: string[] };
 
             /////// REMOVE BELOW
@@ -105,7 +102,6 @@ class ApiService {
             const userRoles = decodedToken.roles;
             const requiredRole = 'teacher';
 
-            console.log("ApiService: isLoggedInTeacher: UserRoles:", userRoles);
             if (!userRoles || !userRoles.includes(requiredRole)) {
                 return false;
             }
@@ -165,6 +161,22 @@ class ApiService {
         return object.username;
     }
 
+    public getUserID(): string {
+        const token = localStorage.getItem("jwt");
+        
+        if (!token) {
+            return "";
+        }
+
+        const jsonObj = jwtDecode(token) as { userId: string };
+        
+        if (!jsonObj.userId) {
+            return "";
+        }
+
+        return jsonObj.userId;
+    }
+
     // Route to know if rooms need authentication to join
     public async getRoomsRequireAuth(): Promise<any> {
         const url: string = this.constructRequestUrl(`/auth/getRoomsRequireAuth`);
@@ -201,7 +213,6 @@ class ApiService {
 
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
-            console.log(result);
             if (result.status == 200) {
                 //window.location.href = result.request.responseURL;
                 window.location.href = '/login';
@@ -213,7 +224,6 @@ class ApiService {
             return true;
 
         } catch (error) {
-            console.log("Error details: ", error);
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
@@ -576,7 +586,6 @@ public async login(email: string, password: string): Promise<any> {
             const headers = this.constructRequestHeaders();
             const body = { folderId };
 
-            console.log(headers);
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
             if (result.status !== 200) {
@@ -863,36 +872,6 @@ public async login(email: string, password: string): Promise<any> {
             }
 
             return `Une erreur inattendue s'est produite.`
-        }
-    }
-
-    async ShareQuiz(quizId: string, email: string): Promise<ApiResponse> {
-        try {
-            if (!quizId || !email) {
-                throw new Error(`quizId and email are required.`);
-            }
-
-            const url: string = this.constructRequestUrl(`/quiz/Share`);
-            const headers = this.constructRequestHeaders();
-            const body = { quizId, email };
-
-            const result: AxiosResponse = await axios.put(url, body, { headers: headers });
-
-            if (result.status !== 200) {
-                throw new Error(`Update and share quiz failed. Status: ${result.status}`);
-            }
-
-            return true;
-        } catch (error) {
-            console.log("Error details: ", error);
-
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Unknown server error during request.';
-            }
-
-            return `An unexpected error occurred.`;
         }
     }
 
@@ -1192,6 +1171,103 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+    public async getImages(page: number, limit: number): Promise<ImagesResponse> {
+        return this.isAdmin() ? this.getAllImages(page, limit) : this.getUserImages(page, limit);
+    }
+
+    public async getUserImages(page: number, limit: number): Promise<ImagesResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/getUserImages`);
+            const headers = this.constructRequestHeaders();
+            let params : ImagesParams = { page: page, limit: limit };
+
+            const uid = this.getUserID();
+            if(uid !== ''){
+                params.uid = uid;
+            }
+
+            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'affichage des images de l'utilisateur a échoué. Status: ${result.status}`);
+            }
+            const images = result.data;
+
+            return images;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    public async deleteImage(imgId: string): Promise<ApiResponse> {
+        return this.isAdmin() ? this.deleteAnyImage(imgId) : this.deleteUserImage(imgId);
+    }
+
+    public async deleteUserImage(imgId: string): Promise<ApiResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/delete`);
+            const headers = this.constructRequestHeaders();
+            const uid = this.getUserID();
+            let params = { uid: uid, imgId: imgId };
+
+            const result: AxiosResponse = await axios.delete(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La suppression de l'image a échoué. Status: ${result.status}`);
+            }
+
+            const deleted = result.data.deleted;
+            return deleted;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    public async getAllQuizIds(): Promise<string[]> {
+        try {
+           const folders = await this.getUserFolders();
+
+           const allQuizIds: string[] = [];
+
+           if (Array.isArray(folders)) {
+               for (const folder of folders) {
+                   const folderQuizzes = await this.getFolderContent(folder._id);
+
+                   if (Array.isArray(folderQuizzes)) {
+                       allQuizIds.push(...folderQuizzes.map(quiz => quiz._id));
+                   }
+               }
+           } else {
+               console.error('Failed to get user folders:', folders);
+           }
+
+           return allQuizIds;
+        } catch (error) {
+            console.error('Failed to get all quiz ids:', error);
+            throw error;
+        }
+    }	
+
     public async getUsers(): Promise<AdminTableType[]> {
         try {
 
@@ -1218,7 +1294,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async getImages(page: number, limit: number): Promise<ImagesResponse> {
+    public async getAllImages(page: number, limit: number): Promise<ImagesResponse> {
         try {
             const url: string = this.constructRequestUrl(`/admin/getImages`);
             const headers = this.constructRequestHeaders();
@@ -1247,7 +1323,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async deleteImage(imgId: string): Promise<ApiResponse> {
+    public async deleteAnyImage(imgId: string): Promise<ApiResponse> {
         try {
             const url: string = this.constructRequestUrl(`/admin/deleteImage`);
             const headers = this.constructRequestHeaders();

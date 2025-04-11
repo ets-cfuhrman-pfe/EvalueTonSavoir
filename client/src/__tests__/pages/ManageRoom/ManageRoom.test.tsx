@@ -19,6 +19,11 @@ jest.mock('react-router-dom', () => ({
 }));
 jest.mock('src/pages/Teacher/ManageRoom/RoomContext');
 
+jest.mock('qrcode.react', () => ({
+    __esModule: true,
+    QRCodeCanvas: ({ value }: { value: string }) => <div data-testid="qr-code">{value}</div>,
+}));
+
 const mockSocket = {
     on: jest.fn(),
     off: jest.fn(),
@@ -44,7 +49,7 @@ const mockStudents: StudentType[] = [
 ];
 
 const mockAnswerData: AnswerReceptionFromBackendType = {
-    answer: 'Answer1',
+    answer: ['Answer1'],
     idQuestion: 1,
     idUser: '1',
     username: 'Student 1',
@@ -233,7 +238,7 @@ describe('ManageRoom', () => {
     
         await act(async () => {
             const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
-            createSuccessCallback('test-room-name');
+            createSuccessCallback('Test Room');
         });
     
         const launchButton = screen.getByText('Lancer');
@@ -256,6 +261,7 @@ describe('ManageRoom', () => {
         });
     
         await waitFor(() => {
+            // console.info(consoleSpy.mock.calls);
             expect(consoleSpy).toHaveBeenCalledWith(
                 'Received answer from Student 1 for question 1: Answer1'
             );
@@ -293,4 +299,84 @@ describe('ManageRoom', () => {
             expect(screen.queryByText('Student 1')).not.toBeInTheDocument();
         });
     });
+
+    test('terminates the quiz and navigates to teacher dashboard when the "Terminer le quiz" button is clicked', async () => {
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <ManageRoom />
+                </MemoryRouter>
+            );
+        });
+    
+        await act(async () => {
+            const createSuccessCallback = (mockSocket.on as jest.Mock).mock.calls.find(call => call[0] === 'create-success')[1];
+            createSuccessCallback('Test Room');
+        });
+    
+        fireEvent.click(screen.getByText('Lancer'));
+        fireEvent.click(screen.getByText('Rythme du professeur'));
+        fireEvent.click(screen.getAllByText('Lancer')[1]);
+    
+        await waitFor(() => {
+            expect(screen.getByText('Test Quiz')).toBeInTheDocument();
+        });
+    
+        const finishQuizButton = screen.getByText('Terminer le quiz');
+        fireEvent.click(finishQuizButton);
+    
+        await waitFor(() => {
+            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard');
+        });
+    });
+    
+    test("Affiche la modale QR Code lorsqu’on clique sur le bouton", async () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+    
+        const button = screen.getByRole('button', { name: /lien de participation/i });
+        fireEvent.click(button);
+    
+        await waitFor(() => {
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
+    
+        expect(screen.getByRole('heading', { name: /Rejoindre la salle/i })).toBeInTheDocument();
+        expect(screen.getByText(/Scannez ce QR code ou partagez le lien ci-dessous/i)).toBeInTheDocument();
+        expect(screen.getByTestId('qr-code')).toBeInTheDocument();
+    });
+    
+    test("Ferme la modale QR Code lorsqu’on clique sur le bouton Fermer", async () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+    
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+    
+        await waitFor(() => {
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
+    
+        fireEvent.click(screen.getByRole('button', { name: /fermer/i }));
+    
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+    });
+    
+    test('Affiche le bon lien de participation', () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+        
+        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
+    });
+
+    test('Vérifie que le QR code contient la bonne URL', () => {
+        render(<MemoryRouter><ManageRoom /></MemoryRouter>);
+        
+        fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
+        
+        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
+    });
 });
+
