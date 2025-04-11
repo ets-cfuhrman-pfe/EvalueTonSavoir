@@ -6,7 +6,7 @@
 
 # EvalueTonSavoir
 
-EvalueTonSavoir is an open-source and self-hosted platform that continues the development of the code from https://github.com/ETS-PFE004-Plateforme-sondage-minitest. This minimalist platform is designed as a learning and teaching tool, offering a simple and effective solution for creating quizzes using the GIFT format, similar to Moodle.
+EvalueTonSavoir ("Check What You Know") is an open-source and self-hosted platform that continues the development of the code from https://github.com/ETS-PFE004-Plateforme-sondage-minitest. This minimalist platform is designed as a learning and teaching tool, offering a simple and effective solution for creating quizzes using the GIFT format, similar to Moodle.
 
 ## Key Features
 
