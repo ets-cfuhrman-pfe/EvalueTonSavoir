@@ -70,6 +70,7 @@ class Quiz {
 
         return true;
     }
+    
     async deleteQuizzesByFolderId(folderId) {
         await this.db.connect();
         const conn = this.db.getConnection();
