@@ -1,5 +1,4 @@
-import marked, {attachImageModalListeners} from 'src/markedConfig';
-
+import { marked } from 'marked';
 import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
@@ -51,11 +50,11 @@ export function FormattedTextTemplate(formattedText: TextFormat): string {
             // Strip outer paragraph tags (not a great approach with regex)
             result = formatText.replace(/(^<p>)(.*?)(<\/p>)$/gm, '$2');
             break;
-        case 'markdown':
-            parsedText = marked.parse(formatText, { breaks: true, gfm: true }) as string; // <br> for newlines
-            attachImageModalListeners();
-            result = parsedText.replace(/(^<p>)(.*?)(<\/p>)$/gm, '$2');
-            break;
+            case 'markdown':
+                parsedText = marked.parse(formatText, { breaks: true, gfm: true }) as string;
+                result = parsedText.replace(/(^<p>)(.*?)(<\/p>)$/gm, '$2');
+                break;
+            
         default:
             throw new Error(`Unsupported text format: ${formattedText.format}`);
     }
