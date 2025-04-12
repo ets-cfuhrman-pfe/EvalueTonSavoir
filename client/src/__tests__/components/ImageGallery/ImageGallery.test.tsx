@@ -27,7 +27,7 @@ describe("ImageGallery", () => {
   let mockHandleDelete: jest.Mock;
   
   beforeEach(async () => {
-    (ApiService.getUserImages as jest.Mock).mockResolvedValue({ images: mockImages, total: 3 });
+    (ApiService.getImages as jest.Mock).mockResolvedValue({ images: mockImages, total: 3 });
     (ApiService.deleteImage as jest.Mock).mockResolvedValue(true); 
     (ApiService.uploadImage as jest.Mock).mockResolvedValue('mockImageUrl'); 
     await act(async () => {
@@ -62,7 +62,7 @@ describe("ImageGallery", () => {
   it("should delete an image and update the gallery", async () => {
     const fetchImagesMock = jest.fn().mockResolvedValue({ images: mockImages.filter((image) => image.id !== "1"), total: 2 });
 
-    (ApiService.getUserImages as jest.Mock).mockImplementation(fetchImagesMock);
+    (ApiService.getImages as jest.Mock).mockImplementation(fetchImagesMock);
 
     await act(async () => {
       render(<ImageGallery handleDelete={mockHandleDelete} />);
