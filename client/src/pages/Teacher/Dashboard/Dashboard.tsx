@@ -33,13 +33,13 @@ import {
 import {
     Search,
     DeleteOutline,
-    FileDownload,
     Add,
     Upload,
     FolderCopy,
     ContentCopy,
     Edit
 } from '@mui/icons-material';
+import DownloadQuizModal from 'src/components/DownloadQuizModal/DownloadQuizModal';
 import ShareQuizModal from 'src/components/ShareQuizModal/ShareQuizModal';
 
 // Create a custom-styled Card component
@@ -261,46 +261,6 @@ const Dashboard: React.FC = () => {
         }
 
         return true;
-    };
-
-    const downloadTxtFile = async (quiz: QuizType) => {
-        try {
-            const selectedQuiz = (await ApiService.getQuiz(quiz._id)) as QuizType;
-            //quizzes.find((quiz) => quiz._id === quiz._id);
-
-            if (!selectedQuiz) {
-                throw new Error('Selected quiz not found');
-            }
-
-            //const { title, content } = selectedQuiz;
-            let quizContent = '';
-            const title = selectedQuiz.title;
-            console.log(selectedQuiz.content);
-            selectedQuiz.content.forEach((question, qIndex) => {
-                const formattedQuestion = question.trim();
-                // console.log(formattedQuestion);
-                if (formattedQuestion !== '') {
-                    quizContent += formattedQuestion + '\n';
-                    if (qIndex !== selectedQuiz.content.length - 1) {
-                        quizContent += '\n';
-                    }
-                }
-            });
-
-            if (!validateQuiz(selectedQuiz.content)) {
-                window.alert(
-                    'Attention! Ce quiz contient des questions invalides selon le format GIFT.'
-                );
-            }
-            const blob = new Blob([quizContent], { type: 'text/plain' });
-            const a = document.createElement('a');
-            const filename = title;
-            a.download = `${filename}.gift`;
-            a.href = window.URL.createObjectURL(blob);
-            a.click();
-        } catch (error) {
-            console.error('Error exporting selected quiz:', error);
-        }
     };
 
     const handleCreateFolder = async () => {
@@ -681,16 +641,10 @@ const Dashboard: React.FC = () => {
                                         </Tooltip>
                                     </div>
 
-                                    <div className="actions">
-                                        <Tooltip title="Télécharger" placement="top">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => downloadTxtFile(quiz)}
-                                            >
-                                                {' '}
-                                                <FileDownload />{' '}
-                                            </IconButton>
-                                        </Tooltip>
+                                    <div className='actions'>
+                                        <div className="dashboard">
+                                                    <DownloadQuizModal quiz={quiz} />
+                                        </div>
 
                                         <Tooltip title="Modifier" placement="top">
                                             <IconButton
