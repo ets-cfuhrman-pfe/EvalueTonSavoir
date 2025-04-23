@@ -36,8 +36,12 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     //     return isMobile ? '100%' : '20%';
     // }, [isMobile]);
     
-    const [isOpen, setIsOpen] = useState<boolean>(true);
     const [showResults, setShowResults] = useState<boolean>(false);
+    const [activeKey, setActiveKey] = useState<string | null>('0');
+
+    const toggleAccordion = () => {
+        setActiveKey(activeKey === '0' ? null : '0');
+    };
 
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -96,10 +100,10 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     return (
         <>
             {showAnswerToggle ? (
-                <Accordion defaultActiveKey="0" alwaysOpen>
+                <Accordion activeKey={activeKey} onSelect={toggleAccordion}>
                     <Accordion.Item eventKey="0">
-                        <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
-                            {isOpen ? 'Afficher les questions' : 'Masquer les questions'}
+                        <Accordion.Header>
+                            {activeKey === '0' ? 'Afficher les questions' : 'Masquer les questions'}
                         </Accordion.Header>
                         <Accordion.Body>
                             <FormControlLabel

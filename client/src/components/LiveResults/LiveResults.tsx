@@ -26,14 +26,16 @@ interface LiveResultsProps {
 const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
-    const [isOpen, setIsOpen] = useState<boolean>(true);
+    const [activeKey, setActiveKey] = useState<string | null>('0');
 
+    const toggleAccordion = () => {
+        setActiveKey(activeKey === '0' ? null : '0');
 
     return (
-        <Accordion defaultActiveKey="0" alwaysOpen>
+        <Accordion activeKey={activeKey} onSelect={toggleAccordion}>
             <Accordion.Item eventKey="0">
-                <Accordion.Header onClick={() => setIsOpen(!isOpen)}>
-                    <div className="text-2xl text-bold">{isOpen ? 'Résultats du quiz' : 'Masquer les résultats'}</div>
+                <Accordion.Header>
+                    <div className="text-2xl text-bold">{activeKey === '0' ? 'Résultats du quiz' : 'Masquer les résultats'}</div>
                 </Accordion.Header>
                 <Accordion.Body>
                         <div className="action-bar mb-1">
