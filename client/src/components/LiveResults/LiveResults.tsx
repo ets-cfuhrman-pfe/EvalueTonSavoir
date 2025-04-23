@@ -30,6 +30,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
 
     const toggleAccordion = () => {
         setActiveKey(activeKey === '0' ? null : '0');
+    };
 
     return (
         <Accordion activeKey={activeKey} onSelect={toggleAccordion}>
