@@ -27,14 +27,14 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     // const [answer, setAnswer] = useState<AnswerType>('');
-    
+
 
     const previousQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id) - 2]);        
+        setQuestion(questions[Number(questionInfos.question?.id) - 2]);
     };
 
     useEffect(() => {
-        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
+        const savedAnswer = answers[Number(questionInfos.question.id) - 1]?.answer;
         console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
         setIsAnswerSubmitted(savedAnswer !== undefined);
     }, [questionInfos.question, answers]);
@@ -50,57 +50,57 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     };
 
     return (
-    <div className='room'>
-    <div className='roomHeader'>
-        <DisconnectButton
-            onReturn={disconnectWebSocket}
-            message={`Êtes-vous sûr de vouloir quitter?`} />
+        <div className='room'>
+            <div className='roomHeader'>
+                <DisconnectButton
+                    onReturn={disconnectWebSocket}
+                    message={`Êtes-vous sûr de vouloir quitter?`} />
 
-    </div>
-    <div >
-    <b>Question {questionInfos.question.id}/{questions.length}</b>
-    </div>
-        <div className="overflow-auto">
-            <div className="question-component-container">
-                <div className="mb-5">
-                    {/* <QuestionNavigation
+                <div >
+                    <b>Question {questionInfos.question.id}/{questions.length}</b>
+                </div>
+            </div>
+            <div className="overflow-auto">
+                <div className="question-component-container">
+                    <div className="mb-5">
+                        {/* <QuestionNavigation
                         currentQuestionId={Number(questionInfos.question.id)}
                         questionsLength={questions.length}
                         previousQuestion={previousQuestion}
                         nextQuestion={nextQuestion}
                         /> */}
-                </div>
-                <QuestionComponent
-                    handleOnSubmitAnswer={handleOnSubmitAnswer}
-                    question={questionInfos.question as Question}
-                    showAnswer={isAnswerSubmitted}
-                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                    </div>
+                    <QuestionComponent
+                        handleOnSubmitAnswer={handleOnSubmitAnswer}
+                        question={questionInfos.question as Question}
+                        showAnswer={isAnswerSubmitted}
+                        answer={answers[Number(questionInfos.question.id) - 1]?.answer}
                     />
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
-                <div>
-                    <Button
-                        variant="outlined"
-                        onClick={previousQuestion}
-                        fullWidth
-                        disabled={Number(questionInfos.question.id) <= 1}
-                    >
-                        Question précédente
-                    </Button>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
+                        <div>
+                            <Button
+                                variant="outlined"
+                                onClick={previousQuestion}
+                                fullWidth
+                                disabled={Number(questionInfos.question.id) <= 1}
+                            >
+                                Question précédente
+                            </Button>
+                        </div>
+                        <div>
+                            <Button
+                                variant="outlined"
+                                onClick={nextQuestion}
+                                fullWidth
+                                disabled={Number(questionInfos.question.id) >= questions.length}
+                            >
+                                Question suivante
+                            </Button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <Button
-                        variant="outlined"
-                        onClick={nextQuestion}
-                        fullWidth
-                        disabled={Number(questionInfos.question.id) >= questions.length}
-                    >
-                        Question suivante
-                    </Button>
-                </div>
-            </div>
             </div>
         </div>
-    </div>
     );
 };
 
