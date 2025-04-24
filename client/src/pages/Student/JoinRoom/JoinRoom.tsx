@@ -15,22 +15,37 @@ import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from 'src/components/LoginContainer/LoginContainer'
 
-import ApiService from '../../../services/ApiService'
-import { QuizProvider } from './QuizProvider';
+import { useQuizContext } from './QuizContext';
+
 
 export type AnswerType = Array<string | number | boolean>;
 
 const JoinRoom: React.FC = () => {
-    const [roomName, setRoomName] = useState('');
-    const [username, setUsername] = useState(ApiService.getUsername());
+    const {
+        setQuestions,
+        setAnswers,
+        questions,
+        username,
+        setUsername,
+        setDisconnectWebSocket,
+        roomName,
+        setRoomName,
+        index,
+        updateIndex,
+
+    } = useQuizContext();
+
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isWaitingForTeacher, setIsWaitingForTeacher] = useState(false);
-    const [question, setQuestion] = useState<QuestionType>();
     const [quizMode, setQuizMode] = useState<string>();
-    const [questions, setQuestions] = useState<QuestionType[]>([]);
-    const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        // Set the disconnectWebSocket function in the context
+        setDisconnectWebSocket(() => disconnect);
+    }, [socket]);
 
     useEffect(() => {
         handleCreateSocket();
@@ -42,6 +57,7 @@ const JoinRoom: React.FC = () => {
     useEffect(() => {
         console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
+        console.log(`JoinRoom: useEffect: answers: ${JSON.stringify(questions)}`);
     }, [questions]);
 
 
@@ -58,13 +74,13 @@ const JoinRoom: React.FC = () => {
             console.log('JoinRoom: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
-            setQuestion(question);
+            updateIndex(Number(question.question.id));
         });
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
             console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
-            setQuestions([]);  // clear out from last time (in case quiz is repeated)
+            updateIndex(null);
             setQuestions(questions);
             // wait for next-question
         });
@@ -75,7 +91,7 @@ const JoinRoom: React.FC = () => {
             setIsWaitingForTeacher(false);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
-            setQuestion(questions[0]);
+            updateIndex(0);
         });
         socket.on('end-quiz', () => {
             disconnect();
@@ -102,10 +118,10 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
-//        localStorage.clear();
+        //        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
-        setQuestion(undefined);
+        updateIndex(null);
         setIsWaitingForTeacher(false);
         setQuizMode('');
         setRoomName('');
@@ -125,25 +141,6 @@ const JoinRoom: React.FC = () => {
 
             webSocketService.joinRoom(roomName, username);
         }
-    };
-
-    const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
-        console.info(`JoinRoom: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
-        const answerData: AnswerSubmissionToBackendType = {
-            roomName: roomName,
-            answer: answer,
-            username: username,
-            idQuestion: idQuestion
-        };
-        // localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
-        setAnswers((prevAnswers) => {
-            console.log(`JoinRoom: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
-            const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
-            newAnswers[idQuestion - 1] = answerData; // Update the specific answer
-            return newAnswers; // Return the new array
-        });
-        console.log(`JoinRoom: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
-        webSocketService.submitAnswer(answerData);
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -176,28 +173,16 @@ const JoinRoom: React.FC = () => {
     }
 
     switch (quizMode) {
+
+
         case 'student':
             return (
-                <QuizProvider>
-                    <StudentModeQuiz
-                        questions={questions}
-                        answers={answers}
-                        submitAnswer={handleOnSubmitAnswer}
-                        disconnectWebSocket={disconnect}
-                    />
-                </QuizProvider>
+                <StudentModeQuiz />
             );
         case 'teacher':
             return (
-                question && (
-                    <QuizProvider>
-                    <TeacherModeQuiz
-                        questionInfos={question}
-                        answers={answers}
-                        submitAnswer={handleOnSubmitAnswer}
-                        disconnectWebSocket={disconnect}
-                    />
-                    </QuizProvider>
+                index != null && (
+                    <TeacherModeQuiz />
                 )
             );
         default:

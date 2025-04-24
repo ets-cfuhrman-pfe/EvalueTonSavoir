@@ -6,27 +6,24 @@ import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemp
 import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
+import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
-interface Props {
-    question: NumericalQuestion;
-    handleOnSubmitAnswer?: (answer: AnswerType) => void;
-    showAnswer?: boolean;
-    passedAnswer?: AnswerType;
-}
+const NumericalQuestionDisplay: React.FC = () => {
+    const { questions, index, answer, submitAnswer } = useQuizContext();
 
-const NumericalQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
-        props;
-    const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
+    const question = questions[Number(index)].question as NumericalQuestion;
+
+    const [actualAnswer, setActualAnswer] = useState<AnswerType>(answer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
 
     useEffect(() => {
-    if (passedAnswer !== null && passedAnswer !== undefined) {
-        setAnswer(passedAnswer);
-    }
-    }, [passedAnswer]);
-    
+        if (answer !== null && answer !== undefined) {
+            setActualAnswer(answer);
+        }
+    }, [answer]);
+
     //const isSingleAnswer = correctAnswers.length === 1;
 
     if (isSimpleNumericalAnswer(correctAnswers[0])) {
@@ -44,57 +41,62 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     }
 
     return (
-        <div className="question-wrapper">
-            <div>
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-            </div>
-            {showAnswer ? (
-                <>
-                    <div className="correct-answer-text mb-2">
-                    <strong>La bonne réponse est: </strong>
-                    {correctAnswer}</div>
-                    <span>
-                        <strong>Votre réponse est: </strong>{answer.toString()}
-                    </span>
-                    {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                    </div>}
-
-                </>
-            ) : (
-                <>
-                    <div className="answer-wrapper mb-1">
-                        <TextField
-                            type="number"
-                            id={question.formattedStem.text}
-                            name={question.formattedStem.text}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                setAnswer([e.target.valueAsNumber]);
-                            }}
-                            inputProps={{ 'data-testid': 'number-input' }}
-                        />
+        <QuizContext.Consumer>
+            {({ showAnswer }) => (
+                <div className="question-wrapper">
+                    <div>
+                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
                     </div>
-                    {question.formattedGlobalFeedback && showAnswer && (
-                        <div className="global-feedback mb-2">
-                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
-                        </div>
+                    {showAnswer ? (
+                        <>
+                            <div className="correct-answer-text mb-2">
+                                <strong>La bonne réponse est: </strong>
+                                {correctAnswer}</div>
+                            <span>
+                                <strong>Votre réponse est: </strong>{actualAnswer.toString()}
+                            </span>
+                            {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
+                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                            </div>}
+
+                        </>
+                    ) : (
+                        <>
+                            <div className="answer-wrapper mb-1">
+                                <TextField
+                                    type="number"
+                                    id={question.formattedStem.text}
+                                    name={question.formattedStem.text}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        setActualAnswer([e.target.valueAsNumber]);
+                                    }}
+                                    inputProps={{ 'data-testid': 'number-input' }}
+                                />
+                            </div>
+                            {question.formattedGlobalFeedback && showAnswer && (
+                                <div className="global-feedback mb-2">
+                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                                </div>
+                            )}
+                            {submitAnswer && (
+                                <Button
+                                    variant="contained"
+                                    onClick={() =>
+                                        actualAnswer !== undefined &&
+                                        submitAnswer &&
+                                        submitAnswer(actualAnswer)
+                                    }
+                                    disabled={actualAnswer === undefined || actualAnswer === null || isNaN(actualAnswer[0] as number)}
+                                >
+                                    Répondre
+                                </Button>
+                            )}
+                        </>
                     )}
-                    {handleOnSubmitAnswer && (
-                        <Button
-                            variant="contained"
-                            onClick={() =>
-                                answer !== undefined &&
-                                handleOnSubmitAnswer &&
-                                handleOnSubmitAnswer(answer)
-                            }
-                            disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
-                        >
-                            Répondre
-                        </Button>
-                    )}
-                </>
+
+                </div>
             )}
-        </div>
+        </QuizContext.Consumer>
     );
 };
 

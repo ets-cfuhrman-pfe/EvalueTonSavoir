@@ -1,18 +1,95 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { QuizContext } from './QuizContext';
+import { QuestionType } from '../../../Types/QuestionType';
+import { AnswerSubmissionToBackendType } from '../../../services/WebsocketService';
+import { AnswerType } from './JoinRoom';
+import webSocketService from '../../../services/WebsocketService';
+import ApiService from '../../../services/ApiService'
+
 
 export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    
     // State for showing answers
     const [showAnswer, setShowAnswer] = useState(false);
 
-    console.log('QuizProvider: showAnswer:', showAnswer);
+    // State for managing the list of questions
+    const [questions, setQuestions] = useState<QuestionType[]>([]);
 
-    useEffect(() => {
-        console.log('QuizProvider: showAnswer:', showAnswer);
-    }, [showAnswer]);
+    // State for managing the list of answers
+    const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
+
+    // Calculate the index based on the current question's ID
+    const [index, setIndex] = useState<number | null>(null);
+
+    const [answer, setAnswer] = useState<AnswerType>([]); // Initialize answer as an empty array
+    
+    const [isQuestionSent, setIsQuestionSent] = useState(false);
+
+    const [username, setUsername] = useState<string>(ApiService.getUsername());
+
+    const [roomName, setRoomName] = useState<string>(''); // Add roomName state
+
+    const [disconnectWebSocket, setDisconnectWebSocket] = useState<() => void>(() => () => {});
+
+
+    const updateIndex = (questionId: number | null) => {
+        const questionIndex = questions.findIndex((q) => q.question.id === String(questionId));
+        setIndex(questionIndex >= 0 ? questionIndex : null);
+    };
+
+    // Function to handle answer submission
+    const submitAnswer = (answer: AnswerType, idQuestion?: number) => {
+        if (!idQuestion) {
+            setAnswer(answer);
+            setIsQuestionSent(true);
+            console.log('index',index);
+        } else {
+        console.info(`QuizProvider: submitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
+        const answerData: AnswerSubmissionToBackendType = {
+            roomName: roomName,
+            answer: answer,
+            username: username,
+            idQuestion: idQuestion,
+        };
+
+        // Update the answers state
+        setAnswers((prevAnswers) => {
+            const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
+            newAnswers[idQuestion - 1] = answerData; // Update the specific answer
+            return newAnswers; // Return the new array
+        });
+
+        console.log(`QuizProvider: submitAnswer: answers: ${JSON.stringify(answers)}`);
+
+        // Submit the answer to the WebSocket service
+        webSocketService.submitAnswer(answerData);
+        }
+    };
 
     return (
-        <QuizContext.Provider value={{ showAnswer, setShowAnswer }}>
+        <QuizContext.Provider
+            value={{
+                showAnswer,
+                setShowAnswer,
+                questions,
+                setQuestions,
+                answers,
+                setAnswers,
+                answer,
+                setAnswer,
+                index, // Expose the index in the context
+                updateIndex, // Expose a function to update the index
+                submitAnswer, // Expose submitAnswer in the context
+                isQuestionSent,
+                setIsQuestionSent,
+                username,
+                setUsername,
+                roomName,
+                setRoomName,
+                disconnectWebSocket,
+                setDisconnectWebSocket,
+            }}
+        >
             {children}
         </QuizContext.Provider>
     );

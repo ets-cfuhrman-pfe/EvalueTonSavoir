@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { BaseQuestion, parse, Question } from 'gift-pegjs';
+import { BaseQuestion, parse /*Question*/ } from 'gift-pegjs';
 import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
 import webSocketService, {
     AnswerReceptionFromBackendType
@@ -20,17 +20,24 @@ import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Button } from '@mui/material';
 import { checkIfIsCorrect } from './useRooms';
+import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const ManageRoom: React.FC = () => {
+    const {
+            questions,
+            setQuestions,
+            index,
+            updateIndex,
+        } = useQuizContext();
+
+
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
     const { quizId = '', roomName = '' }  = useParams<{ quizId: string, roomName: string }>();
-    const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
     const [connectingError, setConnectingError] = useState<string>('');
-    const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState("");
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
@@ -51,12 +58,12 @@ const ManageRoom: React.FC = () => {
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
-                    questions: quizQuestions,
-                    questionIndex: Number(currentQuestion?.question.id) - 1,
+                    questions: questions,
+                    questionIndex: Number(index),
                     isLaunch: true // started late
                 });
             } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+                webSocketService.launchStudentModeQuiz(formattedRoomName, questions);
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
@@ -126,8 +133,8 @@ const ManageRoom: React.FC = () => {
             webSocketService.endQuiz(formattedRoomName);
             webSocketService.disconnect();
             setSocket(null);
-            setQuizQuestions(undefined);
-            setCurrentQuestion(undefined);
+            setQuestions([]);
+            updateIndex(null);
             setStudents(new Array<StudentType>());
         }
     };
@@ -187,7 +194,7 @@ const ManageRoom: React.FC = () => {
                 console.log(
                     `Received answer from ${username} for question ${idQuestion}: ${answer}`
                 );
-                if (!quizQuestions) {
+                if (!questions) {
                     console.log('Quiz questions not found (cannot update answers without them).');
                     return;
                 }
@@ -218,7 +225,7 @@ const ManageRoom: React.FC = () => {
                                               isCorrect: checkIfIsCorrect(
                                                   answer,
                                                   idQuestion,
-                                                  quizQuestions!
+                                                  questions!
                                               )
                                           }
                                         : ans;
@@ -227,7 +234,7 @@ const ManageRoom: React.FC = () => {
                                 const newAnswer = {
                                     idQuestion,
                                     answer,
-                                    isCorrect: checkIfIsCorrect(answer, idQuestion, quizQuestions!)
+                                    isCorrect: checkIfIsCorrect(answer, idQuestion, questions!)
                                 };
                                 updatedAnswers = [...student.answers, newAnswer];
                             }
@@ -243,30 +250,30 @@ const ManageRoom: React.FC = () => {
             });
             setSocket(socket);
         }
-    }, [socket, currentQuestion, quizQuestions]);
+    }, [socket, index, questions]);
 
     const nextQuestion = () => {
-        if (!quizQuestions || !currentQuestion || !quiz?.content) return;
+        if (!questions || !index || !quiz?.content) return;
 
-        const nextQuestionIndex = Number(currentQuestion?.question.id);
+        const nextQuestionIndex = index;
 
-        if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
+        if (nextQuestionIndex === undefined || nextQuestionIndex > questions.length - 1) return;
 
-        setCurrentQuestion(quizQuestions[nextQuestionIndex]);
+        updateIndex(nextQuestionIndex);
         webSocketService.nextQuestion({roomName: formattedRoomName, 
-                                       questions: quizQuestions, 
+                                       questions: questions, 
                                        questionIndex: nextQuestionIndex, 
                                        isLaunch: false});
     };
 
     const previousQuestion = () => {
-        if (!quizQuestions || !currentQuestion || !quiz?.content) return;
+        if (!questions || !index || !quiz?.content) return;
 
-        const prevQuestionIndex = Number(currentQuestion?.question.id) - 2; // -2 because question.id starts at index 1
+        const prevQuestionIndex = index - 1; // -2 because question.id starts at index 1
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
-        setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: prevQuestionIndex, isLaunch: false});
+        updateIndex(prevQuestionIndex);
+        webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex: prevQuestionIndex, isLaunch: false});
     };
 
     const initializeQuizQuestion = () => {
@@ -280,33 +287,33 @@ const ManageRoom: React.FC = () => {
         });
         if (parsedQuestions.length === 0) return null;
 
-        setQuizQuestions(parsedQuestions);
+        setQuestions(parsedQuestions);
         return parsedQuestions;
     };
 
     const launchTeacherMode = () => {
-        const quizQuestions = initializeQuizQuestion();
-        console.log('launchTeacherMode - quizQuestions:', quizQuestions);
+        const questions = initializeQuizQuestion();
+        console.log('launchTeacherMode - quizQuestions:', questions);
 
-        if (!quizQuestions) {
+        if (!questions) {
             console.log('Error launching quiz (launchTeacherMode). No questions found.');
             return;
         }
 
-        setCurrentQuestion(quizQuestions[0]);
-        webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex: 0, isLaunch: true});
+        updateIndex(0);
+        webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex: 0, isLaunch: true});
     };
 
     const launchStudentMode = () => {
-        const quizQuestions = initializeQuizQuestion();
-        console.log('launchStudentMode - quizQuestions:', quizQuestions);
+        const questions = initializeQuizQuestion();
+        console.log('launchStudentMode - quizQuestions:', questions);
 
-        if (!quizQuestions) {
+        if (!questions) {
             console.log('Error launching quiz (launchStudentMode). No questions found.');
             return;
         }
-        setQuizQuestions(quizQuestions);
-        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+        setQuestions(questions);
+        webSocketService.launchStudentModeQuiz(formattedRoomName, questions);
     };
 
     const launchQuiz = () => {
@@ -328,10 +335,10 @@ const ManageRoom: React.FC = () => {
     };
 
     const showSelectedQuestion = (questionIndex: number) => {
-        if (quiz?.content && quizQuestions) {
-            setCurrentQuestion(quizQuestions[questionIndex]);
+        if (quiz?.content && questions) {
+            updateIndex(questionIndex);
             if (quizMode === 'teacher') {
-                webSocketService.nextQuestion({roomName: formattedRoomName, questions: quizQuestions, questionIndex, isLaunch: false});
+                webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex, isLaunch: false});
             }
         }
     };
@@ -398,13 +405,13 @@ const ManageRoom: React.FC = () => {
 
             {/* the following breaks the css (if 'room' classes are nested) */}
             <div className="">
-                {quizQuestions ? (
+                {questions.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
-                        {!isNaN(Number(currentQuestion?.question.id)) && (
+                        {index && (
                             <strong className="number of questions">
-                                Question {Number(currentQuestion?.question.id)}/
-                                {quizQuestions?.length}
+                                Question {index+1}/
+                                {questions?.length}
                             </strong>
                         )}
 
@@ -421,18 +428,14 @@ const ManageRoom: React.FC = () => {
 
                         <div className="mb-2 flex-column-wrapper">
                             <div className="preview-and-result-container">
-                                {currentQuestion && (
-                                    <QuestionDisplay
-                                        showAnswer={false}
-                                        question={currentQuestion?.question as Question}
-                                        
-                                    />
+                                {index && (
+                                    <QuestionDisplay/>
                                 )}
 
                                 <LiveResultsComponent
                                     quizMode={quizMode}
                                     socket={socket}
-                                    questions={quizQuestions}
+                                    questions={questions}
                                     showSelectedQuestion={showSelectedQuestion}
                                     students={students}
                                 ></LiveResultsComponent>
@@ -448,7 +451,7 @@ const ManageRoom: React.FC = () => {
                                     <Button
                                         onClick={previousQuestion}
                                         variant="contained"
-                                        disabled={Number(currentQuestion?.question.id) <= 1}
+                                        disabled={index !== null && index <= 1}
                                     >
                                         Question précédente
                                     </Button>
@@ -458,8 +461,8 @@ const ManageRoom: React.FC = () => {
                                         onClick={nextQuestion}
                                         variant="contained"
                                         disabled={
-                                            Number(currentQuestion?.question.id) >=
-                                            quizQuestions.length
+                                            index !== null && 
+                                            index >= questions.length
                                         }
                                     >
                                         Prochaine question

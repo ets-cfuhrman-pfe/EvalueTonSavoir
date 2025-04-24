@@ -13,6 +13,7 @@ import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPasswo
 import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
 import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 
+
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
 
@@ -25,6 +26,7 @@ import Footer from './components/Footer/Footer';
 
 import ApiService from './services/ApiService';
 import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
+import { QuizProvider } from './pages/Student/JoinRoom/QuizProvider';
 
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
@@ -78,13 +80,13 @@ const App: React.FC = () => {
                         />
                         <Route
                             path="/teacher/manage-room/:quizId/:roomName"
-                            element={isTeacherAuthenticated ? <ManageRoom /> : <Navigate to="/login" />}
+                            element={isTeacherAuthenticated ? <QuizProvider><ManageRoom /></QuizProvider> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
                         <Route
                             path="/student/join-room"
-                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoom /> : <Navigate to="/login" />}
+                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <QuizProvider><JoinRoom /></QuizProvider> : <Navigate to="/login" />}
                         />
 
                         {/* Pages authentification */}

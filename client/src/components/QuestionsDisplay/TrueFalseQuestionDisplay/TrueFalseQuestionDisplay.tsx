@@ -4,51 +4,43 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
+import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
-interface Props {
-    question: TrueFalseQuestion;
-    handleOnSubmitAnswer?: (answer: AnswerType) => void;
-    // showAnswer?: boolean;
-    passedAnswer?: AnswerType;
-}
 
-const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, 
-        // showAnswer, 
-        handleOnSubmitAnswer, passedAnswer } =
-        props;
+const TrueFalseQuestionDisplay: React.FC = () => {
+    
+    const { questions, index, answer, submitAnswer } = useQuizContext();
 
-    const [answer, setAnswer] = useState<boolean | undefined>(() => {
-        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
-            return passedAnswer[0];
+    const question = questions[Number(index)].question as TrueFalseQuestion;
+
+    const [actualAnswer, setActualAnswer] = useState<boolean | undefined>(() => {
+        if (answer && (answer[0] === true || answer[0] === false)) {
+            return answer[0];
         }
         return undefined;
     });
 
     let disableButton = false;
-    if (handleOnSubmitAnswer === undefined) {
+    if (submitAnswer === undefined) {
         disableButton = true;
     }
 
-
-
     useEffect(() => {
-        console.log("passedAnswer", passedAnswer);
-        if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
-            setAnswer(passedAnswer[0]);
+        console.log("passedAnswer", answer);
+        if (answer && (answer[0] === true || answer[0] === false)) {
+            setActualAnswer(answer[0]);
         } else {
-            setAnswer(undefined);
+            setActualAnswer(undefined);
         }
-    }, [passedAnswer, question.id]);
+    }, [answer, index]);
 
     const handleOnClickAnswer = (choice: boolean) => {
-        setAnswer(choice);
+        setActualAnswer(choice);
     };
 
-    const selectedTrue = answer ? 'selected' : '';
-    const selectedFalse = answer !== undefined && !answer ? 'selected' : '';
+    const selectedTrue = actualAnswer ? 'selected' : '';
+    const selectedFalse = actualAnswer !== undefined && !actualAnswer ? 'selected' : '';
 
     return (
         <QuizContext.Consumer>
@@ -76,7 +68,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                             <div className={`circle ${selectedTrue}`}>V</div>
                             <div className={`answer-text ${selectedTrue}`}>Vrai</div>
 
-                            {showAnswer && answer && question.trueFormattedFeedback && (
+                            {showAnswer && actualAnswer && question.trueFormattedFeedback && (
                                 <div className="true-feedback mb-2">
                                     <div
                                         dangerouslySetInnerHTML={{
@@ -102,7 +94,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                             <div className={`circle ${selectedFalse}`}>F</div>
                             <div className={`answer-text ${selectedFalse}`}>Faux</div>
 
-                            {showAnswer && !answer && question.falseFormattedFeedback && (
+                            {showAnswer && !actualAnswer && question.falseFormattedFeedback && (
                                 <div className="false-feedback mb-2">
                                     <div
                                         dangerouslySetInnerHTML={{
@@ -126,15 +118,15 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                             />
                         </div>
                     )}
-                    {!showAnswer && handleOnSubmitAnswer && (
+                    {!showAnswer && submitAnswer && (
                         <Button
                             variant="contained"
                             onClick={() =>
-                                answer !== undefined &&
-                                handleOnSubmitAnswer &&
-                                handleOnSubmitAnswer([answer])
+                                actualAnswer !== undefined &&
+                                submitAnswer &&
+                                submitAnswer([actualAnswer])
                             }
-                            disabled={answer === undefined}
+                            disabled={actualAnswer === undefined}
                         >
                             Répondre
                         </Button>

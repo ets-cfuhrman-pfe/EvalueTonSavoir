@@ -5,55 +5,52 @@ import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
+import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
-interface Props {
-    question: MultipleChoiceQuestion;
-    handleOnSubmitAnswer?: (answer: AnswerType) => void;
-    showAnswer?: boolean;
-    passedAnswer?: AnswerType;
-}
+const MultipleChoiceQuestionDisplay: React.FC = () => {
+    const { questions, index, answer, submitAnswer } = useQuizContext();
+    console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(answer));
 
-const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
+    const question = questions[Number(index)].question as MultipleChoiceQuestion;
 
-    const [answer, setAnswer] = useState<AnswerType>(() => {
-        if (passedAnswer && passedAnswer.length > 0) {
-            return passedAnswer;
+    const [actualAnswer, setActualAnswer] = useState<AnswerType>(() => {
+        if (answer && answer.length > 0) {
+            return answer;
         }
         return [];
     });
 
     let disableButton = false;
-    if (handleOnSubmitAnswer === undefined) {
+    if (submitAnswer === undefined) {
         disableButton = true;
     }
 
     useEffect(() => {
-        console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
-        if (passedAnswer !== undefined) {
-            setAnswer(passedAnswer);
+        console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(answer));
+        if (answer !== undefined) {
+            setActualAnswer(answer);
         } else {
-            setAnswer([]);
+            setActualAnswer([]);
         }
-    }, [passedAnswer, question.id]);
+    }, [answer, index]);
 
     const handleOnClickAnswer = (choice: string) => {
-        setAnswer((prevAnswer) => {
-            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+        setActualAnswer((answer) => {
+            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${answer}, choice: ${choice}`);
             const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
 
             if (correctAnswersCount === 1) {
                 // If only one correct answer, replace the current selection
-                return prevAnswer.includes(choice) ? [] : [choice];
+                return answer.includes(choice) ? [] : [choice];
             } else {
                 // Allow multiple selections if there are multiple correct answers
-                if (prevAnswer.includes(choice)) {
+                if (answer.includes(choice)) {
                     // Remove the choice if it's already selected
-                    return prevAnswer.filter((selected) => selected !== choice);
+                    return answer.filter((selected) => selected !== choice);
                 } else {
                     // Add the choice if it's not already selected
-                    return [...prevAnswer, choice];
+                    return [...answer, choice];
                 }
             }
         });
@@ -63,70 +60,74 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const alphabet = alpha.map((x) => String.fromCharCode(x));
 
     return (
-        <div className="question-container">
-            <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-            </div>
-            <div className="choices-wrapper mb-1">
-                {question.choices.map((choice, i) => {
-                    console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
-                    const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
-                    return (
-                        <div key={choice.formattedText.text + i} className="choice-container">
-                            <Button
-                                variant="text"
-                                className="button-wrapper"
-                                disabled={disableButton}
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
-                            >
-                                {showAnswer ? (
-                                    <div>{choice.isCorrect ? '✅' : '❌'}</div>
-                                ) : (
-                                    ''
-                                )}
-                                <div className={`circle ${selected}`}>{alphabet[i]}</div>
-                                <div className={`answer-text ${selected}`}>
-                                    <div
-                                        dangerouslySetInnerHTML={{
-                                            __html: FormattedTextTemplate(choice.formattedText),
-                                        }}
-                                    />
+        <QuizContext.Consumer>
+            {({ showAnswer }) => (
+                <div className="question-container">
+                    <div className="question content">
+                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                    </div>
+                    <div className="choices-wrapper mb-1">
+                        {question.choices.map((choice, i) => {
+                            console.log(`answer: ${actualAnswer}, choice: ${choice.formattedText.text}`);
+                            const selected = actualAnswer.includes(choice.formattedText.text) ? 'selected' : '';
+                            return (
+                                <div key={choice.formattedText.text + i} className="choice-container">
+                                    <Button
+                                        variant="text"
+                                        className="button-wrapper"
+                                        disabled={disableButton}
+                                        onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
+                                    >
+                                        {showAnswer ? (
+                                            <div>{choice.isCorrect ? '✅' : '❌'}</div>
+                                        ) : (
+                                            ''
+                                        )}
+                                        <div className={`circle ${selected}`}>{alphabet[i]}</div>
+                                        <div className={`answer-text ${selected}`}>
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: FormattedTextTemplate(choice.formattedText),
+                                                }}
+                                            />
+                                        </div>
+                                        {choice.formattedFeedback && showAnswer && (
+                                            <div className="feedback-container mb-1 mt-1/2">
+                                                <div
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: FormattedTextTemplate(choice.formattedFeedback),
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </Button>
                                 </div>
-                                {choice.formattedFeedback && showAnswer && (
-                                    <div className="feedback-container mb-1 mt-1/2">
-                                        <div
-                                            dangerouslySetInnerHTML={{
-                                                __html: FormattedTextTemplate(choice.formattedFeedback),
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </Button>
+                            );
+                        })}
+                    </div>
+                    {question.formattedGlobalFeedback && showAnswer && (
+                        <div className="global-feedback mb-2">
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html: FormattedTextTemplate(question.formattedGlobalFeedback),
+                                }}
+                            />
                         </div>
-                    );
-                })}
-            </div>
-            {question.formattedGlobalFeedback && showAnswer && (
-                <div className="global-feedback mb-2">
-                    <div
-                        dangerouslySetInnerHTML={{
-                            __html: FormattedTextTemplate(question.formattedGlobalFeedback),
-                        }}
-                    />
+                    )}
+                    {!showAnswer && submitAnswer && (
+                        <Button
+                            variant="contained"
+                            onClick={() =>
+                                actualAnswer.length > 0 && submitAnswer && submitAnswer(actualAnswer)
+                            }
+                            disabled={answer.length === 0}
+                        >
+                            Répondre
+                        </Button>
+                    )}
                 </div>
             )}
-            {!showAnswer && handleOnSubmitAnswer && (
-                <Button
-                    variant="contained"
-                    onClick={() =>
-                        answer.length > 0 && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
-                    }
-                    disabled={answer.length === 0}
-                >
-                    Répondre
-                </Button>
-            )}
-        </div>
+        </QuizContext.Consumer>
     );
 };
 
