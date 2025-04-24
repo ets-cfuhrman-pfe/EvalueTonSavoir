@@ -15,7 +15,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
     const question = questions[Number(index)].question as MultipleChoiceQuestion;
 
     const [actualAnswer, setActualAnswer] = useState<AnswerType>(() => {
-        if (answer && answer.length > 0) {
+        if (answer && answer === undefined) {
             return answer;
         }
         return [];
@@ -28,7 +28,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
 
     useEffect(() => {
         console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(answer));
-        if (answer !== undefined) {
+        if (answer.length !== undefined) {
             setActualAnswer(answer);
         } else {
             setActualAnswer([]);
@@ -120,7 +120,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                             onClick={() =>
                                 actualAnswer.length > 0 && submitAnswer && submitAnswer(actualAnswer)
                             }
-                            disabled={answer.length === 0}
+                            disabled={actualAnswer.length === 0}
                         >
                             Répondre
                         </Button>

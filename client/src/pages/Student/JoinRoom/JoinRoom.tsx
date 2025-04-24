@@ -80,7 +80,7 @@ const JoinRoom: React.FC = () => {
             console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
-            updateIndex(null);
+            updateIndex(0);
             setQuestions(questions);
             // wait for next-question
         });
@@ -92,6 +92,7 @@ const JoinRoom: React.FC = () => {
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             updateIndex(0);
+            console.log('on(launch-student-mode): setQuestions:', index);
         });
         socket.on('end-quiz', () => {
             disconnect();

@@ -1,30 +1,31 @@
 // StudentModeQuiz.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import QuestionDisplay from '../QuestionsDisplay/QuestionDisplay';
 import '../../pages/Student/JoinRoom/joinRoom.css';
-import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const StudentModeQuiz: React.FC = () => {
-    const { questions, answers, setIsQuestionSent, disconnectWebSocket, setShowAnswer } = useQuizContext(); // Access setShowAnswer from context
-
-    const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
+    const { questions, answers, setIsQuestionSent, disconnectWebSocket, setShowAnswer, index, updateIndex } = useQuizContext(); // Access setShowAnswer from context
 
     const previousQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id) - 2]);
+        updateIndex(Number(index) - 1);
     };
 
     useEffect(() => {
-        const savedAnswer = answers[Number(questionInfos.question.id) - 1]?.answer;
+        let savedAnswer = undefined;
+        console.log(`StudentModeQuiz: useEffect: index: ${index}`);
+        if (answers.length === 0) {
+            savedAnswer = answers[Number(index) - 1]?.answer;}
+
         console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
         setIsQuestionSent(savedAnswer !== undefined);
         setShowAnswer(savedAnswer !== undefined); // Update showAnswer in context
-    }, [questionInfos.question, answers, setShowAnswer]);
+    }, [index, answers, setShowAnswer]);
 
     const nextQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id)]);
+        updateIndex(Number(index)+1);
     };
 
     return (
@@ -36,7 +37,7 @@ const StudentModeQuiz: React.FC = () => {
                 />
             </div>
             <div>
-                <b>Question {questionInfos.question.id}/{questions.length}</b>
+                <b>Question {Number(index) +1}/{questions.length}</b>
             </div>
             <div className="overflow-auto">
                 <div className="question-component-container">
@@ -47,7 +48,7 @@ const StudentModeQuiz: React.FC = () => {
                                 variant="outlined"
                                 onClick={previousQuestion}
                                 fullWidth
-                                disabled={Number(questionInfos.question.id) <= 1}
+                                disabled={Number(index) +1 <= 1}
                             >
                                 Question précédente
                             </Button>
@@ -57,7 +58,7 @@ const StudentModeQuiz: React.FC = () => {
                                 variant="outlined"
                                 onClick={nextQuestion}
                                 fullWidth
-                                disabled={Number(questionInfos.question.id) >= questions.length}
+                                disabled={Number(index) >= questions.length -1}
                             >
                                 Question suivante
                             </Button>

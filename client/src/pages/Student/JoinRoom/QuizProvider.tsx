@@ -32,9 +32,10 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [disconnectWebSocket, setDisconnectWebSocket] = useState<() => void>(() => () => {});
 
 
-    const updateIndex = (questionId: number | null) => {
-        const questionIndex = questions.findIndex((q) => q.question.id === String(questionId));
-        setIndex(questionIndex >= 0 ? questionIndex : null);
+    const updateIndex = (questionId?: number | null) => {
+
+        setIndex(questionId ?? null);
+
     };
 
     // Function to handle answer submission
@@ -42,9 +43,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!idQuestion) {
             setAnswer(answer);
             setIsQuestionSent(true);
-            console.log('index',index);
         } else {
-        console.info(`QuizProvider: submitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
@@ -59,7 +58,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return newAnswers; // Return the new array
         });
 
-        console.log(`QuizProvider: submitAnswer: answers: ${JSON.stringify(answers)}`);
 
         // Submit the answer to the WebSocket service
         webSocketService.submitAnswer(answerData);

@@ -255,10 +255,10 @@ const ManageRoom: React.FC = () => {
     const nextQuestion = () => {
         if (!questions || !index || !quiz?.content) return;
 
-        const nextQuestionIndex = index;
+        const nextQuestionIndex = index +1;
 
         if (nextQuestionIndex === undefined || nextQuestionIndex > questions.length - 1) return;
-
+        console.log('nextQuestionIndex:', questions);
         updateIndex(nextQuestionIndex);
         webSocketService.nextQuestion({roomName: formattedRoomName, 
                                        questions: questions, 
@@ -410,7 +410,7 @@ const ManageRoom: React.FC = () => {
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
                         {index && (
                             <strong className="number of questions">
-                                Question {index+1}/
+                                Question {index +1}/
                                 {questions?.length}
                             </strong>
                         )}
@@ -451,7 +451,7 @@ const ManageRoom: React.FC = () => {
                                     <Button
                                         onClick={previousQuestion}
                                         variant="contained"
-                                        disabled={index !== null && index <= 1}
+                                        disabled={index !== null && index <= 0}
                                     >
                                         Question précédente
                                     </Button>
@@ -462,7 +462,7 @@ const ManageRoom: React.FC = () => {
                                         variant="contained"
                                         disabled={
                                             index !== null && 
-                                            index >= questions.length
+                                            index >= questions.length -1
                                         }
                                     >
                                         Prochaine question
