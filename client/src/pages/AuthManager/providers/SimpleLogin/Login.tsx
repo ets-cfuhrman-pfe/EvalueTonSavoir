@@ -44,7 +44,6 @@ const SimpleLogin: React.FC = () => {
                 variant="outlined"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Nom d'utilisateur"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
@@ -55,7 +54,6 @@ const SimpleLogin: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nom de la salle"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
