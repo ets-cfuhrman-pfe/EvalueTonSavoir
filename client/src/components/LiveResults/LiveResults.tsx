@@ -29,6 +29,7 @@ const LiveResults: React.FC<LiveResultsProps> = ({ questions, showSelectedQuesti
     return (
         <div>
             <div className="action-bar mb-1">
+            <div className="text-2xl text-bold">Résultats du quiz</div>
                 <FormGroup row>
                     <FormControlLabel
                         label={<div className="text-sm">Afficher les noms</div>}

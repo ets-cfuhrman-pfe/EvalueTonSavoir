@@ -25,8 +25,8 @@ describe('Questions Component', () => {
         showAnswer: false
     };
 
-    const renderComponent = (question: Question) => {
-        render(<QuestionDisplay question={question} {...sampleProps} />);
+    const renderComponent = (question: Question, showAnswerToggle = false) => {
+        render(<QuestionDisplay question={question} showAnswerToggle={showAnswerToggle} {...sampleProps} />);
     };
 
     // describe('question type parsing', () => {
@@ -121,6 +121,11 @@ describe('Questions Component', () => {
         fireEvent.click(submitButton);
 
         expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(['User Input']);
+    });
+
+    it('shows "Afficher les résultats" toggle when showAnswerToggle is true', () => {
+        renderComponent(sampleTrueFalseQuestion, true);
+        expect(screen.getByText('Afficher les résultats')).toBeInTheDocument();
     });
 });
 
