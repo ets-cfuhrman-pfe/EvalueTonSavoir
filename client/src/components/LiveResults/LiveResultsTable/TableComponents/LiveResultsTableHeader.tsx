@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { TableCell, TableHead, TableRow } from "@mui/material";
 
 interface LiveResultsHeaderProps {
@@ -10,6 +10,12 @@ const LiveResultsTableHeader: React.FC<LiveResultsHeaderProps> = ({
     maxQuestions,
     showSelectedQuestion,
 }) => {
+    const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
+
+    const handleQuestionClick = (index: number) => {
+        setSelectedQuestionIndex(index);
+        showSelectedQuestion(index);
+    };
 
     return (
         <TableHead>
@@ -25,9 +31,10 @@ const LiveResultsTableHeader: React.FC<LiveResultsHeaderProps> = ({
                             cursor: 'pointer',
                             borderStyle: 'solid',
                             borderWidth: 1,
-                            borderColor: 'rgba(224, 224, 224, 1)'
+                            borderColor: 'rgba(224, 224, 224, 1)',
+                            backgroundColor: selectedQuestionIndex === index ? '#dedede' : 'transparent'
                         }}
-                        onClick={() => showSelectedQuestion(index)}
+                        onClick={() => handleQuestionClick(index)}
                     >
                         <div className="text-base text-bold blue">{`Q${index + 1}`}</div>
                     </TableCell>
