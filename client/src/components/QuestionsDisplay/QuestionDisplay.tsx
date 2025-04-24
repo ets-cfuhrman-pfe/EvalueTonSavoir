@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Question } from 'gift-pegjs';
 
-import { Accordion } from 'react-bootstrap';
 import { FormControlLabel, Switch } from '@mui/material';
 
 import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuestionDisplay';
@@ -37,11 +36,6 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     // }, [isMobile]);
     
     const [showResults, setShowResults] = useState<boolean>(false);
-    const [activeKey, setActiveKey] = useState<string | null>('0');
-
-    const toggleAccordion = () => {
-        setActiveKey(activeKey === '0' ? null : '0');
-    };
 
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -99,38 +93,21 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     }
     return (
         <>
-            {showAnswerToggle ? (
-                <Accordion activeKey={activeKey} onSelect={toggleAccordion}>
-                    <Accordion.Item eventKey="0">
-                        <Accordion.Header>
-                            {activeKey === '0' ? 'Afficher les questions' : 'Masquer les questions'}
-                        </Accordion.Header>
-                        <Accordion.Body>
-                            <FormControlLabel
-                            label={<div className="text-sm">Afficher les résultats</div>}
-                            control={
-                                <Switch
-                                    value={showResults}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setShowResults(e.target.checked)
-                                    }
-                                    />
-                                }
-                            />
-                            <div className="question-container">
-                                {questionTypeComponent ? (
-                                    <>
-                                        {questionTypeComponent}
-                                    </>
-                                ) : (
-                                    <div>Question de type inconnue</div>
-                                )}
-                            </div>
-                        </Accordion.Body>
-                    </Accordion.Item>
-                </Accordion>
-            ) : (
-                <div className="question-container">
+            {showAnswerToggle && (
+                <FormControlLabel
+                    label={<div className="text-sm">Afficher les résultats</div>}
+                    control={
+                        <Switch
+                            value={showResults}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setShowResults(e.target.checked)
+                            }
+                        />
+                    }
+                />
+            )}
+
+            <div className="question-container">
                 {questionTypeComponent ? (
                     <>
                         {questionTypeComponent}
@@ -138,8 +115,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                 ) : (
                     <div>Question de type inconnue</div>
                 )}
-                </div>
-            )}
+            </div>
         </>
     );
 };
