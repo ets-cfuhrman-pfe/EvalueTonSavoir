@@ -15,11 +15,9 @@ const StudentModeQuiz: React.FC = () => {
 
     useEffect(() => {
         let savedAnswer = undefined;
-        console.log(`StudentModeQuiz: useEffect: index: ${index}`);
-        if (answers.length === 0) {
-            savedAnswer = answers[Number(index) - 1]?.answer;}
+        if (answers.length !== 0) {
+            savedAnswer = answers[Number(index)]?.answer;}
 
-        console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
         setIsQuestionSent(savedAnswer !== undefined);
         setShowAnswer(savedAnswer !== undefined); // Update showAnswer in context
     }, [index, answers, setShowAnswer]);

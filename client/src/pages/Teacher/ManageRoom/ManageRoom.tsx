@@ -299,7 +299,7 @@ const ManageRoom: React.FC = () => {
             console.log('Error launching quiz (launchTeacherMode). No questions found.');
             return;
         }
-
+        
         updateIndex(0);
         webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex: 0, isLaunch: true});
     };

@@ -10,7 +10,9 @@ import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const ShortAnswerQuestionDisplay: React.FC = () => {
 
-    const { questions, index, answer, submitAnswer } = useQuizContext();
+    const { questions, index, submitAnswer, answers } = useQuizContext();
+    
+    const answer = answers[Number(index)]?.answer;
     const [actualAnswer, setActualAnswer] = useState<AnswerType>(answer || []);
     const question = questions[Number(index)].question as ShortAnswerQuestion;
 

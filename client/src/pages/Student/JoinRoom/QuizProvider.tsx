@@ -39,29 +39,27 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Function to handle answer submission
-    const submitAnswer = (answer: AnswerType, idQuestion?: number) => {
-        if (!idQuestion) {
-            setAnswer(answer);
-            setIsQuestionSent(true);
-        } else {
+    const submitAnswer = (answer: AnswerType) => {
+
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
             username: username,
-            idQuestion: idQuestion,
+            idQuestion: Number(index),
         };
-
+        setAnswer(answer);
+        setIsQuestionSent(true);
         // Update the answers state
         setAnswers((prevAnswers) => {
             const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
-            newAnswers[idQuestion - 1] = answerData; // Update the specific answer
+            newAnswers[Number(index)] = answerData; // Update the specific answer
             return newAnswers; // Return the new array
         });
-
+        console.log(`submitAnswer: answerData: ${JSON.stringify(answers)}`);
 
         // Submit the answer to the WebSocket service
         webSocketService.submitAnswer(answerData);
-        }
+        
     };
 
     return (

@@ -93,9 +93,7 @@ const TeacherModeQuiz: React.FC = () => {
                         >Question : </div>
                     </div>
 
-                    <QuestionDisplay
-                        //showAnswer={true}
-                    />
+                    <QuestionDisplay/>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleFeedbackDialogClose} color="primary">

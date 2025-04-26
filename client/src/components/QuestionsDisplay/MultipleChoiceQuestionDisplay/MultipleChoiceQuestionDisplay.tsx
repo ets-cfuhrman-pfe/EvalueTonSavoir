@@ -9,14 +9,16 @@ import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const MultipleChoiceQuestionDisplay: React.FC = () => {
-    const { questions, index, answer, submitAnswer } = useQuizContext();
-    console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(answer));
+    const { questions, index, submitAnswer,answers } = useQuizContext();
+    console.log("questions", index);
+
+    const answer = answers[Number(index)]?.answer;
 
     const question = questions[Number(index)].question as MultipleChoiceQuestion;
 
     const [actualAnswer, setActualAnswer] = useState<AnswerType>(() => {
-        if (answer && answer === undefined) {
-            return answer;
+        if (answer !== undefined) {
+            return answers[Number(index)].answer;
         }
         return [];
     });
@@ -27,13 +29,12 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
     }
 
     useEffect(() => {
-        console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(answer));
-        if (answer.length !== undefined) {
+        if (answer !== undefined) {
             setActualAnswer(answer);
         } else {
             setActualAnswer([]);
         }
-    }, [answer, index]);
+    }, [index]);
 
     const handleOnClickAnswer = (choice: string) => {
         setActualAnswer((answer) => {
@@ -118,9 +119,9 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                         <Button
                             variant="contained"
                             onClick={() =>
-                                actualAnswer.length > 0 && submitAnswer && submitAnswer(actualAnswer)
+                                actualAnswer !== undefined && submitAnswer && submitAnswer(actualAnswer)
                             }
-                            disabled={actualAnswer.length === 0}
+                            disabled={actualAnswer === undefined}
                         >
                             Répondre
                         </Button>

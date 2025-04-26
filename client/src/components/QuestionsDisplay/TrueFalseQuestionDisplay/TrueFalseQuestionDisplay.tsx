@@ -10,11 +10,13 @@ import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const TrueFalseQuestionDisplay: React.FC = () => {
     
-    const { questions, index, answer, submitAnswer } = useQuizContext();
+    const { questions, index, submitAnswer, answers } = useQuizContext();
 
     const question = questions[Number(index)].question as TrueFalseQuestion;
+    const answer = answers[Number(index)]?.answer;
 
     const [actualAnswer, setActualAnswer] = useState<boolean | undefined>(() => {
+
         if (answer && (answer[0] === true || answer[0] === false)) {
             return answer[0];
         }

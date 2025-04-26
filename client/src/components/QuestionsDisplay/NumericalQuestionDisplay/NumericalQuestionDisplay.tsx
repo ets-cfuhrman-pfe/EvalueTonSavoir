@@ -10,9 +10,10 @@ import { useQuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 import { QuizContext } from 'src/pages/Student/JoinRoom/QuizContext';
 
 const NumericalQuestionDisplay: React.FC = () => {
-    const { questions, index, answer, submitAnswer } = useQuizContext();
+    const { questions, index, answers , submitAnswer } = useQuizContext();
 
     const question = questions[Number(index)].question as NumericalQuestion;
+    const answer = answers[Number(index)]?.answer;
 
     const [actualAnswer, setActualAnswer] = useState<AnswerType>(answer || []);
     const correctAnswers = question.choices;

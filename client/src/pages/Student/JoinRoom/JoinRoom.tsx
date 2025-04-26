@@ -55,9 +55,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
-        console.log(`JoinRoom: useEffect: answers: ${JSON.stringify(questions)}`);
     }, [questions]);
 
 
@@ -128,6 +126,7 @@ const JoinRoom: React.FC = () => {
         setRoomName('');
         setUsername('');
         setIsConnecting(false);
+        setAnswers([]);
     };
 
     const handleSocket = () => {
