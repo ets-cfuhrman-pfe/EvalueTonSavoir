@@ -43,7 +43,7 @@ const NumericalQuestionDisplay: React.FC = () => {
 
     return (
         <QuizContext.Consumer>
-            {({ showAnswer }) => (
+            {({ showAnswer, isTeacherMode }) => (
                 <div className="question-wrapper">
                     <div>
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -71,6 +71,7 @@ const NumericalQuestionDisplay: React.FC = () => {
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         setActualAnswer([e.target.valueAsNumber]);
                                     }}
+                                    disabled={showAnswer || isTeacherMode}
                                     inputProps={{ 'data-testid': 'number-input' }}
                                 />
                             </div>
@@ -79,7 +80,7 @@ const NumericalQuestionDisplay: React.FC = () => {
                                     <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                                 </div>
                             )}
-                            {submitAnswer && (
+                            {submitAnswer && !isTeacherMode &&(
                                 <Button
                                     variant="contained"
                                     onClick={() =>

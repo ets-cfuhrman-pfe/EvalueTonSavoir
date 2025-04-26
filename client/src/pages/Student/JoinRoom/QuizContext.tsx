@@ -16,6 +16,8 @@ export const QuizContext = React.createContext<{
     updateIndex: (questionId: number | null) => void; // Add a function to update the index
     submitAnswer: (answer: AnswerType, idQuestion?: number) => void; // Updated submitAnswer signature
     isQuestionSent: boolean;
+    isTeacherMode: boolean; // Flag to indicate if the user is in teacher mode
+    setisTeacherMode: Dispatch<SetStateAction<boolean>>; // Setter for isTeacherMode
     setIsQuestionSent: Dispatch<SetStateAction<boolean>>;
     roomName: string;
     setRoomName: Dispatch<SetStateAction<string>>; 
@@ -36,6 +38,8 @@ export const QuizContext = React.createContext<{
     index: null, // Default value for index
     updateIndex: () => {}, // Default no-op function
     submitAnswer: () => {}, // Default no-op function
+    isTeacherMode: false,
+    setisTeacherMode: () => {}, // Default no-op function
     isQuestionSent: false,
     setIsQuestionSent: () => {},
     username: '', // Default value for username

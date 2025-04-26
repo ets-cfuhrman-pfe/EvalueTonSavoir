@@ -25,7 +25,7 @@ const ShortAnswerQuestionDisplay: React.FC = () => {
 
     return (
         <QuizContext.Consumer>
-            {({ showAnswer }) => (
+            {({ showAnswer, isTeacherMode }) => (
                 <div className="question-wrapper">
                     <div className="question content">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -60,11 +60,11 @@ const ShortAnswerQuestionDisplay: React.FC = () => {
                                     onChange={(e) => {
                                         setActualAnswer([e.target.value]);
                                     }}
-                                    disabled={showAnswer}
+                                    disabled={showAnswer || isTeacherMode}
                                     aria-label="short-answer-input"
                                 />
                             </div>
-                            {submitAnswer && (
+                            {submitAnswer && !isTeacherMode && (
                                 <Button
                                     variant="contained"
                                     onClick={() =>

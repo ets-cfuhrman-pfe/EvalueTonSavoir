@@ -61,7 +61,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
 
     return (
         <QuizContext.Consumer>
-            {({ showAnswer }) => (
+            {({ showAnswer, isTeacherMode }) => (
                 <div className="question-container">
                     <div className="question content">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -75,7 +75,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                                     <Button
                                         variant="text"
                                         className="button-wrapper"
-                                        disabled={disableButton}
+                                        disabled={disableButton || isTeacherMode}
                                         onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                                     >
                                         {showAnswer ? (
@@ -114,7 +114,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                             />
                         </div>
                     )}
-                    {!showAnswer && submitAnswer && (
+                    {!showAnswer && submitAnswer && !isTeacherMode &&(
                         <Button
                             variant="contained"
                             onClick={() =>

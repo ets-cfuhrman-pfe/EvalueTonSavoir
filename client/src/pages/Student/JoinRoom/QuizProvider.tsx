@@ -25,6 +25,9 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const [isQuestionSent, setIsQuestionSent] = useState(false);
 
+    const [isTeacherMode, setisTeacherMode] = useState(false);
+
+
     const [username, setUsername] = useState<string>(ApiService.getUsername());
 
     const [roomName, setRoomName] = useState<string>(''); // Add roomName state
@@ -78,6 +81,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 submitAnswer, // Expose submitAnswer in the context
                 isQuestionSent,
                 setIsQuestionSent,
+                isTeacherMode,
+                setisTeacherMode,
                 username,
                 setUsername,
                 roomName,

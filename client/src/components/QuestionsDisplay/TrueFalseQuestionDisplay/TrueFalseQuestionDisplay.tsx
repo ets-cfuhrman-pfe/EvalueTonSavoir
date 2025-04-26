@@ -46,7 +46,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
 
     return (
         <QuizContext.Consumer>
-            {({ showAnswer }) => (
+            {({ showAnswer, isTeacherMode }) => (
                 <div className="question-container">
                     <div className="question content">
                         <div
@@ -60,7 +60,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
                             className="button-wrapper"
                             onClick={() => !showAnswer && handleOnClickAnswer(true)}
                             fullWidth
-                            disabled={disableButton}
+                            disabled={disableButton || isTeacherMode}
                         >
                             {showAnswer ? (
                                 <div> {question.isTrue ? '✅' : '❌'}</div>
@@ -86,7 +86,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
                             className="button-wrapper"
                             onClick={() => !showAnswer && handleOnClickAnswer(false)}
                             fullWidth
-                            disabled={disableButton}
+                            disabled={disableButton || isTeacherMode}
                         >
                             {showAnswer ? (
                                 <div> {!question.isTrue ? '✅' : '❌'}</div>
@@ -120,7 +120,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
                             />
                         </div>
                     )}
-                    {!showAnswer && submitAnswer && (
+                    {!showAnswer && submitAnswer && !isTeacherMode && (
                         <Button
                             variant="contained"
                             onClick={() =>

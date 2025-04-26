@@ -28,6 +28,7 @@ const ManageRoom: React.FC = () => {
             setQuestions,
             index,
             updateIndex,
+            setisTeacherMode,
         } = useQuizContext();
 
 
@@ -252,7 +253,7 @@ const ManageRoom: React.FC = () => {
     }, [socket, index, questions]);
 
     const nextQuestion = () => {
-        if (!questions || !index || !quiz?.content) return;
+        if (!questions ||  index == null || !quiz?.content) return;
 
         const nextQuestionIndex = index +1;
 
@@ -300,6 +301,7 @@ const ManageRoom: React.FC = () => {
         }
 
         updateIndex(0);
+        setisTeacherMode(true);
         webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex: 0, isLaunch: true});
     };
 
@@ -311,6 +313,7 @@ const ManageRoom: React.FC = () => {
             console.log('Error launching quiz (launchStudentMode). No questions found.');
             return;
         }
+        setisTeacherMode(false);
         setQuestions(questions);
         webSocketService.launchStudentModeQuiz(formattedRoomName, questions);
     };
