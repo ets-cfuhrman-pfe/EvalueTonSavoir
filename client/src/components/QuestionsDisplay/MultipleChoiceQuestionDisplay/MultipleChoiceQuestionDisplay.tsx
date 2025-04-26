@@ -13,7 +13,6 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
     console.log("questions", index);
 
     const answer = answers[Number(index)]?.answer;
-
     const question = questions[Number(index)].question as MultipleChoiceQuestion;
 
     const [actualAnswer, setActualAnswer] = useState<AnswerType>(() => {

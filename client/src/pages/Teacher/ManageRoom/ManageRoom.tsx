@@ -54,7 +54,6 @@ const ManageRoom: React.FC = () => {
                 console.log(`!quizStarted: returning.... `);
                 return;
             }
-    
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
                     roomName: formattedRoomName,
@@ -299,7 +298,7 @@ const ManageRoom: React.FC = () => {
             console.log('Error launching quiz (launchTeacherMode). No questions found.');
             return;
         }
-        
+
         updateIndex(0);
         webSocketService.nextQuestion({roomName: formattedRoomName, questions: questions, questionIndex: 0, isLaunch: true});
     };
@@ -408,7 +407,7 @@ const ManageRoom: React.FC = () => {
                 {questions.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className="title center-h-align mb-2">{quiz?.title}</div>
-                        {index && (
+                        {index !== null && (
                             <strong className="number of questions">
                                 Question {index +1}/
                                 {questions?.length}
@@ -428,7 +427,7 @@ const ManageRoom: React.FC = () => {
 
                         <div className="mb-2 flex-column-wrapper">
                             <div className="preview-and-result-container">
-                                {index && (
+                                {index !== null && (
                                     <QuestionDisplay/>
                                 )}
 
