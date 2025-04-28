@@ -20,8 +20,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Calculate the index based on the current question's ID
     const [index, setIndex] = useState<number | null>(null);
-
-    const [answer, setAnswer] = useState<AnswerType>([]); // Initialize answer as an empty array
     
     const [isQuestionSent, setIsQuestionSent] = useState(false);
 
@@ -36,7 +34,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
     const updateIndex = (questionId?: number | null) => {
-
         setIndex(questionId ?? null);
 
     };
@@ -50,7 +47,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
             username: username,
             idQuestion: Number(index),
         };
-        setAnswer(answer);
         setIsQuestionSent(true);
         // Update the answers state
         setAnswers((prevAnswers) => {
@@ -58,7 +54,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
             newAnswers[Number(index)] = answerData; // Update the specific answer
             return newAnswers; // Return the new array
         });
-        console.log(`submitAnswer: answerData: ${JSON.stringify(answers)}`);
 
         // Submit the answer to the WebSocket service
         webSocketService.submitAnswer(answerData);
@@ -74,8 +69,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setQuestions,
                 answers,
                 setAnswers,
-                answer,
-                setAnswer,
                 index, // Expose the index in the context
                 updateIndex, // Expose a function to update the index
                 submitAnswer, // Expose submitAnswer in the context

@@ -40,7 +40,7 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
                     </TableCell>
                     {Array.from({ length: maxQuestions }, (_, index) => {
                         const answer = student.answers.find(
-                            (answer) => parseInt(answer.idQuestion.toString()) === index + 1
+                            (answer) => parseInt(answer.idQuestion.toString()) === index 
                         );
                         const answerText = answer ? answer.answer.toString() : '';
                         const isCorrect = answer ? answer.isCorrect : false;

@@ -10,8 +10,6 @@ export const QuizContext = React.createContext<{
     setQuestions: Dispatch<SetStateAction<QuestionType[]>>;
     answers: AnswerSubmissionToBackendType[];
     setAnswers: Dispatch<SetStateAction<AnswerSubmissionToBackendType[]>>;
-    answer : AnswerType;
-    setAnswer: Dispatch<SetStateAction<AnswerType>>;
     index: number | null; // Add index to the context
     updateIndex: (questionId: number | null) => void; // Add a function to update the index
     submitAnswer: (answer: AnswerType, idQuestion?: number) => void; // Updated submitAnswer signature
@@ -33,8 +31,6 @@ export const QuizContext = React.createContext<{
     setQuestions: () => {},
     answers: [],
     setAnswers: () => {},
-    answer: [], // Default value for answer
-    setAnswer: () => {}, // Default no-op function
     index: null, // Default value for index
     updateIndex: () => {}, // Default no-op function
     submitAnswer: () => {}, // Default no-op function

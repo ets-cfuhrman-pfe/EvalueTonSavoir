@@ -23,11 +23,6 @@ const TrueFalseQuestionDisplay: React.FC = () => {
         return undefined;
     });
 
-    let disableButton = false;
-    if (submitAnswer === undefined) {
-        disableButton = true;
-    }
-
     useEffect(() => {
         console.log("passedAnswer", answer);
         if (answer && (answer[0] === true || answer[0] === false)) {
@@ -60,7 +55,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
                             className="button-wrapper"
                             onClick={() => !showAnswer && handleOnClickAnswer(true)}
                             fullWidth
-                            disabled={disableButton || isTeacherMode}
+                            disabled={isTeacherMode}
                         >
                             {showAnswer ? (
                                 <div> {question.isTrue ? '✅' : '❌'}</div>
@@ -86,7 +81,7 @@ const TrueFalseQuestionDisplay: React.FC = () => {
                             className="button-wrapper"
                             onClick={() => !showAnswer && handleOnClickAnswer(false)}
                             fullWidth
-                            disabled={disableButton || isTeacherMode}
+                            disabled={isTeacherMode}
                         >
                             {showAnswer ? (
                                 <div> {!question.isTrue ? '✅' : '❌'}</div>

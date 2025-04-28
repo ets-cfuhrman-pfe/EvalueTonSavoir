@@ -99,7 +99,7 @@ class WebSocketService {
 
     submitAnswer(answerData: AnswerSubmissionToBackendType) {
         if (this.socket) {
-            this.socket?.emit('submit-answer', answerData
+            this.socket?.emit('', answerData
             );
         }
     }

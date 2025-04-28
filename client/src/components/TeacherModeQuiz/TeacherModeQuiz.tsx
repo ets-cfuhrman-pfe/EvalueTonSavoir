@@ -16,41 +16,27 @@ const TeacherModeQuiz: React.FC = () => {
         index,
         isQuestionSent,
         setIsQuestionSent,
-        answer,
-        setAnswer,
     } = useQuizContext();
     
-    const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // arrive here the first time after waiting for next question
+    console.log("TeacherModeQuiz",answers[Number(index)].answer);
     useEffect(() => {
-            console.log(`QuestionDisplay: questions: ${JSON.stringify(questions)}`);
-        
-        console.log(`TeacherModeQuiz: useEffect: answers: ${JSON.stringify(answers)}`);
-        console.log(`TeacherModeQuiz: useEffect: questionInfos.question.id: ${index} answer: ${answer}`);
-        const oldAnswer = answers[Number(index) -1 ]?.answer;
-        console.log(`TeacherModeQuiz: useEffect: oldAnswer: ${oldAnswer}`);
-        setAnswer(oldAnswer);
-        setShowAnswer(false);
-        setIsQuestionSent(false);
+        if (answers[Number(index)].answer !== undefined) {
+            setIsQuestionSent(true);
+            setIsDialogOpen(true);
+            setShowAnswer(true);
+        } else {
+            setShowAnswer(false);
+            setIsQuestionSent(false);
+            setIsDialogOpen(false);
+        }
+
     }, [questions[Number(index)].question, answers]);
 
-    // handle showing the feedback dialog
-    useEffect(() => {
-        console.log(`TeacherModeQuiz: useEffect: answer: ${answer}`);
-        setIsAnswerSubmitted(answer !== undefined);
-        setIsQuestionSent(answer !== undefined);
-    }, [answer]);
-
-    useEffect(() => {
-        console.log(`TeacherModeQuiz: useEffect: isAnswerSubmitted: ${isAnswerSubmitted}`);
-        setIsQuestionSent(isAnswerSubmitted);
-        setShowAnswer(isAnswerSubmitted);
-    }, [isAnswerSubmitted]);
 
     const handleFeedbackDialogClose = () => {
-        setIsQuestionSent(false);
-        setIsAnswerSubmitted(true);
+        setIsDialogOpen(false);
     };
 
     return (
@@ -62,14 +48,14 @@ const TeacherModeQuiz: React.FC = () => {
                     message={`Êtes-vous sûr de vouloir quitter?`} />
 
                 <div className='centerTitle'>
-                    <div className='title'>Question {index}</div>
+                    <div className='title'>Question {Number((index ?? 0) + 1)}</div>
                 </div>
 
                 <div className='dumb'></div>
 
             </div>
 
-            {isAnswerSubmitted ? (
+            {isQuestionSent ? (
                 <div>
                     En attente pour la prochaine question...
                 </div>
@@ -78,7 +64,7 @@ const TeacherModeQuiz: React.FC = () => {
             )}
 
             <Dialog
-                open={isQuestionSent}
+                open={isDialogOpen}
                 onClose={handleFeedbackDialogClose}
             >
                 <DialogTitle>Rétroaction</DialogTitle>

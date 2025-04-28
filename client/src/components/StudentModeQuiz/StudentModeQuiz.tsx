@@ -17,9 +17,8 @@ const StudentModeQuiz: React.FC = () => {
         let savedAnswer = undefined;
         if (answers.length !== 0) {
             savedAnswer = answers[Number(index)]?.answer;}
-
         setIsQuestionSent(savedAnswer !== undefined);
-        setShowAnswer(savedAnswer !== undefined); // Update showAnswer in context
+        setShowAnswer(savedAnswer !== undefined); 
     }, [index, answers, setShowAnswer]);
 
     const nextQuestion = () => {

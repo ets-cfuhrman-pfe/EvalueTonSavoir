@@ -71,14 +71,16 @@ const JoinRoom: React.FC = () => {
         socket.on('next-question', (question: QuestionType) => {
             console.log('JoinRoom: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
-            setIsWaitingForTeacher(false);
-            updateIndex(Number(question.question.id));
+            setIsWaitingForTeacher(false);   
+            updateIndex(Number(question.question.id) -1);
+            
         });
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
             console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             updateIndex(0);
+            console.log('on(launch-teacher-mode): setQuestions:', index);
             setQuestions(questions);
             // wait for next-question
         });
@@ -182,7 +184,7 @@ const JoinRoom: React.FC = () => {
         case 'teacher':
             return (
                 index != null && (
-                    <TeacherModeQuiz />
+                    <TeacherModeQuiz/>
                 )
             );
         default:

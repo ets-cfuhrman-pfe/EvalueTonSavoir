@@ -15,23 +15,18 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
     const answer = answers[Number(index)]?.answer;
     const question = questions[Number(index)].question as MultipleChoiceQuestion;
 
-    const [actualAnswer, setActualAnswer] = useState<AnswerType>(() => {
+    const [actualAnswer, setActualAnswer] = useState<AnswerType | undefined>(() => {
         if (answer !== undefined) {
             return answers[Number(index)].answer;
         }
-        return [];
+        return undefined;
     });
-
-    let disableButton = false;
-    if (submitAnswer === undefined) {
-        disableButton = true;
-    }
 
     useEffect(() => {
         if (answer !== undefined) {
             setActualAnswer(answer);
         } else {
-            setActualAnswer([]);
+            setActualAnswer(undefined);
         }
     }, [index]);
 
@@ -42,15 +37,15 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
 
             if (correctAnswersCount === 1) {
                 // If only one correct answer, replace the current selection
-                return answer.includes(choice) ? [] : [choice];
+                return answer?.includes(choice) ? [] : [choice];
             } else {
                 // Allow multiple selections if there are multiple correct answers
-                if (answer.includes(choice)) {
+                if (answer?.includes(choice)) {
                     // Remove the choice if it's already selected
                     return answer.filter((selected) => selected !== choice);
                 } else {
                     // Add the choice if it's not already selected
-                    return [...answer, choice];
+                    return [...(answer || []), choice];
                 }
             }
         });
@@ -69,13 +64,13 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                     <div className="choices-wrapper mb-1">
                         {question.choices.map((choice, i) => {
                             console.log(`answer: ${actualAnswer}, choice: ${choice.formattedText.text}`);
-                            const selected = actualAnswer.includes(choice.formattedText.text) ? 'selected' : '';
+                            const selected = actualAnswer?.includes(choice.formattedText.text) ? 'selected' : '';
                             return (
                                 <div key={choice.formattedText.text + i} className="choice-container">
                                     <Button
                                         variant="text"
                                         className="button-wrapper"
-                                        disabled={disableButton || isTeacherMode}
+                                        disabled={isTeacherMode}
                                         onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                                     >
                                         {showAnswer ? (
@@ -120,7 +115,7 @@ const MultipleChoiceQuestionDisplay: React.FC = () => {
                             onClick={() =>
                                 actualAnswer !== undefined && submitAnswer && submitAnswer(actualAnswer)
                             }
-                            disabled={actualAnswer === undefined}
+                            disabled={actualAnswer === undefined || actualAnswer.length === 0}
                         >
                             Répondre
                         </Button>
