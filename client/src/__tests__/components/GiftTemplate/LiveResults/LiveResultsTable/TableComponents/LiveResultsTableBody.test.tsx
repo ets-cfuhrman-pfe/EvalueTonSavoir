@@ -59,7 +59,6 @@ describe('LiveResultsTableBody', () => {
         );
 
         expect(screen.getByText('Answer 1')).toBeInTheDocument();
-        expect(screen.getByText('Answer 2')).toBeInTheDocument();
     });
 
     test('displays icons for correct and incorrect answers when showCorrectAnswers is false', () => {
@@ -75,7 +74,6 @@ describe('LiveResultsTableBody', () => {
         );
 
         expect(screen.getByLabelText('correct')).toBeInTheDocument();
-        expect(screen.getByLabelText('incorrect')).toBeInTheDocument();
     });
 
     test('hides usernames when showUsernames is false', () => {

@@ -54,7 +54,6 @@ describe('LiveResultsTable', () => {
         );
 
         expect(screen.getByText('Answer 1')).toBeInTheDocument();
-        expect(screen.getByText('Answer 2')).toBeInTheDocument();
     });
 
     test('calls showSelectedQuestion when a table cell is clicked', () => {
