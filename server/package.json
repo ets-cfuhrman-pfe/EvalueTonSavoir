@@ -28,6 +28,7 @@
     "passport-oauth2": "^1.8.0",
     "passport-openidconnect": "^0.1.2",
     "patch-package": "^8.0.0",
+    "qrcode.react": "^4.2.0",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2"
   },
@@ -42,7 +43,7 @@
     "supertest": "^6.3.4"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "jest": {
     "testEnvironment": "node",

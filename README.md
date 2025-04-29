@@ -2,24 +2,26 @@
 [![CI/CD Pipeline for Backend](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml)
 [![CI/CD Pipeline for Nginx Router](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml)
 
-# EvalueTonSavoir 
+[![fr-ca](https://img.shields.io/badge/lang-fr--ca-green.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/blob/main/README.fr-ca.md)
 
-EvalueTonSavoir est une plateforme open source et auto-hébergée qui poursuit le développement du code provenant de https://github.com/ETS-PFE004-Plateforme-sondage-minitest. Cette plateforme minimaliste est conçue comme un outil d'apprentissage et d'enseignement, offrant une solution simple et efficace pour la création de quiz utilisant le format GIFT, similaire à Moodle.
+# EvalueTonSavoir
 
-## Fonctionnalités clés
+EvalueTonSavoir ("Check What You Know") is an open-source and self-hosted platform that continues the development of the code from https://github.com/ETS-PFE004-Plateforme-sondage-minitest. This minimalist platform is designed as a learning and teaching tool, offering a simple and effective solution for creating quizzes using the GIFT format, similar to Moodle.
 
-* Open Source et Auto-hébergé : Possédez et contrôlez vos données en déployant la plateforme sur votre propre infrastructure.
-* Compatibilité GIFT : Créez des quiz facilement en utilisant le format GIFT, permettant une intégration transparente avec d'autres systèmes d'apprentissage.
-* Minimaliste et Efficace : Une approche bare bones pour garantir la simplicité et la facilité d'utilisation, mettant l'accent sur l'essentiel de l'apprentissage.
+## Key Features
+
+* **Open Source and Self-Hosted**: Own and control your data by deploying the platform on your own infrastructure.
+* **GIFT Compatibility**: Easily create quizzes using the GIFT format, enabling seamless integration with other learning systems.
+* **Minimalist and Efficient**: A bare-bones approach to ensure simplicity and ease of use, focusing on the essentials of learning.
 
 ## Contribution
 
-Actuellement, il n'y a pas de modèle établi pour les contributions. Si vous constatez quelque chose de manquant ou si vous pensez qu'une amélioration est possible, n'hésitez pas à ouvrir un issue et/ou une PR)
+Currently, there is no established model for contributions. If you notice something missing or think an improvement is possible, feel free to open an issue and/or a PR.
 
-## Liens utiles
+## Useful Links
 
-* [Dépôt d'origine Frontend](https://github.com/ETS-PFE004-Plateforme-sondage-minitest/ETS-PFE004-EvalueTonSavoir-Frontend)
-* [Dépôt d'origine Backend](https://github.com/ETS-PFE004-Plateforme-sondage-minitest/ETS-PFE004-EvalueTonSavoir-Backend)
+* [Original Frontend Repository](https://github.com/ETS-PFE004-Plateforme-sondage-minitest/ETS-PFE004-EvalueTonSavoir-Frontend)
+* [Original Backend Repository](https://github.com/ETS-PFE004-Plateforme-sondage-minitest/ETS-PFE004-EvalueTonSavoir-Backend)
 * [Documentation (Wiki)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/wiki)
 
 ## License
