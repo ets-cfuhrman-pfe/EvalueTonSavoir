@@ -19,9 +19,10 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
-import { Button, FormControlLabel, Switch } from '@mui/material';
 import {
     Button,
+    FormControlLabel,
+    Switch,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -37,7 +38,6 @@ const ManageRoom: React.FC = () => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [students, setStudents] = useState<StudentType[]>([]);
     const { quizId = '', roomName = '' } = useParams<{ quizId: string, roomName: string }>();
-    const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
