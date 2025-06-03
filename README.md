@@ -1,10 +1,10 @@
+# EvalueTonSavoir
+
 [![CI/CD Pipeline for Frontend](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/frontend-deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/frontend-deploy.yml)
 [![CI/CD Pipeline for Backend](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/backend-deploy.yml)
 [![CI/CD Pipeline for Nginx Router](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml/badge.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/actions/workflows/deploy.yml)
 
 [![fr-ca](https://img.shields.io/badge/lang-fr--ca-green.svg)](https://github.com/ets-cfuhrman-pfe/EvalueTonSavoir/blob/main/README.fr-ca.md)
-
-# EvalueTonSavoir
 
 EvalueTonSavoir ("Check What You Know") is an open-source and self-hosted platform that continues the development of the code from https://github.com/ETS-PFE004-Plateforme-sondage-minitest. This minimalist platform is designed as a learning and teaching tool, offering a simple and effective solution for creating quizzes using the GIFT format, similar to Moodle.
 
