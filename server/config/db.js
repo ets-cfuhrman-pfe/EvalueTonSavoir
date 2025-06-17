@@ -19,8 +19,15 @@ class DBConnection {
         }
 
         try {
-            // Create the MongoClient only if the connection does not exist
-            this.client = new MongoClient(this.mongoURI);
+            // If client was previously closed but we're trying to reconnect
+            if (this.client && this.client.topology && this.client.topology.s.state === 'closed') {
+                // Create a new client if the previous one was closed
+                this.client = new MongoClient(this.mongoURI);
+            } else if (!this.client) {
+                // Create the MongoClient only if it doesn't exist
+                this.client = new MongoClient(this.mongoURI);
+            }
+            
             await this.client.connect();
             this.connection = this.client.db(this.databaseName);
             console.log('MongoDB connected');
@@ -43,6 +50,8 @@ class DBConnection {
     async closeConnection() {
         if (this.client) {
             await this.client.close();
+            this.connection = null;
+            this.client = null;
             console.log('MongoDB connection closed');
         }
     }
