@@ -1,0 +1,6 @@
+{
+  "eslint.workingDirectories": [
+    { "directory": "client" },
+    { "directory": "server" }
+  ]
+}

@@ -84,6 +84,18 @@ class AuthManager{
         }
         return user
     }
+
+    async close() {
+        // Close the connection from simpleregister if available
+        if (this.simpleregister && typeof this.simpleregister.close === 'function') {
+            await this.simpleregister.close();
+        }
+        // If AuthProvider has a direct reference to DBConnection
+        if (this.dbConnection && typeof this.dbConnection.close === 'function') {
+            await this.dbConnection.close();
+        }
+    }
+
 }
 
 module.exports = AuthManager;
