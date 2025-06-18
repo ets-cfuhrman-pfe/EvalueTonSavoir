@@ -81,4 +81,37 @@ describe('NumericalQuestion Component', () => {
         expect(mockHandleOnSubmitAnswer).toHaveBeenCalledWith([7]);
         mockHandleOnSubmitAnswer.mockClear();
     });
+
+    it('calculates and displays correct answer rate when showResults is true', () => {
+        const mockStudents = [
+            {
+                id: '1',
+                name: 'Alice',
+                answers: [{ idQuestion: 1, answer: [7], isCorrect: true }]
+            },
+            {
+                id: '2',
+                name: 'Bob',
+                answers: [{ idQuestion: 1, answer: [3], isCorrect: false }]
+            },
+            {
+                id: '3',
+                name: 'Charlie',
+                answers: [{ idQuestion: 1, answer: [6], isCorrect: true }]
+            }
+        ];
+    
+        render(
+            <MemoryRouter>
+                <NumericalQuestionDisplay
+                    question={{ ...question, id: '1' }}
+                    showResults={true}
+                    students={mockStudents}
+                />
+            </MemoryRouter>
+        );
+    
+        expect(screen.getByText('Taux de réponse correcte: 2/3')).toBeInTheDocument();
+        expect(screen.getByText('66.7%')).toBeInTheDocument();
+    });
 });

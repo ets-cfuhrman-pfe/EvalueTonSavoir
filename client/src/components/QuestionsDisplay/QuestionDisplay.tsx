@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Question } from 'gift-pegjs';
+
+import { FormControlLabel, Switch } from '@mui/material';
 
 import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuestionDisplay';
 import MultipleChoiceQuestionDisplay from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
@@ -8,10 +10,15 @@ import ShortAnswerQuestionDisplay from './ShortAnswerQuestionDisplay/ShortAnswer
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 // import useCheckMobileScreen from '../../services/useCheckMobileScreen';
 
+import { StudentType } from '../../Types/StudentType';
+
 interface QuestionProps {
     question: Question;
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
+    students?: StudentType[];
+    showResults?: boolean;
+    showAnswerToggle?: boolean;
     answer?: AnswerType;
 
 }
@@ -19,12 +26,16 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     question,
     handleOnSubmitAnswer,
     showAnswer,
+    showAnswerToggle = false,
+    students,
     answer,
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
     //     return isMobile ? '100%' : '20%';
     // }, [isMobile]);
+    
+    const [showResults, setShowResults] = useState<boolean>(false);
 
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -34,6 +45,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
@@ -45,6 +58,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
@@ -57,7 +72,8 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
                             passedAnswer={answer}
-                            
+                            students={students}
+                            showResults={showResults}
                         />
                     );
             }
@@ -68,21 +84,39 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
+                    students={students}
+                    showResults={showResults}
                     passedAnswer={answer}
                 />
             );
             break;
     }
     return (
-        <div className="question-container">
-            {questionTypeComponent ? (
-                <>
-                    {questionTypeComponent}
-                </>
-            ) : (
-                <div>Question de type inconnue</div>
+        <>
+            {showAnswerToggle && (
+                <FormControlLabel
+                    label={<div className="text-sm">Afficher les résultats</div>}
+                    control={
+                        <Switch
+                            value={showResults}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setShowResults(e.target.checked)
+                            }
+                        />
+                    }
+                />
             )}
-        </div>
+
+            <div className="question-container">
+                {questionTypeComponent ? (
+                    <>
+                        {questionTypeComponent}
+                    </>
+                ) : (
+                    <div>Question de type inconnue</div>
+                )}
+            </div>
+        </>
     );
 };
 

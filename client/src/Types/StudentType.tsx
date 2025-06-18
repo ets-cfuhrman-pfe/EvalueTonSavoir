@@ -11,4 +11,5 @@ export interface StudentType {
     id: string;
     room?: string;
     answers: Answer[];
+    isActive?: boolean;
 }

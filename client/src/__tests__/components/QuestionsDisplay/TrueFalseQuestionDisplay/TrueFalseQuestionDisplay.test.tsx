@@ -134,4 +134,43 @@ describe('TrueFalseQuestion Component', () => {
             expect(wrongAnswer1).toBeInTheDocument();
             expect(wrongAnswer1?.textContent).not.toContain('❌');
         });
+
+        it('calculates and displays pick rates correctly when showResults is true', () => {
+            const mockStudents = [
+                {
+                    id: '1',
+                    name: 'Alice',
+                    answers: [{ idQuestion: 1, answer: [true], isCorrect: true }]
+                },
+                {
+                    id: '2',
+                    name: 'Bob',
+                    answers: [{ idQuestion: 1, answer: [false], isCorrect: false }]
+                }
+            ];
+        
+            render(
+                <MemoryRouter>
+                    <TrueFalseQuestionDisplay
+                        question={{ ...trueFalseQuestion, id: '1' }}
+                        students={mockStudents}
+                        showResults={true}
+                    />
+                </MemoryRouter>
+            );
+        
+            const pickRateDivs = screen.getAllByText((_, element) =>
+            element !== null &&
+            (element as HTMLElement).classList.contains('pick-rate') &&
+            (element as HTMLElement).textContent!.includes('1/2')
+          );
+          expect(pickRateDivs.length).toBe(2);
+          
+          const percentDivs = screen.getAllByText((_, element) =>
+            element !== null &&
+            (element as HTMLElement).classList.contains('pick-rate') &&
+            (element as HTMLElement).textContent!.includes('50.0%')
+          );
+          expect(percentDivs.length).toBe(2);
+        });
 });

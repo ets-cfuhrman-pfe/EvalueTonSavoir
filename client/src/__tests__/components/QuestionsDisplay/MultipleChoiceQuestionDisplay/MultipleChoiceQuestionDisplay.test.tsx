@@ -209,5 +209,33 @@ describe('MultipleChoiceQuestionDisplay', () => {
         expect(wrongAnswer1?.textContent).not.toContain('❌');
     });
 
+    it('calculates and displays pick rates correctly when showResults is true', () => {
+        const question = parse(`::MCQ:: What is 2+2? {
+            =Four
+            ~Three
+            ~Five
+        }`)[0] as MultipleChoiceQuestion;
+    
+        const mockStudents = [
+            { id: '1', name: 'Alice', answers: [{ idQuestion: 1, answer: ['Four'], isCorrect: true }] },
+            { id: '2', name: 'Bob', answers: [{ idQuestion: 1, answer: ['Three'], isCorrect: false }] },
+            { id: '3', name: 'Charlie', answers: [{ idQuestion: 1, answer: ['Four'], isCorrect: true }] }
+        ];
+    
+        render(
+            <MultipleChoiceQuestionDisplay
+                question={{ ...question, id: '1' }}
+                students={mockStudents}
+                showResults={true}
+            />
+        );
+    
+        // Expect pick rate for "Four" to be 2/3
+        expect(screen.getByText('✅2/3 (66.7%)')).toBeInTheDocument();
+    
+        // Expect pick rate for "Three" to be 1/3
+        expect(screen.getByText('❌1/3 (33.3%)')).toBeInTheDocument();
+    });
+
 });
 
