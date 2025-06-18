@@ -102,8 +102,7 @@ class PassportOpenIDConnect {
 
         app.get(`${endpoint}/${name}`, (req, res, next) => {
             passport.authenticate(name, {
-                scope: scope,
-                prompt: 'consent'
+                scope: scope
             })(req, res, next);
         });
 
