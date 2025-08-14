@@ -3,9 +3,10 @@ import { jwtDecode } from 'jwt-decode';
 import { ENV_VARIABLES } from '../constants';
 
 import { FolderType } from 'src/Types/FolderType';
-import { ImagesResponse, ImagesParams } from '../Types/Images';
-import { QuizType } from 'src/Types/QuizType';
+import { QuizType, QuizResponse } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
+import { AdminTableType } from 'src/Types/AdminTableType';
+import { ImagesResponse, ImagesParams } from 'src/Types/ImageType';
 
 type ApiResponse = boolean | string;
 
@@ -112,6 +113,27 @@ class ApiService {
         } catch (error) {
             console.error("Error decoding token:", error);
             return false;
+        }
+    }
+
+    public isAdmin(): boolean {
+        let isAdmin = false;
+        const token = this.getToken();
+
+        if (token == null) {
+            return isAdmin;
+        }
+
+        try {
+            const jsonObj = jwtDecode(token) as { roles: string[] };
+
+            if (jsonObj.roles.includes('admin')) {
+                isAdmin = true;
+            }
+            return isAdmin;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            return isAdmin;
         }
     }
 
@@ -989,6 +1011,7 @@ public async login(email: string, password: string): Promise<any> {
             return `Une erreur inattendue s'est produite.`;
         }
     }
+
     public async getRoomTitle(roomId: string): Promise<string | string> {
         try {
             if (!roomId) {
@@ -1149,32 +1172,7 @@ public async login(email: string, password: string): Promise<any> {
     }
 
     public async getImages(page: number, limit: number): Promise<ImagesResponse> {
-        try {
-            const url: string = this.constructRequestUrl(`/image/getImages`);
-            const headers = this.constructRequestHeaders();
-            let params : ImagesParams = { page: page, limit: limit };
-
-            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
-
-            if (result.status !== 200) {
-                throw new Error(`L'affichage des images a échoué. Status: ${result.status}`);
-            }
-            const images = result.data;
-
-            return images;
-
-        } catch (error) {
-            console.log("Error details: ", error);
-
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
-                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
-            }
-
-            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
-        }
+        return this.isAdmin() ? this.getAllImages(page, limit) : this.getUserImages(page, limit);
     }
 
     public async getUserImages(page: number, limit: number): Promise<ImagesResponse> {
@@ -1212,6 +1210,10 @@ public async login(email: string, password: string): Promise<any> {
     }
 
     public async deleteImage(imgId: string): Promise<ApiResponse> {
+        return this.isAdmin() ? this.deleteAnyImage(imgId) : this.deleteUserImage(imgId);
+    }
+
+    public async deleteUserImage(imgId: string): Promise<ApiResponse> {
         try {
             const url: string = this.constructRequestUrl(`/image/delete`);
             const headers = this.constructRequestHeaders();
@@ -1266,8 +1268,117 @@ public async login(email: string, password: string): Promise<any> {
         }
     }	
 
-   
+    public async getUsers(): Promise<AdminTableType[]> {
+        try {
 
+            const url: string = this.constructRequestUrl(`/admin/getUsers`);
+            const headers = this.constructRequestHeaders();
+            const result: AxiosResponse = await axios.get(url, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention des titres des salles a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.users;
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    public async getAllImages(page: number, limit: number): Promise<ImagesResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/admin/getImages`);
+            const headers = this.constructRequestHeaders();
+            let params : ImagesParams = { page: page, limit: limit };
+
+            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'affichage des images a échoué. Status: ${result.status}`);
+            }
+            const images = result.data.data;
+
+            return images;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    public async deleteAnyImage(imgId: string): Promise<ApiResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/admin/deleteImage`);
+            const headers = this.constructRequestHeaders();
+            let params = { imgId: imgId };
+
+            const result: AxiosResponse = await axios.delete(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`La suppression de l'image a échoué. Status: ${result.status}`);
+            }
+
+            const deleted = result.data.deleted;
+            return deleted;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    public async getStats(): Promise<QuizResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/admin/getStats`);
+            const headers = this.constructRequestHeaders();
+            const result: AxiosResponse = await axios.get(url, { headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'affichage des images a échoué. Status: ${result.status}`);
+            }
+            const resp = result.data.data;
+
+            return resp;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+    
 }
 
 const apiService = new ApiService();

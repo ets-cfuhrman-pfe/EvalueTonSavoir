@@ -48,7 +48,7 @@ const ImageGallery: React.FC<ImagesProps> = ({ handleCopy, handleDelete }) => {
 
   const fetchImages = async () => {
     setLoading(true);
-    const data = await ApiService.getUserImages(imgPage, imgLimit);
+    const data = await ApiService.getImages(imgPage, imgLimit);
     setImages(data.images);
     setTotalImg(data.total);
     setLoading(false);

@@ -4,10 +4,14 @@ const AppError = require('./AppError.js');
 const { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } = require('../constants/errorCodes');
 
 dotenv.config();
+const whitelist = process.env.ADMINS ? JSON.parse(process.env.ADMINS) : [];
 
 class Token {
 
     create(email, userId, roles) {
+        if (whitelist.includes(email)) {
+            roles.push("admin");
+        }
         return jwt.sign({ email, userId, roles }, process.env.JWT_SECRET);
     }
 

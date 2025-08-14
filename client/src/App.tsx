@@ -26,9 +26,15 @@ import Footer from './components/Footer/Footer';
 import ApiService from './services/ApiService';
 import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 
+import Users from './pages/Admin/Users';
+import Images from './pages/Admin/Images';
+import Stats from './pages/Admin/Stats';
+
+
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isAdmin, setIsAdmin] = useState(false);
     const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
@@ -37,6 +43,7 @@ const App: React.FC = () => {
         const checkLoginStatus = () => {
             setIsAuthenticated(ApiService.isLoggedIn());
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
+            setIsAdmin(ApiService.isAdmin());
         };
 
         const fetchAuthenticatedRooms = async () => {
@@ -56,7 +63,7 @@ const App: React.FC = () => {
 
     return (
         <div className="content">
-            <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
+            <Header isLoggedIn={isAuthenticated} isAdmin={isAdmin} handleLogout={handleLogout} />
             <div className="app">
                 <main>
                     <Routes>
@@ -98,6 +105,11 @@ const App: React.FC = () => {
 
                         {/* Pages authentification sélection */}
                         <Route path="/auth/callback" element={<OAuthCallback />} />
+
+                        <Route path="/admin/stats" element={<Stats />} />
+                        <Route path="/admin/images" element={<Images />} />
+                        <Route path="/admin/users" element={<Users />} />
+
                     </Routes>
                 </main>
             </div>

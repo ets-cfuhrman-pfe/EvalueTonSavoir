@@ -33,6 +33,7 @@ services:
       FRONTEND_PORT: 5173
       USE_PORTS: false
       AUTHENTICATED_ROOMS: false
+      ADMINS: '["ets@ets.com", "admin@admin.com"]'
     volumes:
       - /opt/EvalueTonSavoir/auth_config.json:/usr/src/app/serveur/auth_config.json
     depends_on:
