@@ -1,4 +1,6 @@
 const ValidationUtils = require('../utils/validationUtils');
+const AppError = require('./AppError');
+const { VALIDATION_ERROR } = require('../constants/errorCodes');
 
 /**
  * Generic validation middleware factory
@@ -48,9 +50,7 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
         }
         
         if (errors.length > 0) {
-            const error = new Error();
-            error.statusCode = 400;
-            error.message = `Données invalides: ${errors.join(', ')}`;
+            const error = new AppError(VALIDATION_ERROR(`Données invalides: ${errors.join(', ')}`));
             return next(error);
         }
         
@@ -95,10 +95,12 @@ const validationConfigs = {
     },
     
     roomCreation: {
-        name: { validator: 'validateRoomName', required: true, label: 'Nom de la salle' },
-        description: { validator: 'validateRoomDescription', required: false, label: 'Description' },
-        maxParticipants: { validator: 'validateRoomMaxParticipants', required: false, label: 'Nombre maximum de participants' },
-        password: { validator: 'validateRoomPassword', required: false, label: 'Mot de passe' }
+        title: { validator: 'validateRoomName', required: true, label: 'Titre' }
+    },
+    
+    roomRename: {
+        roomId: { validator: null, required: true, label: 'ID de la salle' },
+        newTitle: { validator: 'validateRoomName', required: true, label: 'Nouveau titre' }
     }
 };
 
@@ -111,6 +113,7 @@ const validateQuizCreation = createValidationMiddleware(validationConfigs.quizCr
 const validateQuizUpdate = createValidationMiddleware(validationConfigs.quizCreation, true); // Allow partial
 const validateFolderCreation = createValidationMiddleware(validationConfigs.folderCreation);
 const validateRoomCreation = createValidationMiddleware(validationConfigs.roomCreation);
+const validateRoomRename = createValidationMiddleware(validationConfigs.roomRename);
 
 module.exports = {
     // Middleware instances
@@ -122,6 +125,7 @@ module.exports = {
     validateQuizUpdate,
     validateFolderCreation,
     validateRoomCreation,
+    validateRoomRename,
     
     // Factory function for custom validation
     createValidationMiddleware,

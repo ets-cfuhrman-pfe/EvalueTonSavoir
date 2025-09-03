@@ -58,7 +58,8 @@
     "title": {
       "minLength": 1,
       "maxLength": 100,
-      "errorMessage": "Le titre du dossier doit contenir entre 1 et 100 caractères"
+      "pattern": "^[a-zA-Z0-9\\u00C0-\\u017F\\s\\-_]+$",
+      "errorMessage": "Le titre ne peut contenir que des lettres, chiffres, espaces, tirets et underscores"
     }
   },
   "text": {

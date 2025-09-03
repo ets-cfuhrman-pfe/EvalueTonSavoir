@@ -20,6 +20,12 @@ class ValidationUtils {
         }
 
         const stringValue = String(value);
+        
+        // Check if value is only whitespace
+        if (stringValue.trim() === '' && rule.minLength && rule.minLength > 0) {
+            errors.push(rule.errorMessage);
+            return { isValid: false, errors };
+        }
 
         // Check minLength
         if (rule.minLength !== undefined && stringValue.length < rule.minLength) {
