@@ -4,6 +4,10 @@
         "paths": {
             "src/*": [
                 "src/*"
+            ],
+            "@shared/*": [
+                "../server/shared/*",
+                "../shared/*"
             ]
         },
         "target": "ESNext",

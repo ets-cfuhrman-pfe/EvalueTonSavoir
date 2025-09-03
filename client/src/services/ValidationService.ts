@@ -1,4 +1,4 @@
-const VALIDATION_CONSTANTS = require('../../../shared/validationConstants.js');
+import VALIDATION_CONSTANTS from '@shared/validationConstants.json';
 
 export interface ValidationResult {
     isValid: boolean;
@@ -65,7 +65,7 @@ class ValidationService {
             errors.push(rule.errorMessage);
         }
 
-        if (rule.pattern && !rule.pattern.test(stringValue)) {
+        if (rule.pattern && !new RegExp(rule.pattern).test(stringValue)) {
             errors.push(rule.errorMessage);
         }
 

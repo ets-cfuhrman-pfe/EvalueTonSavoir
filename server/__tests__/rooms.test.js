@@ -262,7 +262,7 @@ describe("Rooms", () => {
         const validNames = [
           "A",                    // minimum length (1 character)
           "Valid Room",           // normal length
-          "A".repeat(50)          // maximum length (50 characters)
+          "A".repeat(25)          // maximum length (25 characters)
         ];
 
         validNames.forEach(name => {
@@ -324,7 +324,7 @@ describe("Rooms", () => {
         const validPasswords = [
           "1234",                 // minimum length (4 characters)
           "password123",          // normal length
-          "A".repeat(50)          // maximum length (50 characters)
+          "A".repeat(25)          // maximum length (25 characters)
         ];
 
         validPasswords.forEach(password => {
@@ -366,11 +366,11 @@ describe("Rooms", () => {
       it("should handle exact boundary lengths correctly", () => {
         // Test exact boundary values
         const testCases = [
-          { method: 'validateRoomName', value: "A", shouldPass: true },           // exactly 1 char
-          { method: 'validateRoomName', value: "A".repeat(50), shouldPass: true }, // exactly 50 chars
-          { method: 'validateRoomDescription', value: "A".repeat(500), shouldPass: true }, // exactly 500 chars
-          { method: 'validateRoomPassword', value: "1234", shouldPass: true },     // exactly 4 chars
-          { method: 'validateRoomPassword', value: "A".repeat(50), shouldPass: true } // exactly 50 chars
+          { method: 'validateRoomName', value: "A", shouldPass: true },           
+          { method: 'validateRoomName', value: "A".repeat(25), shouldPass: true }, 
+          { method: 'validateRoomDescription', value: "A".repeat(500), shouldPass: true }, 
+          { method: 'validateRoomPassword', value: "1234", shouldPass: true },    
+          { method: 'validateRoomPassword', value: "A".repeat(25), shouldPass: true } 
         ];
 
         testCases.forEach(({ method, value, shouldPass }) => {

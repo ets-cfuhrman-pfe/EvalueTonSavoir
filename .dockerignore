@@ -1,0 +1,45 @@
+# Exclude everything by default
+*
+
+# Include only what we need for the frontend build
+!client/
+!server/shared/
+
+# Exclude node_modules from included directories
+client/node_modules/
+server/shared/node_modules/
+
+# Exclude build outputs and cache
+client/dist/
+client/build/
+client/.next/
+
+# Exclude environment files
+client/.env*
+
+# Exclude IDE and OS files
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+**/.DS_Store
+**/Thumbs.db
+
+# Exclude git
+**/.git/
+
+# Exclude logs
+**/*.log
+**/logs/
+
+# Exclude test files and coverage
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+**/coverage/
+
+# Exclude cache directories
+**/.cache/
+**/.parcel-cache/
+**/.npm/
+**/.eslintcache

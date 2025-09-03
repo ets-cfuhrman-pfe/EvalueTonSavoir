@@ -1,4 +1,4 @@
-const VALIDATION_CONSTANTS = require('../../shared/validationConstants');
+const VALIDATION_CONSTANTS = require('../shared/validationConstants.json');
 
 /**
  * Utility functions for server-side validation using shared constants
@@ -32,7 +32,7 @@ class ValidationUtils {
         }
 
         // Check pattern
-        if (rule.pattern && !rule.pattern.test(stringValue)) {
+        if (rule.pattern && !new RegExp(rule.pattern).test(stringValue)) {
             errors.push(rule.errorMessage);
         }
 

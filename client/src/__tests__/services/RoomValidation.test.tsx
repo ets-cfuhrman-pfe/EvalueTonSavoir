@@ -5,7 +5,8 @@ import { describe, it, expect } from '@jest/globals';
 import validationService from '../../services/ValidationService';
 
 // Use the shared constants so the UI mirrors app rules
-const VALIDATION = require('../../../../shared/validationConstants').room;
+import VALIDATION_CONSTANTS from '@shared/validationConstants.json';
+const VALIDATION = VALIDATION_CONSTANTS.room;
 
 // small helper to enforce max length consistently
 function clampToMax(value: string, max: number) {

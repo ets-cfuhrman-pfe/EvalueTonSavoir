@@ -24,7 +24,8 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-          'src': '/src'
+          'src': '/src',
+          '@shared': process.env.DOCKER_BUILD === 'true' ? '../shared' : '../server/shared'
         }
       },
     preview: {
