@@ -135,14 +135,14 @@ describe("Rooms API Integration Tests", () => {
       expect(response.body.message).toBe("Accès refusé. Aucun jeton fourni.");
     });
 
-    it("should return 400 when title is missing", async () => {
+    it("should return 401 with invalid token", async () => {
       const response = await request(app)
         .post("/api/room/create")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({})
-        .expect(400);
+        .set("Authorization", "Bearer invalid-token")
+        .send({ title: "Test Room" })
+        .expect(401);
 
-      expect(response.body.message).toContain("Données invalides");
+      expect(response.body.message).toBe("Accès refusé. Jeton invalide.");
     });
 
     it("should return 409 when room already exists", async () => {
@@ -157,14 +157,141 @@ describe("Rooms API Integration Tests", () => {
       expect(response.body.message).toBe("Une salle avec ce nom existe déjà");
     });
 
-    it("should return 401 with invalid token", async () => {
+    // Input validation tests
+    it("should return 400 when title is missing", async () => {
       const response = await request(app)
         .post("/api/room/create")
-        .set("Authorization", "Bearer invalid-token")
-        .send({ title: "Test Room" })
-        .expect(401);
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({})
+        .expect(400);
 
-      expect(response.body.message).toBe("Accès refusé. Jeton invalide.");
+      expect(response.body.message).toContain("Données invalides");
+    });
+
+    it("should return 400 for empty title", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "" })
+        .expect(400);
+
+      expect(response.body.message).toContain("Données invalides");
+    });
+
+    it("should return 400 for title with only spaces", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "   " })
+        .expect(400);
+
+      expect(response.body.message).toContain("Données invalides");
+    });
+
+    it("should return 400 for title that is too long", async () => {
+      const longTitle = "A".repeat(26); // Room validation: max length is 25
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: longTitle })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should return 400 for title with invalid characters", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: 'Room<script>alert("xss")</script>' })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should reject title with accented characters", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "Salle de Français" })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should reject SQL injection attempts", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "'; DROP TABLE rooms; --" })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should reject XSS attempts", async () => {
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: '<script>alert("xss")</script>' })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should accept valid title with mixed characters", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "Valid Room Name 123" })
+        .expect(201);
+
+      expect(response.body.roomId).toBe("room123");
+    });
+
+    it("should handle minimum valid title length", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "A" }) // Minimum length
+        .expect(201);
+
+      expect(response.body.roomId).toBe("room123");
+    });
+
+    it("should handle maximum valid title length", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+
+      const maxValidTitle = "A".repeat(25); // Room validation: max is 25
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: maxValidTitle })
+        .expect(201);
+
+      expect(response.body.roomId).toBe("room123");
+    });
+
+    it("should handle title with numbers and special allowed characters", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "Room-123_Test Space" })
+        .expect(201);
+
+      expect(response.body.roomId).toBe("room123");
     });
   });
   describe("GET /api/room/getUserRooms", () => {
@@ -324,16 +451,6 @@ describe("Rooms API Integration Tests", () => {
       );
     });
 
-    it("should return 400 when roomId is missing", async () => {
-      const response = await request(app)
-        .put("/api/room/rename")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({ newTitle: "New Title" })
-        .expect(400);
-
-      expect(response.body.message).toBe("Données invalides: ID de la salle requis");
-    });
-
     it("should return 409 when new title already exists", async () => {
       const roomId = "room123";
       const newTitle = "Existing Title";
@@ -347,6 +464,73 @@ describe("Rooms API Integration Tests", () => {
         .expect(409);
 
       expect(response.body.message).toBe("Une salle avec ce nom existe déjà");
+    });
+
+    // Input validation tests
+    it("should return 400 when roomId is missing", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ newTitle: "New Title" })
+        .expect(400);
+
+      expect(response.body.message).toBe("Données invalides: ID de la salle requis");
+    });
+
+    it("should return 400 for empty newTitle", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: "" })
+        .expect(400);
+
+      expect(response.body.message).toBe("Données invalides: Nouveau titre requis");
+    });
+
+    it("should return 400 for newTitle with only spaces", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: "   " })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should return 400 for newTitle that is too long", async () => {
+      const longTitle = "A".repeat(26); // Room validation: max length is 25
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: longTitle })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should return 400 for newTitle with invalid characters", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: "Room<script>" })
+        .expect(400);
+
+      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+    });
+
+    it("should accept valid newTitle", async () => {
+      mockRoomsModel.getOwner.mockResolvedValue("user123");
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.rename.mockResolvedValue(true);
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: "Valid New Name" })
+        .expect(200);
+
+      expect(response.body.message).toContain("mis à jour avec succès");
     });
   });
   describe("GET /api/room/getRoomTitle/:roomId", () => {
@@ -432,206 +616,5 @@ describe("Rooms API Integration Tests", () => {
     });
   });
 
-//Input Validation TESTS
-  describe("Input Validation Tests", () => {
-    describe("POST /api/room/create - Validation", () => {
-      it("should return 400 for empty title", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "" })
-          .expect(400);
 
-        expect(response.body.message).toContain("Données invalides");
-      });
-
-      it("should return 400 for title with only spaces", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "   " })
-          .expect(400);
-
-        expect(response.body.message).toContain("Données invalides");
-      });
-
-      it("should return 400 for title that is too long", async () => {
-        const longTitle = "A".repeat(26); // Room validation: max length is 25
-
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: longTitle })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should return 400 for title with invalid characters", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: 'Room<script>alert("xss")</script>' })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should accept valid title with mixed characters", async () => {
-        mockRoomsModel.roomExists.mockResolvedValue(false);
-        mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
-
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "Valid Room Name 123" })
-          .expect(201);
-
-        expect(response.body.roomId).toBe("room123");
-      });
-
-      it("should reject title with accented characters", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "Salle de Français" })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-    });
-
-    describe("PUT /api/room/rename - Validation", () => {
-      it("should return 400 for empty newTitle", async () => {
-        const response = await request(app)
-          .put("/api/room/rename")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ roomId: "room123", newTitle: "" })
-          .expect(400);
-
-        expect(response.body.message).toBe("Données invalides: Nouveau titre requis");
-      });
-
-      it("should return 400 for newTitle with only spaces", async () => {
-        const response = await request(app)
-          .put("/api/room/rename")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ roomId: "room123", newTitle: "   " })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should return 400 for newTitle that is too long", async () => {
-        const longTitle = "A".repeat(26); // Room validation: max length is 25
-
-        const response = await request(app)
-          .put("/api/room/rename")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ roomId: "room123", newTitle: longTitle })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should return 400 for newTitle with invalid characters", async () => {
-        const response = await request(app)
-          .put("/api/room/rename")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ roomId: "room123", newTitle: "Room<script>" })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should accept valid newTitle", async () => {
-        mockRoomsModel.getOwner.mockResolvedValue("user123");
-        mockRoomsModel.roomExists.mockResolvedValue(false);
-        mockRoomsModel.rename.mockResolvedValue(true);
-
-        const response = await request(app)
-          .put("/api/room/rename")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ roomId: "room123", newTitle: "Valid New Name" })
-          .expect(200);
-
-        expect(response.body.message).toContain("mis à jour avec succès");
-      });
-    });
-
-    describe("Edge Cases and Boundary Testing", () => {
-      it("should handle minimum valid title length", async () => {
-        mockRoomsModel.roomExists.mockResolvedValue(false);
-        mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
-
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "A" }) // Minimum length
-          .expect(201);
-
-        expect(response.body.roomId).toBe("room123");
-      });
-
-      it("should handle maximum valid title length", async () => {
-        mockRoomsModel.roomExists.mockResolvedValue(false);
-        mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
-
-        const maxValidTitle = "A".repeat(25); // Room validation: max is 25
-
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: maxValidTitle })
-          .expect(201);
-
-        expect(response.body.roomId).toBe("room123");
-      });
-
-      it("should handle title with numbers and special allowed characters", async () => {
-        mockRoomsModel.roomExists.mockResolvedValue(false);
-        mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
-
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "Room-123_Test Space" })
-          .expect(201);
-
-        expect(response.body.roomId).toBe("room123");
-      });
-    });
-
-    describe("Security Validation Tests", () => {
-      it("should reject SQL injection attempts", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: "'; DROP TABLE rooms; --" })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should reject XSS attempts", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: '<script>alert("xss")</script>' })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-
-      it("should reject HTML injection attempts", async () => {
-        const response = await request(app)
-          .post("/api/room/create")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send({ title: '<img src="x" onerror="alert(1)">' })
-          .expect(400);
-
-        expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
-      });
-    });
-  });
 });
