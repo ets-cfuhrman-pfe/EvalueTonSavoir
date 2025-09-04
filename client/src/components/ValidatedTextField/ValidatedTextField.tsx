@@ -14,8 +14,7 @@ interface ValidatedTextFieldProps extends Omit<TextFieldProps, 'value' | 'onChan
 }
 
 /**
- * A simplified TextField component that validates input using ValidationService directly
- * No custom hook needed - all validation logic is contained within the component
+ * A simplified TextField component that validates input using ValidationService 
  */
 const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
     fieldPath,
@@ -77,7 +76,7 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
         }
 
         // Check if field is required
-        const isRequired = required ?? rule.required;
+        const isRequired = required ?? rule.required ?? (rule.minLength > 0);
         
         // Handle empty values
         if (val === null || val === undefined || val === '') {
@@ -187,7 +186,8 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
             required={required}
             inputProps={{
                 ...textFieldProps.inputProps,
-                maxLength: maxLength
+                maxLength: maxLength,
+                ...(required && { required: true })
             }}
         />
     );
