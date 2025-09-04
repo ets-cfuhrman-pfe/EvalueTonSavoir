@@ -10,6 +10,7 @@ import { FolderType } from '../../../Types/FolderType';
 import ApiService from '../../../services/ApiService';
 
 import './dashboard.css';
+import ValidatedTextField from 'src/components/ValidatedTextField/ValidatedTextField';
 import ImportModal from 'src/components/ImportModal/ImportModal';
 //import axios from 'axios';
 import { RoomType } from 'src/Types/RoomType';
@@ -66,6 +67,8 @@ const Dashboard: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
+    const [openAddFolderDialog, setOpenAddFolderDialog] = useState(false);
+    const [newFolderTitle, setNewFolderTitle] = useState('');
 
     // Filter quizzes based on search term
     // const filteredQuizzes = quizzes.filter(quiz =>
@@ -264,18 +267,28 @@ const Dashboard: React.FC = () => {
     };
 
     const handleCreateFolder = async () => {
+        setOpenAddFolderDialog(true);
+    };
+
+    const handleConfirmCreateFolder = async () => {
         try {
-            const folderTitle = prompt('Titre du dossier');
-            if (folderTitle) {
-                await ApiService.createFolder(folderTitle);
+            if (newFolderTitle.trim()) {
+                await ApiService.createFolder(newFolderTitle.trim());
                 const userFolders = await ApiService.getUserFolders();
                 setFolders(userFolders as FolderType[]);
                 const newlyCreatedFolder = userFolders[userFolders.length - 1] as FolderType;
                 setSelectedFolderId(newlyCreatedFolder._id);
+                setNewFolderTitle('');
+                setOpenAddFolderDialog(false);
             }
         } catch (error) {
             console.error('Error creating folder:', error);
         }
+    };
+
+    const handleCancelCreateFolder = () => {
+        setNewFolderTitle('');
+        setOpenAddFolderDialog(false);
     };
 
     const handleDeleteFolder = async () => {
@@ -423,18 +436,23 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Dialog pour créer une salle */}
-            <Dialog open={openAddRoomDialog} onClose={() => setOpenAddRoomDialog(false)}>
+            <Dialog open={openAddRoomDialog} onClose={() => setOpenAddRoomDialog(false)} fullWidth>
                 <DialogTitle>Créer une nouvelle salle</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        value={newRoomTitle}
-                        onChange={(e) => setNewRoomTitle(e.target.value.toUpperCase())}
+                <DialogContent dividers>
+                    <ValidatedTextField
+                        fieldPath="room.name"
+                        initialValue={newRoomTitle}
+                        onValueChange={(value) => setNewRoomTitle(value.toUpperCase())}
+                        label="Nom de la salle"
                         fullWidth
+                        autoFocus
+                        variant="outlined"
+                        margin="normal"
                     />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenAddRoomDialog(false)}>Annuler</Button>
-                    <Button onClick={handleCreateRoom}>Créer</Button>
+                    <Button onClick={handleCreateRoom} variant="contained">Créer</Button>
                 </DialogActions>
             </Dialog>
             <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
@@ -444,6 +462,27 @@ const Dashboard: React.FC = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setShowErrorDialog(false)}>Fermer</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog pour créer un dossier */}
+            <Dialog open={openAddFolderDialog} onClose={handleCancelCreateFolder} fullWidth>
+                <DialogTitle>Créer un nouveau dossier</DialogTitle>
+                <DialogContent dividers>
+                    <ValidatedTextField
+                        fieldPath="folder.title"
+                        initialValue={newFolderTitle}
+                        onValueChange={(value) => setNewFolderTitle(value)}
+                        label="Titre du dossier"
+                        fullWidth
+                        autoFocus
+                        variant="outlined"
+                        margin="normal"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelCreateFolder}>Annuler</Button>
+                    <Button onClick={handleConfirmCreateFolder} variant="contained">Créer</Button>
                 </DialogActions>
             </Dialog>
 

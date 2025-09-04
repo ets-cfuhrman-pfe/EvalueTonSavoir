@@ -51,6 +51,24 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
 
     const maxLength = getMaxLength();
 
+    // Get pattern from validation constants for real-time input blocking
+    const getPattern = useCallback((): string | undefined => {
+        const parts = fieldPath.split('.');
+        let current: any = VALIDATION_CONSTANTS;
+
+        for (const part of parts) {
+            if (current && typeof current === 'object' && part in current) {
+                current = current[part];
+            } else {
+                return undefined;
+            }
+        }
+
+        return current && typeof current === 'object' && 'pattern' in current ? current.pattern : undefined;
+    }, [fieldPath]);
+
+    const pattern = getPattern();
+
     // Direct validation function with specific error messages
     const validateValue = useCallback((val: any) => {
         const errors: string[] = [];
@@ -101,7 +119,8 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
         }
 
         if (rule.maxLength !== undefined && stringValue.length > rule.maxLength) {
-            errors.push(`Ce champ ne peut pas dépasser ${rule.maxLength} caractères`);
+            const errorMessage = rule.maxLengthErrorMessage || `Ce champ ne peut pas dépasser ${rule.maxLength} caractères`;
+            errors.push(errorMessage);
         }
 
         if (rule.pattern && !new RegExp(rule.pattern).test(stringValue)) {
@@ -145,11 +164,47 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
     }, [value, validateOnChange, isTouched, debounceMs, validateValue]);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = event.target.value;
+        let newValue = event.target.value;
         
-        // Prevent input if it exceeds maxLength
+        // Truncate input if it exceeds maxLength (for character length protection)
         if (maxLength && newValue.length > maxLength) {
-            return; // Don't update state, effectively blocking the input
+            newValue = newValue.substring(0, maxLength);
+        }
+        
+        // For numerical fields only, block obviously invalid patterns but allow partial valid inputs
+        if (pattern && newValue !== '' && (fieldPath.includes('numerical') || pattern.includes('e') || pattern.includes('E'))) {
+            // Special handling for scientific notation to prevent overly long exponents
+            // Check if there's an 'e' or 'E' in the input
+            const eIndex = newValue.toLowerCase().indexOf('e');
+            if (eIndex !== -1) {
+                // Extract the exponent part after 'e'
+                const exponentPart = newValue.substring(eIndex + 1);
+                
+                // Remove optional sign from exponent
+                const exponentDigits = exponentPart.replace(/^[+\-]/, '');
+                
+                // Block if exponent has more than 2 digits
+                if (exponentDigits.length > 2) {
+                    console.log(`Blocking input: ${newValue}, exponent digits: ${exponentDigits}, length: ${exponentDigits.length}`);
+                    return;
+                }
+                
+                // Also check if exponent contains non-digits (except at the start for +/-)
+                const exponentWithoutSign = exponentPart.replace(/^[+\-]/, '');
+                if (exponentWithoutSign && !/^\d*$/.test(exponentWithoutSign)) {
+                    console.log(`Blocking non-digit exponent: ${newValue}`);
+                    return;
+                }
+            }
+            
+            // Also apply a basic numerical pattern check with limited exponent
+            const basicPattern = '^[+\\-]?\\d*\\.?\\d*([eE][+\\-]?\\d{0,2})?$';
+            const basicRegex = new RegExp(basicPattern);
+            
+            if (!basicRegex.test(newValue)) {
+                console.log(`Blocking basic pattern: ${newValue}`);
+                return;
+            }
         }
         
         setValue(newValue);
@@ -171,7 +226,10 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
         setIsTouched(true);
         
         if (validateOnBlur) {
-            validateValue(value);
+            const result = validateValue(value);
+            // Force update of validation state
+            setIsValid(result.isValid);
+            setError(result.isValid ? '' : result.errors[0] || '');
         }
     };
 

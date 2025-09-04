@@ -171,9 +171,10 @@ describe('ValidatedTextField - User Entity', () => {
       const tooLongPassword = 'ValidPass1' + 'a'.repeat(60); // 70 chars total, max is 64
       fireEvent.change(input, { target: { value: tooLongPassword } });
 
-      // The component should block this change, so input should remain empty
+      // The component should truncate the input to maxLength
+      const truncatedPassword = tooLongPassword.substring(0, 64);
       await waitFor(() => {
-        expect(input).toHaveValue('');
+        expect(input).toHaveValue(truncatedPassword);
         expect(input).toHaveAttribute('maxlength', '64');
       });
     });

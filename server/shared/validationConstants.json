@@ -74,9 +74,10 @@
   },
   "numerical": {
     "answer": {
-      "min": -1000000,
-      "max": 1000000,
-      "errorMessage": "La réponse doit être un nombre entre -1000000 et 1000000"
+      "maxLength": 20,
+      "pattern": "^[+\\-]?\\d*\\.?\\d*([eE][+\\-]?\\d{1,2})?$",
+      "errorMessage": "Cette valeur ne peut contenir que des chiffres",
+      "maxLengthErrorMessage": "La réponse ne peut pas dépasser 20 caractères"
     }
   }
 }

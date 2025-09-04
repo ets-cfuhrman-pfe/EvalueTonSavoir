@@ -1,7 +1,7 @@
 // Editor.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import './editor.css';
-import { TextareaAutosize } from '@mui/material';
+import ValidatedTextField from '../ValidatedTextField/ValidatedTextField';
 
 interface EditorProps {
     label: string;
@@ -11,24 +11,22 @@ interface EditorProps {
 
 const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) => {
     const [value, setValue] = useState(initialValue);
-    const editorRef = useRef<HTMLTextAreaElement | null>(null);
-
-    function handleEditorChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-        const text = event.target.value;
-        setValue(text);
-        onEditorChange(text || '');
-    }
 
     return (
         <label>
             <h4>{label}</h4>
-            <TextareaAutosize
-                id="editor-textarea"
-                ref={editorRef}
-                onChange={handleEditorChange}
-                value={value}
+            <ValidatedTextField
+                fieldPath="quiz.content"
+                initialValue={value}
+                onValueChange={(val) => {
+                    setValue(val);
+                    onEditorChange(val || '');
+                }}
                 className="editor"
+                multiline
                 minRows={5}
+                variant="outlined"
+                fullWidth
             />
         </label>
     );
