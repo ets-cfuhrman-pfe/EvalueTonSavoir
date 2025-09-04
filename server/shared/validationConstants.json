@@ -17,9 +17,9 @@
     },
     "maxParticipants": {
       "min": 1,
-      "max": 100,
+      "max": 60,
       "integer": true,
-      "errorMessage": "Le nombre maximum de participants doit être entre 1 et 100"
+      "errorMessage": "Le nombre maximum de participants doit être entre 1 et 60"
     }
   },
   "user": {
@@ -37,7 +37,7 @@
     },
     "username": {
       "minLength": 2,
-      "maxLength": 30,
+      "maxLength": 25,
       "pattern": "^[a-zA-Z0-9]+$",
       "errorMessage": "Le nom d'utilisateur ne peut contenir que des lettres et des chiffres"
     }
@@ -45,8 +45,8 @@
   "quiz": {
     "title": {
       "minLength": 1,
-      "maxLength": 100,
-      "errorMessage": "Le titre du quiz doit contenir entre 1 et 100 caractères"
+      "maxLength": 64,
+      "errorMessage": "Le titre du quiz doit contenir entre 1 et 64 caractères"
     },
     "content": {
       "minLength": 1,
@@ -57,7 +57,7 @@
   "folder": {
     "title": {
       "minLength": 1,
-      "maxLength": 100,
+      "maxLength": 64,
       "pattern": "^[a-zA-Z0-9\\u00C0-\\u017F\\s\\-_]+$",
       "errorMessage": "Le titre ne peut contenir que des lettres, chiffres, espaces, tirets et underscores"
     }

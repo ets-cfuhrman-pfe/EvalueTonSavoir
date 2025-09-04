@@ -94,6 +94,15 @@ const validationConfigs = {
         title: { validator: 'validateFolderTitle', required: true, label: 'Titre' }
     },
     
+    folderRename: {
+        folderId: { validator: null, required: true, label: 'ID du dossier' },
+        newTitle: { validator: 'validateFolderTitle', required: true, label: 'Nouveau titre' }
+    },
+    
+    folderCopy: {
+        newTitle: { validator: 'validateFolderTitle', required: true, label: 'Titre' }
+    },
+    
     roomCreation: {
         title: { validator: 'validateRoomName', required: true, label: 'Titre' }
     },
@@ -112,6 +121,8 @@ const validatePasswordChange = createValidationMiddleware(validationConfigs.pass
 const validateQuizCreation = createValidationMiddleware(validationConfigs.quizCreation);
 const validateQuizUpdate = createValidationMiddleware(validationConfigs.quizCreation, true); // Allow partial
 const validateFolderCreation = createValidationMiddleware(validationConfigs.folderCreation);
+const validateFolderRename = createValidationMiddleware(validationConfigs.folderRename);
+const validateFolderCopy = createValidationMiddleware(validationConfigs.folderCopy);
 const validateRoomCreation = createValidationMiddleware(validationConfigs.roomCreation);
 const validateRoomRename = createValidationMiddleware(validationConfigs.roomRename);
 
@@ -124,6 +135,8 @@ module.exports = {
     validateQuizCreation,
     validateQuizUpdate,
     validateFolderCreation,
+    validateFolderRename,
+    validateFolderCopy,
     validateRoomCreation,
     validateRoomRename,
     
