@@ -1,5 +1,5 @@
-var passport = require('passport')
-var authprovider = require('../../models/authProvider')
+const passport = require('passport')
+const authprovider = require('../../models/authProvider')
 
 class PassportJs{
     constructor(authmanager,settings){
@@ -50,7 +50,9 @@ class PassportJs{
                 this.registeredProviders[providerType]= new Provider(this,auth_id)
                 console.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`)
             } else {
-                throw new Error(`Provider file not found: ${providerPath}`);
+                console.error(`Provider file not found: ${providerPath}`);
+                console.error(`Available provider types should have corresponding files in auth/modules/passport-providers/`);
+                return; // Return early instead of throwing to prevent cascading errors
             }
         } catch(error){
             console.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`);
