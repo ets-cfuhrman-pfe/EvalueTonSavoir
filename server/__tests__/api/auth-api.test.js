@@ -43,7 +43,7 @@ describe("Auth API Integration Tests", () => {
 
     // Create a fresh mock instance for each test
     mockAuthConfig = {
-      loadConfig: jest.fn(),
+      loadConfig: jest.fn().mockImplementation(function() { this.config = { auth: { simpleauth: { enabled: true, name: "provider3" } } } }),
       getActiveAuth: jest.fn(),
       getRoomsRequireAuth: jest.fn(),
     };
