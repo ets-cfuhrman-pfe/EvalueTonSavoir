@@ -3,6 +3,13 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 
+// Mock emailer to prevent SMTP connection attempts
+jest.mock("../../config/email.js", () => ({
+  registerConfirmation: jest.fn(),
+  newPasswordConfirmation: jest.fn(),
+  quizShare: jest.fn(),
+}));
+
 // Import the actual components
 const QuizController = require("../../controllers/quiz");
 const jwtMiddleware = require("../../middleware/jwtToken");
