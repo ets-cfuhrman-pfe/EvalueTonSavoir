@@ -69,6 +69,8 @@ const Dashboard: React.FC = () => {
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [openAddFolderDialog, setOpenAddFolderDialog] = useState(false);
     const [newFolderTitle, setNewFolderTitle] = useState('');
+    const [openRenameFolderDialog, setOpenRenameFolderDialog] = useState(false);
+    const [renameFolderTitle, setRenameFolderTitle] = useState('');
 
     // Filter quizzes based on search term
     // const filteredQuizzes = quizzes.filter(quiz =>
@@ -318,16 +320,20 @@ const Dashboard: React.FC = () => {
     };
 
     const handleRenameFolder = async () => {
+        // Set the current folder title as initial value
+        const currentFolder = folders.find((folder) => folder._id === selectedFolderId);
+        if (currentFolder) {
+            setRenameFolderTitle(currentFolder.title);
+            setOpenRenameFolderDialog(true);
+        }
+    };
+
+    const handleConfirmRenameFolder = async () => {
         try {
-            // folderId: string GET THIS FROM CURRENT FOLDER
-            // currentTitle: string GET THIS FROM CURRENT FOLDER
-            const newTitle = prompt(
-                'Entrée le nouveau nom du fichier',
-                folders.find((folder) => folder._id === selectedFolderId)?.title
-            );
-            if (newTitle) {
-                const renamedFolderId = selectedFolderId;
-                const result = await ApiService.renameFolder(selectedFolderId, newTitle);
+            if (renameFolderTitle.trim()) {
+                const currentFolder = folders.find((folder) => folder._id === selectedFolderId);
+                const oldTitle = currentFolder ? currentFolder.title : '';
+                const result = await ApiService.renameFolder(selectedFolderId, renameFolderTitle.trim());
 
                 if (result !== true) {
                     window.alert(`Une erreur est survenue: ${result}`);
@@ -336,14 +342,20 @@ const Dashboard: React.FC = () => {
 
                 const userFolders = await ApiService.getUserFolders();
                 setFolders(userFolders as FolderType[]);
-                // refresh the page
-                setSelectedFolderId('');
-                setSelectedFolderId(renamedFolderId);
+                // Update the folderName in existing quizzes
+                setQuizzes(prev => prev.map(quiz => quiz.folderName === oldTitle ? {...quiz, folderName: renameFolderTitle.trim()} : quiz));
+                setRenameFolderTitle('');
+                setOpenRenameFolderDialog(false);
             }
         } catch (error) {
             console.error('Error renaming folder:', error);
             alert('Erreur lors du renommage du dossier: ' + error);
         }
+    };
+
+    const handleCancelRenameFolder = () => {
+        setRenameFolderTitle('');
+        setOpenRenameFolderDialog(false);
     };
 
     const handleDuplicateFolder = async () => {
@@ -483,6 +495,27 @@ const Dashboard: React.FC = () => {
                 <DialogActions>
                     <Button onClick={handleCancelCreateFolder}>Annuler</Button>
                     <Button onClick={handleConfirmCreateFolder} variant="contained">Créer</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog pour renommer un dossier */}
+            <Dialog open={openRenameFolderDialog} onClose={handleCancelRenameFolder} fullWidth>
+                <DialogTitle>Renommer le dossier</DialogTitle>
+                <DialogContent dividers>
+                    <ValidatedTextField
+                        fieldPath="folder.title"
+                        initialValue={renameFolderTitle}
+                        onValueChange={(value) => setRenameFolderTitle(value)}
+                        label="Nouveau titre du dossier"
+                        fullWidth
+                        autoFocus
+                        variant="outlined"
+                        margin="normal"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelRenameFolder}>Annuler</Button>
+                    <Button onClick={handleConfirmRenameFolder} variant="contained">Renommer</Button>
                 </DialogActions>
             </Dialog>
 
