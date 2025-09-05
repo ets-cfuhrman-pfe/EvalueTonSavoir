@@ -19,14 +19,16 @@ class PassportJs{
                 const auth_id = `passportjs_${provider.type}_${name}`
 
                 if(!(provider.type in this.registeredProviders)){
-                    this.registerProvider(provider.type,auth_id)
+                    await this.registerProvider(provider.type,auth_id)
                 }
-                try{
-                    this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider,userModel)
-                    authprovider.create(auth_id)
-                } catch(error){
-                    console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`);
-                    console.error(`Error: ${error} `);
+                if(provider.type in this.registeredProviders){
+                    try{
+                        this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider,userModel)
+                        authprovider.create(auth_id)
+                    } catch(error){
+                        console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`);
+                        console.error(`Error: ${error} `);
+                    }
                 }
             }
         }
