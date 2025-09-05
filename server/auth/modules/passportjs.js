@@ -45,9 +45,13 @@ class PassportJs{
     async registerProvider(providerType,auth_id){
         try{
             const providerPath = `${process.cwd()}/auth/modules/passport-providers/${providerType}.js`
-            const Provider = require(providerPath);
-            this.registeredProviders[providerType]= new Provider(this,auth_id)
-            console.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`)
+            if(require('fs').existsSync(providerPath)){
+                const Provider = require(providerPath);
+                this.registeredProviders[providerType]= new Provider(this,auth_id)
+                console.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`)
+            } else {
+                throw new Error(`Provider file not found: ${providerPath}`);
+            }
         } catch(error){
             console.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`);
             console.error(`Error: ${error} `);
