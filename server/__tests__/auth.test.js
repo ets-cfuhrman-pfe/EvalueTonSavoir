@@ -259,7 +259,7 @@ describe(
 
         authManagerInstance = new AuthManager(expressMock,authConfigInstance.config);
 
-        expect(logSpy).toHaveBeenCalledTimes(4);
+        expect(logSpy).toHaveBeenCalledTimes(2);
         logSpy.mockClear();
       });  
   })
