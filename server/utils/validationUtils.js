@@ -148,13 +148,6 @@ class ValidationUtils {
     }
 
     /**
-     * Validate user password
-     */
-    static validatePassword(password) {
-        return this.validateField(password, VALIDATION_CONSTANTS.user.password);
-    }
-
-    /**
      * Validate username
      */
     static validateUsername(username) {

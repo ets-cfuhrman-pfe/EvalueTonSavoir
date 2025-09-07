@@ -96,89 +96,11 @@ describe('ValidatedTextField - User Entity', () => {
     });
   });
 
-  describe('User Password (user.password)', () => {
-    it('should accept valid password with uppercase, lowercase, and number', async () => {
-      const user = userEvent.setup();
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-      await user.type(input, 'ValidPass123');
-      fireEvent.blur(input);
-
-      await waitFor(() => {
-        expect(input).not.toHaveAttribute('aria-invalid', 'true');
-      });
-    });
-
-    it('should reject password without uppercase', async () => {
-      const user = userEvent.setup();
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-      await user.type(input, 'validpass123');
-      fireEvent.blur(input);
-
-      await waitFor(() => {
-        expect(screen.getByText('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')).toBeInTheDocument();
-      });
-    });
-
-    it('should reject password without lowercase', async () => {
-      const user = userEvent.setup();
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-      await user.type(input, 'VALIDPASS123');
-      fireEvent.blur(input);
-
-      await waitFor(() => {
-        expect(screen.getByText('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')).toBeInTheDocument();
-      });
-    });
-
-    it('should reject password without number', async () => {
-      const user = userEvent.setup();
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-      await user.type(input, 'ValidPass');
-      fireEvent.blur(input);
-
-      await waitFor(() => {
-        expect(screen.getByText('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')).toBeInTheDocument();
-      });
-    });
-
-    it('should reject password shorter than min length', async () => {
-      const user = userEvent.setup();
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-      await user.type(input, 'Val1'); // 4 chars, min is 8
-      fireEvent.blur(input);
-
-      await waitFor(() => {
-        expect(screen.getByText('Ce champ doit contenir au moins 8 caractères')).toBeInTheDocument();
-      });
-    });
-
-    it('should reject password longer than max length', async () => {
-      render(<ValidatedTextField {...defaultProps} fieldPath="user.password" />);
-
-      const input = screen.getByRole('textbox');
-
-      // Try to set a password longer than maxLength
-      const tooLongPassword = 'ValidPass1' + 'a'.repeat(60); // 70 chars total, max is 64
-      fireEvent.change(input, { target: { value: tooLongPassword } });
-
-      // The component should truncate the input to maxLength
-      const truncatedPassword = tooLongPassword.substring(0, 64);
-      await waitFor(() => {
-        expect(input).toHaveValue(truncatedPassword);
-        expect(input).toHaveAttribute('maxlength', '64');
-      });
-    });
-  });
+  // User Password validation tests removed - password validation now handled by third-party SSO
+  // describe('User Password (user.password)', () => {
+  //   Tests commented out as local password validation has been removed
+  //   in favor of third-party SSO authentication
+  // });
 
   describe('User Username (user.username)', () => {
     it('should accept valid username', async () => {

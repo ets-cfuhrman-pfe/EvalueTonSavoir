@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
+
 // JoinRoom.tsx
 import React, { useEffect, useState } from 'react';
 
-import {FormLabel, RadioGroup, FormControlLabel, Radio, Box } from '@mui/material';
+import {FormLabel, RadioGroup, FormControlLabel, Radio, Box, TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer';
@@ -63,10 +65,9 @@ const Register: React.FC = () => {
                 type="email"
             />
 
-            <ValidatedTextField
-                fieldPath="user.password"
-                initialValue={password}
-                onValueChange={(value) => setPassword(value)}
+            <TextField
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 label="Mot de passe"
                 variant="outlined"
                 type="password"

@@ -29,12 +29,6 @@
       "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
       "errorMessage": "L'adresse email doit être valide"
     },
-    "password": {
-      "minLength": 8,
-      "maxLength": 64,
-      "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
-      "errorMessage": "Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre"
-    },
     "username": {
       "minLength": 2,
       "maxLength": 25,

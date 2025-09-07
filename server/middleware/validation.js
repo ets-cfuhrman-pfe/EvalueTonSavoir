@@ -64,7 +64,6 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
 const validationConfigs = {
     userRegistration: {
         email: { validator: 'validateEmail', required: true, label: 'Email' },
-        password: { validator: 'validatePassword', required: true, label: 'Mot de passe' },
         username: { validator: 'validateUsername', required: true, label: 'Nom d\'utilisateur' }
     },
     
@@ -82,7 +81,8 @@ const validationConfigs = {
         email: { validator: 'validateEmail', required: true, label: 'Email' },
         // For old password, we don't validate format, just check if it exists
         oldPassword: { validator: null, required: true, label: 'Ancien mot de passe' },
-        newPassword: { validator: 'validatePassword', required: true, label: 'Nouveau mot de passe' }
+        // For SSO, we won't validate new password format locally
+        newPassword: { validator: null, required: true, label: 'Nouveau mot de passe' }
     },
     
     quizCreation: {

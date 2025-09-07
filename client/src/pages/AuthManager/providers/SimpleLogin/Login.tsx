@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import '../css/simpleLogin.css';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { TextField } from '@mui/material';
 
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer'
 import ApiService from '../../../../services/ApiService';
@@ -49,10 +50,9 @@ const SimpleLogin: React.FC = () => {
                 fullWidth
             />
 
-            <ValidatedTextField
-                fieldPath="user.password"
-                initialValue={password}
-                onValueChange={(value) => setPassword(value)}
+            <TextField
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 label="Mot de passe"
                 variant="outlined"
                 type="password"

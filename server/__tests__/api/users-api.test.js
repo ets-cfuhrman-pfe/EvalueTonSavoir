@@ -131,17 +131,6 @@ describe("Users API Integration Tests", () => {
       expect(response.body.message).toBe("Données invalides: Email requis");
     });
 
-    it("should return 400 when password is missing", async () => {
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toBe("Données invalides: Mot de passe requis");
-    });
 
     it("should return 400 when username is missing", async () => {
       const response = await request(app)
@@ -168,57 +157,6 @@ describe("Users API Integration Tests", () => {
       expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
     });
 
-    it("should return 400 for password too short", async () => {
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          password: "short",
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toContain("Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
-    });
-
-    it("should return 400 for password without uppercase", async () => {
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          password: "validpass123",
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toBe("Données invalides: Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
-    });
-
-    it("should return 400 for password without lowercase", async () => {
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          password: "VALIDPASS123",
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toBe("Données invalides: Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
-    });
-
-    it("should return 400 for password without numbers", async () => {
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          password: "ValidPass",
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toBe("Données invalides: Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
-    });
 
     it("should return 400 for username too short", async () => {
       const response = await request(app)
@@ -258,20 +196,6 @@ describe("Users API Integration Tests", () => {
         .expect(400);
 
       expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
-    });
-
-    it("should return 400 for password too long", async () => {
-      const longPassword = "A".repeat(65); // 65 chars
-      const response = await request(app)
-        .post("/api/user/register")
-        .send({
-          email: "newuser@example.com",
-          password: longPassword,
-          username: "newuser"
-        })
-        .expect(400);
-
-      expect(response.body.message).toContain("Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
     });
 
     it("should return 400 for username too long", async () => {
@@ -562,20 +486,6 @@ describe("Users API Integration Tests", () => {
         .expect(400);
 
       expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
-    });
-
-    it("should return 400 for invalid new password format", async () => {
-      const response = await request(app)
-        .post("/api/user/change-password")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({
-          email: "test@example.com",
-          oldPassword: "OldPass123",
-          newPassword: "invalid"
-        })
-        .expect(400);
-
-      expect(response.body.message).toContain("Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
     });
 
     it("should return 401 for incorrect old password", async () => {
