@@ -94,7 +94,7 @@ class WebSocketService {
     nextQuestion(args: {roomName: string, questions: QuestionType[] | undefined, questionIndex: number, isLaunch: boolean}) {
         // deconstruct args
         const { roomName, questions, questionIndex, isLaunch } = args;
-        console.log('WebsocketService: nextQuestion', roomName, questions, questionIndex, isLaunch);
+        console.log('WebsocketService: nextQuestion for room:', roomName, 'questionIndex:', questionIndex, 'isLaunch:', isLaunch);
         if (!questions || !questions[questionIndex]) {
             throw new Error('WebsocketService: nextQuestion: question is null');
         }
@@ -109,7 +109,7 @@ class WebSocketService {
     }
 
     launchStudentModeQuiz(roomName: string, questions: unknown) {
-        console.log('WebsocketService: launchStudentModeQuiz', roomName, questions, this.socket);
+        console.log('WebsocketService: launchStudentModeQuiz for room:', roomName, 'with', Array.isArray(questions) ? questions.length : 0, 'questions');
         if (this.socket) {
             this.socket.emit('launch-student-mode', { roomName, questions });
         }

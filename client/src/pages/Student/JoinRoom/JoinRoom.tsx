@@ -51,7 +51,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
+        console.log(`JoinRoom: useEffect: questions count: ${questions ? questions.length : 0}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
     
@@ -66,13 +66,13 @@ const JoinRoom: React.FC = () => {
             console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
         });
         socket.on('next-question', (question: QuestionType) => {
-            console.log('JoinRoom: on(next-question): Received next-question:', question);
+            console.log('JoinRoom: on(next-question): Received next-question for ID:', question?.question?.id || 'unknown');
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
+            console.log('on(launch-teacher-mode): Received launch-teacher-mode with', questions?.length || 0, 'questions');
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
@@ -80,7 +80,7 @@ const JoinRoom: React.FC = () => {
             // wait for next-question
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-student-mode): Received launch-student-mode:', questions);
+            console.log('on(launch-student-mode): Received launch-student-mode with', questions?.length || 0, 'questions');
 
             setQuizMode('student');
             setIsWaitingForTeacher(false);

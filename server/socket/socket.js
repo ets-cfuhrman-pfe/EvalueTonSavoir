@@ -110,7 +110,7 @@ const setupWebsocket = (io) => {
     });
 
     socket.on("next-question", ({ roomName, question }) => {
-      console.log("socket.js: next-question", roomName, question);
+      console.log("socket.js: next-question request for room:", roomName);
 
       // Only teachers should be able to control quiz progression
       const currentRole = getUserRole(socket);
@@ -122,13 +122,12 @@ const setupWebsocket = (io) => {
       // Sanitize question data for students (recipients) - remove sensitive data
       const sanitizedQuestion = sanitizeQuestions(question, 'student');
 
-      console.log("socket.js: broadcasting sanitized question", sanitizedQuestion);
+      console.log("socket.js: broadcasting sanitized question to room:", roomName);
       socket.to(roomName).emit("next-question", sanitizedQuestion);
     });
 
     socket.on("launch-teacher-mode", ({ roomName, questions }) => {
-      console.log("socket.js: launch-teacher-mode", roomName);
-      console.log("socket.js: Original questions received:", JSON.stringify(questions, null, 2));
+      console.log("socket.js: launch-teacher-mode for room:", roomName);
 
       // Only teachers should be able to launch teacher mode
       const currentRole = getUserRole(socket);
@@ -139,14 +138,13 @@ const setupWebsocket = (io) => {
 
       // Sanitize questions for students (recipients) - remove sensitive data
       const sanitizedQuestions = sanitizeQuestions(questions, 'student');
-      console.log("socket.js: Sanitized questions:", JSON.stringify(sanitizedQuestions, null, 2));
 
-      console.log("socket.js: broadcasting sanitized questions to students");
+      console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
       socket.to(roomName).emit("launch-teacher-mode", sanitizedQuestions);
     });
 
     socket.on("launch-student-mode", ({ roomName, questions }) => {
-      console.log("socket.js: launch-student-mode", roomName);
+      console.log("socket.js: launch-student-mode for room:", roomName);
 
       // Only teachers should be able to launch student mode
       const currentRole = getUserRole(socket);
@@ -158,7 +156,7 @@ const setupWebsocket = (io) => {
       // Sanitize questions for students (recipients) - remove sensitive data
       const sanitizedQuestions = sanitizeQuestions(questions, 'student');
 
-      console.log("socket.js: broadcasting sanitized questions to students");
+      console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
       socket.to(roomName).emit("launch-student-mode", sanitizedQuestions);
     });
 
