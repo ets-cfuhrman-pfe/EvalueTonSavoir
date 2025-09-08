@@ -1,5 +1,6 @@
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
+const { sanitizeQuestions, getUserRole, setUserRole } = require('../utils/dataSanitizer');
 
 const setupWebsocket = (io) => {
   let totalConnections = 0;
@@ -23,15 +24,28 @@ const setupWebsocket = (io) => {
       totalConnections
     );
 
+    // Set user role for security and data sanitization
+    const userRole = getUserRole(socket);
+    setUserRole(socket, userRole);
+    console.log(`socket.js: User ${socket.id} assigned role: ${userRole}`);
+
     socket.on("create-room", (sentRoomName) => {
       console.log(`socket.js: Demande de création de salle avec le nom : ${sentRoomName}`);
+
+      // Room creation should only be allowed for authenticated teachers
+      const currentRole = getUserRole(socket);
+      if (currentRole !== 'teacher') {
+        console.log(`socket.js: Unauthorized room creation attempt by ${socket.id} with role: ${currentRole}`);
+        socket.emit("create-failure", "Seuls les enseignants peuvent créer des salles.");
+        return;
+      }
 
       if (sentRoomName) {
         const roomName = sentRoomName.toUpperCase();
         if (!io.sockets.adapter.rooms.get(roomName)) {
           socket.join(roomName);
           socket.emit("create-success", roomName);
-          console.log(`socket.js: Salle créée avec succès : ${roomName}`);
+          console.log(`socket.js: Salle créée avec succès : ${roomName} par l'enseignant ${socket.id}`);
         } else {
           socket.emit("create-failure", `La salle ${roomName} existe déjà.`);
           console.log(`socket.js: Échec de création : ${roomName} existe déjà`);
@@ -45,10 +59,30 @@ const setupWebsocket = (io) => {
     }
 
     socket.on("join-room", ({ enteredRoomName, username }) => {
-      const roomToCheck = enteredRoomName.toUpperCase();
+      const roomToCheck = enteredRoomName ? enteredRoomName.toUpperCase() : "";
       console.log(
         `socket.js: Requête de connexion : salle="${roomToCheck}", utilisateur="${username}"`
       );
+      
+      // Validate room name
+      if (!enteredRoomName || enteredRoomName.trim() === "") {
+        console.log("socket.js: Room name validation failed - empty room name");
+        socket.emit("join-failure", "Le nom de la salle est requis");
+        return;
+      }
+      
+      // Validate username
+      if (!username || username.trim() === "") {
+        console.log("socket.js: Username validation failed - empty username");
+        socket.emit("join-failure", "Le nom d'utilisateur est requis");
+        return;
+      }
+      
+      // When joining a room, user is treated as a student (no authentication required)
+      // Override role to 'student' for join-room action regardless of token
+      setUserRole(socket, 'student');
+      console.log(`socket.js: User ${socket.id} joining room as student`);
+      
       reportSalles();
 
       if (io.sockets.adapter.rooms.has(roomToCheck)) {
@@ -77,20 +111,67 @@ const setupWebsocket = (io) => {
 
     socket.on("next-question", ({ roomName, question }) => {
       console.log("socket.js: next-question", roomName, question);
-      console.log("socket.js: rediffusion de la question", question);
-      socket.to(roomName).emit("next-question", question);
+
+      // Only teachers should be able to control quiz progression
+      const currentRole = getUserRole(socket);
+      if (currentRole !== 'teacher') {
+        console.log(`socket.js: Unauthorized next-question attempt by ${socket.id} with role: ${currentRole}`);
+        return;
+      }
+
+      // Sanitize question data for students (recipients) - remove sensitive data
+      const sanitizedQuestion = sanitizeQuestions(question, 'student');
+
+      console.log("socket.js: broadcasting sanitized question", sanitizedQuestion);
+      socket.to(roomName).emit("next-question", sanitizedQuestion);
     });
 
     socket.on("launch-teacher-mode", ({ roomName, questions }) => {
-      socket.to(roomName).emit("launch-teacher-mode", questions);
+      console.log("socket.js: launch-teacher-mode", roomName);
+      console.log("socket.js: Original questions received:", JSON.stringify(questions, null, 2));
+
+      // Only teachers should be able to launch teacher mode
+      const currentRole = getUserRole(socket);
+      if (currentRole !== 'teacher') {
+        console.log(`socket.js: Unauthorized launch-teacher-mode attempt by ${socket.id} with role: ${currentRole}`);
+        return;
+      }
+
+      // Sanitize questions for students (recipients) - remove sensitive data
+      const sanitizedQuestions = sanitizeQuestions(questions, 'student');
+      console.log("socket.js: Sanitized questions:", JSON.stringify(sanitizedQuestions, null, 2));
+
+      console.log("socket.js: broadcasting sanitized questions to students");
+      socket.to(roomName).emit("launch-teacher-mode", sanitizedQuestions);
     });
 
     socket.on("launch-student-mode", ({ roomName, questions }) => {
-      socket.to(roomName).emit("launch-student-mode", questions);
+      console.log("socket.js: launch-student-mode", roomName);
+
+      // Only teachers should be able to launch student mode
+      const currentRole = getUserRole(socket);
+      if (currentRole !== 'teacher') {
+        console.log(`socket.js: Unauthorized launch-student-mode attempt by ${socket.id} with role: ${currentRole}`);
+        return;
+      }
+
+      // Sanitize questions for students (recipients) - remove sensitive data
+      const sanitizedQuestions = sanitizeQuestions(questions, 'student');
+
+      console.log("socket.js: broadcasting sanitized questions to students");
+      socket.to(roomName).emit("launch-student-mode", sanitizedQuestions);
     });
 
     socket.on("end-quiz", ({ roomName }) => {
       console.log("socket.js: end-quiz", roomName);
+      
+      // Only teachers should be able to end quizzes
+      const currentRole = getUserRole(socket);
+      if (currentRole !== 'teacher') {
+        console.log(`socket.js: Unauthorized end-quiz attempt by ${socket.id} with role: ${currentRole}`);
+        return;
+      }
+
       socket.to(roomName).emit("end-quiz");
       io.sockets.adapter.rooms.delete(roomName);
       reportSalles();
