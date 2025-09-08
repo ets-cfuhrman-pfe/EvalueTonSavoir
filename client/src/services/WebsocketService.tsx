@@ -31,10 +31,40 @@ class WebSocketService {
         // console.log(`WebSocketService.connect: changed url=${url}`);
         const url = backendUrl || window.location.host;
 
-        this.socket = io(url, {
+        // Get JWT token from localStorage for authentication (if available)
+        // Note: Students joining rooms don't need authentication
+        const getToken = (): string | null => {
+            try {
+                const objectStr = localStorage.getItem("jwt");
+                if (!objectStr) {
+                    return null;
+                }
+                const object = JSON.parse(objectStr);
+                const now = new Date();
+                if (now.getTime() > object.expiry) {
+                    localStorage.removeItem("jwt");
+                    return null;
+                }
+                return object.token;
+            } catch (error) {
+                // Invalid token format, remove it
+                localStorage.removeItem("jwt");
+                return null;
+            }
+        };
+
+        const token = getToken();
+        const socketOptions: any = {
             transports: ['websocket'],
             reconnectionAttempts: 1
-        });
+        };
+
+        // Only add token to query if it exists (authenticated users like teachers)
+        if (token) {
+            socketOptions.query = { token };
+        }
+
+        this.socket = io(url, socketOptions);
 
         return this.socket;
     }
