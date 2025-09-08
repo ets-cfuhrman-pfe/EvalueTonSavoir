@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 // JoinRoom.tsx
 import React, { useEffect, useState } from 'react';
 
