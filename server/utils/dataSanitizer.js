@@ -15,40 +15,68 @@ function sanitizeQuestionsForStudents(questions) {
   // Handle both single question and array of questions
   const questionsArray = Array.isArray(questions) ? questions : [questions];
 
-  const sanitized = questionsArray.map(question => {
-    if (!question || typeof question !== 'object') return question;
+  const sanitized = questionsArray.map(item => {
+    if (!item || typeof item !== 'object') return item;
 
-    const sanitizedQuestion = { ...question };
+    // Create a copy to avoid modifying the original
+    const sanitizedItem = { ...item };
 
-    // Remove sensitive fields that students shouldn't see
-    const sensitiveFields = [
-      'correctAnswer',
-      'explanation',
-      'hints',
-      'metadata',
-      'grading',
-      'feedback'
-    ];
-
-    sensitiveFields.forEach(field => {
-      delete sanitizedQuestion[field];
-    });
-
-    // Sanitize options to remove isCorrect flags and feedback
-    if (sanitizedQuestion.options && Array.isArray(sanitizedQuestion.options)) {
-      sanitizedQuestion.options = sanitizedQuestion.options.map(option => {
-        const sanitizedOption = { ...option };
-        delete sanitizedOption.isCorrect;
-        delete sanitizedOption.feedback;
-        return sanitizedOption;
-      });
+    // If this item has a 'question' property, it's a wrapper object
+    if (sanitizedItem.question && typeof sanitizedItem.question === 'object') {
+      sanitizedItem.question = sanitizeQuestionObject(sanitizedItem.question);
+    } else {
+      // This item is a direct question object
+      return sanitizeQuestionObject(sanitizedItem);
     }
 
-    return sanitizedQuestion;
+    return sanitizedItem;
   });
 
   // Return single object if input was single object, otherwise return array
   return Array.isArray(questions) ? sanitized : sanitized[0];
+}
+
+function sanitizeQuestionObject(question) {
+  if (!question || typeof question !== 'object') return question;
+  
+  const sanitizedQuestion = { ...question };
+
+  // Remove sensitive fields that students shouldn't see
+  const sensitiveFields = [
+    'correctAnswer',
+    'explanation',
+    'hints',
+    'metadata',
+    'grading',
+    'feedback'
+  ];
+
+  sensitiveFields.forEach(field => {
+    delete sanitizedQuestion[field];
+  });
+
+  // Sanitize options to remove isCorrect flags and feedback (standard format)
+  if (sanitizedQuestion.options && Array.isArray(sanitizedQuestion.options)) {
+    sanitizedQuestion.options = sanitizedQuestion.options.map(option => {
+      const sanitizedOption = { ...option };
+      delete sanitizedOption.isCorrect;
+      delete sanitizedOption.feedback;
+      return sanitizedOption;
+    });
+  }
+
+  // Sanitize choices to remove isCorrect flags and feedback (GIFT format)
+  if (sanitizedQuestion.choices && Array.isArray(sanitizedQuestion.choices)) {
+    sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
+      const sanitizedChoice = { ...choice };
+      delete sanitizedChoice.isCorrect;
+      delete sanitizedChoice.feedback;
+      delete sanitizedChoice.weight; // Remove weight information as well
+      return sanitizedChoice;
+    });
+  }
+
+  return sanitizedQuestion;
 }
 
 /**

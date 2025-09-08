@@ -558,6 +558,88 @@ describe("websocket server", () => {
       });
     });
   });
+
+  test("SECURITY: should NOT send GIFT format sensitive data to students", (done) => {
+    const giftFormatQuestion = {
+      question: {
+        type: "MC",
+        title: "Villes canadiennes",
+        stem: {
+          format: "moodle",
+          text: "Quelles villes trouve-t-on au Canada?"
+        },
+        choices: [
+          {
+            isCorrect: false,
+            weight: 33.3,
+            formattedText: {
+              format: "moodle",
+              text: "Montréal"
+            }
+          },
+          {
+            isCorrect: true,
+            weight: 100,
+            formattedText: {
+              format: "moodle",
+              text: "Ottawa"
+            }
+          },
+          {
+            isCorrect: false,
+            weight: 33.3,
+            formattedText: {
+              format: "moodle",
+              text: "Vancouver"
+            }
+          }
+        ]
+      }
+    };
+
+    // Set up the event listener first
+    studentSocket.on("next-question", (receivedQuestion) => {
+      try {
+        expect(receivedQuestion).toBeDefined();
+        
+        // Check that the question structure is preserved
+        expect(receivedQuestion.question).toBeDefined();
+        expect(receivedQuestion.question.type).toBe("MC");
+        expect(receivedQuestion.question.title).toBe("Villes canadiennes");
+        
+        // Check that sensitive data is removed from choices
+        if (receivedQuestion.question.choices) {
+          receivedQuestion.question.choices.forEach((choice) => {
+            expect(choice.isCorrect).toBeUndefined();
+            expect(choice.weight).toBeUndefined();
+            expect(choice.formattedText).toBeDefined(); // Should keep the text
+          });
+        }
+        
+        done();
+      } catch (error) {
+        done(error);
+      }
+    });
+
+    // Now start the sequence
+    teacherSocket.emit("create-room", "security6");
+    
+    teacherSocket.on("create-success", () => {
+      studentSocket.emit("join-room", {
+        enteredRoomName: "security6",
+        username: "student1",
+      });
+      
+      studentSocket.on("join-success", () => {
+        // Now emit the event
+        teacherSocket.emit("next-question", {
+          roomName: "SECURITY6",
+          question: giftFormatQuestion,
+        });
+      });
+    });
+  });
   
   test("should disconnect", (done) => {
     teacherSocket.disconnect();
