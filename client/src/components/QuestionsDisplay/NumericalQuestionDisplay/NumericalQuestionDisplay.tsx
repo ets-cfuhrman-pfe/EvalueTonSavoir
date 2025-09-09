@@ -56,7 +56,7 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
         if (firstChoice && typeof firstChoice === 'object' && 'number' in firstChoice) {
             correctAnswer = firstChoice.number !== undefined ? `${firstChoice.number}` : 'Réponse masquée';
         } else {
-            correctAnswer = 'Type de réponse inconnu';
+            correctAnswer = 'MultipleNumericalAnswer is not supported yet';
         }
     }
 
