@@ -2,9 +2,13 @@ const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
 const { sanitizeQuestionsForStudents } = require('../utils/sanitizers/questionSanitizer');
 const { getUserRole, setUserRole } = require('../auth/roleManager');
+const { validateAnswer } = require('../utils/validators/answerValidator');
 
 const setupWebsocket = (io) => {
   let totalConnections = 0;
+  
+  // Store current questions by room for validation purposes
+  const roomQuestions = new Map();
 
   io.on("connection", (socket) => {
     if (totalConnections >= MAX_TOTAL_CONNECTIONS) {
@@ -120,6 +124,16 @@ const setupWebsocket = (io) => {
         return;
       }
 
+      // Store the full question for validation purposes
+      const upperRoomName = roomName.toUpperCase();
+      if (!roomQuestions.has(upperRoomName)) {
+        roomQuestions.set(upperRoomName, new Map());
+      }
+      const roomQuestionMap = roomQuestions.get(upperRoomName);
+      if (question.question?.id) {
+        roomQuestionMap.set(question.question.id, question);
+      }
+
       // Sanitize question data for students (recipients) - remove sensitive data
       const sanitizedQuestion = sanitizeQuestionsForStudents(question);
 
@@ -154,6 +168,23 @@ const setupWebsocket = (io) => {
         return;
       }
 
+      // Store all questions for validation purposes (BEFORE sanitization)
+      const upperRoomName = roomName.toUpperCase();
+      if (!roomQuestions.has(upperRoomName)) {
+        roomQuestions.set(upperRoomName, new Map());
+      }
+      const roomQuestionMap = roomQuestions.get(upperRoomName);
+      console.log(`socket.js: Storing ${questions.length} questions for room ${upperRoomName}`);
+      questions.forEach(questionObj => {
+        console.log(`socket.js: Processing question:`, questionObj.question?.id, questionObj.question?.stem);
+        if (questionObj.question?.id) {
+          // Store the ORIGINAL question object for validation (not sanitized)
+          roomQuestionMap.set(questionObj.question.id, questionObj);
+          console.log(`socket.js: Stored question ID ${questionObj.question.id} for validation`);
+        }
+      });
+      console.log(`socket.js: Total questions stored for room ${upperRoomName}:`, roomQuestionMap.size);
+
       // Sanitize questions for students (recipients) - remove sensitive data
       const sanitizedQuestions = sanitizeQuestionsForStudents(questions);
 
@@ -171,8 +202,13 @@ const setupWebsocket = (io) => {
         return;
       }
 
-      socket.to(roomName).emit("end-quiz");
-      io.sockets.adapter.rooms.delete(roomName);
+      const upperRoomName = roomName.toUpperCase();
+      socket.to(upperRoomName).emit("end-quiz");
+      io.sockets.adapter.rooms.delete(upperRoomName);
+      
+      // Clean up room questions
+      roomQuestions.delete(upperRoomName);
+      
       reportSalles();
     });
 
@@ -198,12 +234,56 @@ const setupWebsocket = (io) => {
     });
 
     socket.on("submit-answer", ({ roomName, username, answer, idQuestion }) => {
+      // Send answer to teacher
       socket.to(roomName).emit("submit-answer-room", {
         idUser: socket.id,
         username,
         answer,
         idQuestion,
       });
+
+      // Validate answer for student feedback
+      const upperRoomName = roomName.toUpperCase();
+      const roomQuestionMap = roomQuestions.get(upperRoomName);
+      
+      console.log(`socket.js: Looking for question ID ${idQuestion} (type: ${typeof idQuestion}) in room ${upperRoomName}`);
+      console.log(`socket.js: Room question map exists:`, !!roomQuestionMap);
+      console.log(`socket.js: Available question IDs:`, roomQuestionMap ? Array.from(roomQuestionMap.keys()).map(id => `${id} (${typeof id})`) : 'none');
+      
+      // Try both the original ID and string/number conversion
+      let actualQuestionId = null;
+      let questionFound = false;
+      
+      if (roomQuestionMap?.has(idQuestion)) {
+        actualQuestionId = idQuestion;
+        questionFound = true;
+      } else if (roomQuestionMap?.has(String(idQuestion))) {
+        actualQuestionId = String(idQuestion);
+        questionFound = true;
+      } else if (roomQuestionMap?.has(Number(idQuestion))) {
+        actualQuestionId = Number(idQuestion);
+        questionFound = true;
+      }
+      
+      if (questionFound && actualQuestionId !== null) {
+        const questionObj = roomQuestionMap.get(actualQuestionId);
+        const questionData = questionObj.question;
+        console.log(`socket.js: Question data for validation:`, JSON.stringify(questionData, null, 2));
+        console.log(`socket.js: Student answer:`, answer);
+        const validation = validateAnswer(questionData, answer);
+        console.log(`socket.js: Validation result:`, validation);
+        
+        // Send validation result back to the student
+        socket.emit("answer-validation", {
+          idQuestion,
+          isCorrect: validation.isCorrect,
+          feedback: validation.feedback
+        });
+
+        console.log(`socket.js: Answer validation for student ${username}: ${validation.isCorrect ? 'correct' : 'incorrect'}`);
+      } else {
+        console.log(`socket.js: No question found for validation in room ${upperRoomName}, question ID ${idQuestion}`);
+      }
     });
   });
 };

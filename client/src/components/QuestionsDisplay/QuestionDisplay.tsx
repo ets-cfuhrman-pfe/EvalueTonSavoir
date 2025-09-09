@@ -5,7 +5,7 @@ import TrueFalseQuestionDisplay from './TrueFalseQuestionDisplay/TrueFalseQuesti
 import MultipleChoiceQuestionDisplay from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplay';
 import NumericalQuestionDisplay from './NumericalQuestionDisplay/NumericalQuestionDisplay';
 import ShortAnswerQuestionDisplay from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplay';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType, AnswerValidationResult } from 'src/pages/Student/JoinRoom/JoinRoom';
 // import useCheckMobileScreen from '../../services/useCheckMobileScreen';
 
 interface QuestionProps {
@@ -13,6 +13,7 @@ interface QuestionProps {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     answer?: AnswerType;
+    answerValidation?: AnswerValidationResult;
 
 }
 const QuestionDisplay: React.FC<QuestionProps> = ({
@@ -20,6 +21,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
     handleOnSubmitAnswer,
     showAnswer,
     answer,
+    answerValidation,
 }) => {
     // const isMobile = useCheckMobileScreen();
     // const imgWidth = useMemo(() => {
@@ -35,6 +37,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    answerValidation={answerValidation}
                 />
             );
             break;
@@ -46,6 +49,7 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    answerValidation={answerValidation}
                 />
             );
             break;

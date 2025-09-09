@@ -4,17 +4,18 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType, AnswerValidationResult } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: TrueFalseQuestion;
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    answerValidation?: AnswerValidationResult;
 }
 
 const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, answerValidation } =
         props;
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
@@ -58,7 +59,9 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     fullWidth
                     disabled={disableButton}
                 >
-                    {showAnswer ? (<div> {(question.isTrue ? '✅' : '❌')}</div>) : ``}
+                    {showAnswer && answerValidation && answer === true ? (
+                        <div> {answerValidation.isCorrect ? '✅' : '❌'}</div>
+                    ) : ''}
                     <div className={`answer-text ${selectedTrue}`}>Vrai</div>
 
                     {showAnswer && answer && question.trueFormattedFeedback && (
@@ -74,7 +77,9 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                     disabled={disableButton}
 
                 >
-                    {showAnswer ? (<div> {(!question.isTrue ? '✅' : '❌')}</div>) : ``}
+                    {showAnswer && answerValidation && answer === false ? (
+                        <div> {answerValidation.isCorrect ? '✅' : '❌'}</div>
+                    ) : ''}
                     <div className={`answer-text ${selectedFalse}`}>Faux</div>
 
                     {showAnswer && !answer && question.falseFormattedFeedback && (
@@ -93,7 +98,7 @@ const TrueFalseQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer !== undefined && handleOnSubmitAnswer && handleOnSubmitAnswer([answer])
+                        answer !== undefined && handleOnSubmitAnswer?.([answer])
                     }
                     disabled={answer === undefined}
                 >

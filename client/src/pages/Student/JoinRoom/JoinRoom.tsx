@@ -20,6 +20,12 @@ import { useSearchParams } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
+export type AnswerValidationResult = {
+    idQuestion: number;
+    isCorrect: boolean;
+    feedback?: any;
+};
+
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
     const [username, setUsername] = useState(ApiService.getUsername());
@@ -29,6 +35,7 @@ const JoinRoom: React.FC = () => {
     const [quizMode, setQuizMode] = useState<string>();
     const [questions, setQuestions] = useState<QuestionType[]>([]);
     const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
+    const [answerValidations, setAnswerValidations] = useState<AnswerValidationResult[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
     const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
@@ -90,6 +97,19 @@ const JoinRoom: React.FC = () => {
         });
         socket.on('end-quiz', () => {
             disconnect();
+        });
+        socket.on('answer-validation', (validation: AnswerValidationResult) => {
+            console.log('JoinRoom: on(answer-validation): Received validation for question', validation.idQuestion, ':', validation.isCorrect ? 'correct' : 'incorrect');
+            setAnswerValidations(prev => {
+                const updated = [...prev];
+                const existingIndex = updated.findIndex(v => v.idQuestion === validation.idQuestion);
+                if (existingIndex >= 0) {
+                    updated[existingIndex] = validation;
+                } else {
+                    updated.push(validation);
+                }
+                return updated;
+            });
         });
         socket.on('join-failure', (message) => {
             console.log('Failed to join the room.');
@@ -192,6 +212,7 @@ const JoinRoom: React.FC = () => {
                 <StudentModeQuiz
                     questions={questions}
                     answers={answers}
+                    answerValidations={answerValidations}
                     submitAnswer={handleOnSubmitAnswer}
                     disconnectWebSocket={disconnect}
                 />

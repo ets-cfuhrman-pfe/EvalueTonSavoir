@@ -4,17 +4,18 @@ import '../questionStyle.css';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType, AnswerValidationResult } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
     question: MultipleChoiceQuestion;
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    answerValidation?: AnswerValidationResult;
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, answerValidation } = props;
     console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -46,15 +47,12 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
             if (correctAnswersCount === 1) {
                 // If only one correct answer, replace the current selection
                 return prevAnswer.includes(choice) ? [] : [choice];
+            } else if (prevAnswer.includes(choice)) {
+                // Remove the choice if it's already selected
+                return prevAnswer.filter((selected) => selected !== choice);
             } else {
-                // Allow multiple selections if there are multiple correct answers
-                if (prevAnswer.includes(choice)) {
-                    // Remove the choice if it's already selected
-                    return prevAnswer.filter((selected) => selected !== choice);
-                } else {
-                    // Add the choice if it's not already selected
-                    return [...prevAnswer, choice];
-                }
+                // Add the choice if it's not already selected
+                return [...prevAnswer, choice];
             }
         });
     };
@@ -79,8 +77,8 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                                 disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                             >
-                                {showAnswer ? (
-                                    <div>{choice.isCorrect ? '✅' : '❌'}</div>
+                                {showAnswer && answerValidation && answer.includes(choice.formattedText.text) ? (
+                                    <div>{answerValidation.isCorrect ? '✅' : '❌'}</div>
                                 ) : (
                                     ''
                                 )}
@@ -119,7 +117,7 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                 <Button
                     variant="contained"
                     onClick={() =>
-                        answer.length > 0 && handleOnSubmitAnswer && handleOnSubmitAnswer(answer)
+                        answer.length > 0 && handleOnSubmitAnswer?.(answer)
                     }
                     disabled={answer.length === 0}
                 >
