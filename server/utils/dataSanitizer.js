@@ -36,6 +36,35 @@ function sanitizeQuestionsForStudents(questions) {
   return Array.isArray(questions) ? sanitized : sanitized[0];
 }
 
+/**
+ * Sanitizes a numerical choice by removing sensitive answer values
+ * @param {Object} choice - The choice object to sanitize
+ */
+function sanitizeNumericalChoice(choice) {
+  if (choice.answer && typeof choice.answer === 'object') {
+    sanitizeNumericalAnswer(choice.answer);
+  } else {
+    // Handle direct properties on choice (legacy format)
+    sanitizeNumericalAnswer(choice);
+  }
+}
+
+/**
+ * Removes sensitive numerical values from an answer object
+ * @param {Object} answer - The answer object to sanitize
+ */
+function sanitizeNumericalAnswer(answer) {
+  if (answer.type === 'simple' && 'number' in answer) {
+    delete answer.number;
+  } else if (answer.type === 'range' && 'number' in answer) {
+    delete answer.number;
+    delete answer.range;
+  } else if (answer.type === 'high-low' && 'numberLow' in answer) {
+    delete answer.numberLow;
+    delete answer.numberHigh;
+  }
+}
+
 function sanitizeQuestionObject(question) {
   if (!question || typeof question !== 'object') return question;
   
@@ -66,34 +95,23 @@ function sanitizeQuestionObject(question) {
   }
 
   // Sanitize choices to remove isCorrect flags and feedback (GIFT format)
-  // For numerical questions, sanitize the answer values while keeping type information
   if (sanitizedQuestion.choices && Array.isArray(sanitizedQuestion.choices)) {
-    if (sanitizedQuestion.type === 'Numerical') {
-      // For numerical questions, keep type but remove actual answer values
-      sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
-        const sanitizedChoice = { ...choice };
-        // Remove actual number values but keep type
-        if (sanitizedChoice.type === 'simple' && 'number' in sanitizedChoice) {
-          delete sanitizedChoice.number;
-        } else if (sanitizedChoice.type === 'range' && 'number' in sanitizedChoice) {
-          delete sanitizedChoice.number;
-          delete sanitizedChoice.range;
-        } else if (sanitizedChoice.type === 'high-low' && 'numberLow' in sanitizedChoice) {
-          delete sanitizedChoice.numberLow;
-          delete sanitizedChoice.numberHigh;
-        }
-        return sanitizedChoice;
-      });
-    } else {
-      // For other question types, remove isCorrect, feedback, and weight
-      sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
-        const sanitizedChoice = { ...choice };
-        delete sanitizedChoice.isCorrect;
-        delete sanitizedChoice.feedback;
-        delete sanitizedChoice.weight;
-        return sanitizedChoice;
-      });
-    }
+    sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
+      const sanitizedChoice = { ...choice };
+      
+      // Remove sensitive fields common to all question types
+      delete sanitizedChoice.isCorrect;
+      delete sanitizedChoice.feedback;
+      delete sanitizedChoice.weight;
+      delete sanitizedChoice.formattedFeedback;
+      
+      // Special handling for numerical questions
+      if (sanitizedQuestion.type === 'Numerical') {
+        sanitizeNumericalChoice(sanitizedChoice);
+      }
+      
+      return sanitizedChoice;
+    });
   }
 
   return sanitizedQuestion;
@@ -143,7 +161,7 @@ function sanitizeQuestions(questions, userRole) {
 function getUserRole(socket) {
   try {
     // First, check if we already determined the role and stored it
-    if (socket.userData && socket.userData.role) {
+    if (socket.userData?.role) {
       return socket.userData.role;
     }
 
