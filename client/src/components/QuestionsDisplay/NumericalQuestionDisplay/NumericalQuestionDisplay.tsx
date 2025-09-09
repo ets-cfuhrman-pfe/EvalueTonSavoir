@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
 import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
-import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
-import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
+import { NumericalQuestion } from 'gift-pegjs';
+import { isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface Props {
@@ -29,18 +29,35 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     
     //const isSingleAnswer = correctAnswers.length === 1;
 
-    if (isSimpleNumericalAnswer(correctAnswers[0])) {
-        correctAnswer = `${(correctAnswers[0] as SimpleNumericalAnswer).number}`;
-    } else if (isRangeNumericalAnswer(correctAnswers[0])) {
-        const choice = correctAnswers[0] as RangeNumericalAnswer;
-        correctAnswer = `Entre ${choice.number - choice.range} et ${choice.number + choice.range}`;
-    } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
-        const choice = correctAnswers[0] as HighLowNumericalAnswer;
-        correctAnswer = `Entre ${choice.numberLow} et ${choice.numberHigh}`;
+    if (correctAnswers.length === 0) {
+        throw new Error('No numerical answers found');
+    }
+
+    const firstChoice = correctAnswers[0] as any; // Use any to access type property
+
+    if (firstChoice && typeof firstChoice === 'object' && firstChoice.type === 'simple') {
+        correctAnswer = firstChoice.number !== undefined ? `${firstChoice.number}` : 'Réponse masquée';
+    } else if (firstChoice && typeof firstChoice === 'object' && firstChoice.type === 'range') {
+        if (firstChoice.number !== undefined && firstChoice.range !== undefined) {
+            correctAnswer = `Entre ${firstChoice.number - firstChoice.range} et ${firstChoice.number + firstChoice.range}`;
+        } else {
+            correctAnswer = 'Réponse masquée';
+        }
+    } else if (firstChoice && typeof firstChoice === 'object' && firstChoice.type === 'high-low') {
+        if (firstChoice.numberLow !== undefined && firstChoice.numberHigh !== undefined) {
+            correctAnswer = `Entre ${firstChoice.numberLow} et ${firstChoice.numberHigh}`;
+        } else {
+            correctAnswer = 'Réponse masquée';
+        }
     } else if (isMultipleNumericalAnswer(correctAnswers[0])) {
         correctAnswer = `MultipleNumericalAnswer is not supported yet`;
     } else {
-        throw new Error('Unknown numerical answer type');
+        // Fallback: try to handle as simple numerical answer if it has a number property
+        if (firstChoice && typeof firstChoice === 'object' && 'number' in firstChoice) {
+            correctAnswer = firstChoice.number !== undefined ? `${firstChoice.number}` : 'Réponse masquée';
+        } else {
+            correctAnswer = 'Type de réponse inconnu';
+        }
     }
 
     return (

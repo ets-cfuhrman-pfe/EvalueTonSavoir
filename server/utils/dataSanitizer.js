@@ -66,14 +66,34 @@ function sanitizeQuestionObject(question) {
   }
 
   // Sanitize choices to remove isCorrect flags and feedback (GIFT format)
+  // For numerical questions, sanitize the answer values while keeping type information
   if (sanitizedQuestion.choices && Array.isArray(sanitizedQuestion.choices)) {
-    sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
-      const sanitizedChoice = { ...choice };
-      delete sanitizedChoice.isCorrect;
-      delete sanitizedChoice.feedback;
-      delete sanitizedChoice.weight; // Remove weight information as well
-      return sanitizedChoice;
-    });
+    if (sanitizedQuestion.type === 'Numerical') {
+      // For numerical questions, keep type but remove actual answer values
+      sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
+        const sanitizedChoice = { ...choice };
+        // Remove actual number values but keep type
+        if (sanitizedChoice.type === 'simple' && 'number' in sanitizedChoice) {
+          delete sanitizedChoice.number;
+        } else if (sanitizedChoice.type === 'range' && 'number' in sanitizedChoice) {
+          delete sanitizedChoice.number;
+          delete sanitizedChoice.range;
+        } else if (sanitizedChoice.type === 'high-low' && 'numberLow' in sanitizedChoice) {
+          delete sanitizedChoice.numberLow;
+          delete sanitizedChoice.numberHigh;
+        }
+        return sanitizedChoice;
+      });
+    } else {
+      // For other question types, remove isCorrect, feedback, and weight
+      sanitizedQuestion.choices = sanitizedQuestion.choices.map(choice => {
+        const sanitizedChoice = { ...choice };
+        delete sanitizedChoice.isCorrect;
+        delete sanitizedChoice.feedback;
+        delete sanitizedChoice.weight;
+        return sanitizedChoice;
+      });
+    }
   }
 
   return sanitizedQuestion;
