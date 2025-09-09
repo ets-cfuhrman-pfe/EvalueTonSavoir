@@ -1,6 +1,7 @@
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
-const { sanitizeQuestions, getUserRole, setUserRole } = require('../utils/dataSanitizer');
+const { sanitizeQuestionsForStudents } = require('../utils/sanitizers/questionSanitizer');
+const { getUserRole, setUserRole } = require('../auth/roleManager');
 
 const setupWebsocket = (io) => {
   let totalConnections = 0;
@@ -120,7 +121,7 @@ const setupWebsocket = (io) => {
       }
 
       // Sanitize question data for students (recipients) - remove sensitive data
-      const sanitizedQuestion = sanitizeQuestions(question, 'student');
+      const sanitizedQuestion = sanitizeQuestionsForStudents(question);
 
       console.log("socket.js: broadcasting sanitized question to room:", roomName);
       socket.to(roomName).emit("next-question", sanitizedQuestion);
@@ -137,7 +138,7 @@ const setupWebsocket = (io) => {
       }
 
       // Sanitize questions for students (recipients) - remove sensitive data
-      const sanitizedQuestions = sanitizeQuestions(questions, 'student');
+      const sanitizedQuestions = sanitizeQuestionsForStudents(questions);
 
       console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
       socket.to(roomName).emit("launch-teacher-mode", sanitizedQuestions);
@@ -154,7 +155,7 @@ const setupWebsocket = (io) => {
       }
 
       // Sanitize questions for students (recipients) - remove sensitive data
-      const sanitizedQuestions = sanitizeQuestions(questions, 'student');
+      const sanitizedQuestions = sanitizeQuestionsForStudents(questions);
 
       console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
       socket.to(roomName).emit("launch-student-mode", sanitizedQuestions);
