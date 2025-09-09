@@ -640,7 +640,99 @@ describe("websocket server", () => {
       });
     });
   });
-  
+
+  test("SECURITY: should NOT send numerical question answers to students", (done) => {
+    const numericalQuestion = {
+      question: {
+        type: "Numerical",
+        title: "Question numérique avec plusieurs réponses",
+        formattedStem: {
+          format: "moodle",
+          text: "Quand est né Ulysses S. Grant ?"
+        },
+        hasEmbeddedAnswers: false,
+        choices: [
+          {
+            isCorrect: true,
+            answer: {
+              type: "range",
+              number: 1822,
+              range: 0
+            },
+            formattedFeedback: {
+              format: "moodle",
+              text: "Correct ! Crédit complet."
+            }
+          },
+          {
+            isCorrect: true,
+            weight: 50,
+            answer: {
+              type: "range",
+              number: 1822,
+              range: 2
+            },
+            formattedFeedback: {
+              format: "moodle",
+              text: "Il est né en 1822. Demi-crédit pour être proche."
+            }
+          }
+        ],
+        id: "6"
+      }
+    };
+
+    // Set up the event listener first
+    studentSocket.on("next-question", (receivedQuestion) => {
+      try {
+        expect(receivedQuestion).toBeDefined();
+        
+        // Check that the question structure is preserved
+        expect(receivedQuestion.question).toBeDefined();
+        expect(receivedQuestion.question.type).toBe("Numerical");
+        expect(receivedQuestion.question.title).toBe("Question numérique avec plusieurs réponses");
+        
+        // Check that sensitive data is removed from choices
+        if (receivedQuestion.question.choices) {
+          receivedQuestion.question.choices.forEach((choice) => {
+            expect(choice.isCorrect).toBeUndefined();
+            expect(choice.weight).toBeUndefined();
+            expect(choice.formattedFeedback).toBeUndefined();
+            
+            // Check that answer values are removed but type is preserved
+            if (choice.answer) {
+              expect(choice.answer.type).toBeDefined();
+              expect(choice.answer.number).toBeUndefined();
+              expect(choice.answer.range).toBeUndefined();
+            }
+          });
+        }
+        
+        done();
+      } catch (error) {
+        done(error);
+      }
+    });
+
+    // Now start the sequence
+    teacherSocket.emit("create-room", "security7");
+    
+    teacherSocket.on("create-success", () => {
+      studentSocket.emit("join-room", {
+        enteredRoomName: "security7",
+        username: "student1",
+      });
+      
+      studentSocket.on("join-success", () => {
+        // Now emit the event
+        teacherSocket.emit("next-question", {
+          roomName: "SECURITY7",
+          question: numericalQuestion,
+        });
+      });
+    });
+  });
+
   test("should disconnect", (done) => {
     teacherSocket.disconnect();
     studentSocket.disconnect();
