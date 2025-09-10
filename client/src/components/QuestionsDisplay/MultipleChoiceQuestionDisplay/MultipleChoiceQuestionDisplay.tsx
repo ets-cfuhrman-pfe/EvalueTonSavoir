@@ -15,8 +15,13 @@ interface Props {
 }
 
 const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, answerValidation } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
     console.log('MultipleChoiceQuestionDisplay: passedAnswer', JSON.stringify(passedAnswer));
+
+    // Early return if question is not available
+    if (!question) {
+        return <div>Question not available</div>;
+    }
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
         if (passedAnswer && passedAnswer.length > 0) {
@@ -60,41 +65,73 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
 
+    const getAnswerIcon = (choice: any) => {
+        if (!showAnswer) return null;
+        
+        const isCorrectChoice = choice.isCorrect;
+        
+        // Show ✅ for correct choices, ❌ for incorrect choices
+        return isCorrectChoice ? '✅' : '❌';
+    };
+
     return (
         <div className="question-container">
             <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ 
+                    __html: question?.formattedStem ? (() => {
+                        try {
+                            return FormattedTextTemplate(question.formattedStem);
+                        } catch (error) {
+                            console.error('Error formatting question stem:', error);
+                            return question.formattedStem.text || '';
+                        }
+                    })() : ''
+                }} />
             </div>
             <div className="choices-wrapper mb-1">
-                {question.choices.map((choice, i) => {
+                {question?.choices?.map((choice, i) => {
                     console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
                     const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
+                    const choiceText = choice.formattedText.text;
                     return (
                         <div key={choice.formattedText.text + i} className="choice-container">
                             <Button
                                 variant="text"
                                 className="button-wrapper"
                                 disabled={disableButton}
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
+                                onClick={() => !showAnswer && handleOnClickAnswer(choiceText)}
                             >
-                                {showAnswer && answerValidation && answer.includes(choice.formattedText.text) ? (
-                                    <div>{answerValidation.isCorrect ? '✅' : '❌'}</div>
-                                ) : (
-                                    ''
-                                )}
+                                {(() => {
+                                    const icon = getAnswerIcon(choice);
+                                    return icon ? <div>{icon}</div> : null;
+                                })()}
                                 <div className={`circle ${selected}`}>{alphabet[i]}</div>
                                 <div className={`answer-text ${selected}`}>
                                     <div
                                         dangerouslySetInnerHTML={{
-                                            __html: FormattedTextTemplate(choice.formattedText),
+                                            __html: choice?.formattedText ? (() => {
+                                                try {
+                                                    return FormattedTextTemplate(choice.formattedText);
+                                                } catch (error) {
+                                                    console.error('Error formatting choice text:', error);
+                                                    return choice.formattedText.text || '';
+                                                }
+                                            })() : ''
                                         }}
                                     />
                                 </div>
-                                {choice.formattedFeedback && showAnswer && (
+                                {choice?.formattedFeedback && showAnswer && (
                                     <div className="feedback-container mb-1 mt-1/2">
                                         <div
                                             dangerouslySetInnerHTML={{
-                                                __html: FormattedTextTemplate(choice.formattedFeedback),
+                                                __html: (() => {
+                                                    try {
+                                                        return FormattedTextTemplate(choice.formattedFeedback);
+                                                    } catch (error) {
+                                                        console.error('Error formatting choice feedback:', error);
+                                                        return choice.formattedFeedback.text || '';
+                                                    }
+                                                })()
                                             }}
                                         />
                                     </div>
@@ -104,11 +141,18 @@ const MultipleChoiceQuestionDisplay: React.FC<Props> = (props) => {
                     );
                 })}
             </div>
-            {question.formattedGlobalFeedback && showAnswer && (
+            {question?.formattedGlobalFeedback && showAnswer && (
                 <div className="global-feedback mb-2">
                     <div
                         dangerouslySetInnerHTML={{
-                            __html: FormattedTextTemplate(question.formattedGlobalFeedback),
+                            __html: (() => {
+                                try {
+                                    return FormattedTextTemplate(question.formattedGlobalFeedback);
+                                } catch (error) {
+                                    console.error('Error formatting global feedback:', error);
+                                    return question.formattedGlobalFeedback.text || '';
+                                }
+                            })()
                         }}
                     />
                 </div>

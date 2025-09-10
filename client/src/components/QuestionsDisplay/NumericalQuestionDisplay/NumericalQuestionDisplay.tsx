@@ -17,21 +17,27 @@ interface Props {
 const NumericalQuestionDisplay: React.FC<Props> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } =
         props;
+    
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
-    const correctAnswers = question.choices;
-    let correctAnswer = '';
-
+    
     useEffect(() => {
     if (passedAnswer !== null && passedAnswer !== undefined) {
         setAnswer(passedAnswer);
     }
     }, [passedAnswer]);
     
-    //const isSingleAnswer = correctAnswers.length === 1;
+    // Early return if question is not available
+    if (!question) {
+        return <div>Question not available</div>;
+    }
+    
+    const correctAnswers = question.choices || [];
+    let correctAnswer = '';
 
     if (correctAnswers.length === 0) {
-        throw new Error('No numerical answers found');
-    }
+        // If no choices are provided, show a generic message for student mode
+        correctAnswer = 'Réponse numérique attendue';
+    } else {
 
     const firstChoice = correctAnswers[0] as any; // Use any to access type property
 
@@ -59,11 +65,21 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
             correctAnswer = 'MultipleNumericalAnswer is not supported yet';
         }
     }
+    }
 
     return (
         <div className="question-wrapper">
             <div>
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ 
+                    __html: question?.formattedStem ? (() => {
+                        try {
+                            return FormattedTextTemplate(question.formattedStem);
+                        } catch (error) {
+                            console.error('Error formatting question stem:', error);
+                            return question.formattedStem.text || '';
+                        }
+                    })() : ''
+                }} />
             </div>
             {showAnswer ? (
                 <>
@@ -73,8 +89,17 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                     <span>
                         <strong>Votre réponse est: </strong>{answer.toString()}
                     </span>
-                    {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                    {question?.formattedGlobalFeedback && <div className="global-feedback mb-2">
+                        <div dangerouslySetInnerHTML={{ 
+                            __html: (() => {
+                                try {
+                                    return FormattedTextTemplate(question.formattedGlobalFeedback);
+                                } catch (error) {
+                                    console.error('Error formatting global feedback:', error);
+                                    return question.formattedGlobalFeedback.text || '';
+                                }
+                            })()
+                        }} />
                     </div>}
 
                 </>
@@ -83,17 +108,26 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
                     <div className="answer-wrapper mb-1">
                         <TextField
                             type="number"
-                            id={question.formattedStem.text}
-                            name={question.formattedStem.text}
+                            id={question?.formattedStem?.text || 'numerical-answer'}
+                            name={question?.formattedStem?.text || 'numerical-answer'}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 setAnswer([e.target.valueAsNumber]);
                             }}
                             inputProps={{ 'data-testid': 'number-input' }}
                         />
                     </div>
-                    {question.formattedGlobalFeedback && showAnswer && (
+                    {question?.formattedGlobalFeedback && showAnswer && (
                         <div className="global-feedback mb-2">
-                            <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                            <div dangerouslySetInnerHTML={{ 
+                                __html: (() => {
+                                    try {
+                                        return FormattedTextTemplate(question.formattedGlobalFeedback);
+                                    } catch (error) {
+                                        console.error('Error formatting global feedback:', error);
+                                        return question.formattedGlobalFeedback.text || '';
+                                    }
+                                })()
+                            }} />
                         </div>
                     )}
                     {handleOnSubmitAnswer && (

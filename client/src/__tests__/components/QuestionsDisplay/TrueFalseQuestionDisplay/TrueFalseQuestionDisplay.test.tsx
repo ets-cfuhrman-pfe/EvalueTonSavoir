@@ -22,12 +22,20 @@ describe('TrueFalseQuestion Component', () => {
             setShowAnswerState(true);
         };
 
+        // Mock validation result - for TrueFalse, "Vrai" (true) is correct
+        const mockValidation = {
+            idQuestion: 1,
+            isCorrect: true,
+            feedback: null
+        };
+
         return (
             <MemoryRouter>
                 <TrueFalseQuestionDisplay
                     question={trueFalseQuestion}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswerState}
+                    answerValidation={showAnswerState ? mockValidation : undefined}
                 />
             </MemoryRouter>
         );

@@ -86,14 +86,65 @@ const JoinRoom: React.FC = () => {
             setQuestions(questions);
             // wait for next-question
         });
-        socket.on('launch-student-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-student-mode): Received launch-student-mode with', questions?.length || 0, 'questions');
+        socket.on('launch-student-mode', (data: any) => {
+            console.log('on(launch-student-mode): Received data:', JSON.stringify(data, null, 2));
+            
+            // Handle both formats: direct array or wrapped in object
+            let questions: any[] = [];
+            if (Array.isArray(data)) {
+                questions = data;
+            } else if (data && data.questions && Array.isArray(data.questions)) {
+                questions = data.questions;
+            }
+            
+            console.log('on(launch-student-mode): Processing', questions?.length || 0, 'questions');
+
+            // Transform WebSocket data to expected QuestionType format
+            const transformedQuestions = questions.map((item: any) => {
+                const rawQuestion = item.question || item; // Handle both wrapped and unwrapped formats
+                
+                // Transform to BaseQuestion format
+                const baseQuestion: any = {
+                    id: rawQuestion.id,
+                    title: rawQuestion.title,
+                    formattedStem: {
+                        text: rawQuestion.text || '',
+                        format: 'plain'
+                    },
+                    hasEmbeddedAnswers: false,
+                    type: rawQuestion.type
+                };
+
+                // Add type-specific properties
+                if (rawQuestion.type === 'MC' && rawQuestion.options) {
+                    baseQuestion.choices = rawQuestion.options.map((option: any) => ({
+                        text: option.text || '',
+                        formattedText: {
+                            text: option.text || '',
+                            format: 'plain'
+                        },
+                        isCorrect: false // This should be determined by the server
+                    }));
+                } else if (rawQuestion.type === 'TF') {
+                    baseQuestion.isTrue = rawQuestion.isTrue || false;
+                } else if (rawQuestion.type === 'Short' && rawQuestion.options) {
+                    baseQuestion.choices = rawQuestion.options.map((option: any) => ({
+                        text: option.text || ''
+                    }));
+                }
+
+                return {
+                    question: baseQuestion
+                };
+            });
+
+            console.log('Transformed questions:', JSON.stringify(transformedQuestions, null, 2));
 
             setQuizMode('student');
             setIsWaitingForTeacher(false);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
-            setQuestions(questions);
-            setQuestion(questions[0]);
+            setQuestions(transformedQuestions);
+            setQuestion(transformedQuestions[0]);
         });
         socket.on('end-quiz', () => {
             disconnect();

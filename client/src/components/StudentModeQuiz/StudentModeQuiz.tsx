@@ -34,7 +34,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     };
 
     useEffect(() => {
-        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
+        const savedAnswer = answers && answers.length > 0 ? answers[Number(questionInfos.question.id)-1]?.answer : undefined;
         console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
         setIsAnswerSubmitted(savedAnswer !== undefined);
     }, [questionInfos.question, answers]);
@@ -74,7 +74,7 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
-                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                    answer={answers && answers.length > 0 ? answers[Number(questionInfos.question.id)-1]?.answer : undefined}
                     answerValidation={answerValidations.find(v => v.idQuestion === Number(questionInfos.question.id))}
                     />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>

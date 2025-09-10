@@ -54,17 +54,15 @@ const QuestionDisplay: React.FC<QuestionProps> = ({
             );
             break;
         case 'Numerical':
-            if (question.choices) {
-                    questionTypeComponent = (
-                        <NumericalQuestionDisplay
-                            question={question}
-                            handleOnSubmitAnswer={handleOnSubmitAnswer}
-                            showAnswer={showAnswer}
-                            passedAnswer={answer}
-                            
-                        />
-                    );
-            }
+            questionTypeComponent = (
+                <NumericalQuestionDisplay
+                    question={question}
+                    handleOnSubmitAnswer={handleOnSubmitAnswer}
+                    showAnswer={showAnswer}
+                    passedAnswer={answer}
+                    
+                />
+            );
             break;
         case 'Short':
             questionTypeComponent = (
