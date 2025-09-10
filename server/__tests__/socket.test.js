@@ -465,7 +465,7 @@ describe("websocket server", () => {
     studentSocket.on("next-question", (receivedQuestion) => {
       try {
         expect(receivedQuestion.id).toBeDefined();
-        expect(receivedQuestion.question).toBeDefined();
+        expect(receivedQuestion.text).toBeDefined();
         expect(receivedQuestion.options).toBeDefined();
         expect(receivedQuestion.options).toHaveLength(3);
         

@@ -1,8 +1,8 @@
 const MAX_USERS_PER_ROOM = 60;
 const MAX_TOTAL_CONNECTIONS = 2000;
-const { sanitizeQuestionsForStudents } = require('../utils/sanitizers/questionSanitizer');
+const { transformToStudentViews } = require('../services/QuestionTransformationService');
 const { getUserRole, setUserRole } = require('../auth/roleManager');
-const { validateAnswer } = require('../utils/validators/answerValidator');
+const { validateAnswer } = require('../services/ValidationBridge');
 
 const setupWebsocket = (io) => {
   let totalConnections = 0;
@@ -134,11 +134,11 @@ const setupWebsocket = (io) => {
         roomQuestionMap.set(question.question.id, question);
       }
 
-      // Sanitize question data for students (recipients) - remove sensitive data
-      const sanitizedQuestion = sanitizeQuestionsForStudents(question);
+      // Transform question to student-safe view (remove sensitive data)
+      const studentQuestion = transformToStudentViews([question])[0];
 
-      console.log("socket.js: broadcasting sanitized question to room:", roomName);
-      socket.to(roomName).emit("next-question", sanitizedQuestion);
+      console.log("socket.js: broadcasting student-safe question to room:", roomName);
+      socket.to(roomName).emit("next-question", studentQuestion);
     });
 
     socket.on("launch-teacher-mode", ({ roomName, questions }) => {
@@ -151,11 +151,11 @@ const setupWebsocket = (io) => {
         return;
       }
 
-      // Sanitize questions for students (recipients) - remove sensitive data
-      const sanitizedQuestions = sanitizeQuestionsForStudents(questions);
+      // Transform questions to student-safe views (remove sensitive data)
+      const studentQuestions = transformToStudentViews(questions);
 
-      console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
-      socket.to(roomName).emit("launch-teacher-mode", sanitizedQuestions);
+      console.log("socket.js: broadcasting student-safe questions to students in room:", roomName);
+      socket.to(roomName).emit("launch-teacher-mode", studentQuestions);
     });
 
     socket.on("launch-student-mode", ({ roomName, questions }) => {
@@ -185,11 +185,11 @@ const setupWebsocket = (io) => {
       });
       console.log(`socket.js: Total questions stored for room ${upperRoomName}:`, roomQuestionMap.size);
 
-      // Sanitize questions for students (recipients) - remove sensitive data
-      const sanitizedQuestions = sanitizeQuestionsForStudents(questions);
+      // Transform questions to student-safe views (remove sensitive data)
+      const studentQuestions = transformToStudentViews(questions);
 
-      console.log("socket.js: broadcasting sanitized questions to students in room:", roomName);
-      socket.to(roomName).emit("launch-student-mode", sanitizedQuestions);
+      console.log("socket.js: broadcasting student-safe questions to students in room:", roomName);
+      socket.to(roomName).emit("launch-student-mode", studentQuestions);
     });
 
     socket.on("end-quiz", ({ roomName }) => {
