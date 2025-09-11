@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
@@ -53,7 +54,7 @@ describe('ValidatedTextField - Numerical Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Cette valeur ne peut contenir que des chiffres')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.numerical.answer.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -65,20 +66,20 @@ describe('ValidatedTextField - Numerical Entity', () => {
       fireEvent.blur(input); // Trigger validation
 
       await waitFor(() => {
-        expect(screen.getByText('Cette valeur ne peut contenir que des chiffres')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.numerical.answer.errorMessage)).toBeInTheDocument();
       });
     });
 
     it('should reject overly long input when set via props', async () => {
       // Test validation when value is set via initialValue prop (bypasses character length truncation)
-      const longValue = '1234567890123456789012345'; // 25 characters, exceeds maxLength of 20
+      const longValue = '1'.repeat(validationConstants.numerical.answer.maxLength + 5); 
       render(<ValidatedTextField {...defaultProps} fieldPath="numerical.answer" initialValue={longValue} />);
 
       const input = screen.getByRole('textbox');
       fireEvent.blur(input); // Trigger validation
 
       await waitFor(() => {
-        expect(screen.getByText('La réponse ne peut pas dépasser 20 caractères')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.numerical.answer.maxLengthErrorMessage)).toBeInTheDocument();
       });
     });
 
@@ -123,19 +124,18 @@ describe('ValidatedTextField - Numerical Entity', () => {
       const input = screen.getByRole('textbox');
       
       // Check that the HTML maxlength attribute is set correctly
-      expect(input).toHaveAttribute('maxlength', '20');
+      expect(input).toHaveAttribute('maxlength', validationConstants.numerical.answer.maxLength.toString());
       
       // Try to type a very long decimal number that would never reach the numerical limit
       // but has way too many characters (maxLength is 20)
-      const longDecimal = '0.123456789012345678901234567890'; // 32 characters, exceeds maxLength of 20
+      const longDecimal = '0.' + '1'.repeat(validationConstants.numerical.answer.maxLength + 12);
       
       await user.type(input, longDecimal);
 
       await waitFor(() => {
-        // The input should be truncated to maxLength (20 characters)
         const inputValue = (input as HTMLInputElement).value;
         // Just check that it's not longer than 20 characters
-        expect(inputValue.length).toBeLessThanOrEqual(20);
+        expect(inputValue.length).toBeLessThanOrEqual(validationConstants.numerical.answer.maxLength);
       });
     });
 
@@ -181,7 +181,7 @@ describe('ValidatedTextField - Numerical Entity', () => {
       fireEvent.blur(input); // Trigger validation
 
       await waitFor(() => {
-        expect(screen.getByText('Cette valeur ne peut contenir que des chiffres')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.numerical.answer.errorMessage)).toBeInTheDocument();
       });
     });
   });
