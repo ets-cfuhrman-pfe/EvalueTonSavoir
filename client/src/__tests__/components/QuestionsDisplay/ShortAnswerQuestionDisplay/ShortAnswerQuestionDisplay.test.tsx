@@ -3,6 +3,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { parse, ShortAnswerQuestion } from 'gift-pegjs';
 import ShortAnswerQuestionDisplay from 'src/components/QuestionsDisplay/ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplay';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('ShortAnswerQuestion Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
@@ -63,5 +64,55 @@ describe('ShortAnswerQuestion Component', () => {
 
         expect(mockHandleSubmitAnswer).toHaveBeenCalledWith(['User Input']);
         mockHandleSubmitAnswer.mockClear();
+    });
+
+
+    it('calculates and displays correct answer rate when showResults is true', () => {
+        const mockStudents = [
+            {
+                id: '1',
+                name: 'Alice',
+                answers: [{ idQuestion: 1, answer: ['Paris'], isCorrect: true }]
+            },
+            {
+                id: '2',
+                name: 'Bob',
+                answers: [{ idQuestion: 1, answer: ['Lyon'], isCorrect: false }]
+            },
+            {
+                id: '3',
+                name: 'Charlie',
+                answers: [{ idQuestion: 1, answer: ['Paris'], isCorrect: true }]
+            }
+        ];
+    
+
+        const question: ShortAnswerQuestion = {
+            id: '1',
+            type: 'Short',
+            hasEmbeddedAnswers: false,
+            formattedStem: {
+              text: 'What is the capital of France?',
+              format: 'html'
+            },
+            choices: [{ text: 'Paris', isCorrect: true }],
+            formattedGlobalFeedback: {
+                text: '',
+                format: 'html'
+              }
+          };
+    
+        render(
+            <MemoryRouter>
+                <ShortAnswerQuestionDisplay
+                    question={question}
+                    showResults={true}
+                    students={mockStudents}
+                />
+            </MemoryRouter>
+        );
+    
+        expect(screen.getByText('Taux de réponse correcte: 2/3')).toBeInTheDocument();
+        expect(screen.getByText('66.7%')).toBeInTheDocument();
     });
 });

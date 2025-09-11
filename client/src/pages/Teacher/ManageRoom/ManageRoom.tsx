@@ -201,7 +201,12 @@ const ManageRoom: React.FC = () => {
 
         socket.on('user-disconnected', (userId: string) => {
             console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            //setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            setStudents(prevStudents =>
+                prevStudents.map(student =>
+                    student.id === userId ? { ...student, isActive: false } : student
+                )
+            );
         });
 
         setSocket(socket);
@@ -520,7 +525,6 @@ const ManageRoom: React.FC = () => {
                                 {quizQuestions?.length}
                             </strong>
                         )}
-
                         {quizMode === 'teacher' && (
                             <div className="mb-1">
                                 {/* <QuestionNavigation
@@ -537,7 +541,9 @@ const ManageRoom: React.FC = () => {
                                 {currentQuestion && (
                                     <QuestionDisplay
                                         showAnswer={false}
+                                        showAnswerToggle={true}
                                         question={currentQuestion?.question as Question}
+                                        students={students}
                                     />
                                 )}
 
