@@ -4,12 +4,14 @@ FROM node:18 AS build
 
 WORKDIR /usr/src/app/client
 
-COPY ./package*.json ./
+# Copy package.json from client directory
+COPY ./client/package*.json ./
 
 # Copy the shared validation constants from server
-COPY ../server/shared ./shared
+COPY ./server/shared ./shared
 
-COPY ./ .
+# Copy the rest of the client files
+COPY ./client/ .
 
 RUN npm install
 
