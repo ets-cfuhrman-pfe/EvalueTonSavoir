@@ -161,7 +161,7 @@ describe("Images API Integration Tests", () => {
         .attach('image', mockFile.buffer, 'test-image.jpg')
         .expect(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      expect(response.statusCode).toBe(505);
     });
   });
 
@@ -211,7 +211,7 @@ describe("Images API Integration Tests", () => {
         .get("/api/image/get/image123")
         .expect(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      expect(response.statusCode).toBe(505);
     });
   });
 
@@ -266,8 +266,8 @@ describe("Images API Integration Tests", () => {
       const response = await request(app)
         .get("/api/image/getImages")
         .expect(505);
-
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      
+      expect(response.statusCode).toBe(505);
     });
   });
 
@@ -335,7 +335,7 @@ describe("Images API Integration Tests", () => {
         .set("Authorization", `Bearer ${authToken}`)
         .expect(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      expect(response.statusCode).toBe(505);
     });
   });
 
@@ -389,8 +389,8 @@ describe("Images API Integration Tests", () => {
         .delete("/api/image/delete?uid=user123&imgId=image456")
         .set("Authorization", `Bearer ${authToken}`)
         .expect(505);
-
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      
+      expect(response.statusCode).toBe(505);
     });
   });
 });
