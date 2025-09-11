@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 COPY ./client/package*.json ./client/
 
-COPY ./server/shared/ ./server/shared/
+COPY server/shared/ ./server/shared/
 
 COPY ./client/ ./client/
 
