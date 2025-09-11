@@ -1,20 +1,9 @@
-// Mock the @shared import before importing ValidationService
-jest.mock('@shared/validationConstants.json', () => ({
-  room: {
-    name: {
-      minLength: 1,
-      maxLength: 25,
-      pattern: '^[a-zA-Z0-9\\-_\\s]+$',
-      errorMessage: 'Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces'
-    }
-  }
-}));
-
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
@@ -74,7 +63,7 @@ describe('ValidatedTextField - Room Entity', () => {
       render(<ValidatedTextField {...defaultProps} />);
 
       const input = screen.getByRole('textbox');
-      const maxLengthName = 'A'.repeat(25); // Exactly 25 characters
+      const maxLengthName = 'A'.repeat(validationConstants.room.name.maxLength); 
       await user.type(input, maxLengthName);
       fireEvent.blur(input);
 
@@ -107,8 +96,8 @@ describe('ValidatedTextField - Room Entity', () => {
 
       await waitFor(() => {
         // Since the component prevents input beyond maxLength, no error should be shown
-        expect(input).toHaveValue('A'.repeat(25)); // Should be truncated to maxLength
-        expect(screen.queryByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).not.toBeInTheDocument();
+        expect(input).toHaveValue('A'.repeat(validationConstants.room.name.maxLength)); // Should be truncated to maxLength
+        expect(screen.queryByText(validationConstants.room.name.errorMessage)).not.toBeInTheDocument();
       });
     });
 
@@ -121,7 +110,7 @@ describe('ValidatedTextField - Room Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.room.name.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -134,7 +123,7 @@ describe('ValidatedTextField - Room Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.room.name.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -147,7 +136,7 @@ describe('ValidatedTextField - Room Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.room.name.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -156,12 +145,11 @@ describe('ValidatedTextField - Room Entity', () => {
       render(<ValidatedTextField {...defaultProps} />);
 
       const input = screen.getByRole('textbox');
-      const longName = 'A'.repeat(26); // 26 characters
+      const longName = 'A'.repeat(validationConstants.room.name.maxLength + 1); 
       
       await user.type(input, longName);
       
-      // The input should be truncated to maxLength
-      expect(input).toHaveValue('A'.repeat(25));
+      expect(input).toHaveValue('A'.repeat(validationConstants.room.name.maxLength));
     });
 
     it('should show error message on blur when validation fails', async () => {
@@ -173,7 +161,7 @@ describe('ValidatedTextField - Room Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.room.name.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -188,7 +176,7 @@ describe('ValidatedTextField - Room Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.room.name.errorMessage)).toBeInTheDocument();
       });
 
       // Clear and enter valid input
@@ -198,7 +186,7 @@ describe('ValidatedTextField - Room Entity', () => {
 
       await waitFor(() => {
         expect(input).not.toHaveAttribute('aria-invalid', 'true');
-        expect(screen.queryByText('Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces')).not.toBeInTheDocument();
+        expect(screen.queryByText(validationConstants.room.name.errorMessage)).not.toBeInTheDocument();
       });
     });
   });

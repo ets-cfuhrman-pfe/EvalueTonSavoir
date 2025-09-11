@@ -3,33 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
-
-// Mock VALIDATION_CONSTANTS
-jest.mock('@shared/validationConstants.json', () => ({
-  user: {
-    email: {
-      minLength: 3,
-      maxLength: 64,
-      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
-      errorMessage: "L'adresse email doit être valide"
-    },
-    password: {
-      minLength: 8,
-      maxLength: 64,
-      pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$',
-      errorMessage: 'Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre'
-    },
-    username: {
-      minLength: 2,
-      maxLength: 25,
-      pattern: '^[a-zA-Z0-9]+$',
-      errorMessage: "Le nom d'utilisateur ne peut contenir que des lettres et des chiffres"
-    }
-  }
-}));
 
 describe('ValidatedTextField - User Entity', () => {
   const defaultProps = {
@@ -64,7 +41,7 @@ describe('ValidatedTextField - User Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText("L'adresse email doit être valide")).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.user.email.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -73,11 +50,11 @@ describe('ValidatedTextField - User Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="user.email" />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'a@b'); // 3 chars, min is 3 but invalid format
+      await user.type(input, 'a@b');
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText("L'adresse email doit être valide")).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.user.email.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -86,21 +63,15 @@ describe('ValidatedTextField - User Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="user.email" />);
 
       const input = screen.getByRole('textbox');
-      const longEmail = 'a'.repeat(60) + '@example.com'; // Total > 64 chars
+      const longEmail = 'a'.repeat(validationConstants.user.email.maxLength) + '@example.com'; 
       await user.type(input, longEmail);
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText("L'adresse email doit être valide")).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.user.email.errorMessage)).toBeInTheDocument();
       });
     });
   });
-
-  // User Password validation tests removed - password validation now handled by third-party SSO
-  // describe('User Password (user.password)', () => {
-  //   Tests commented out as local password validation has been removed
-  //   in favor of third-party SSO authentication
-  // });
 
   describe('User Username (user.username)', () => {
     it('should accept valid username', async () => {
@@ -125,7 +96,7 @@ describe('ValidatedTextField - User Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText("Le nom d'utilisateur ne peut contenir que des lettres et des chiffres")).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.user.username.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -134,7 +105,7 @@ describe('ValidatedTextField - User Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="user.username" />);
 
       const input = screen.getByRole('textbox');
-      await user.type(input, 'a'); // 1 char, min is 2
+      await user.type(input, 'a'); 
       fireEvent.blur(input);
 
       await waitFor(() => {
@@ -148,20 +119,18 @@ describe('ValidatedTextField - User Entity', () => {
 
       const input = screen.getByRole('textbox');
 
-      // First set to exactly maxLength
-      const maxLengthUsername = 'a'.repeat(25); // 25 chars, max is 25
+    
+      const maxLengthUsername = 'a'.repeat(validationConstants.user.username.maxLength); 
       fireEvent.change(input, { target: { value: maxLengthUsername } });
 
-      // Verify it accepts the maxLength username
+    
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthUsername);
-        expect(input).toHaveAttribute('maxlength', '25');
+        expect(input).toHaveAttribute('maxlength', String(validationConstants.user.username.maxLength));
       });
 
-      // Try to add more characters - this should be blocked
       await user.type(input, 'b');
 
-      // Value should remain at maxLength
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthUsername);
       });
