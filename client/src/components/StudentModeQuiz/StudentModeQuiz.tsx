@@ -4,15 +4,15 @@ import QuestionComponent from '../QuestionsDisplay/QuestionDisplay';
 import '../../pages/Student/JoinRoom/joinRoom.css';
 import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
-//import QuestionNavigation from '../QuestionNavigation/QuestionNavigation';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType, AnswerValidationResult } from 'src/pages/Student/JoinRoom/JoinRoom';
 
 interface StudentModeQuizProps {
     questions: QuestionType[];
     answers: AnswerSubmissionToBackendType[];
+    answerValidations: AnswerValidationResult[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
 }
@@ -20,27 +20,27 @@ interface StudentModeQuizProps {
 const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
     questions,
     answers,
+    answerValidations,
     submitAnswer,
     disconnectWebSocket
 }) => {
     //Ajouter type AnswerQuestionType en remplacement de QuestionType
-    const [questionInfos, setQuestion] = useState<QuestionType>(questions[0]);
+    const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-    // const [answer, setAnswer] = useState<AnswerType>('');
     
 
     const previousQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id) - 2]);        
+        setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);        
     };
 
     useEffect(() => {
-        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
+        const savedAnswer = answers && answers.length > 0 ? answers[Number(questionInfos.question.id)-1]?.answer : undefined;
         console.log(`StudentModeQuiz: useEffect: savedAnswer: ${savedAnswer}`);
         setIsAnswerSubmitted(savedAnswer !== undefined);
     }, [questionInfos.question, answers]);
 
     const nextQuestion = () => {
-        setQuestion(questions[Number(questionInfos.question?.id)]);
+        setQuestionInfos(questions[Number(questionInfos.question?.id)]);
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
@@ -74,7 +74,8 @@ const StudentModeQuiz: React.FC<StudentModeQuizProps> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     question={questionInfos.question as Question}
                     showAnswer={isAnswerSubmitted}
-                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                    answer={answers && answers.length > 0 ? answers[Number(questionInfos.question.id)-1]?.answer : undefined}
+                    answerValidation={answerValidations.find(v => v.idQuestion === Number(questionInfos.question.id))}
                     />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
                 <div>

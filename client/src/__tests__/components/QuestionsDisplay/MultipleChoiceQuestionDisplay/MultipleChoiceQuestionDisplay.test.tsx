@@ -36,12 +36,20 @@ describe('MultipleChoiceQuestionDisplay', () => {
             setShowAnswerState(true);
         };
 
+        // Mock validation result - for MultipleChoice, selecting correct choice should be correct
+        const mockValidation = {
+            idQuestion: 1,
+            isCorrect: true,
+            feedback: null
+        };
+
         return (
             <MemoryRouter>
                 <MultipleChoiceQuestionDisplay
                     question={question}
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswerState}
+                    answerValidation={showAnswerState ? mockValidation : undefined}
                 />
             </MemoryRouter>
         );

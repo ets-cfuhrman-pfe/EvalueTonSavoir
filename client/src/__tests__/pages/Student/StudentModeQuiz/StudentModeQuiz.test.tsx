@@ -28,6 +28,7 @@ beforeEach(() => {
             <StudentModeQuiz
                 questions={mockQuestions}
                 answers={Array(mockQuestions.length).fill({} as AnswerSubmissionToBackendType)}
+                answerValidations={[]}
                 submitAnswer={mockSubmitAnswer}
                 disconnectWebSocket={mockDisconnectWebSocket}
             />

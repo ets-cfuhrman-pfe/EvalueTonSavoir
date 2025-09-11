@@ -32,7 +32,7 @@ const TeacherModeQuiz: React.FC<TeacherModeQuizProps> = ({
     useEffect(() => {
         console.log(`TeacherModeQuiz: useEffect: answers: ${JSON.stringify(answers)}`);
         console.log(`TeacherModeQuiz: useEffect: questionInfos.question.id: ${questionInfos.question.id} answer: ${answer}`);
-        const oldAnswer = answers[Number(questionInfos.question.id) -1 ]?.answer;
+        const oldAnswer = answers && answers.length > 0 ? answers[Number(questionInfos.question.id) -1 ]?.answer : undefined;
         console.log(`TeacherModeQuiz: useEffect: oldAnswer: ${oldAnswer}`);
         setAnswer(oldAnswer);
         setIsFeedbackDialogOpen(false);

@@ -16,6 +16,12 @@ interface Props {
 const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
 
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    
+    // Early return if question is not available
+    if (!question) {
+        return <div>Question not available</div>;
+    }
+    
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -28,7 +34,16 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
     return (
         <div className="question-wrapper">
             <div className="question content">
-                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                <div dangerouslySetInnerHTML={{ 
+                    __html: question?.formattedStem ? (() => {
+                        try {
+                            return FormattedTextTemplate(question.formattedStem);
+                        } catch (error) {
+                            console.error('Error formatting question stem:', error);
+                            return question.formattedStem.text || '';
+                        }
+                    })() : ''
+                }} />
             </div>
             {showAnswer ? (
                 <>
@@ -36,9 +51,9 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                     <span>
                         <strong>La bonne réponse est: </strong>
                     
-                        {question.choices.map((choice) => (
-                            <div key={choice.text} className="mb-1">
-                                {choice.text}
+                        {question?.choices?.map((choice, index) => (
+                            <div key={choice?.text || index} className="mb-1">
+                                {choice?.text || ''}
                             </div>
                         ))}
                     </span>
@@ -46,8 +61,17 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                         <strong>Votre réponse est: </strong>{answer}
                     </span>
                     </div>
-                    {question.formattedGlobalFeedback && <div className="global-feedback mb-2">
-                        <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
+                    {question?.formattedGlobalFeedback && <div className="global-feedback mb-2">
+                        <div dangerouslySetInnerHTML={{ 
+                            __html: (() => {
+                                try {
+                                    return FormattedTextTemplate(question.formattedGlobalFeedback);
+                                } catch (error) {
+                                    console.error('Error formatting global feedback:', error);
+                                    return question.formattedGlobalFeedback.text || '';
+                                }
+                            })()
+                        }} />
                     </div>}
                 </>
             ) : (
@@ -55,8 +79,8 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
                     <div className="answer-wrapper mb-1">
                         <TextField
                             type="text"
-                            id={question.formattedStem.text}
-                            name={question.formattedStem.text}
+                            id={question?.formattedStem?.text || 'short-answer'}
+                            name={question?.formattedStem?.text || 'short-answer'}
                             onChange={(e) => {
                                 setAnswer([e.target.value]);
                             }}

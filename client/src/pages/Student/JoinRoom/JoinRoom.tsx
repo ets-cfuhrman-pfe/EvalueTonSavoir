@@ -20,6 +20,12 @@ import { useSearchParams } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
+export type AnswerValidationResult = {
+    idQuestion: number;
+    isCorrect: boolean;
+    feedback?: any;
+};
+
 const JoinRoom: React.FC = () => {
     const [roomName, setRoomName] = useState('');
     const [username, setUsername] = useState(ApiService.getUsername());
@@ -29,6 +35,7 @@ const JoinRoom: React.FC = () => {
     const [quizMode, setQuizMode] = useState<string>();
     const [questions, setQuestions] = useState<QuestionType[]>([]);
     const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
+    const [answerValidations, setAnswerValidations] = useState<AnswerValidationResult[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
     const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
@@ -51,7 +58,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
+        console.log(`JoinRoom: useEffect: questions count: ${questions ? questions.length : 0}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
     
@@ -66,30 +73,94 @@ const JoinRoom: React.FC = () => {
             console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
         });
         socket.on('next-question', (question: QuestionType) => {
-            console.log('JoinRoom: on(next-question): Received next-question:', question);
+            console.log('JoinRoom: on(next-question): Received next-question for ID:', question?.question?.id || 'unknown');
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
+            console.log('on(launch-teacher-mode): Received launch-teacher-mode with', questions?.length || 0, 'questions');
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             // wait for next-question
         });
-        socket.on('launch-student-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-student-mode): Received launch-student-mode:', questions);
+        socket.on('launch-student-mode', (data: any) => {
+            console.log('on(launch-student-mode): Received data:', JSON.stringify(data, null, 2));
+            
+            // Handle both formats: direct array or wrapped in object
+            let questions: any[] = [];
+            if (Array.isArray(data)) {
+                questions = data;
+            } else if (data && data.questions && Array.isArray(data.questions)) {
+                questions = data.questions;
+            }
+            
+            console.log('on(launch-student-mode): Processing', questions?.length || 0, 'questions');
+
+            // Transform WebSocket data to expected QuestionType format
+            const transformedQuestions = questions.map((item: any) => {
+                const rawQuestion = item.question || item; // Handle both wrapped and unwrapped formats
+                
+                // Transform to BaseQuestion format
+                const baseQuestion: any = {
+                    id: rawQuestion.id,
+                    title: rawQuestion.title,
+                    formattedStem: {
+                        text: rawQuestion.text || '',
+                        format: 'plain'
+                    },
+                    hasEmbeddedAnswers: false,
+                    type: rawQuestion.type
+                };
+
+                // Add type-specific properties
+                if (rawQuestion.type === 'MC' && rawQuestion.options) {
+                    baseQuestion.choices = rawQuestion.options.map((option: any) => ({
+                        text: option.text || '',
+                        formattedText: {
+                            text: option.text || '',
+                            format: 'plain'
+                        },
+                        isCorrect: false // This should be determined by the server
+                    }));
+                } else if (rawQuestion.type === 'TF') {
+                    baseQuestion.isTrue = rawQuestion.isTrue || false;
+                } else if (rawQuestion.type === 'Short' && rawQuestion.options) {
+                    baseQuestion.choices = rawQuestion.options.map((option: any) => ({
+                        text: option.text || ''
+                    }));
+                }
+
+                return {
+                    question: baseQuestion
+                };
+            });
+
+            console.log('Transformed questions:', JSON.stringify(transformedQuestions, null, 2));
 
             setQuizMode('student');
             setIsWaitingForTeacher(false);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
-            setQuestions(questions);
-            setQuestion(questions[0]);
+            setQuestions(transformedQuestions);
+            setQuestion(transformedQuestions[0]);
         });
         socket.on('end-quiz', () => {
             disconnect();
+        });
+        socket.on('answer-validation', (validation: AnswerValidationResult) => {
+            console.log('JoinRoom: on(answer-validation): Received validation for question', validation.idQuestion, ':', validation.isCorrect ? 'correct' : 'incorrect');
+            setAnswerValidations(prev => {
+                const updated = [...prev];
+                const existingIndex = updated.findIndex(v => v.idQuestion === validation.idQuestion);
+                if (existingIndex >= 0) {
+                    updated[existingIndex] = validation;
+                } else {
+                    updated.push(validation);
+                }
+                return updated;
+            });
         });
         socket.on('join-failure', (message) => {
             console.log('Failed to join the room.');
@@ -192,6 +263,7 @@ const JoinRoom: React.FC = () => {
                 <StudentModeQuiz
                     questions={questions}
                     answers={answers}
+                    answerValidations={answerValidations}
                     submitAnswer={handleOnSubmitAnswer}
                     disconnectWebSocket={disconnect}
                 />
