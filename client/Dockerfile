@@ -2,17 +2,16 @@
 
 FROM node:18 AS build
 
-WORKDIR /usr/src/app
-
-COPY ./client/package*.json ./client/
-
-COPY ./server/shared ./server/shared
-
-COPY ./client/ ./client/
-
 WORKDIR /usr/src/app/client
 
-RUN npm install 
+COPY ./package*.json ./
+
+# Copy the shared validation constants from server
+COPY ../server/shared ./shared
+
+COPY ./ .
+
+RUN npm install
 
 RUN npm run build
 

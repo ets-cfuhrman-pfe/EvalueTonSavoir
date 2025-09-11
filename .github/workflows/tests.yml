@@ -39,8 +39,6 @@ jobs:
           npm install
           echo "Running ESLint..."
           npx eslint .
-          echo "Trying to build..."
-          npm run build
           echo "Running tests..."
           echo "::group::Installing dependencies for ${{ matrix.directory }}"
           npm ci

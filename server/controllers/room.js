@@ -136,7 +136,7 @@ class RoomsController {
       }
 
       return res.status(200).json({
-        message: "Salle mis � jours avec succ�s.",
+        message: "Salle mis à jour avec succès.",
       });
     } catch (error) {
       return next(error);

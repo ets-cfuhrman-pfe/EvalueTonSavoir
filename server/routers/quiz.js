@@ -2,16 +2,17 @@ const express = require('express');
 const router = express.Router();
 const quizzes = require('../app.js').quizzes;
 const jwt = require('../middleware/jwtToken.js');
+const { validateQuizCreation, validateQuizUpdate } = require('../middleware/validation.js');
 const asyncHandler = require('./routerUtils.js');
 
 if (!quizzes) {
   console.error("quizzes is not defined");
 }
 
-router.post("/create", jwt.authenticate, asyncHandler(quizzes.create));
+router.post("/create", jwt.authenticate, validateQuizCreation, asyncHandler(quizzes.create));
 router.get("/get/:quizId", jwt.authenticate, asyncHandler(asyncHandler(quizzes.get)));
 router.delete("/delete/:quizId", jwt.authenticate, asyncHandler(quizzes.delete));
-router.put("/update", jwt.authenticate, asyncHandler(quizzes.update));
+router.put("/update", jwt.authenticate, validateQuizUpdate, asyncHandler(quizzes.update));
 router.put("/move", jwt.authenticate, asyncHandler(quizzes.move));
 
 router.post("/duplicate", jwt.authenticate, asyncHandler(quizzes.duplicate));
