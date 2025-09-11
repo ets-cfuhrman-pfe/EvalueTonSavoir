@@ -202,7 +202,7 @@ const ValidatedTextField: React.FC<ValidatedTextFieldProps> = ({
             const basicRegex = new RegExp(basicPattern);
             
             if (!basicRegex.test(newValue)) {
-                console.log(`Blocking basic pattern: ${newValue}`);
+                // console.log(`Blocking basic pattern: ${newValue}`);
                 return;
             }
         }

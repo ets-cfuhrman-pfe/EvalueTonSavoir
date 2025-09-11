@@ -3,21 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
-
-// Mock VALIDATION_CONSTANTS
-jest.mock('@shared/validationConstants.json', () => ({
-  folder: {
-    title: {
-      minLength: 1,
-      maxLength: 64,
-      pattern: '^[a-zA-Z0-9\\u00C0-\\u017F\\s\\-_]+$',
-      errorMessage: 'Le titre ne peut contenir que des lettres, chiffres, espaces, tirets et underscores'
-    }
-  }
-}));
 
 describe('ValidatedTextField - Folder Entity', () => {
   const defaultProps = {
@@ -65,7 +54,7 @@ describe('ValidatedTextField - Folder Entity', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Le titre ne peut contenir que des lettres, chiffres, espaces, tirets et underscores')).toBeInTheDocument();
+        expect(screen.getByText(validationConstants.folder.title.errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -74,14 +63,14 @@ describe('ValidatedTextField - Folder Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="folder.title" />);
 
       const input = screen.getByRole('textbox');
-      const longTitle = 'a'.repeat(65); // 65 chars, but will be truncated to 64
+      const longTitle = 'a'.repeat(validationConstants.folder.title.maxLength + 1); 
       await user.type(input, longTitle);
       fireEvent.blur(input);
 
       await waitFor(() => {
         // Since the component prevents input beyond maxLength, and valid chars are allowed up to maxLength
-        expect(input).toHaveValue('a'.repeat(64));
-        expect(screen.queryByText('Le titre ne peut contenir que des lettres, chiffres, espaces, tirets et underscores')).not.toBeInTheDocument();
+        expect(input).toHaveValue('a'.repeat(validationConstants.folder.title.maxLength));
+        expect(screen.queryByText(validationConstants.folder.title.errorMessage)).not.toBeInTheDocument();
       });
     });
   });
