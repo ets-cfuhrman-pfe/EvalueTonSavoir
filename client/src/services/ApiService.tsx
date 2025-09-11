@@ -404,8 +404,8 @@ public async login(email: string, password: string): Promise<any> {
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const data = err.response?.data as { message: string } | undefined;
+                return data?.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
@@ -508,8 +508,8 @@ public async login(email: string, password: string): Promise<any> {
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const data = err.response?.data as { message: string } | undefined;
+                return data?.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
@@ -546,8 +546,8 @@ public async login(email: string, password: string): Promise<any> {
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 console.log(JSON.stringify(err));
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const data = err.response?.data as { message: string } | undefined;
+                return data?.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
@@ -577,8 +577,8 @@ public async login(email: string, password: string): Promise<any> {
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const data = err.response?.data as { message: string } | undefined;
+                return data?.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
@@ -608,8 +608,8 @@ public async login(email: string, password: string): Promise<any> {
 
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                const data = err.response?.data as { message: string } | undefined;
+                return data?.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
