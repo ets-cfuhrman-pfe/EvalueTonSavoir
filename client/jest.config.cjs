@@ -17,6 +17,8 @@ module.exports = {
         '^src/constants$': '<rootDir>/src/__mocks__/constantsMock.tsx',
         // Dû au fait que tous les imports de "src/" sont normalisés, Jest doit comprendre le chemin réel. TODO: Trouver une solution pour que Jest se fie à tsconfig.json.
         '^src/(.*)$': '<rootDir>/src/$1',
+        // Add mapping for @shared path to match tsconfig.json
+        '^@shared/(.*)$': '<rootDir>/../server/shared/$1',
     },
     transformIgnorePatterns: ['node_modules/(?!nanoid/)'],
 };
