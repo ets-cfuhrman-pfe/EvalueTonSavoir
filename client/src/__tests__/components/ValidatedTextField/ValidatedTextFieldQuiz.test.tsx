@@ -3,25 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
-
-// Mock VALIDATION_CONSTANTS
-jest.mock('@shared/validationConstants.json', () => ({
-  quiz: {
-    title: {
-      minLength: 1,
-      maxLength: 64,
-      errorMessage: 'Le titre du quiz doit contenir entre 1 et 64 caractères'
-    },
-    content: {
-      minLength: 1,
-      maxLength: 50000,
-      errorMessage: 'Le contenu du quiz doit contenir entre 1 et 50000 caractères'
-    }
-  }
-}));
 
 describe('ValidatedTextField - Quiz Entity', () => {
   const defaultProps = {
@@ -65,14 +50,14 @@ describe('ValidatedTextField - Quiz Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="quiz.title" />);
 
       const input = screen.getByRole('textbox');
-      const longTitle = 'a'.repeat(65); // 65 chars, but will be truncated to 64
+      const longTitle = 'a'.repeat(validationConstants.quiz.title.maxLength + 1);
       await user.type(input, longTitle);
       fireEvent.blur(input);
 
       await waitFor(() => {
         // Since the component prevents input beyond maxLength, and valid title is allowed up to maxLength
-        expect(input).toHaveValue('a'.repeat(64));
-        expect(screen.queryByText('Le titre du quiz doit contenir entre 1 et 64 caractères')).not.toBeInTheDocument();
+        expect(input).toHaveValue('a'.repeat(validationConstants.quiz.title.maxLength));
+        expect(screen.queryByText(validationConstants.quiz.title.errorMessage)).not.toBeInTheDocument();
       });
     });
   });
@@ -108,13 +93,13 @@ describe('ValidatedTextField - Quiz Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="quiz.content" />);
 
       const input = screen.getByRole('textbox');
-      const maxLengthContent = 'a'.repeat(50000); // Exactly at max length
+      const maxLengthContent = 'a'.repeat(validationConstants.quiz.content.maxLength); 
       fireEvent.change(input, { target: { value: maxLengthContent } });
       fireEvent.blur(input);
 
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthContent);
-        expect(screen.queryByText('Le contenu du quiz doit contenir entre 1 et 50000 caractères')).not.toBeInTheDocument();
+        expect(screen.queryByText(validationConstants.quiz.content.errorMessage)).not.toBeInTheDocument();
       });
     });
 
@@ -123,19 +108,17 @@ describe('ValidatedTextField - Quiz Entity', () => {
       render(<ValidatedTextField {...defaultProps} fieldPath="quiz.content" />);
 
       const input = screen.getByRole('textbox');
-      const maxLengthContent = 'a'.repeat(50000);
+      const maxLengthContent = 'a'.repeat(validationConstants.quiz.content.maxLength);
 
-      // First set to max length
       fireEvent.change(input, { target: { value: maxLengthContent } });
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthContent);
       });
 
-      // Try to add more characters - this should be blocked
       await user.type(input, 'b');
 
       await waitFor(() => {
-        // Value should remain at max length, no additional characters added
+        
         expect(input).toHaveValue(maxLengthContent);
       });
     });
