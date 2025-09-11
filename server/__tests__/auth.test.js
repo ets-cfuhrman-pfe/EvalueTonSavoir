@@ -158,22 +158,10 @@ describe(
 
     let authConfigInstance;
     let authManagerInstance;
-    let mockUserModel;
 
     // Initialisez l'instance avec la configuration mockée
     beforeAll(() => {
       authConfigInstance = new AuthConfig();
-      
-      // Create a mock user model with the methods expected by AuthManager
-      mockUserModel = {
-        register: jest.fn().mockResolvedValue({ _id: 'mock-user-id', email: 'test@example.com' }),
-        login: jest.fn().mockResolvedValue({ _id: 'mock-user-id', email: 'test@example.com' }),
-        getById: jest.fn().mockResolvedValue({ _id: 'mock-user-id', email: 'test@example.com' }),
-        getId: jest.fn().mockResolvedValue('mock-user-id'),
-        generatePassword: jest.fn().mockReturnValue('generatedPassword123'),
-        editUser: jest.fn().mockResolvedValue(true),
-        close: jest.fn().mockResolvedValue(undefined)
-      };
     });
 
     // Add this hook to clean up after each test
@@ -224,7 +212,7 @@ describe(
         },
       };
       authConfigInstance.loadConfigTest(validModule);
-      authManagerInstance = new AuthManager(expressMock, authConfigInstance.config, mockUserModel);
+      authManagerInstance = new AuthManager(expressMock, authConfigInstance.config);
       authManagerInstance.getUserModel();
       expect(logSpy).toHaveBeenCalledTimes(0);
       logSpy.mockClear();
@@ -239,7 +227,7 @@ describe(
         };
 
         authConfigInstance.loadConfigTest(invalidModule);
-        authManagerInstance = new AuthManager(expressMock, authConfigInstance.config, mockUserModel);
+        authManagerInstance = new AuthManager(expressMock, authConfigInstance.config);
         expect(logSpy).toHaveBeenCalledTimes(1);
         logSpy.mockClear();
       });  
@@ -269,9 +257,9 @@ describe(
           };
         authConfigInstance.loadConfigTest(validModuleInvalidProvider); 
 
-        authManagerInstance = new AuthManager(expressMock,authConfigInstance.config, mockUserModel);
+        authManagerInstance = new AuthManager(expressMock,authConfigInstance.config);
 
-        expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(logSpy).toHaveBeenCalledTimes(4);
         logSpy.mockClear();
       });  
   })

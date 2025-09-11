@@ -183,8 +183,7 @@ class FoldersController {
     
     copy = async (req, res, next) => {
         try {
-            const { folderId } = req.params;
-            const { newTitle } = req.body;
+            const { folderId, newTitle } = req.body;
     
             if (!folderId || !newTitle) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);

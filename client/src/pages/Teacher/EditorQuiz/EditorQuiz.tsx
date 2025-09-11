@@ -11,14 +11,13 @@ import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview
 import { QuizType } from '../../../Types/QuizType';
 import SaveIcon from '@mui/icons-material/Save';
 import './editorQuiz.css';
-import { Button, NativeSelect, Divider } from '@mui/material';
+import { Button, TextField, NativeSelect, Divider } from '@mui/material';
 import ReturnButton from 'src/components/ReturnButton/ReturnButton';
 import ImageGalleryModal from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModal';
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { ENV_VARIABLES } from 'src/constants';
-import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
 
 interface EditQuizParams {
     id: string;
@@ -129,6 +128,10 @@ const QuizForm: React.FC = () => {
         setFilteredValue(linesArray);
     }
 
+    const handleQuizTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setQuizTitle(event.target.value);
+    };
+
     const handleQuizSave = async () => {
         try {
             // check if everything is there
@@ -204,10 +207,9 @@ const QuizForm: React.FC = () => {
             {/* <h2 className="subtitle">Éditeur</h2> */}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <ValidatedTextField
-                    fieldPath="quiz.title"
-                    initialValue={quizTitle}
-                    onValueChange={(value) => setQuizTitle(value)}
+                <TextField
+                    onChange={handleQuizTitleChange}
+                    value={quizTitle}
                     color="primary"
                     placeholder="Titre du quiz"
                     label="Titre du quiz"

@@ -12,13 +12,6 @@ exports.MISSING_REQUIRED_PARAMETER = {
     code: 400
 };
 
-exports.VALIDATION_ERROR = (message) => {
-    return {
-        message: message || 'Données invalides.',
-        code: 400
-    };
-};
-
 exports.MISSING_OIDC_PARAMETER = (name) => {
     return {
         message: `Les informations de connexions de la connexion OIDC ${name} n'ont pu être chargées.`,

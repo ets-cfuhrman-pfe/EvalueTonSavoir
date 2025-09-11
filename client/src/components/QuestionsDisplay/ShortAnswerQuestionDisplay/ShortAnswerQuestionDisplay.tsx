@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
-import { Button } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { ShortAnswerQuestion } from 'gift-pegjs';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
-import ValidatedTextField from '../../ValidatedTextField/ValidatedTextField';
 
 interface Props {
     question: ShortAnswerQuestion;
@@ -54,13 +53,13 @@ const ShortAnswerQuestionDisplay: React.FC<Props> = (props) => {
             ) : (
                 <>
                     <div className="answer-wrapper mb-1">
-                        <ValidatedTextField
-                            fieldPath="text.short"
-                            initialValue={answer[0] || ''}
-                            onValueChange={(value) => setAnswer([value])}
+                        <TextField
                             type="text"
                             id={question.formattedStem.text}
                             name={question.formattedStem.text}
+                            onChange={(e) => {
+                                setAnswer([e.target.value]);
+                            }}
                             disabled={showAnswer}
                             aria-label="short-answer-input"
                         />
