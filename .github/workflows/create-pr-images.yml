@@ -14,14 +14,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      # Debug: Check local filesystem structure
+      - name: Debug - List repository structure
+        run: |
+          echo "=== Repository root structure ==="
+          ls -la
+          echo ""
+          echo "=== Server directory structure ==="
+          if [ -d "server" ]; then
+            ls -la server/
+            echo ""
+            echo "=== Server/shared directory structure ==="
+            if [ -d "server/shared" ]; then
+              ls -la server/shared/
+            else
+              echo "server/shared directory does not exist!"
+            fi
+          else
+            echo "server directory does not exist!"
+          fi
+          echo ""
+          echo "=== Client directory structure ==="
+          if [ -d "client" ]; then
+            ls -la client/
+          else
+            echo "client directory does not exist!"
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Extract metadata for Frontend Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -30,6 +60,21 @@ jobs:
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
+      
+      # Debug: Build a test image first to check directory structure inside container
+      - name: Debug - Build test image and check container structure
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./client/Dockerfile
+          push: false
+          platforms: linux/amd64
+          target: debug
+          tags: debug-frontend:latest
+          build-args: |
+            DEBUG=true
+          cache-from: type=gha
+          
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v5
         with:
