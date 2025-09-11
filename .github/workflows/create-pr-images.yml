@@ -30,6 +30,16 @@ jobs:
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
+      - name: Debug - List directory structure
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Project root contents ==="
+          ls -la
+          echo "=== Server directory contents ==="
+          ls -la server/ || echo "server/ directory not found"
+          echo "=== Looking for server/shared ==="
+          ls -la server/shared/ || echo "server/shared/ directory not found"
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v5
         with:
