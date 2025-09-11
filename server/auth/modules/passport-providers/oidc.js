@@ -23,19 +23,19 @@ class PassportOpenIDConnect {
 
     async register(app, passport, endpoint, name, provider, userModel) {
 
-        console.log(`oidc.js: register: endpoint: ${endpoint}`);
-        console.log(`oidc.js: register: name: ${name}`);
-        console.log(`oidc.js: register: provider: ${JSON.stringify(provider)}`);
-        console.log(`oidc.js: register: userModel: ${JSON.stringify(userModel)}`);
+        // console.log(`oidc.js: register: endpoint: ${endpoint}`);
+        // console.log(`oidc.js: register: name: ${name}`);
+        // console.log(`oidc.js: register: provider: ${JSON.stringify(provider)}`);
+        // console.log(`oidc.js: register: userModel: ${JSON.stringify(userModel)}`);
 
         const config = await this.getConfigFromConfigURL(name, provider);
         const cb_url = `${process.env['OIDC_URL']}${endpoint}/${name}/callback`;
         const self = this;
         const scope = 'openid profile email ' + `${provider.OIDC_ADD_SCOPE}`;
 
-        console.log(`oidc.js: register: config: ${JSON.stringify(config)}`);
-        console.log(`oidc.js: register: cb_url: ${cb_url}`);
-        console.log(`oidc.js: register: scope: ${scope}`);
+        // console.log(`oidc.js: register: config: ${JSON.stringify(config)}`);
+        // console.log(`oidc.js: register: cb_url: ${cb_url}`);
+        // console.log(`oidc.js: register: scope: ${scope}`);
 
         passport.use(name, new OpenIDConnectStrategy({
             issuer: config.issuer,
