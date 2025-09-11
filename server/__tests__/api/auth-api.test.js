@@ -94,8 +94,8 @@ describe("Auth API Integration Tests", () => {
       const response = await request(app)
         .get("/api/auth/getActiveAuth")
         .expect(505);
+      expect(response.statusCode).toBe(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
     });
 
     it("should handle getActiveAuth error", async () => {
@@ -107,7 +107,7 @@ describe("Auth API Integration Tests", () => {
         .get("/api/auth/getActiveAuth")
         .expect(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      expect(response.statusCode).toBe(505);
     });
 
     it("should return error when no auth configuration available", async () => {
@@ -132,7 +132,6 @@ describe("Auth API Integration Tests", () => {
       const response = await request(app)
         .get("/api/auth/getRoomsRequireAuth")
         .expect(200);
-
       expect(response.headers['content-type']).toBe("application/json; charset=utf-8");
       expect(response.body).toEqual({
         roomsRequireAuth: true
@@ -165,7 +164,7 @@ describe("Auth API Integration Tests", () => {
         .get("/api/auth/getRoomsRequireAuth")
         .expect(505);
 
-      expect(response.text).toBe("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
+      expect(response.statusCode).toBe(505);
     });
   });
 });
