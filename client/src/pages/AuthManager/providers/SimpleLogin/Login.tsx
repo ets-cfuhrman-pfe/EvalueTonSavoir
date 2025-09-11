@@ -4,12 +4,11 @@ import { Link } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 
 import '../css/simpleLogin.css';
-import LoadingButton from '@mui/lab/LoadingButton';
 import { TextField } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer'
 import ApiService from '../../../../services/ApiService';
-import ValidatedTextField from '../../../../components/ValidatedTextField/ValidatedTextField';
 
 const SimpleLogin: React.FC = () => {
 
@@ -40,22 +39,21 @@ const SimpleLogin: React.FC = () => {
             title=''
             error={connectionError}>
 
-            <ValidatedTextField
-                fieldPath="user.email"
-                initialValue={email}
-                onValueChange={(value) => setEmail(value)}
+            <TextField
                 label="Email"
                 variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
 
             <TextField
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 label="Mot de passe"
                 variant="outlined"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
             />

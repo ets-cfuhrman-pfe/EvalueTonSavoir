@@ -5,18 +5,17 @@ import { ENV_VARIABLES } from 'src/constants';
 
 import StudentModeQuiz from 'src/components/StudentModeQuiz/StudentModeQuiz';
 import TeacherModeQuiz from 'src/components/TeacherModeQuiz/TeacherModeQuiz';
-import webSocketService, { AnswerSubmissionToBackendType } from '../../../services/WebsocketService';
+import webSocketService, {AnswerSubmissionToBackendType} from '../../../services/WebsocketService';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 
 import './joinRoom.css';
 import { QuestionType } from '../../../Types/QuestionType';
+import { TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
 
 import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
-import ValidationService from '../../../services/ValidationService';
 import { useSearchParams } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
@@ -33,36 +32,16 @@ const JoinRoom: React.FC = () => {
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
     const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
-    const [isRoomNameValid, setIsRoomNameValid] = useState(true);
-    const [isUsernameValid, setIsUsernameValid] = useState(true);
-    const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
         if (roomFromUrl) {
-            // Validate the room name from URL
-            const validationResult = ValidationService.validateField('room.name', roomFromUrl, { required: true });
-            if (validationResult.isValid) {
-                setRoomName(roomFromUrl);
-                setIsQRCodeJoin(true);
-                setIsRoomNameValid(true);
-                console.log('Mode QR Code détecté, salle:', roomFromUrl);
-            } else {
-                console.error('Nom de salle invalide dans l\'URL QR code:', roomFromUrl, 'Erreurs:', validationResult.errors);
-                setConnectionError(`Nom de salle invalide: ${validationResult.errors[0]}`);
-                setIsRoomNameValid(false);
-            }
+            setRoomName(roomFromUrl);
+            setIsQRCodeJoin(true);
+            console.log('Mode QR Code détecté, salle:', roomFromUrl);
         }
     }, [searchParams]);
-
-    // Validate initial username on mount
-    useEffect(() => {
-        if (username) {
-            const validationResult = ValidationService.validateField('user.username', username, { required: true });
-            setIsUsernameValid(validationResult.isValid);
-        }
-    }, []); // Only run once on mount
 
     useEffect(() => {
         handleCreateSocket();
@@ -75,7 +54,7 @@ const JoinRoom: React.FC = () => {
         console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
-
+    
 
     const handleCreateSocket = () => {
         console.log(`JoinRoom: handleCreateSocket: ${ENV_VARIABLES.VITE_BACKEND_URL}`);
@@ -179,11 +158,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && 
-            username && 
-            isUsernameValid && 
-            ((!isQRCodeJoin && roomName && isManualRoomNameValid) || 
-             (isQRCodeJoin && roomName && isRoomNameValid))) {
+        if (e.key === 'Enter' && username && roomName) {
             handleSocket();
         }
     };
@@ -240,38 +215,29 @@ const JoinRoom: React.FC = () => {
                 >
                     {/* Afficher champ salle SEULEMENT si pas de QR code */}
                     {!isQRCodeJoin && (
-                        <ValidatedTextField
-                            fieldPath="room.name"
+                        <TextField
+                            type="text"
                             label="Nom de la salle"
                             variant="outlined"
-                            initialValue={roomName}
-                            onValueChange={(value, isValid) => {
-                                setRoomName(value.toUpperCase());
-                                setIsManualRoomNameValid(isValid);
-                            }}
+                            value={roomName}
+                            onChange={(e) => setRoomName(e.target.value.toUpperCase())}
                             placeholder="Nom de la salle"
                             sx={{ marginBottom: '1rem' }}
                             fullWidth={true}
                             onKeyDown={handleReturnKey}
-                            required={true}
                         />
                     )}
 
                     {/* Champ username toujours visible */}
-                    <ValidatedTextField
-                        fieldPath="user.username"
+                    <TextField
                         label="Nom d'utilisateur"
                         variant="outlined"
-                        initialValue={username}
-                        onValueChange={(value, isValid) => {
-                            setUsername(value);
-                            setIsUsernameValid(isValid);
-                        }}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         placeholder="Nom d'utilisateur"
                         sx={{ marginBottom: '1rem' }}
                         fullWidth={true}
                         onKeyDown={handleReturnKey}
-                        required={true}
                     />
 
                     <LoadingButton
@@ -279,12 +245,7 @@ const JoinRoom: React.FC = () => {
                         onClick={handleSocket}
                         variant="contained"
                         sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                        disabled={
-                            !username || 
-                            !isUsernameValid || 
-                            (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
-                            (isQRCodeJoin && (!roomName || !isRoomNameValid))
-                        }
+                        disabled={!username || (isQRCodeJoin && !roomName)}
                     >
                         {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
                     </LoadingButton>

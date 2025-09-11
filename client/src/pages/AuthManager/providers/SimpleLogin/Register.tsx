@@ -1,12 +1,11 @@
 // JoinRoom.tsx
 import React, { useEffect, useState } from 'react';
 
-import {FormLabel, RadioGroup, FormControlLabel, Radio, Box, TextField } from '@mui/material';
+import { TextField, FormLabel, RadioGroup, FormControlLabel, Radio, Box } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import LoginContainer from '../../../../components/LoginContainer/LoginContainer';
 import ApiService from '../../../../services/ApiService';
-import ValidatedTextField from '../../../../components/ValidatedTextField/ValidatedTextField';
 
 const Register: React.FC = () => {
 
@@ -26,7 +25,18 @@ const Register: React.FC = () => {
         setRoles([role]); // Update the roles array to contain the selected role
     };
 
+    const isValidEmail = (email: string) => {
+        // Basic email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     const register = async () => {
+        if (!isValidEmail(email)) {
+            setConnectionError("Veuillez entrer une adresse email valide.");
+            return;
+        }
+
         const result = await ApiService.register(name, email, password, roles);
 
         if (result !== true) {
@@ -40,35 +50,35 @@ const Register: React.FC = () => {
             title="Créer un compte"
             error={connectionError}
         >
-            <ValidatedTextField
-                fieldPath="user.username"
-                initialValue={name}
-                onValueChange={(value) => setName(value)}
+            <TextField
                 label="Nom"
                 variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Votre nom"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
             />
 
-            <ValidatedTextField
-                fieldPath="user.email"
-                initialValue={email}
-                onValueChange={(value) => setEmail(value)}
+            <TextField
                 label="Email"
                 variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Adresse courriel"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth
-                type="email"
+                type="email" 
+                error={!!connectionError && !isValidEmail(email)} 
+                helperText={connectionError && !isValidEmail(email) ? "Adresse email invalide." : ""}
             />
 
             <TextField
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 label="Mot de passe"
                 variant="outlined"
+                value={password}
                 type="password"
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
                 sx={{ marginBottom: '1rem' }}
                 fullWidth

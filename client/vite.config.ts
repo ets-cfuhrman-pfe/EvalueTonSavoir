@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import pluginChecker from 'vite-plugin-checker';
 import EnvironmentPlugin from 'vite-plugin-environment';
-import path from 'path';
 
 console.log("⚡ Vite config is being loaded!");
 
@@ -25,8 +24,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-          'src': '/src',
-          '@shared': path.resolve(__dirname, '../server/shared')
+          'src': '/src'
         }
       },
     preview: {

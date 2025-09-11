@@ -1,12 +1,11 @@
 // NumericalQuestion.tsx
 import React, { useEffect, useState } from 'react';
 import '../questionStyle.css';
-import { Button } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { NumericalQuestion, SimpleNumericalAnswer, RangeNumericalAnswer, HighLowNumericalAnswer } from 'gift-pegjs';
 import { isSimpleNumericalAnswer, isRangeNumericalAnswer, isHighLowNumericalAnswer, isMultipleNumericalAnswer } from 'gift-pegjs/typeGuards';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
-import ValidatedTextField from '../../ValidatedTextField/ValidatedTextField';
 
 interface Props {
     question: NumericalQuestion;
@@ -65,13 +64,13 @@ const NumericalQuestionDisplay: React.FC<Props> = (props) => {
             ) : (
                 <>
                     <div className="answer-wrapper mb-1">
-                        <ValidatedTextField
-                            fieldPath="numerical.answer"
-                            initialValue={answer[0] || ''}
-                            onValueChange={(value) => setAnswer([Number(value)])}
+                        <TextField
                             type="number"
                             id={question.formattedStem.text}
                             name={question.formattedStem.text}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                setAnswer([e.target.valueAsNumber]);
+                            }}
                             inputProps={{ 'data-testid': 'number-input' }}
                         />
                     </div>
