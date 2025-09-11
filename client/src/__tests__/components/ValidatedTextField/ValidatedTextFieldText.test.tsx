@@ -3,23 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import validationConstants from '@shared/validationConstants.json';
 
 // Mock ValidationService to avoid dependencies
 jest.mock('../../../services/ValidationService');
-
-// Mock VALIDATION_CONSTANTS
-jest.mock('@shared/validationConstants.json', () => ({
-  text: {
-    short: {
-      maxLength: 500,
-      errorMessage: 'Le texte ne peut pas dépasser 500 caractères'
-    },
-    long: {
-      maxLength: 5000,
-      errorMessage: 'Le texte ne peut pas dépasser 5000 caractères'
-    }
-  }
-}));
 
 describe('ValidatedTextField - Text Entity', () => {
   const defaultProps = {
@@ -51,14 +38,14 @@ describe('ValidatedTextField - Text Entity', () => {
 
       const input = screen.getByRole('textbox');
 
-      // First set the input to exactly maxLength
-      const maxLengthText = 'a'.repeat(500);
+     
+      const maxLengthText = 'a'.repeat(validationConstants.text.short.maxLength);
       fireEvent.change(input, { target: { value: maxLengthText } });
 
-      // Verify the input accepts the maxLength text
+     
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthText);
-        expect(input).toHaveAttribute('maxlength', '500');
+        expect(input).toHaveAttribute('maxlength', String(validationConstants.text.short.maxLength));
       });
 
       // Try to add one more character - this should be blocked by HTML maxlength
@@ -91,14 +78,14 @@ describe('ValidatedTextField - Text Entity', () => {
 
       const input = screen.getByRole('textbox');
 
-      // First set the input to exactly maxLength
-      const maxLengthText = 'a'.repeat(5000);
+      
+      const maxLengthText = 'a'.repeat( validationConstants.text.long.maxLength);
       fireEvent.change(input, { target: { value: maxLengthText } });
 
-      // Verify the input accepts the maxLength text
+   
       await waitFor(() => {
         expect(input).toHaveValue(maxLengthText);
-        expect(input).toHaveAttribute('maxlength', '5000');
+        expect(input).toHaveAttribute('maxlength', String(validationConstants.text.long.maxLength));
       });
 
       // Try to add one more character - this should be blocked by HTML maxlength
