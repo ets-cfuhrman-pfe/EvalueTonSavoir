@@ -213,9 +213,6 @@ const JoinRoomV2: React.FC = () => {
         case 'student':
             return (
                 <div className="d-flex flex-column full-height">
-                    <div className="version-badge">
-                        NOUVELLE INTERFACE V2
-                    </div>
                     <StudentModeQuiz
                         questions={questions}
                         answers={answers}
@@ -227,9 +224,6 @@ const JoinRoomV2: React.FC = () => {
         case 'teacher':
             return (
                 <div className="d-flex flex-column full-height">
-                    <div className="version-badge">
-                        NOUVELLE INTERFACE V2
-                    </div>
                     {question && (
                         <TeacherModeQuiz
                             questionInfos={question}
@@ -241,77 +235,76 @@ const JoinRoomV2: React.FC = () => {
                 </div>
             );
         default:
-            return (
-                <div className="center-content full-height" style={{ backgroundColor: 'var(--bs-light)' }}>
-                    <div className="version-badge">
-                        NOUVELLE INTERFACE V2
-                    </div>
+                return (
+                <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
 
-                    <LoginContainer
-                        title={isQRCodeJoin ? `Rejoindre la salle ${roomName} (V2)` : 'Rejoindre une salle (V2)'}
-                        error={connectionError}
-                    >
-                        <div className="card-form">
-                            {/* Afficher champ salle SEULEMENT si pas de QR code */}
-                            {!isQRCodeJoin && (
+                    <div className="login-container-wrapper">
+                        <LoginContainer
+                            title={isQRCodeJoin ? `Rejoindre la salle ${roomName} (V2)` : 'Rejoindre une salle (V2)'}
+                            error={connectionError}
+                        >
+                            <div className="card-form">
+                                {/* Afficher champ salle SEULEMENT si pas de QR code */}
+                                {!isQRCodeJoin && (
+                                    <div className="mb-3">
+                                        <ValidatedTextField
+                                            fieldPath="room.name"
+                                            label="Nom de la salle"
+                                            variant="outlined"
+                                            initialValue={roomName}
+                                            onValueChange={(value, isValid) => {
+                                                setRoomName(value.toUpperCase());
+                                                setIsManualRoomNameValid(isValid);
+                                            }}
+                                            placeholder="Nom de la salle"
+                                            fullWidth={true}
+                                            onKeyDown={handleReturnKey}
+                                            required={true}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Champ username toujours visible */}
                                 <div className="mb-3">
                                     <ValidatedTextField
-                                        fieldPath="room.name"
-                                        label="Nom de la salle"
+                                        fieldPath="user.username"
+                                        label="Nom d'utilisateur"
                                         variant="outlined"
-                                        initialValue={roomName}
+                                        initialValue={username}
                                         onValueChange={(value, isValid) => {
-                                            setRoomName(value.toUpperCase());
-                                            setIsManualRoomNameValid(isValid);
+                                            setUsername(value);
+                                            setIsUsernameValid(isValid);
                                         }}
-                                        placeholder="Nom de la salle"
+                                        placeholder="Nom d'utilisateur"
                                         fullWidth={true}
                                         onKeyDown={handleReturnKey}
                                         required={true}
                                     />
                                 </div>
-                            )}
 
-                            {/* Champ username toujours visible */}
-                            <div className="mb-3">
-                                <ValidatedTextField
-                                    fieldPath="user.username"
-                                    label="Nom d'utilisateur"
-                                    variant="outlined"
-                                    initialValue={username}
-                                    onValueChange={(value, isValid) => {
-                                        setUsername(value);
-                                        setIsUsernameValid(isValid);
-                                    }}
-                                    placeholder="Nom d'utilisateur"
-                                    fullWidth={true}
-                                    onKeyDown={handleReturnKey}
-                                    required={true}
-                                />
+                                <LoadingButton
+                                    loading={isConnecting}
+                                    onClick={handleSocket}
+                                    variant="contained"
+                                    className="btn-primary"
+                                    disabled={
+                                        !username || 
+                                        !isUsernameValid || 
+                                        (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
+                                        (isQRCodeJoin && (!roomName || !isRoomNameValid))
+                                    }
+                                >
+                                    {isQRCodeJoin ? 'Rejoindre avec QR Code (V2)' : 'Rejoindre (V2)'}
+                                </LoadingButton>
+
+                                {connectionError && (
+                                    <div className="alert-error">
+                                        {connectionError}
+                                    </div>
+                                )}
                             </div>
-
-                            <LoadingButton
-                                loading={isConnecting}
-                                onClick={handleSocket}
-                                variant="contained"
-                                className="btn-gradient"
-                                disabled={
-                                    !username || 
-                                    !isUsernameValid || 
-                                    (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
-                                    (isQRCodeJoin && (!roomName || !isRoomNameValid))
-                                }
-                            >
-                                {isQRCodeJoin ? 'Rejoindre avec QR Code (V2)' : 'Rejoindre (V2)'}
-                            </LoadingButton>
-
-                            {connectionError && (
-                                <div className="alert-error">
-                                    {connectionError}
-                                </div>
-                            )}
-                        </div>
-                    </LoginContainer>
+                        </LoginContainer>
+                    </div>
                 </div>
             );
     }
