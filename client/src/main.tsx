@@ -7,6 +7,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+// Import Bootstrap styles
+import './styles/main.scss';
+
 import './cssReset.css';
 import './index.css';
 
