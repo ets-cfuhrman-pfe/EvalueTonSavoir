@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -37,6 +37,7 @@ const JoinRoom: React.FC = () => {
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -72,7 +73,6 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
 
@@ -134,7 +134,6 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
-        //        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -159,6 +158,11 @@ const JoinRoom: React.FC = () => {
         }
     };
 
+    const handleSocketV2 = () => {
+        // Navigate to the new V2 interface - clean URL without unnecessary parameters
+        navigate('/student/join-room-v2');
+    };
+
     const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
         console.info(`JoinRoom: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
@@ -167,7 +171,6 @@ const JoinRoom: React.FC = () => {
             username: username,
             idQuestion: idQuestion
         };
-        // localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
         setAnswers((prevAnswers) => {
             console.log(`JoinRoom: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
             const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
@@ -193,9 +196,20 @@ const JoinRoom: React.FC = () => {
             <div className='room'>
                 <div className='roomHeader'>
 
-                    <DisconnectButton
-                        onReturn={disconnect}
-                        message={`Êtes-vous sûr de vouloir quitter?`} />
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <DisconnectButton
+                            onReturn={disconnect}
+                            message={`Êtes-vous sûr de vouloir quitter?`} />
+                        
+                        <LoadingButton
+                            loading={false}
+                            onClick={handleSocketV2}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Nouvelle interface
+                        </LoadingButton>
+                    </div>
 
                     <div className='centerTitle'>
                         <div className='title'>Salle: {roomName}</div>
@@ -278,7 +292,7 @@ const JoinRoom: React.FC = () => {
                         loading={isConnecting}
                         onClick={handleSocket}
                         variant="contained"
-                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
+                        sx={{ marginBottom: '0.5rem' }}
                         disabled={
                             !username || 
                             !isUsernameValid || 
@@ -287,6 +301,15 @@ const JoinRoom: React.FC = () => {
                         }
                     >
                         {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                    </LoadingButton>
+
+                    <LoadingButton
+                        loading={false}
+                        onClick={handleSocketV2}
+                        variant="outlined"
+                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
+                    >
+                        Nouvelle interface
                     </LoadingButton>
                 </LoginContainer>
             );
