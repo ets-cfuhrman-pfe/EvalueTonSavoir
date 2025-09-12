@@ -1,0 +1,137 @@
+// Bootstrap component overrides and custom styles
+// These styles extend or override Bootstrap components
+
+@use 'sass:color';
+@use './variables' as vars;
+
+// Custom button variants
+.btn-gradient {
+  background: vars.$app-primary-gradient;
+  border: none;
+  color: white;
+  
+  &:hover {
+    background: linear-gradient(45deg, color.scale(vars.$primary, $lightness: -10%), color.scale(vars.$secondary, $lightness: -10%));
+    color: white;
+  }
+}
+
+// Custom card styles
+.card-modern {
+  border: none;
+  box-shadow: vars.$box-shadow;
+  border-radius: vars.$border-radius-lg;
+}
+
+// Login container styles
+.login-container {
+  .card {
+    @extend .card-modern;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  
+  padding: vars.$spacing-sm 0;
+  
+  .avatar {
+    margin-bottom: vars.$spacing-sm;
+  }
+  
+  .inputs {
+    width: 100%;
+    gap: vars.$spacing-sm;
+  }
+  
+  .title {
+    margin-bottom: vars.$spacing-md;
+  }
+
+  // Mobile optimizations
+  @media (max-width: vars.$breakpoint-md) {
+    padding: vars.$spacing-xs 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    .avatar {
+      margin-bottom: vars.$spacing-xs;
+      max-height: 35px;
+    }
+    
+    .inputs {
+      gap: vars.$spacing-xs;
+      flex: 1;
+    }
+    
+    .title {
+      margin-bottom: vars.$spacing-sm;
+      font-size: 1rem !important;
+    }
+  }
+}
+
+// Override Bootstrap spacing for more compact login form
+.login-container-wrapper .mb-3 {
+  margin-bottom: vars.$spacing-xs !important;
+}
+
+
+// Error text styling
+.error-text {
+  color: vars.$danger;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  text-align: center;
+}
+
+// Room header styles
+.room-header {
+  background: vars.$light;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 1rem;
+}
+
+// UI version indicator
+.ui-version-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: vars.$app-primary-gradient;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: vars.$border-radius;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 1050;
+  box-shadow: vars.$box-shadow-sm;
+}
+
+// Waiting state styles
+.waiting-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.waiting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: vars.$light;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.waiting-title {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.waiting-content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
