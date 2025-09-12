@@ -49,4 +49,14 @@ export default defineConfig({
             },
         },
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                // Suppress deprecation warnings from Bootstrap
+                quietDeps: true,
+                silenceDeprecations: ['import', 'global-builtin', 'color-functions'],
+                api: 'modern-compiler'
+            }
+        }
+    }
 });
