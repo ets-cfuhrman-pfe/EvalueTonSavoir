@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { ENV_VARIABLES } from 'src/constants';
 
-import StudentModeQuiz from 'src/components/StudentModeQuiz/StudentModeQuiz';
-import TeacherModeQuiz from 'src/components/TeacherModeQuiz/TeacherModeQuiz';
+import StudentModeQuizV2 from 'src/components/StudentModeQuiz/StudentModeQuizV2';
+import TeacherModeQuizV2 from 'src/components/TeacherModeQuiz/TeacherModeQuizV2';
 import webSocketService, { AnswerSubmissionToBackendType } from '../../../services/WebsocketService';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 
@@ -13,7 +13,7 @@ import { QuestionType } from '../../../Types/QuestionType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
 
-import LoginContainer from 'src/components/LoginContainer/LoginContainer';
+import LoginContainerV2 from 'src/components/LoginContainer/LoginContainerV2';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
@@ -213,7 +213,7 @@ const JoinRoomV2: React.FC = () => {
         case 'student':
             return (
                 <div className="d-flex flex-column full-height">
-                    <StudentModeQuiz
+                    <StudentModeQuizV2
                         questions={questions}
                         answers={answers}
                         submitAnswer={handleOnSubmitAnswer}
@@ -225,7 +225,7 @@ const JoinRoomV2: React.FC = () => {
             return (
                 <div className="d-flex flex-column full-height">
                     {question && (
-                        <TeacherModeQuiz
+                        <TeacherModeQuizV2
                             questionInfos={question}
                             answers={answers}
                             submitAnswer={handleOnSubmitAnswer}
@@ -239,7 +239,7 @@ const JoinRoomV2: React.FC = () => {
                 <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
 
                     <div className="login-container-wrapper">
-                        <LoginContainer
+                        <LoginContainerV2
                             title={isQRCodeJoin ? `Rejoindre la salle ${roomName} (V2)` : 'Rejoindre une salle (V2)'}
                             error={connectionError}
                         >
@@ -303,7 +303,7 @@ const JoinRoomV2: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                        </LoginContainer>
+                        </LoginContainerV2>
                     </div>
                 </div>
             );
