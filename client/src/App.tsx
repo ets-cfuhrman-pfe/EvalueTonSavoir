@@ -15,6 +15,7 @@ import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
+import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
@@ -85,6 +86,10 @@ const App: React.FC = () => {
                         <Route
                             path="/student/join-room"
                             element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoom /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/student/join-room-v2"
+                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoomV2 /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages authentification */}
