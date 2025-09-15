@@ -1,0 +1,67 @@
+// Global base styles and foundational elements
+// These are styles that apply to the entire application
+
+@use './variables' as vars;
+
+// Global application styles
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: vars.$font-family-base;
+  background-color: vars.$light;
+  min-height: 100vh;
+}
+
+// Global container
+.container-custom {
+  max-width: vars.$breakpoint-xl;
+  margin: 0 auto;
+  padding: 0 vars.$spacing-md;
+}
+
+// Global responsive container wrapper
+.login-container-wrapper {
+  width: 100%;
+  max-width: vars.$container-width-desktop;
+  margin: 0 auto;
+  padding: vars.$spacing-xs;
+  background: white;
+  border-radius: vars.$border-radius;
+  box-shadow: vars.$box-shadow;
+  border: 1px solid vars.$login-container-border-color;
+
+  // Tablet breakpoint
+  @media (max-width: vars.$breakpoint-lg) {
+    max-width: vars.$container-width-tablet;
+    padding: vars.$spacing-xs;
+  }
+
+  // Mobile breakpoint
+  @media (max-width: vars.$breakpoint-md) {
+    max-width: vars.$login-container-mobile-width;
+    padding: vars.$spacing-xs;
+    margin: vars.$login-container-mobile-margin;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  // Large desktop breakpoint
+  @media (min-width: vars.$breakpoint-xl) {
+    max-width: vars.$container-width-large;
+  }
+}
+
+// Global shadow classes
+.shadow-custom {
+  box-shadow: vars.$box-shadow;
+}
+
+.shadow-custom-lg {
+  box-shadow: vars.$box-shadow-lg;
+}

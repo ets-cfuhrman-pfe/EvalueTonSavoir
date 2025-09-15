@@ -1,0 +1,8 @@
+// Login component styles 
+// All styles specific to 
+@use '../variables' as vars;
+
+// Override Bootstrap spacing for more compact login form
+.login-container-wrapper .mb-3 {
+  margin-bottom: vars.$spacing-xs !important;
+}

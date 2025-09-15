@@ -1,0 +1,106 @@
+// Quiz component styles
+// All styles specific to quiz interface and functionality
+
+@use '../variables' as vars;
+
+// Quiz layout styles
+.min-height-feedback {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.quiz-question-area {
+  text-align: left;
+  
+  // Prevent validation styling flicker when transitioning between questions
+  .question-transition {
+    transition: background-color 0.1s ease-in-out;
+    
+    &.loading {
+      background-color: transparent !important;
+      
+      .bg-success,
+      .bg-danger {
+        background-color: var(--bs-light) !important;
+        color: var(--bs-dark) !important;
+        transition: none;
+      }
+    }
+  }
+}
+
+.quiz-navigation-area {
+  background-color: vars.$light;
+  border-left: 1px solid rgba(0, 0, 0, 0.125);
+  
+  // Ensure navigation area is always accessible on desktop
+  @media (min-width: vars.$breakpoint-lg) {
+    position: sticky;
+    top: 0;
+    height: fit-content;
+  }
+}
+
+// Quiz header
+.quiz-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1020; // Ensure it stays above other content when sticky
+  
+  // Question counter styling
+  .question-counter {
+    background: vars.$primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 1.1rem;
+  }
+}
+
+// Mobile-specific quiz header improvements
+@media (max-width: #{vars.$breakpoint-md - 1px}) {
+  .quiz-header {
+    .question-counter {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Very small screens
+@media (max-width: #{vars.$breakpoint-sm - 1px}) {
+  .quiz-header {
+    padding: 0.5rem 0 !important;
+    
+    .question-counter {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Mobile quiz navigation styles
+@media (max-width: #{vars.$breakpoint-lg - 1px}) {
+  .student-mode-quiz-mobile {
+    .quiz-mobile-navigation {
+      padding: 1rem;
+      background-color: vars.$light;
+      border-top: 1px solid rgba(0, 0, 0, 0.125);
+      margin-top: auto;
+    }
+  }
+}
+
+// Ensure quiz content area scrolls properly on mobile
+@media (max-width: #{vars.$breakpoint-lg - 1px}) {
+  .quiz-content-mobile {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    
+    .p-4 {
+      padding-bottom: 2rem !important;
+    }
+  }
+}
