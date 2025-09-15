@@ -37,6 +37,9 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
         }
     }, [passedAnswer, question.id]);
 
+    // Prevent validation styling from showing immediately on question change
+    const shouldShowValidation = showAnswer && answer.length > 0;
+
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
             console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
@@ -78,20 +81,20 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             <Button
                                 variant="outlined"
                                 className={`w-100 text-start justify-content-start p-3 ${
-                                    showAnswer 
+                                    shouldShowValidation 
                                         ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
                                         : (selected ? 'bg-primary text-white' : 'bg-light text-dark')
                                 }`}
                                 disabled={disableButton}
-                                onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
+                                onClick={() => !shouldShowValidation && handleOnClickAnswer(choice.formattedText.text)}
                                 style={{
-                                    border: showAnswer && selected 
+                                    border: shouldShowValidation && selected 
                                         ? '4px solid #fff' 
-                                        : selected && !showAnswer 
+                                        : selected && !shouldShowValidation 
                                             ? '2px solid var(--bs-primary)' 
                                             : '1px solid #dee2e6',
                                     borderRadius: '0.5rem',
-                                    boxShadow: showAnswer && selected 
+                                    boxShadow: shouldShowValidation && selected 
                                         ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
                                         : 'none',
                                     position: 'relative'
@@ -100,7 +103,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 <div className="d-flex align-items-center w-100">
                                     <div 
                                         className={`d-flex align-items-center justify-content-center me-3 rounded-circle border ${
-                                            showAnswer 
+                                            shouldShowValidation 
                                                 ? (choice.isCorrect ? 'bg-white text-success' : 'bg-white text-danger')
                                                 : (selected ? 'bg-white text-primary' : 'bg-white text-dark')
                                         }`}

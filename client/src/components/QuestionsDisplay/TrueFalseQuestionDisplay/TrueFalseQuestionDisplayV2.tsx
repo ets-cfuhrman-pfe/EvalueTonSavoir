@@ -30,13 +30,17 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     useEffect(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
             setAnswer(passedAnswer[0]);
+        } else {
+            setAnswer(undefined);
         }
-    }, [passedAnswer]);
+    }, [passedAnswer, question.id]);
 
     const handleOnClickAnswer = (value: boolean) => {
         setAnswer(value);
     };
 
+    // Prevent validation styling from showing immediately on question change
+    const shouldShowValidation = showAnswer && answer !== undefined;
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 
@@ -53,21 +57,21 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start ${
-                                showAnswer 
+                                shouldShowValidation 
                                     ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
                                     : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark')
                             }`}
-                            onClick={() => !showAnswer && handleOnClickAnswer(true)}
+                            onClick={() => !shouldShowValidation && handleOnClickAnswer(true)}
                             disabled={disableButton}
                             variant="outlined"
                             style={{
-                                border: showAnswer && selectedTrue 
+                                border: shouldShowValidation && selectedTrue 
                                     ? '4px solid #fff' 
-                                    : selectedTrue && !showAnswer 
+                                    : selectedTrue && !shouldShowValidation 
                                         ? '2px solid var(--bs-primary)' 
                                         : '1px solid #dee2e6',
                                 borderRadius: '0.5rem',
-                                boxShadow: showAnswer && selectedTrue 
+                                boxShadow: shouldShowValidation && selectedTrue 
                                     ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
                                     : 'none',
                                 position: 'relative'
@@ -91,21 +95,21 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start ${
-                                showAnswer 
+                                shouldShowValidation 
                                     ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
                                     : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark')
                             }`}
-                            onClick={() => !showAnswer && handleOnClickAnswer(false)}
+                            onClick={() => !shouldShowValidation && handleOnClickAnswer(false)}
                             disabled={disableButton}
                             variant="outlined"
                             style={{
-                                border: showAnswer && selectedFalse 
+                                border: shouldShowValidation && selectedFalse 
                                     ? '4px solid #fff' 
-                                    : selectedFalse && !showAnswer 
+                                    : selectedFalse && !shouldShowValidation 
                                         ? '2px solid var(--bs-primary)' 
                                         : '1px solid #dee2e6',
                                 borderRadius: '0.5rem',
-                                boxShadow: showAnswer && selectedFalse 
+                                boxShadow: shouldShowValidation && selectedFalse 
                                     ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
                                     : 'none',
                                 position: 'relative'

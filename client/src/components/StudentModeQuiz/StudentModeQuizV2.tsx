@@ -37,8 +37,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     }, [questionInfos.question, answers]);
 
     const nextQuestion = () => {
+        setIsAnswerSubmitted(false); // Reset validation state BEFORE changing question
         setQuestionInfos(questions[Number(questionInfos.question?.id)]);
-        setIsAnswerSubmitted(false); // Reset validation state immediately
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
@@ -98,6 +98,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                 <div className='col-12'>
                     <div className='p-4 quiz-question-area'>
                         <QuestionDisplayV2
+                            key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             question={questionInfos.question as Question}
                             showAnswer={isAnswerSubmitted}

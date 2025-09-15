@@ -79,6 +79,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                 <div className='col-12'>
                     <div className='p-4'>
                         <QuestionDisplayV2
+                            key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             question={questionInfos.question as Question}
                             showAnswer={isAnswerSubmitted}
