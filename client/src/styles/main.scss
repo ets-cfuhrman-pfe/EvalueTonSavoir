@@ -1,13 +1,13 @@
-// Import custom variables first (to override Bootstrap defaults)
+// Import custom variables 
 @use './variables' as vars;
 
 // Import custom overrides and extensions
 @use './overrides';
 
-// Import centralized utilities instead of individual components
+// Import centralized utilities 
 @use './utilities';
 
-// Import Bootstrap with our custom variables
+// Import Bootstrap with custom variables
 @use 'bootstrap/scss/bootstrap' with (
   $primary: vars.$primary,
   $secondary: vars.$secondary,
@@ -29,7 +29,7 @@
   $box-shadow-lg: vars.$box-shadow-lg
 );
 
-// Import Bootstrap Icons (must use @import for CSS files)
+// Import Bootstrap Icons
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Global application styles

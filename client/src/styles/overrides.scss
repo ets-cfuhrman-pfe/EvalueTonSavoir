@@ -93,21 +93,6 @@
   padding: 1rem;
 }
 
-// UI version indicator
-.ui-version-indicator {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: vars.$app-primary-gradient;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: vars.$border-radius;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 1050;
-  box-shadow: vars.$box-shadow-sm;
-}
-
 // Waiting state styles
 .waiting-container {
   min-height: 100vh;
@@ -138,7 +123,7 @@
 
 // Quiz layout styles
 .min-height-feedback {
-  min-height: 80px; // Reserved space for feedback
+  min-height: 80px;
   display: flex;
   flex-direction: column;
 }
@@ -165,7 +150,6 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1020; // Ensure it stays above other content when sticky
   
-  // Enhanced navigation styling
   .quiz-nav-buttons {
     .btn {
       min-width: 100px;
@@ -214,7 +198,7 @@
   }
 }
 
-// Very small screens (phones in portrait)
+// Very small screens
 @media (max-width: #{vars.$breakpoint-sm - 1px}) {
   .quiz-header {
     padding: 0.5rem 0 !important;
@@ -262,10 +246,10 @@
 @media (max-width: #{vars.$breakpoint-lg - 1px}) {
   .quiz-content-mobile {
     overflow-y: auto;
-    max-height: calc(100vh - 200px); // Adjust based on header and navigation heights
+    max-height: calc(100vh - 200px);
     
     .p-4 {
-      padding-bottom: 2rem !important; // Extra space before mobile navigation
+      padding-bottom: 2rem !important;
     }
   }
 }

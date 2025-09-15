@@ -1,5 +1,4 @@
 // Centralized utility classes for all components
-// This replaces individual component SCSS files
 
 @use 'sass:color';
 @use './variables' as vars;
@@ -69,7 +68,7 @@
   flex-direction: column;
   gap: vars.$spacing-sm;
 
-  // Mobile breakpoint - more compact for better fit
+  // Mobile breakpoint
   @media (max-width: vars.$breakpoint-md) {
     max-width: 100%;
     padding: vars.$spacing-sm vars.$spacing-xs;
@@ -125,22 +124,6 @@
   font-size: 0.875rem;
 }
 
-// UI Elements
-.version-badge {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background: vars.$app-primary-gradient;
-  color: white;
-  padding: 0.375rem 0.75rem;
-  border-radius: vars.$border-radius;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 1050;
-  box-shadow: vars.$box-shadow-sm;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
 .spacer-120 {
   width: 120px;
 }
@@ -158,14 +141,6 @@
   .form-title {
     font-size: 1.25rem;
   }
-  
-  .version-badge {
-    top: 0.5rem;
-    right: 0.5rem;
-    font-size: 0.625rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
   .spacer-120 {
     display: none;
   }
