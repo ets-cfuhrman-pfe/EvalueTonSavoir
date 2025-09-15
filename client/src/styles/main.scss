@@ -1,13 +1,25 @@
-// Import custom variables 
+// ===== MAIN SCSS ENTRY POINT =====
+// 
+// Import order is important:
+// 1. Variables (configuration)
+// 2. Base styles (before Bootstrap for global setup)
+// 3. Bootstrap (with our variables)
+// 4. Components (specific UI components)  
+// 5. Utilities (helper classes)
+
+// Import custom variables first
 @use './variables' as vars;
 
-// Import custom overrides and extensions
-@use './overrides';
+// Import base styles (global/foundational)
+@use './base';
 
-// Import centralized utilities 
+// Import all component styles
+@use './components';
+
+// Import utilities last (to ensure they can override everything else)
 @use './utilities';
 
-// Import Bootstrap with custom variables
+// Import Bootstrap with custom variables (after @use rules)
 @use 'bootstrap/scss/bootstrap' with (
   $primary: vars.$primary,
   $secondary: vars.$secondary,
@@ -31,72 +43,3 @@
 
 // Import Bootstrap Icons
 @import 'bootstrap-icons/font/bootstrap-icons.css';
-
-// Global application styles
-html, body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: vars.$font-family-base;
-  background-color: vars.$light;
-  min-height: 100vh;
-}
-
-.container-custom {
-  max-width: vars.$breakpoint-xl;
-  margin: 0 auto;
-  padding: 0 vars.$spacing-md;
-}
-
-// Responsive login container
-.login-container-wrapper {
-  width: 100%;
-  max-width: vars.$container-width-desktop;
-  margin: 0 auto;
-  padding: vars.$spacing-xs;
-  background: white;
-  border-radius: vars.$border-radius;
-  box-shadow: vars.$box-shadow;
-  border: 1px solid vars.$login-container-border-color;
-
-  // Tablet breakpoint
-  @media (max-width: vars.$breakpoint-lg) {
-    max-width: vars.$container-width-tablet;
-    padding: vars.$spacing-xs;
-  }
-
-  // Mobile breakpoint
-  @media (max-width: vars.$breakpoint-md) {
-    max-width: vars.$login-container-mobile-width;
-    padding: vars.$spacing-xs;
-    margin: vars.$login-container-mobile-margin;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  // Large desktop breakpoint
-  @media (min-width: vars.$breakpoint-xl) {
-    max-width: vars.$container-width-large;
-  }
-}
-
-// Utility classes
-.text-gradient {
-  background: vars.$app-primary-gradient;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.shadow-custom {
-  box-shadow: vars.$box-shadow;
-}
-
-.shadow-custom-lg {
-  box-shadow: vars.$box-shadow-lg;
-}

@@ -34,11 +34,6 @@ $box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !default;
 $box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !default;
 $box-shadow-lg: 1rem 3rem rgba(0, 0, 0, 0.175) !default;
 
-// Application-specific variables
-$app-header-height: 60px;
-$app-sidebar-width: 250px;
-$app-primary-gradient: linear-gradient(45deg, $primary, $secondary);
-
 // Media query breakpoints 
 $breakpoint-xs: 0;
 $breakpoint-sm: 576px;
@@ -53,10 +48,8 @@ $spacing-sm: 0.5rem;
 $spacing-md: 1rem;
 $spacing-lg: 1.5rem;
 $spacing-xl: 2rem;
-$spacing-form-mobile: 0.75rem;
-$spacing-form-mobile-padding: 1rem 0.75rem;
 
-// Login container specific values
+// Login container specific values 
 $login-container-mobile-width: 85vw;
 $login-container-mobile-margin: 0 0.5rem;
 $login-container-border-color: #e1e1e1;
@@ -64,11 +57,4 @@ $login-container-border-color: #e1e1e1;
 // Container widths for responsive design
 $container-width-desktop: 460px !default;
 $container-width-tablet: 420px !default;
-$container-width-mobile: 95vw !default;
 $container-width-large: 480px !default;
-
-// Container max-widths for different breakpoints
-$container-max-width-sm: 90vw !default;
-$container-max-width-md: 450px !default;
-$container-max-width-lg: 500px !default;
-$container-max-width-xl: 550px !default;
