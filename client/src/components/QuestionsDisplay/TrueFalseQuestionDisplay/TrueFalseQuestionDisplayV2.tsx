@@ -52,19 +52,28 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div className="row g-3">
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark'}`}
+                            className={`w-100 p-3 text-start ${
+                                showAnswer 
+                                    ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
+                                    : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark')
+                            }`}
                             onClick={() => !showAnswer && handleOnClickAnswer(true)}
                             disabled={disableButton}
                             variant="outlined"
                             style={{
-                                border: selectedTrue ? '2px solid var(--bs-primary)' : '1px solid #dee2e6',
-                                borderRadius: '0.5rem'
+                                border: showAnswer && selectedTrue 
+                                    ? '4px solid #fff' 
+                                    : selectedTrue && !showAnswer 
+                                        ? '2px solid var(--bs-primary)' 
+                                        : '1px solid #dee2e6',
+                                borderRadius: '0.5rem',
+                                boxShadow: showAnswer && selectedTrue 
+                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
+                                    : 'none',
+                                position: 'relative'
                             }}
                         >
                             <div className="d-flex align-items-center">
-                                {showAnswer && (
-                                    <div className="me-3 fs-5">{question.isTrue ? '✅' : '❌'}</div>
-                                )}
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
@@ -81,19 +90,28 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark'}`}
+                            className={`w-100 p-3 text-start ${
+                                showAnswer 
+                                    ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
+                                    : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark')
+                            }`}
                             onClick={() => !showAnswer && handleOnClickAnswer(false)}
                             disabled={disableButton}
                             variant="outlined"
                             style={{
-                                border: selectedFalse ? '2px solid var(--bs-primary)' : '1px solid #dee2e6',
-                                borderRadius: '0.5rem'
+                                border: showAnswer && selectedFalse 
+                                    ? '4px solid #fff' 
+                                    : selectedFalse && !showAnswer 
+                                        ? '2px solid var(--bs-primary)' 
+                                        : '1px solid #dee2e6',
+                                borderRadius: '0.5rem',
+                                boxShadow: showAnswer && selectedFalse 
+                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
+                                    : 'none',
+                                position: 'relative'
                             }}
                         >
                             <div className="d-flex align-items-center">
-                                {showAnswer && (
-                                    <div className="me-3 fs-5">{!question.isTrue ? '✅' : '❌'}</div>
-                                )}
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>

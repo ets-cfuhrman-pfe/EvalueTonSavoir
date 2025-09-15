@@ -26,7 +26,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
 
     const previousQuestion = () => {
-        setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);        
+        setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);
+        setIsAnswerSubmitted(false); // Reset validation state immediately
     };
 
     useEffect(() => {
@@ -37,6 +38,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 
     const nextQuestion = () => {
         setQuestionInfos(questions[Number(questionInfos.question?.id)]);
+        setIsAnswerSubmitted(false); // Reset validation state immediately
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {

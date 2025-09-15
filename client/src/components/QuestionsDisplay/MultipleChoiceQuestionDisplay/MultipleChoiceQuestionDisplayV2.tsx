@@ -77,21 +77,32 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         <div key={choice.formattedText.text + i} className="mb-3">
                             <Button
                                 variant="outlined"
-                                className={`w-100 text-start justify-content-start p-3 ${selected ? 'bg-primary text-white' : 'bg-light text-dark'}`}
+                                className={`w-100 text-start justify-content-start p-3 ${
+                                    showAnswer 
+                                        ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
+                                        : (selected ? 'bg-primary text-white' : 'bg-light text-dark')
+                                }`}
                                 disabled={disableButton}
                                 onClick={() => !showAnswer && handleOnClickAnswer(choice.formattedText.text)}
                                 style={{
-                                    border: selected ? '2px solid var(--bs-primary)' : '1px solid #dee2e6',
-                                    borderRadius: '0.5rem'
+                                    border: showAnswer && selected 
+                                        ? '4px solid #fff' 
+                                        : selected && !showAnswer 
+                                            ? '2px solid var(--bs-primary)' 
+                                            : '1px solid #dee2e6',
+                                    borderRadius: '0.5rem',
+                                    boxShadow: showAnswer && selected 
+                                        ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
+                                        : 'none',
+                                    position: 'relative'
                                 }}
                             >
                                 <div className="d-flex align-items-center w-100">
-                                    {showAnswer && (
-                                        <div className="me-3 fs-5">{choice.isCorrect ? '✅' : '❌'}</div>
-                                    )}
                                     <div 
                                         className={`d-flex align-items-center justify-content-center me-3 rounded-circle border ${
-                                            selected ? 'bg-white text-primary' : 'bg-white text-dark'
+                                            showAnswer 
+                                                ? (choice.isCorrect ? 'bg-white text-success' : 'bg-white text-danger')
+                                                : (selected ? 'bg-white text-primary' : 'bg-white text-dark')
                                         }`}
                                         style={{
                                             width: '2.5rem',
