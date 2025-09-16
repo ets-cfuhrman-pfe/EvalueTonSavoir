@@ -32,8 +32,6 @@ const JoinRoom: React.FC = () => {
     const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
-    const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
-    const [isRoomNameValid, setIsRoomNameValid] = useState(true);
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
@@ -42,20 +40,10 @@ const JoinRoom: React.FC = () => {
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
         if (roomFromUrl) {
-            // Validate the room name from URL
-            const validationResult = ValidationService.validateField('room.name', roomFromUrl, { required: true });
-            if (validationResult.isValid) {
-                setRoomName(roomFromUrl);
-                setIsQRCodeJoin(true);
-                setIsRoomNameValid(true);
-                console.log('Mode QR Code détecté, salle:', roomFromUrl);
-            } else {
-                console.error('Nom de salle invalide dans l\'URL QR code:', roomFromUrl, 'Erreurs:', validationResult.errors);
-                setConnectionError(`Nom de salle invalide: ${validationResult.errors[0]}`);
-                setIsRoomNameValid(false);
-            }
+            // Redirect to V2 component for QR code joins
+            navigate(`/student/join-room-v2?roomName=${roomFromUrl}`, { replace: true });
         }
-    }, [searchParams]);
+    }, [searchParams, navigate]);
 
     // Validate initial username on mount
     useEffect(() => {
@@ -185,8 +173,8 @@ const JoinRoom: React.FC = () => {
         if (e.key === 'Enter' && 
             username && 
             isUsernameValid && 
-            ((!isQRCodeJoin && roomName && isManualRoomNameValid) || 
-             (isQRCodeJoin && roomName && isRoomNameValid))) {
+            roomName && 
+            isManualRoomNameValid) {
             handleSocket();
         }
     };
@@ -249,17 +237,15 @@ const JoinRoom: React.FC = () => {
         default:
             return (
                 <LoginContainer
-                    title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
+                    title='Rejoindre une salle'
                     error={connectionError}
                 >
-                    {/* Afficher champ salle SEULEMENT si pas de QR code */}
-                    {!isQRCodeJoin && (
-                        <ValidatedTextField
-                            fieldPath="room.name"
-                            label="Nom de la salle"
-                            variant="outlined"
-                            initialValue={roomName}
-                            onValueChange={(value, isValid) => {
+                    <ValidatedTextField
+                        fieldPath="room.name"
+                        label="Nom de la salle"
+                        variant="outlined"
+                        initialValue={roomName}
+                        onValueChange={(value, isValid) => {
                                 setRoomName(value.toUpperCase());
                                 setIsManualRoomNameValid(isValid);
                             }}
@@ -269,7 +255,6 @@ const JoinRoom: React.FC = () => {
                             onKeyDown={handleReturnKey}
                             required={true}
                         />
-                    )}
 
                     {/* Champ username toujours visible */}
                     <ValidatedTextField
@@ -296,11 +281,11 @@ const JoinRoom: React.FC = () => {
                         disabled={
                             !username || 
                             !isUsernameValid || 
-                            (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
-                            (isQRCodeJoin && (!roomName || !isRoomNameValid))
+                            !roomName || 
+                            !isManualRoomNameValid
                         }
                     >
-                        {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                        Rejoindre
                     </LoadingButton>
 
                     <LoadingButton
