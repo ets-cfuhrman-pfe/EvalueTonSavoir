@@ -2,24 +2,15 @@
 // 
 // Import order is important:
 // 1. Variables (configuration)
-// 2. Base styles (before Bootstrap for global setup)
-// 3. Bootstrap (with our variables)
+// 2. Bootstrap (with our variables)
+// 3. Base styles (global/foundational)
 // 4. Components (specific UI components)  
 // 5. Utilities (helper classes)
 
 // Import custom variables first
 @use './variables' as vars;
 
-// Import base styles (global/foundational)
-@use './base';
-
-// Import all component styles
-@use './components';
-
-// Import utilities last (to ensure they can override everything else)
-@use './utilities';
-
-// Import Bootstrap with custom variables (after @use rules)
+// Import Bootstrap with custom variables (after variables)
 @use 'bootstrap/scss/bootstrap' with (
   $primary: vars.$primary,
   $secondary: vars.$secondary,
@@ -40,6 +31,15 @@
   $box-shadow: vars.$box-shadow,
   $box-shadow-lg: vars.$box-shadow-lg
 );
+
+// Import base styles (global/foundational)
+@use './base';
+
+// Import all component styles
+@use './components';
+
+// Import utilities last (to ensure they can override everything else)
+@use './utilities';
 
 // Import Bootstrap Icons
 @import 'bootstrap-icons/font/bootstrap-icons.css';
