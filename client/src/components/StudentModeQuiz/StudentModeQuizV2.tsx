@@ -1,5 +1,5 @@
 // StudentModeQuizV2.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
 import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
@@ -23,29 +23,22 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     disconnectWebSocket
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
-    const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
 
     const previousQuestion = () => {
         setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);
-        setIsAnswerSubmitted(false); // Reset validation state immediately
     };
 
-    useEffect(() => {
-        const savedAnswer = answers[Number(questionInfos.question.id)-1]?.answer;
-        console.log(`StudentModeQuizV2: useEffect: savedAnswer: ${savedAnswer}`);
-        setIsAnswerSubmitted(savedAnswer !== undefined);
-    }, [questionInfos.question, answers]);
-
     const nextQuestion = () => {
-        setIsAnswerSubmitted(false); // Reset validation state BEFORE changing question
         setQuestionInfos(questions[Number(questionInfos.question?.id)]);
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
         const idQuestion = Number(questionInfos.question.id) || -1;
         submitAnswer(answer, idQuestion);
-        setIsAnswerSubmitted(true);
     };
+
+    // Compute if answer is submitted for current question
+    const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
 
     return (
         <div className='container-fluid student-mode-quiz-mobile'>
