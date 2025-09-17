@@ -7,6 +7,7 @@ import Home from './pages/Home/Home';
 
 // Pages espace enseignant
 import Dashboard from './pages/Teacher/Dashboard/Dashboard';
+import DashboardV2 from './pages/Teacher/Dashboard/DashboardV2';
 import Share from './pages/Teacher/Share/Share';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
@@ -23,6 +24,7 @@ import AuthDrawer from './pages/AuthManager/AuthDrawer';
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
+import { RoomProvider } from './contexts/RoomContext';
 
 import ApiService from './services/ApiService';
 import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
@@ -56,18 +58,23 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="content">
+        <RoomProvider>
             <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
-            <div className="app">
-                <main>
-                    <Routes>
-                        {/* Page main */}
-                        <Route path="/" element={<Home />} />
+            <div className="content">
+                <div className="app">
+                    <main>
+                        <Routes>
+                            {/* Page main */}
+                            <Route path="/" element={<Home />} />
 
-                        {/* Pages espace enseignant */}
+                            {/* Pages espace enseignant */}
                         <Route
                             path="/teacher/dashboard"
                             element={isTeacherAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/dashboard-v2"
+                            element={isTeacherAuthenticated ? <DashboardV2 /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/teacher/share/:id"
@@ -107,7 +114,8 @@ const App: React.FC = () => {
                 </main>
             </div>
             <Footer />
-        </div>
+            </div>
+        </RoomProvider>
     );
 };
 
