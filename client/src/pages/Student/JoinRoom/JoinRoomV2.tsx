@@ -18,6 +18,7 @@ import LoginContainerV2 from 'src/components/LoginContainer/LoginContainerV2';
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
 import { useSearchParams } from 'react-router-dom';
+import { setCurrentRoomName, clearCurrentRoomName } from '../../../utils/roomUtils';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -62,12 +63,19 @@ const JoinRoomV2: React.FC = () => {
             const validationResult = ValidationService.validateField('user.username', username, { required: true });
             setIsUsernameValid(validationResult.isValid);
         }
-    }, []); // Only run once on mount
+    }, []);
 
     useEffect(() => {
         handleCreateSocket();
         return () => {
             disconnect();
+        };
+    }, []);
+
+    // Clear room name when component unmounts
+    useEffect(() => {
+        return () => {
+            clearCurrentRoomName();
         };
     }, []);
 
@@ -82,16 +90,17 @@ const JoinRoomV2: React.FC = () => {
         socket.on('join-success', (roomJoinedName) => {
             setIsWaitingForTeacher(true);
             setIsConnecting(false);
-            console.log(`on(join-success): Successfully joined the room ${roomJoinedName}`);
+            // Set the room name in global storage for header display
+            setCurrentRoomName(roomJoinedName);
         });
         socket.on('next-question', (question: QuestionType) => {
-            console.log('JoinRoomV2: on(next-question): Received next-question:', question);
+            // console.log('JoinRoomV2: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
         socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
+            // console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
@@ -99,7 +108,7 @@ const JoinRoomV2: React.FC = () => {
             // wait for next-question
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
-            console.log('on(launch-student-mode): Received launch-student-mode:', questions);
+            // console.log('on(launch-student-mode): Received launch-student-mode:', questions);
 
             setQuizMode('student');
             setIsWaitingForTeacher(false);
@@ -140,6 +149,7 @@ const JoinRoomV2: React.FC = () => {
         setRoomName('');
         setUsername('');
         setIsConnecting(false);
+        clearCurrentRoomName();
     };
 
     const handleSocket = () => {
@@ -157,7 +167,7 @@ const JoinRoomV2: React.FC = () => {
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
-        console.info(`JoinRoomV2: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
+        // console.info(`JoinRoomV2: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
@@ -165,12 +175,12 @@ const JoinRoomV2: React.FC = () => {
             idQuestion: idQuestion
         };
         setAnswers((prevAnswers) => {
-            console.log(`JoinRoomV2: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
+            // console.log(`JoinRoomV2: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
             const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
             newAnswers[idQuestion - 1] = answerData; // Update the specific answer
             return newAnswers; // Return the new array
         });
-        console.log(`JoinRoomV2: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
+        // console.log(`JoinRoomV2: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
         webSocketService.submitAnswer(answerData);
     };
 

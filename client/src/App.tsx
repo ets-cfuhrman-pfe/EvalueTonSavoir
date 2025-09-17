@@ -24,7 +24,8 @@ import AuthDrawer from './pages/AuthManager/AuthDrawer';
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
-import { RoomProvider } from './contexts/RoomContext';
+
+
 
 import ApiService from './services/ApiService';
 import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
@@ -58,7 +59,7 @@ const App: React.FC = () => {
     };
 
     return (
-        <RoomProvider>
+        <>
             <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
             <div className="content">
                 <div className="app">
@@ -115,7 +116,7 @@ const App: React.FC = () => {
             </div>
             <Footer />
             </div>
-        </RoomProvider>
+        </>
     );
 };
 

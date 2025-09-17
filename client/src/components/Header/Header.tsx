@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import LoginIcon from '@mui/icons-material/Login';
-import { useRoom } from '../../hooks/useRoom';
+import { getCurrentRoomName } from '../../utils/roomUtils';
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -14,7 +15,23 @@ const Header: React.FC<HeaderProps> = ({
     handleLogout
 }) => {
     const navigate = useNavigate();
-    const { roomName } = useRoom();
+    const [roomName, setRoomName] = useState<string | null>(null);
+
+    // Check for room name updates periodically (when students join/leave rooms)
+    useEffect(() => {
+        const checkRoomName = () => {
+            const currentRoom = getCurrentRoomName();
+            setRoomName(currentRoom);
+        };
+
+        // Initial check
+        checkRoomName();
+
+        // Set up interval to check for changes (in case room name changes)
+        const interval = setInterval(checkRoomName, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top w-100">
