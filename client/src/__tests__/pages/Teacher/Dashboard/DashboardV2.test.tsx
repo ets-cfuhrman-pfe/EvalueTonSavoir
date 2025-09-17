@@ -454,46 +454,18 @@ describe('DashboardV2 Component', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/quiz1');
     });
 
-    test('should launch quiz with selected room', async () => {
+    test('should launch quiz', async () => {
       renderComponent();
-
-      // Select a room first
-      await waitFor(() => {
-        const roomSelect = screen.getByDisplayValue('Salle 2');
-        fireEvent.change(roomSelect, { target: { value: 'room2' } });
-      });
 
       await waitFor(() => {
         const launchButton = screen.getByText('Quiz Mathématiques (2 questions)');
         fireEvent.click(launchButton);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/manage-room/quiz1/Salle 2');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/manage-room-v2/quiz1');
     });
 
-    test('should launch quiz with random room code when no room selected', async () => {
-      // Mock no selected room
-      mockApiService.getUserRooms.mockResolvedValue([]);
 
-      render(
-        <MemoryRouter>
-          <DashboardV2 />
-        </MemoryRouter>
-      );
-
-      await waitFor(() => {
-        const launchButtons = screen.getAllByText('Quiz Mathématiques (2 questions)');
-        fireEvent.click(launchButtons[0]);
-      });
-
-      // Should navigate with a 6-digit random code
-      const navigateCall = mockNavigate.mock.calls.find(call =>
-        call[0].startsWith('/teacher/manage-room/quiz1/')
-      );
-      expect(navigateCall).toBeTruthy();
-      const randomCode = navigateCall[0].split('/').pop();
-      expect(randomCode).toMatch(/^\d{6}$/);
-    });
 
     test('should delete quiz after confirmation', async () => {
       mockConfirm.mockReturnValue(true);
