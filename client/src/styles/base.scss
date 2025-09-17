@@ -3,7 +3,6 @@
 
 @use './variables' as vars;
 
-// Global application styles
 html, body {
   margin: 0;
   padding: 0;
@@ -18,12 +17,18 @@ body {
 
 // Global container
 .container-custom {
-  max-width: vars.$breakpoint-xl;
+  max-width: map-get(vars.$container-max-widths, xxl);
   margin: 0 auto;
   padding: 0 vars.$spacing-md;
 }
 
-// Global responsive container wrapper
+// Full width dashboard container
+.dashboard-full-width {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+// Login container wrapper
 .login-container-wrapper {
   width: 100%;
   max-width: vars.$container-width-desktop;
@@ -34,13 +39,11 @@ body {
   box-shadow: vars.$box-shadow;
   border: 1px solid vars.$login-container-border-color;
 
-  // Tablet breakpoint
   @media (max-width: vars.$breakpoint-lg) {
     max-width: vars.$container-width-tablet;
     padding: vars.$spacing-xs;
   }
 
-  // Mobile breakpoint
   @media (max-width: vars.$breakpoint-md) {
     max-width: vars.$login-container-mobile-width;
     padding: vars.$spacing-xs;
@@ -51,17 +54,10 @@ body {
     justify-content: center;
   }
 
-  // Large desktop breakpoint
-  @media (min-width: vars.$breakpoint-xl) {
-    max-width: vars.$container-width-large;
+  @media (min-width: vars.$breakpoint-xxl) {
+    max-width: 600px; 
   }
 }
 
-// Global shadow classes
-.shadow-custom {
-  box-shadow: vars.$box-shadow;
-}
-
-.shadow-custom-lg {
-  box-shadow: vars.$box-shadow-lg;
-}
+.shadow-custom   { box-shadow: vars.$box-shadow; }
+.shadow-custom-lg{ box-shadow: vars.$box-shadow-lg; }

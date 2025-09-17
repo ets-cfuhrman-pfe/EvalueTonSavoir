@@ -1,16 +1,6 @@
 // ===== MAIN SCSS ENTRY POINT =====
-// 
-// Import order is important:
-// 1. Variables (configuration)
-// 2. Bootstrap (with our variables)
-// 3. Base styles (global/foundational)
-// 4. Components (specific UI components)  
-// 5. Utilities (helper classes)
 
-// Import custom variables first
 @use './variables' as vars;
-
-// Import Bootstrap with custom variables (after variables)
 @use 'bootstrap/scss/bootstrap' with (
   $primary: vars.$primary,
   $secondary: vars.$secondary,
@@ -20,26 +10,27 @@
   $danger: vars.$danger,
   $light: vars.$light,
   $dark: vars.$dark,
+
   $font-family-base: vars.$font-family-base,
   $font-size-base: vars.$font-size-base,
   $line-height-base: vars.$line-height-base,
+
   $spacer: vars.$spacer,
+
   $border-radius: vars.$border-radius,
   $border-radius-sm: vars.$border-radius-sm,
   $border-radius-lg: vars.$border-radius-lg,
+
   $box-shadow-sm: vars.$box-shadow-sm,
   $box-shadow: vars.$box-shadow,
-  $box-shadow-lg: vars.$box-shadow-lg
+  $box-shadow-lg: vars.$box-shadow-lg,
+
+  $grid-breakpoints: vars.$grid-breakpoints,
+  $container-max-widths: vars.$container-max-widths
 );
 
-// Import base styles (global/foundational)
 @use './base';
-
-// Import all component styles
 @use './components';
-
-// Import utilities last (to ensure they can override everything else)
 @use './utilities';
 
-// Import Bootstrap Icons
 @import 'bootstrap-icons/font/bootstrap-icons.css';
