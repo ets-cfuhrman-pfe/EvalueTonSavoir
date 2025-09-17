@@ -12,6 +12,7 @@ import Share from './pages/Teacher/Share/Share';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
 import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
+import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
 import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 
 // Pages espace étudiant
@@ -88,6 +89,10 @@ const App: React.FC = () => {
                         <Route
                             path="/teacher/manage-room/:quizId/:roomName"
                             element={isTeacherAuthenticated ? <ManageRoom /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/manage-room-v2/:quizId"
+                            element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
