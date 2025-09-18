@@ -297,10 +297,7 @@ describe('DashboardV2 Component', () => {
         roomSelect = screen.getByRole('combobox');
         fireEvent.change(roomSelect, { target: { value: 'room1' } });
       });
-
-      // The component should update the selectedRoomId state
-      // localStorage.setItem is called when launching a quiz, not when selecting a room
-      // Let's verify the room selection works by checking if the selected room changes
+  
       await waitFor(() => {
         expect(roomSelect).toHaveValue('room1');
       });
@@ -373,14 +370,14 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const folderButton = screen.getAllByText('Dossier 1')[0]; // Get the first occurrence (sidebar button)
+        const folderButton = screen.getAllByText('Dossier 1')[0]; 
         fireEvent.click(folderButton);
       });
 
-      // Click the folder menu button (MoreVert icon)
+      // Click the folder menu button 
       await waitFor(() => {
         const menuButtons = screen.getAllByTestId('MoreVertIcon');
-        const folderMenuButton = menuButtons[0]; // First one should be the folder menu
+        const folderMenuButton = menuButtons[0]; 
         fireEvent.click(folderMenuButton);
       });
 
@@ -399,20 +396,20 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const folderButton = screen.getAllByText('Dossier 1')[0]; // Get the first occurrence (sidebar button)
+        const folderButton = screen.getAllByText('Dossier 1')[0]; 
         fireEvent.click(folderButton);
       });
 
-      // Click the folder menu button (MoreVert icon)
+      // Click the folder menu button 
       await waitFor(() => {
         const menuButtons = screen.getAllByTestId('MoreVertIcon');
-        const folderMenuButton = menuButtons[0]; // First one should be the folder menu
+        const folderMenuButton = menuButtons[0]; 
         fireEvent.click(folderMenuButton);
       });
 
       // Click the rename menu item
       const renameMenuItems = screen.getAllByText('Renommer');
-      fireEvent.click(renameMenuItems[0]); // Click the menu item, not the button
+      fireEvent.click(renameMenuItems[0]); 
 
       // Wait for dialog to open and enter new name
       await waitFor(() => {
@@ -422,7 +419,7 @@ describe('DashboardV2 Component', () => {
 
       // Find the confirm button in the dialog
       await waitFor(() => {
-        const renameConfirmButton = screen.getAllByText('Renommer')[1]; // The button should be the second occurrence
+        const renameConfirmButton = screen.getAllByText('Renommer')[1]; 
         fireEvent.click(renameConfirmButton);
       });
 
@@ -438,14 +435,14 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const folderButton = screen.getAllByText('Dossier 1')[0]; // Get the first occurrence (sidebar button)
+        const folderButton = screen.getAllByText('Dossier 1')[0]; 
         fireEvent.click(folderButton);
       });
 
       // Click the folder menu button (MoreVert icon)
       await waitFor(() => {
         const menuButtons = screen.getAllByTestId('MoreVertIcon');
-        const folderMenuButton = menuButtons[0]; // First one should be the folder menu
+        const folderMenuButton = menuButtons[0]; 
         fireEvent.click(folderMenuButton);
       });
 
@@ -467,14 +464,14 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const folderButton = screen.getAllByText('Dossier 1')[0]; // Get the first occurrence (sidebar button)
+        const folderButton = screen.getAllByText('Dossier 1')[0]; 
         fireEvent.click(folderButton);
       });
 
-      // Click the folder menu button (MoreVert icon)
+      // Click the folder menu button 
       await waitFor(() => {
         const menuButtons = screen.getAllByTestId('MoreVertIcon');
-        const folderMenuButton = menuButtons[0]; // First one should be the folder menu
+        const folderMenuButton = menuButtons[0]; 
         fireEvent.click(folderMenuButton);
       });
 
@@ -531,7 +528,7 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        // Click the menu button (MoreVert icon)
+        // Click the menu button
         const menuButtons = screen.getAllByLabelText('Plus d\'actions');
         fireEvent.click(menuButtons[0]);
       });
@@ -552,7 +549,7 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        // Click the menu button (MoreVert icon)
+        // Click the menu button
         const menuButtons = screen.getAllByLabelText('Plus d\'actions');
         fireEvent.click(menuButtons[0]);
       });
@@ -787,14 +784,14 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const folderButton = screen.getAllByText('Dossier 1')[0]; // Get the first occurrence (sidebar button)
+        const folderButton = screen.getAllByText('Dossier 1')[0]; 
         fireEvent.click(folderButton);
       });
 
-      // Click the folder menu button (MoreVert icon)
+      // Click the folder menu button
       await waitFor(() => {
         const menuButtons = screen.getAllByTestId('MoreVertIcon');
-        const folderMenuButton = menuButtons[0]; // First one should be the folder menu
+        const folderMenuButton = menuButtons[0]; 
         fireEvent.click(folderMenuButton);
       });
 
@@ -819,17 +816,14 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       // Manually trigger the error dialog by setting the state
-      // Since the component uses alert() for errors, we'll test the generic error dialog
       await waitFor(() => {
-        // Find a way to trigger the error dialog - let's use a different approach
-        // We'll test that the error dialog can be closed if it's open
+    
         const errorDialog = screen.queryByText('Erreur');
         if (errorDialog) {
           const closeButton = screen.getByText('Fermer');
           fireEvent.click(closeButton);
           expect(screen.queryByText('Erreur')).not.toBeInTheDocument();
         } else {
-          // If no error dialog is present, the test passes as expected
           expect(true).toBe(true);
         }
       });
@@ -841,15 +835,12 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        // DownloadQuizModal should be rendered (but not necessarily visible)
-        // Since it's mocked to always render, we should find the mocked elements
+        // DownloadQuizModal should be rendered
         expect(screen.getByTestId('download-modal-quiz1')).toBeInTheDocument();
         expect(screen.getByTestId('download-modal-quiz2')).toBeInTheDocument();
         expect(screen.getByTestId('download-modal-quiz3')).toBeInTheDocument();
 
-        // Share functionality is in the menu, not as separate modal components
-        // So we won't find share-modal test IDs
-        // Instead, check that the menu button exists for each quiz
+  
         const menuButtons = screen.getAllByLabelText('Plus d\'actions');
         expect(menuButtons).toHaveLength(3);
       });
