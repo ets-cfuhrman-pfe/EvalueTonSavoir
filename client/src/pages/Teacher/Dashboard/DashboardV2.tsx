@@ -28,7 +28,9 @@ import {
     ListItemIcon,
     ListItemText,
     Box,
-    Typography,
+    FormControl,
+    InputLabel,
+    Select,
     List,
     ListItem,
     Stack,
@@ -491,22 +493,17 @@ const DashboardV2: React.FC = () => {
         const fetchQuizzesForFolder = async () => {
             if (selectedFolderId == '') {
                 const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
-                // console.log('show all quizzes');
                 let quizzes: QuizType[] = [];
 
                 for (const folder of folders as FolderType[]) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
-                    // console.log('folder: ', folder.title, ' quiz: ', folderQuizzes);
                     addFolderTitleToQuizzes(folderQuizzes, folder.title);
                     quizzes = quizzes.concat(folderQuizzes as QuizType[]);
                 }
 
                 setQuizzes(quizzes);
             } else {
-                // console.log('show some quizzes');
                 const folderQuizzes = await ApiService.getFolderContent(selectedFolderId);
-                // console.log('folderQuizzes: ', folderQuizzes);
-                // get the folder title from its id
                 const folderTitle =
                     folders.find((folder) => folder._id === selectedFolderId)?.title || '';
                 addFolderTitleToQuizzes(folderQuizzes, folderTitle);
@@ -527,6 +524,37 @@ const DashboardV2: React.FC = () => {
                             <div>
                                 <h1 className="h3 mb-0 ms-3 text-dark fw-bold">Tableau de bord</h1>
                             </div>
+                            <div className="d-flex align-items-center gap-2 px-4">
+                                <span className="h5 fw-bold">Salle active :</span>
+                                <FormControl size="small" className="pb-2">
+                                    <Select
+                                        value={selectedRoomId}
+                                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                                        displayEmpty
+                                        className="bg-white"                            
+                                        renderValue={(selected) => {
+                                            if (!selected) {
+                                                return <em className="text-muted">Aucune salle</em>;
+                                            }
+                                            const room = rooms.find((r) => r._id === selected);
+                                            return <span className="text-success fw-bold">{room?.title}</span>;
+                                        }}
+                                    >
+                                        <MenuItem value="">
+                                            <em>Aucune salle sélectionnée</em>
+                                        </MenuItem>
+                                        {rooms.map((room) => (
+                                            <MenuItem 
+                                                key={room._id} 
+                                                value={room._id}
+                                                className={selectedRoomId === room._id ? 'text-success fw-bold' : ''}
+                                            >
+                                                {room.title}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -536,16 +564,7 @@ const DashboardV2: React.FC = () => {
                     {/* Left Sidebar */}
                     <div className="col-lg-4 col-md-4 bg-white border-end shadow-sm">
                         <div className="p-3 h-100">
-                            <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
-                                {selectedRoomId && (
-                                    <div className="h6 fw-bold">
-                                        <small>Salle active:</small>
-                                        <span className="ms-1 text-success">
-                                            {rooms.find((r) => r._id === selectedRoomId)?.title}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
+
                             {/* Folders Section */}
                             <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
                                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -555,7 +574,7 @@ const DashboardV2: React.FC = () => {
                                             onClick={handleShowAllQuizzes}
                                             className="p-0 text-dark fw-bolder fs-5"
                                         >
-                                            Dossiers
+                                            Dossiers 
                                         </Button>
                                     </Tooltip>
                                     <Tooltip
@@ -584,8 +603,8 @@ const DashboardV2: React.FC = () => {
                                                         <Button
                                                             variant="text"
                                                             className={`justify-content-start text-start flex-fill text-decoration-none ${selectedFolderId === folder._id
-                                                                    ? 'bg-primary bg-opacity-10'
-                                                                    : ''
+                                                                ? 'bg-primary bg-opacity-10'
+                                                                : ''
                                                                 }`}
                                                             onClick={() =>
                                                                 setSelectedFolderId(
@@ -665,33 +684,8 @@ const DashboardV2: React.FC = () => {
 
                                 {showRoomOptions && (
                                     <div>
-                                        {/* Room List */}
-                                        <div className="mb-3">
-                                            <label className="form-label fw-bold">
-                                                Sélectionner:
-                                            </label>
-                                            <select
-                                                className="form-select form-select-sm"
-                                                value={selectedRoomId}
-                                                onChange={(e) => setSelectedRoomId(e.target.value)}
-                                            >
-                                                <option value="">
-                                                    -- Sélectionner une salle --
-                                                </option>
-                                                {rooms.map((room) => (
-                                                    <option key={room._id} value={room._id}>
-                                                        {room.title}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
                                         {/* Room Management */}
                                         <Box mb={3}>
-                                            <Typography variant="subtitle1" gutterBottom>
-                                                Gérer les salles:
-                                            </Typography>
-
                                             <List disablePadding>
                                                 {rooms.map((room, idx) => {
                                                     const isEditing = editingRoomId === room._id;
@@ -699,7 +693,7 @@ const DashboardV2: React.FC = () => {
                                                     return (
                                                         <Box key={room._id} component="li">
                                                             <ListItem
-                                                                disableGutters                                                               
+                                                                disableGutters
                                                                 secondaryAction={
                                                                     isEditing ? (
                                                                         <Stack direction="row" spacing={0.5}>
@@ -769,7 +763,7 @@ const DashboardV2: React.FC = () => {
                                                                 ) : (
                                                                     <>
                                                                         <ListItemIcon sx={{ minWidth: 0, mr: 1 }} />
-                                                                        <ListItemText                                                                         
+                                                                        <ListItemText
                                                                             primary={room.title}
                                                                         />
                                                                     </>
@@ -931,7 +925,7 @@ const DashboardV2: React.FC = () => {
                                                                     <IconButton
                                                                         color="primary"
                                                                         size="large"
-                                                                        className="border border-primary rounded"
+                                                                        className="border border-2 border-primary rounded-circle"
                                                                         onClick={() =>
                                                                             handleLancerQuiz(quiz)
                                                                         }
@@ -944,7 +938,7 @@ const DashboardV2: React.FC = () => {
                                                                         <PlayArrow />
                                                                     </IconButton>
                                                                 </Tooltip>
-                                                                <div className="h5 fw-bold">
+                                                                <div className="h5 fw-bold pt-2">
                                                                     {`${quiz.title} (${quiz.content.length
                                                                         } question${quiz.content.length > 1
                                                                             ? 's'
