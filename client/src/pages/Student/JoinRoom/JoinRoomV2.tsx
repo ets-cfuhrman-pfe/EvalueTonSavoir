@@ -103,9 +103,8 @@ const JoinRoomV2: React.FC = () => {
             // console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
-            setQuestions([]);  // clear out from last time (in case quiz is repeated)
+            setQuestions([]);  
             setQuestions(questions);
-            // wait for next-question
         });
         socket.on('launch-student-mode', (questions: QuestionType[]) => {
             // console.log('on(launch-student-mode): Received launch-student-mode:', questions);
@@ -121,8 +120,27 @@ const JoinRoomV2: React.FC = () => {
         });
         socket.on('join-failure', (message) => {
             console.log('Failed to join the room.');
-            setConnectionError(`Erreur de connexion : ${message}`);
-            setIsConnecting(false);
+            console.log('Join failure message:', message);
+
+            // Check if this is a QR code join by looking at URL parameter directly
+            const roomFromUrl = searchParams.get('roomName');
+            const isQRCodeMode = !!roomFromUrl;
+            
+            console.log('roomFromUrl:', roomFromUrl);
+            console.log('isQRCodeMode:', isQRCodeMode);
+
+            // If room doesn't exist and it's QR code mode, show waiting page instead of error
+            if (message === "Le nom de la salle n'existe pas" && isQRCodeMode) {
+                console.log('Showing waiting page for QR code join');
+                setIsWaitingForTeacher(true);
+                setIsConnecting(false);
+                // Set the room name in global storage for header display
+                setCurrentRoomName(roomFromUrl);
+            } else {
+                console.log('Showing error message');
+                setConnectionError(`Erreur de connexion : ${message}`);
+                setIsConnecting(false);
+            }
         });
         socket.on('connect_error', (error) => {
             switch (error.message) {
@@ -185,11 +203,11 @@ const JoinRoomV2: React.FC = () => {
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && 
-            username && 
-            isUsernameValid && 
-            ((!isQRCodeJoin && roomName && isManualRoomNameValid) || 
-             (isQRCodeJoin && roomName && isRoomNameValid))) {
+        if (e.key === 'Enter' &&
+            username &&
+            isUsernameValid &&
+            ((!isQRCodeJoin && roomName && isManualRoomNameValid) ||
+                (isQRCodeJoin && roomName && isRoomNameValid))) {
             handleSocket();
         }
     };
@@ -202,7 +220,7 @@ const JoinRoomV2: React.FC = () => {
                         <div>
                             <DisconnectButton
                                 onReturn={disconnect}
-                                message={`Êtes-vous sûr de vouloir quitter?`} />    
+                                message={`Êtes-vous sûr de vouloir quitter?`} />
                         </div>
 
                         <div className='flex-grow-1 text-center'>
@@ -245,10 +263,10 @@ const JoinRoomV2: React.FC = () => {
                 </div>
             );
         default:
-                return (
+            return (
                 <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
 
-                    <div className="login-container-wrapper">
+                    <div className="w-100" style={{ maxWidth: '400px' }}>
                         <LoginContainerV2
                             title={isQRCodeJoin ? `Rejoindre la salle ${roomName} (V2)` : 'Rejoindre une salle (V2)'}
                             error={connectionError}
@@ -298,9 +316,9 @@ const JoinRoomV2: React.FC = () => {
                                     variant="contained"
                                     className="btn-primary"
                                     disabled={
-                                        !username || 
-                                        !isUsernameValid || 
-                                        (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
+                                        !username ||
+                                        !isUsernameValid ||
+                                        (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
                                         (isQRCodeJoin && (!roomName || !isRoomNameValid))
                                     }
                                 >
