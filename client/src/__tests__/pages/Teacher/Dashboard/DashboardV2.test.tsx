@@ -291,15 +291,27 @@ describe('DashboardV2 Component', () => {
         fireEvent.click(roomsButton);
       });
 
-      // Find and change the room select
+      // Find and click the room select to open dropdown
       let roomSelect: HTMLElement;
       await waitFor(() => {
         roomSelect = screen.getByRole('combobox');
-        fireEvent.change(roomSelect, { target: { value: 'room1' } });
+        fireEvent.mouseDown(roomSelect);
+      });
+
+      // Select room1 from the dropdown
+      await waitFor(() => {
+        const room1Options = screen.getAllByText('Salle 1');
+        // Click the dropdown option (not the sidebar text)
+        const dropdownOption = room1Options.find(option => 
+          option.closest('[role="option"]')
+        );
+        if (dropdownOption) {
+          fireEvent.click(dropdownOption);
+        }
       });
   
       await waitFor(() => {
-        expect(roomSelect).toHaveValue('room1');
+        expect(localStorage.setItem).toHaveBeenCalledWith('selectedRoomId', 'room1');
       });
     });
   });
@@ -512,8 +524,8 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const launchButton = screen.getByText('Quiz Mathématiques (2 questions)');
-        fireEvent.click(launchButton);
+        const launchButtons = screen.getAllByLabelText('Démarrer le quiz');
+        fireEvent.click(launchButtons[0]); // Click the first launch button
       });
 
       expect(mockNavigate).toHaveBeenCalledWith('/teacher/manage-room-v2/quiz1');
@@ -723,8 +735,8 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const launchButton = screen.getByText('Quiz Mathématiques (2 questions)');
-        expect(launchButton).toBeDisabled();
+        const launchButtons = screen.getAllByLabelText('Démarrer le quiz');
+        expect(launchButtons[0]).toBeDisabled(); // Check the first launch button
       });
     });
 
@@ -732,8 +744,8 @@ describe('DashboardV2 Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        const launchButton = screen.getByText('Quiz Mathématiques (2 questions)');
-        expect(launchButton).not.toBeDisabled();
+        const launchButtons = screen.getAllByLabelText('Démarrer le quiz');
+        expect(launchButtons[0]).not.toBeDisabled(); // Check the first launch button
       });
     });
   });

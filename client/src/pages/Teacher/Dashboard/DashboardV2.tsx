@@ -529,7 +529,16 @@ const DashboardV2: React.FC = () => {
                                 <FormControl size="small" className="pb-2">
                                     <Select
                                         value={selectedRoomId}
-                                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                                        onChange={(e) => {
+                                            const newRoomId = e.target.value;
+                                            setSelectedRoomId(newRoomId);
+                                            // Save selected room to localStorage
+                                            if (newRoomId) {
+                                                localStorage.setItem('selectedRoomId', newRoomId);
+                                            } else {
+                                                localStorage.removeItem('selectedRoomId');
+                                            }
+                                        }}
                                         displayEmpty
                                         className="bg-white"                            
                                         renderValue={(selected) => {
