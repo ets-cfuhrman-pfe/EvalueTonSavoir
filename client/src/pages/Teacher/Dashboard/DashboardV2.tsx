@@ -24,7 +24,14 @@ import {
     DialogContentText,
     Menu,
     MenuItem,
-    Divider
+    Divider,
+    ListItemIcon,
+    ListItemText,
+    Box,
+    Typography,
+    List,
+    ListItem,
+    Stack,
 } from '@mui/material';
 import {
     Search,
@@ -680,91 +687,101 @@ const DashboardV2: React.FC = () => {
                                         </div>
 
                                         {/* Room Management */}
-                                        <div className="mb-3">
-                                            <label className="form-label fw-bold">
+                                        <Box mb={3}>
+                                            <Typography variant="subtitle1" gutterBottom>
                                                 Gérer les salles:
-                                            </label>
-                                            <div className="list-group list-group-flush">
-                                                {rooms.map((room) => (
-                                                    <div
-                                                        key={room._id}
-                                                        className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center"
-                                                    >
-                                                        {editingRoomId === room._id ? (
-                                                            <div className="d-flex flex-fill gap-1">
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control form-control-sm"
-                                                                    value={editRoomTitle}
-                                                                    onChange={(e) =>
-                                                                        setEditRoomTitle(
-                                                                            e.target.value.toUpperCase()
-                                                                        )
-                                                                    }
-                                                                    autoFocus
-                                                                />
-                                                                <button
-                                                                    className="btn btn-success btn-sm px-2"
-                                                                    onClick={handleSaveRoomEdit}
-                                                                    disabled={!editRoomTitle.trim()}
-                                                                    title="Sauvegarder"
-                                                                >
-                                                                    <Check
-                                                                        style={{ fontSize: '1rem' }}
+                                            </Typography>
+
+                                            <List disablePadding>
+                                                {rooms.map((room, idx) => {
+                                                    const isEditing = editingRoomId === room._id;
+
+                                                    return (
+                                                        <Box key={room._id} component="li">
+                                                            <ListItem
+                                                                disableGutters                                                               
+                                                                secondaryAction={
+                                                                    isEditing ? (
+                                                                        <Stack direction="row" spacing={0.5}>
+                                                                            <Tooltip title="Sauvegarder">
+                                                                                <span>
+                                                                                    <IconButton
+                                                                                        color="success"
+                                                                                        size="small"
+                                                                                        onClick={handleSaveRoomEdit}
+                                                                                        disabled={!editRoomTitle.trim()}
+                                                                                        aria-label="sauvegarder"
+                                                                                    >
+                                                                                        <Check fontSize="small" />
+                                                                                    </IconButton>
+                                                                                </span>
+                                                                            </Tooltip>
+
+                                                                            <Tooltip title="Annuler">
+                                                                                <IconButton
+                                                                                    size="small"
+                                                                                    onClick={() => {
+                                                                                        setEditingRoomId("");
+                                                                                        setEditRoomTitle("");
+                                                                                    }}
+                                                                                    aria-label="annuler"
+                                                                                >
+                                                                                    <Close fontSize="small" />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                        </Stack>
+                                                                    ) : (
+                                                                        <Stack direction="row" spacing={0.5}>
+                                                                            <Tooltip title="Modifier">
+                                                                                <IconButton
+                                                                                    size="small"
+                                                                                    color="primary"
+                                                                                    onClick={() => handleEditRoom(room._id)}
+                                                                                    aria-label="modifier"
+                                                                                >
+                                                                                    <Edit fontSize="small" />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+
+                                                                            <Tooltip title="Supprimer">
+                                                                                <IconButton
+                                                                                    size="small"
+                                                                                    color="error"
+                                                                                    onClick={() => handleDeleteRoom(room._id)}
+                                                                                    aria-label="supprimer"
+                                                                                >
+                                                                                    <DeleteOutline fontSize="small" />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                        </Stack>
+                                                                    )
+                                                                }
+                                                            >
+                                                                {isEditing ? (
+                                                                    <TextField
+                                                                        size="small"
+                                                                        value={editRoomTitle}
+                                                                        onChange={(e) => setEditRoomTitle(e.target.value.toUpperCase())}
+                                                                        autoFocus
+                                                                        fullWidth
+                                                                        placeholder="Titre de la salle"
                                                                     />
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-outline-secondary btn-sm px-2"
-                                                                    onClick={() => {
-                                                                        setEditingRoomId('');
-                                                                        setEditRoomTitle('');
-                                                                    }}
-                                                                    title="Annuler"
-                                                                >
-                                                                    <Close
-                                                                        style={{ fontSize: '1rem' }}
-                                                                    />
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <>
-                                                                <span>{room.title}</span>
-                                                                <div className="d-flex gap-1">
-                                                                    <button
-                                                                        className="btn btn-outline-secondary btn-sm"
-                                                                        onClick={() =>
-                                                                            handleEditRoom(room._id)
-                                                                        }
-                                                                        title="Modifier"
-                                                                    >
-                                                                        <Edit
-                                                                            style={{
-                                                                                fontSize: '1rem'
-                                                                            }}
+                                                                ) : (
+                                                                    <>
+                                                                        <ListItemIcon sx={{ minWidth: 0, mr: 1 }} />
+                                                                        <ListItemText                                                                         
+                                                                            primary={room.title}
                                                                         />
-                                                                    </button>
-                                                                    <button
-                                                                        className="btn btn-outline-danger btn-sm"
-                                                                        onClick={() =>
-                                                                            handleDeleteRoom(
-                                                                                room._id
-                                                                            )
-                                                                        }
-                                                                        title="Supprimer"
-                                                                    >
-                                                                        <DeleteOutline
-                                                                            style={{
-                                                                                fontSize: '1rem'
-                                                                            }}
-                                                                        />
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                                                    </>
+                                                                )}
+                                                            </ListItem>
+
+                                                            {idx < rooms.length - 1 && <Divider component="li" />}
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </List>
+                                        </Box>
 
                                         {/* Create Room Section */}
                                         {!showCreateRoom ? (
@@ -906,46 +923,37 @@ const DashboardV2: React.FC = () => {
                                                 (quiz: QuizType, index: number) => (
                                                     <div key={quiz._id}>
                                                         <div className="quiz d-flex align-items-center py-2 w-100">
-                                                            <div className="title flex-fill">
+                                                            <div className="title flex-fill d-flex align-items-center gap-3">
                                                                 <Tooltip
-                                                                    title="Démarrer"
-                                                                    placement="top"
+                                                                    title="Démarrer le quiz"
+                                                                    placement="top-start"
                                                                 >
-                                                                    <div>
-                                                                        <Button
-                                                                            variant="text"
-                                                                            onClick={() =>
-                                                                                handleLancerQuiz(
-                                                                                    quiz
-                                                                                )
-                                                                            }
-                                                                            disabled={
-                                                                                !validateQuiz(
-                                                                                    quiz.content
-                                                                                )
-                                                                            }
-                                                                            startIcon={
-                                                                                <PlayArrow />
-                                                                            }
-                                                                            className="text-start justify-content-start w-100 btn btn-outline-light text-dark"
-                                                                        >
-                                                                            {`${quiz.title} (${quiz.content.length
-                                                                                } question${quiz.content
-                                                                                    .length > 1
-                                                                                    ? 's'
-                                                                                    : ''
-                                                                                })`}
-                                                                        </Button>
-                                                                    </div>
+                                                                    <IconButton
+                                                                        color="primary"
+                                                                        size="large"
+                                                                        className="border border-primary rounded"
+                                                                        onClick={() =>
+                                                                            handleLancerQuiz(quiz)
+                                                                        }
+                                                                        disabled={
+                                                                            !validateQuiz(
+                                                                                quiz.content
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <PlayArrow />
+                                                                    </IconButton>
                                                                 </Tooltip>
+                                                                <div className="h5 fw-bold">
+                                                                    {`${quiz.title} (${quiz.content.length
+                                                                        } question${quiz.content.length > 1
+                                                                            ? 's'
+                                                                            : ''
+                                                                        })`}
+                                                                </div>
                                                             </div>
 
                                                             <div className="actions flex-shrink-0 d-flex align-items-center gap-1">
-                                                                <div className="dashboard">
-                                                                    <DownloadQuizModal
-                                                                        quiz={quiz}
-                                                                    />
-                                                                </div>
 
                                                                 <Tooltip
                                                                     title="Modifier"
@@ -955,12 +963,19 @@ const DashboardV2: React.FC = () => {
                                                                         onClick={() =>
                                                                             handleEditQuiz(quiz)
                                                                         }
+                                                                        color="primary"
                                                                         size="small"
                                                                         aria-label="Modifier"
                                                                     >
                                                                         <Edit fontSize="small" />
                                                                     </IconButton>
                                                                 </Tooltip>
+
+                                                                <div className="dashboard">
+                                                                    <DownloadQuizModal
+                                                                        quiz={quiz}
+                                                                    />
+                                                                </div>
 
                                                                 <Tooltip
                                                                     title="Plus d'actions"
@@ -1017,21 +1032,33 @@ const DashboardV2: React.FC = () => {
                         horizontal: 'right'
                     }}
                 >
-                    <MenuItem onClick={() => handleFolderMenuAction('rename')}>
-                        <Edit className="me-2" style={{ fontSize: '1rem' }} />
-                        Renommer
+                    {/* Rename */}
+                    <MenuItem onClick={() => handleFolderMenuAction("rename")}>
+                        <ListItemIcon>
+                            <Edit fontSize="small" sx={{ color: "primary.main" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Renommer"
+                        />
                     </MenuItem>
-                    <MenuItem onClick={() => handleFolderMenuAction('duplicate')}>
-                        <ContentCopy className="me-2" style={{ fontSize: '1rem' }} />
-                        Dupliquer
+                    {/* Duplicate */}
+                    <MenuItem onClick={() => handleFolderMenuAction("duplicate")}>
+                        <ListItemIcon>
+                            <ContentCopy fontSize="small" sx={{ color: "primary.main" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Dupliquer"
+                        />
                     </MenuItem>
                     <Divider />
-                    <MenuItem
-                        onClick={() => handleFolderMenuAction('delete')}
-                        className="text-danger"
-                    >
-                        <DeleteOutline className="me-2" style={{ fontSize: '1rem' }} />
-                        Supprimer
+                    {/* Delete */}
+                    <MenuItem onClick={() => handleFolderMenuAction("delete")}>
+                        <ListItemIcon>
+                            <DeleteOutline fontSize="small" sx={{ color: "error.main" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Supprimer"
+                        />
                     </MenuItem>
                 </Menu>
 
@@ -1095,17 +1122,31 @@ const DashboardV2: React.FC = () => {
                 {/* Quiz Actions Dropdown Menu */}
                 <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
                     <MenuItem onClick={() => handleMenuAction('share')}>
-                        <Share />
-                        Partager
+                        <ListItemIcon>
+                            <Share fontSize="small" sx={{ color: 'primary.main' }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Partager"
+                        />
                     </MenuItem>
-                    <MenuItem onClick={() => handleMenuAction('duplicate')}>
-                        <ContentCopy />
-                        Dupliquer
+                    {/* Duplicate */}
+                    <MenuItem onClick={() => handleMenuAction("duplicate")}>
+                        <ListItemIcon>
+                            <ContentCopy fontSize="small" sx={{ color: "primary.main" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Dupliquer"
+                        />
                     </MenuItem>
                     <Divider />
-                    <MenuItem onClick={() => handleMenuAction('delete')}>
-                        <Delete />
-                        Supprimer
+                    {/* Delete */}
+                    <MenuItem onClick={() => handleMenuAction("delete")}>
+                        <ListItemIcon>
+                            <Delete fontSize="small" sx={{ color: "error.main" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Supprimer"
+                        />
                     </MenuItem>
                 </Menu>
 

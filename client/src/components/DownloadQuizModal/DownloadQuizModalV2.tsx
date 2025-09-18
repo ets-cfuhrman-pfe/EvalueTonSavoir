@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../../styles/main.scss';
 
 import { FileDownload } from '@mui/icons-material';
+import { IconButton, Tooltip } from "@mui/material";
 
 import { QuizType } from '../../Types/QuizType';
 import ApiService from '../../services/ApiService';
@@ -149,27 +150,29 @@ const DownloadQuizModalV2: React.FC<DownloadQuizModalV2Props> = ({ quiz }) => {
 
     if (!open) {
         return (
-            <button
-                type="button"
-                className="btn btn-outline-primary btn-sm"
-                onClick={handleOpenModal}
-                title="Télécharger quiz"
-            >
-                <FileDownload fontSize="small" />
-            </button>
+            <Tooltip title="Télécharger quiz">
+                <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={handleOpenModal}
+                >
+                    <FileDownload fontSize="small" />
+                </IconButton>
+            </Tooltip>
         );
     }
 
     return (
         <>
-            <button
-                type="button"
-                className="btn btn-outline-primary btn-sm"
-                onClick={handleOpenModal}
-                title="Télécharger quiz"
-            >
-                <FileDownload fontSize="small" />
-            </button>
+             <Tooltip title="Télécharger quiz">
+                <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={handleOpenModal}
+                >
+                    <FileDownload fontSize="small" />
+                </IconButton>
+            </Tooltip>
 
             <div className="modal show d-block bg-dark bg-opacity-50">
                 <div className="modal-dialog modal-dialog-centered">
