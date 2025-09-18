@@ -10,7 +10,6 @@ import ApiService from '../../../services/ApiService';
 import ImportModal from 'src/components/ImportModal/ImportModal';
 import ValidatedTextField from 'src/components/ValidatedTextField/ValidatedTextField';
 
-
 import DownloadQuizModal from 'src/components/DownloadQuizModal/DownloadQuizModal';
 import {
     Dialog,
@@ -41,7 +40,7 @@ import {
     ExpandMore,
     ExpandLess,
     Check,
-    Close,
+    Close
 } from '@mui/icons-material';
 
 const DashboardV2: React.FC = () => {
@@ -110,8 +109,6 @@ const DashboardV2: React.FC = () => {
 
         return true;
     };
-
-
 
     // Search handlers
     const toggleSearchVisibility = () => {
@@ -200,7 +197,7 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleEditRoom = (roomId: string) => {
-        const room = rooms.find(r => r._id === roomId);
+        const room = rooms.find((r) => r._id === roomId);
         if (room) {
             setEditingRoomId(roomId);
             setEditRoomTitle(room.title);
@@ -225,7 +222,7 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleDeleteRoom = async (roomId: string) => {
-        const room = rooms.find(r => r._id === roomId);
+        const room = rooms.find((r) => r._id === roomId);
         if (room && window.confirm(`Voulez-vous vraiment supprimer la salle "${room.title}"?`)) {
             try {
                 await ApiService.deleteRoom(roomId);
@@ -359,11 +356,14 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleDeleteFolder = async () => {
-        const folderToDelete = selectedFolderForMenu || folders.find(f => f._id === selectedFolderId);
+        const folderToDelete =
+            selectedFolderForMenu || folders.find((f) => f._id === selectedFolderId);
         if (!folderToDelete) return;
 
         try {
-            const confirmed = window.confirm(`Voulez-vous vraiment supprimer le dossier "${folderToDelete.title}"?`);
+            const confirmed = window.confirm(
+                `Voulez-vous vraiment supprimer le dossier "${folderToDelete.title}"?`
+            );
             if (confirmed) {
                 await ApiService.deleteFolder(folderToDelete._id);
                 const userFolders = await ApiService.getUserFolders();
@@ -386,7 +386,6 @@ const DashboardV2: React.FC = () => {
             console.error('Error deleting folder:', error);
         }
     };
-
 
     const handleConfirmRenameFolder = async () => {
         try {
@@ -428,7 +427,8 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleDuplicateFolder = async () => {
-        const folderToDuplicate = selectedFolderForMenu || folders.find(f => f._id === selectedFolderId);
+        const folderToDuplicate =
+            selectedFolderForMenu || folders.find((f) => f._id === selectedFolderId);
         if (!folderToDuplicate) return;
 
         try {
@@ -474,15 +474,11 @@ const DashboardV2: React.FC = () => {
                     console.error('Error fetching user rooms:', error);
                     setRooms([]);
                 }
-
-
             }
         };
 
         fetchData();
     }, [navigate]);
-
-
 
     useEffect(() => {
         const fetchQuizzesForFolder = async () => {
@@ -530,524 +526,596 @@ const DashboardV2: React.FC = () => {
 
                 {/* Main Layout */}
                 <div className="row g-0 ">
-                {/* Left Sidebar */}
-                <div className="col-lg-4 col-md-4 bg-white border-end shadow-sm">
-                    <div className="p-3 h-100">
-                         <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
-                              {selectedRoomId && (
-                            <div className="h6 fw-bold">
-                                <small>Salle active:</small>
-                                <span className="ms-1 text-success">{rooms.find(r => r._id === selectedRoomId)?.title}</span>
+                    {/* Left Sidebar */}
+                    <div className="col-lg-4 col-md-4 bg-white border-end shadow-sm">
+                        <div className="p-3 h-100">
+                            <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
+                                {selectedRoomId && (
+                                    <div className="h6 fw-bold">
+                                        <small>Salle active:</small>
+                                        <span className="ms-1 text-success">
+                                            {rooms.find((r) => r._id === selectedRoomId)?.title}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                         </div>
-                        {/* Folders Section */}
-                        <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <Tooltip title="Afficher tous les quiz" placement="top">
+                            {/* Folders Section */}
+                            <div className="bg-light rounded-3 shadow-sm p-3 mb-3">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <Tooltip title="Afficher tous les quiz" placement="top">
+                                        <Button
+                                            variant="text"
+                                            onClick={handleShowAllQuizzes}
+                                            className="p-0 text-dark fw-bolder fs-5"
+                                        >
+                                            Dossiers
+                                        </Button>
+                                    </Tooltip>
+                                    <Tooltip
+                                        title={
+                                            isFolderListExpanded
+                                                ? 'Masquer les dossiers'
+                                                : 'Afficher les dossiers'
+                                        }
+                                        placement="top"
+                                    >
+                                        <IconButton
+                                            onClick={toggleAllFolders}
+                                            size="small"
+                                            color="primary"
+                                        >
+                                            {isFolderListExpanded ? <ExpandLess /> : <ExpandMore />}
+                                        </IconButton>
+                                    </Tooltip>
+                                </div>{' '}
+                                {isFolderListExpanded && (
+                                    <div>
+                                        <div className="folder-list mb-3">
+                                            {folders.map((folder, index) => (
+                                                <React.Fragment key={folder._id}>
+                                                    <div className="folder-item d-flex align-items-center">
+                                                        <Button
+                                                            variant="text"
+                                                            className={`justify-content-start text-start flex-fill text-decoration-none ${selectedFolderId === folder._id
+                                                                    ? 'bg-primary bg-opacity-10'
+                                                                    : ''
+                                                                }`}
+                                                            onClick={() =>
+                                                                setSelectedFolderId(
+                                                                    selectedFolderId === folder._id
+                                                                        ? ''
+                                                                        : folder._id
+                                                                )
+                                                            }
+                                                        >
+                                                            <span className="flex-fill text-truncate">
+                                                                {folder.title}
+                                                            </span>
+                                                        </Button>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) =>
+                                                                handleFolderMenuOpen(e, folder)
+                                                            }
+                                                            className="ms-1"
+                                                        >
+                                                            <MoreVert
+                                                                style={{ fontSize: '1.5rem' }}
+                                                            />
+                                                        </IconButton>
+                                                    </div>
+                                                    {index < folders.length - 1 && (
+                                                        <div className="my-1 border-top"></div>
+                                                    )}
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+
+                                        {/* Add Folder Button */}
+                                        <div className="text-center">
+                                            <button
+                                                className="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center"
+                                                onClick={handleCreateFolder}
+                                            >
+                                                <Add
+                                                    style={{ fontSize: '1rem' }}
+                                                    className="me-2"
+                                                />
+                                                Nouveau dossier
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Room Management Section */}
+                            <div className="bg-light rounded-3 shadow-sm p-3 mt-3">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
                                     <Button
                                         variant="text"
-                                        onClick={handleShowAllQuizzes}
+                                        onClick={() => setShowRoomOptions(!showRoomOptions)}
                                         className="p-0 text-dark fw-bolder fs-5"
                                     >
-                                        Dossiers
+                                        Salles
                                     </Button>
-                                </Tooltip>
-                                <Tooltip
-                                    title={
-                                        isFolderListExpanded
-                                            ? 'Masquer les dossiers'
-                                            : 'Afficher les dossiers'
-                                    }
-                                    placement="top"
-                                >
-                                    <IconButton
-                                        onClick={toggleAllFolders}
-                                        size="small"
-                                        color="primary"
+                                    <Tooltip
+                                        title={
+                                            showRoomOptions
+                                                ? 'Masquer les salles'
+                                                : 'Afficher les salles'
+                                        }
+                                        placement="top"
                                     >
-                                        {isFolderListExpanded ? <ExpandLess /> : <ExpandMore />}
-                                    </IconButton>
-                                </Tooltip>
-                            </div>{' '}
-                            {isFolderListExpanded && (
-                                <div>
-                                    <div className="folder-list mb-3">
-                                        {folders.map((folder, index) => (
-                                            <React.Fragment key={folder._id}>
-                                                <div className="folder-item d-flex align-items-center">
-                                                    <Button
-                                                        variant="text"
-                                                        className={`justify-content-start text-start flex-fill text-decoration-none ${selectedFolderId === folder._id ? 'bg-primary bg-opacity-10' : ''}`}
-                                                        onClick={() =>
-                                                            setSelectedFolderId(
-                                                                selectedFolderId === folder._id
-                                                                    ? ''
-                                                                    : folder._id
-                                                            )
-                                                        }
-                                                    >
-                                                        <span
-                                                            className="flex-fill text-truncate"
-                                                        >
-                                                            {folder.title}
-                                                        </span>
-                                                    </Button>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={(e) => handleFolderMenuOpen(e, folder)}
-                                                        className="ms-1"
-                                                    >
-                                                        <MoreVert style={{ fontSize: '1.5rem' }} />
-                                                    </IconButton>
-                                                </div>
-                                                {index < folders.length - 1 && <div className="my-1 border-top"></div>}
-                                            </React.Fragment>
-                                        ))}
-                                    </div>
-
-                                    {/* Add Folder Button */}
-                                    <div className="text-center">
-                                        <button
-                                            className="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center"
-                                            onClick={handleCreateFolder}
+                                        <IconButton
+                                            onClick={() => setShowRoomOptions(!showRoomOptions)}
+                                            size="small"
+                                            color="primary"
                                         >
-                                            <Add style={{ fontSize: '1rem' }} className="me-2" />
-                                            Nouveau dossier
-                                        </button>
-                                    </div>
+                                            {showRoomOptions ? <ExpandLess /> : <ExpandMore />}
+                                        </IconButton>
+                                    </Tooltip>
                                 </div>
-                            )}
-                        </div>
 
-
-
-                        {/* Room Management Section */}
-                        <div className="bg-light rounded-3 shadow-sm p-3 mt-3">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <Button
-                                    variant="text"
-                                    onClick={() => setShowRoomOptions(!showRoomOptions)}
-                                    className="p-0 text-dark fw-bolder fs-5"
-                                >
-                                    Salles
-                                </Button>
-                                <Tooltip
-                                    title={showRoomOptions ? 'Masquer les salles' : 'Afficher les salles'}
-                                    placement="top"
-                                >
-                                    <IconButton
-                                        onClick={() => setShowRoomOptions(!showRoomOptions)}
-                                        size="small"
-                                        color="primary"
-                                    >
-                                        {showRoomOptions ? <ExpandLess /> : <ExpandMore />}
-                                    </IconButton>
-                                </Tooltip>
-                            </div>
-
-                            {showRoomOptions && (
-                                <div>
-                                    {/* Room List */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold">Sélectionner:</label>
-                                        <select
-                                            className="form-select form-select-sm"
-                                            value={selectedRoomId}
-                                            onChange={(e) => setSelectedRoomId(e.target.value)}
-                                        >
-                                            <option value="">-- Sélectionner une salle --</option>
-                                            {rooms.map((room) => (
-                                                <option key={room._id} value={room._id}>
-                                                    {room.title}
+                                {showRoomOptions && (
+                                    <div>
+                                        {/* Room List */}
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">
+                                                Sélectionner:
+                                            </label>
+                                            <select
+                                                className="form-select form-select-sm"
+                                                value={selectedRoomId}
+                                                onChange={(e) => setSelectedRoomId(e.target.value)}
+                                            >
+                                                <option value="">
+                                                    -- Sélectionner une salle --
                                                 </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                                {rooms.map((room) => (
+                                                    <option key={room._id} value={room._id}>
+                                                        {room.title}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
 
-                                    {/* Room Management */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold">Gérer les salles:</label>
-                                        <div className="list-group list-group-flush">
-                                            {rooms.map((room) => (
-                                                <div key={room._id} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                                                    {editingRoomId === room._id ? (
-                                                        <div className="d-flex flex-fill gap-1">
-                                                            <input
-                                                                type="text"
-                                                                className="form-control form-control-sm"
-                                                                value={editRoomTitle}
-                                                                onChange={(e) => setEditRoomTitle(e.target.value.toUpperCase())}
-                                                                autoFocus
-                                                            />
-                                                            <button
-                                                                className="btn btn-success btn-sm px-2"
-                                                                onClick={handleSaveRoomEdit}
-                                                                disabled={!editRoomTitle.trim()}
-                                                                title="Sauvegarder"
-                                                            >
-                                                                <Check style={{ fontSize: '1rem' }} />
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-outline-secondary btn-sm px-2"
-                                                                onClick={() => {
-                                                                    setEditingRoomId('');
-                                                                    setEditRoomTitle('');
-                                                                }}
-                                                                title="Annuler"
-                                                            >
-                                                                <Close style={{ fontSize: '1rem' }} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            <span>{room.title}</span>
-                                                            <div className="d-flex gap-1">
+                                        {/* Room Management */}
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">
+                                                Gérer les salles:
+                                            </label>
+                                            <div className="list-group list-group-flush">
+                                                {rooms.map((room) => (
+                                                    <div
+                                                        key={room._id}
+                                                        className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center"
+                                                    >
+                                                        {editingRoomId === room._id ? (
+                                                            <div className="d-flex flex-fill gap-1">
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control form-control-sm"
+                                                                    value={editRoomTitle}
+                                                                    onChange={(e) =>
+                                                                        setEditRoomTitle(
+                                                                            e.target.value.toUpperCase()
+                                                                        )
+                                                                    }
+                                                                    autoFocus
+                                                                />
                                                                 <button
-                                                                    className="btn btn-outline-secondary btn-sm"
-                                                                    onClick={() => handleEditRoom(room._id)}
-                                                                    title="Modifier"
+                                                                    className="btn btn-success btn-sm px-2"
+                                                                    onClick={handleSaveRoomEdit}
+                                                                    disabled={!editRoomTitle.trim()}
+                                                                    title="Sauvegarder"
                                                                 >
-                                                                    <Edit style={{ fontSize: '1rem' }} />
+                                                                    <Check
+                                                                        style={{ fontSize: '1rem' }}
+                                                                    />
                                                                 </button>
                                                                 <button
-                                                                    className="btn btn-outline-danger btn-sm"
-                                                                    onClick={() => handleDeleteRoom(room._id)}
-                                                                    title="Supprimer"
+                                                                    className="btn btn-outline-secondary btn-sm px-2"
+                                                                    onClick={() => {
+                                                                        setEditingRoomId('');
+                                                                        setEditRoomTitle('');
+                                                                    }}
+                                                                    title="Annuler"
                                                                 >
-                                                                    <DeleteOutline style={{ fontSize: '1rem' }} />
+                                                                    <Close
+                                                                        style={{ fontSize: '1rem' }}
+                                                                    />
                                                                 </button>
                                                             </div>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Create Room Section */}
-                                    {!showCreateRoom ? (
-                                        <button
-                                            className="btn btn-outline-primary btn-sm w-100 mb-3 d-flex align-items-center justify-content-center"
-                                            onClick={() => setShowCreateRoom(true)}
-                                        >
-                                            <Add style={{ fontSize: '1rem' }} className="me-2" />
-                                            Nouvelle salle
-                                        </button>
-                                    ) : (
-                                        <div className="mb-3">
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm mb-2"
-                                                placeholder="Nom de la salle"
-                                                value={newRoomTitle}
-                                                onChange={(e) => setNewRoomTitle(e.target.value.toUpperCase())}
-                                                autoFocus
-                                            />
-                                            <div className="d-flex gap-2">
-                                                <button
-                                                    className="btn btn-success btn-sm flex-fill"
-                                                    onClick={handleCreateRoom}
-                                                    disabled={!newRoomTitle.trim()}
-                                                >
-                                                    Créer
-                                                </button>
-                                                <button
-                                                    className="btn btn-outline-secondary btn-sm flex-fill"
-                                                    onClick={() => {
-                                                        setShowCreateRoom(false);
-                                                        setNewRoomTitle('');
-                                                    }}
-                                                >
-                                                    Annuler
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content Area */}
-                <div className="col-lg-8 col-md-7 bg-white shadow-sm">
-                    <div className="p-4 h-100">
-                        {/* Search and Action Bar */}
-                        <div className="bg-light rounded-3 shadow-sm p-3 mb-4">
-                            <div className="d-flex justify-content-between align-items-center gap-3">
-                                <div className="flex-grow-1">
-                                    {!isSearchVisible ? (
-                                        <button
-                                            type="button"
-                                            onClick={toggleSearchVisibility}
-                                            className="btn btn-outline-primary rounded d-flex align-items-center justify-content-center"
-                                            style={{ width: '40px', height: '40px' }}
-                                            data-testid="search-toggle-icon"
-
-                                        >
-                                            <Search />
-                                        </button>
-                                    ) : (
-                                        <TextField
-                                            onChange={handleSearch}
-                                            value={searchTerm}
-                                            placeholder="Rechercher un quiz"
-                                            fullWidth
-                                            autoFocus
-                                            className="rounded"
-                                            slotProps={{
-                                                input: {
-                                                    className: 'form-control bg-white fw-medium',
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            <button
-                                                                type="button"
-                                                                onClick={toggleSearchVisibility}
-                                                                className="btn btn-outline-primary btn-sm rounded d-flex align-items-center justify-content-center"
-                                                                style={{ width: '32px', height: '32px' }}
-                                                                data-testid="search-close-icon"
-
-                                                            >
-                                                                <Search fontSize="small" />
-                                                            </button>
-                                                        </InputAdornment>
-                                                    )
-                                                }
-                                            }}
-                                        />
-                                    )}
-                                </div>
-
-                                <div className="d-flex gap-2">
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        startIcon={<Add />}
-                                        onClick={handleCreateQuiz}
-                                        className="btn btn-outline-primary rounded px-3 py-1"
-                                    >
-                                        Nouveau quiz
-                                    </Button>
-
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        startIcon={<Upload />}
-                                        onClick={handleOnImport}
-                                        className="btn btn-outline-primary rounded"
-                                    >
-                                        Importer
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quiz List */}
-                        <div className="list">
-                            {Object.keys(quizzesByFolder).map((folderName) => (
-                                <div
-                                    key={folderName}
-                                    className="card folder-card my-5 rounded-3 shadow-sm border"
-                                >
-                                    <div className="folder-tab">{folderName}</div>
-                                    <div className="card-body">
-                                        {quizzesByFolder[folderName].map(
-                                            (quiz: QuizType, index: number) => (
-                                                <div key={quiz._id}>
-                                                    <div className="quiz d-flex align-items-center py-2 w-100">
-                                                        <div className="title flex-fill">
-                                                            <Tooltip
-                                                                title="Démarrer"
-                                                                placement="top"
-                                                            >
-                                                                <div>
-                                                                    <Button
-                                                                        variant="text"
+                                                        ) : (
+                                                            <>
+                                                                <span>{room.title}</span>
+                                                                <div className="d-flex gap-1">
+                                                                    <button
+                                                                        className="btn btn-outline-secondary btn-sm"
                                                                         onClick={() =>
-                                                                            handleLancerQuiz(quiz)
+                                                                            handleEditRoom(room._id)
                                                                         }
-                                                                        disabled={
-                                                                            !validateQuiz(
-                                                                                quiz.content
+                                                                        title="Modifier"
+                                                                    >
+                                                                        <Edit
+                                                                            style={{
+                                                                                fontSize: '1rem'
+                                                                            }}
+                                                                        />
+                                                                    </button>
+                                                                    <button
+                                                                        className="btn btn-outline-danger btn-sm"
+                                                                        onClick={() =>
+                                                                            handleDeleteRoom(
+                                                                                room._id
                                                                             )
                                                                         }
-                                                                        startIcon={<PlayArrow />}
-                                                                        className="text-start justify-content-start w-100 btn btn-outline-light text-dark"
+                                                                        title="Supprimer"
                                                                     >
-                                                                        {`${quiz.title} (${quiz.content.length
-                                                                            } question${quiz.content.length > 1
-                                                                                ? 's'
-                                                                                : ''
-                                                                            })`}
-                                                                    </Button>
+                                                                        <DeleteOutline
+                                                                            style={{
+                                                                                fontSize: '1rem'
+                                                                            }}
+                                                                        />
+                                                                    </button>
                                                                 </div>
-                                                            </Tooltip>
-                                                        </div>
-
-                                                        <div className="actions flex-shrink-0 d-flex align-items-center gap-1">
-                                                            <div className="dashboard">
-                                                                <DownloadQuizModal quiz={quiz} />
-                                                            </div>
-
-                                                            <Tooltip
-                                                                title="Modifier"
-                                                                placement="top"
-                                                            >
-                                                                <IconButton
-                                                                    onClick={() =>
-                                                                        handleEditQuiz(quiz)
-                                                                    }
-                                                                    size="small"
-                                                                    aria-label="Modifier"
-                                                                >
-                                                                    <Edit fontSize="small" />
-                                                                </IconButton>
-                                                            </Tooltip>
-
-                                                            <Tooltip
-                                                                title="Plus d'actions"
-                                                                placement="top"
-                                                            >
-                                                                <IconButton
-                                                                    onClick={(event) =>
-                                                                        handleMenuOpen(event, quiz)
-                                                                    }
-                                                                    size="small"
-                                                                    aria-label="Plus d'actions"
-                                                                >
-                                                                    <MoreVert style={{ fontSize: '1.5rem' }} />
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        </div>
-                                                    </div>
-                                                    {index <
-                                                        quizzesByFolder[folderName].length - 1 && (
-                                                            <div className="my-1 border-top"></div>
+                                                            </>
                                                         )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Create Room Section */}
+                                        {!showCreateRoom ? (
+                                            <button
+                                                className="btn btn-outline-primary btn-sm w-100 mb-3 d-flex align-items-center justify-content-center"
+                                                onClick={() => setShowCreateRoom(true)}
+                                            >
+                                                <Add
+                                                    style={{ fontSize: '1rem' }}
+                                                    className="me-2"
+                                                />
+                                                Nouvelle salle
+                                            </button>
+                                        ) : (
+                                            <div className="mb-3">
+                                                <input
+                                                    type="text"
+                                                    className="form-control form-control-sm mb-2"
+                                                    placeholder="Nom de la salle"
+                                                    value={newRoomTitle}
+                                                    onChange={(e) =>
+                                                        setNewRoomTitle(
+                                                            e.target.value.toUpperCase()
+                                                        )
+                                                    }
+                                                    autoFocus
+                                                />
+                                                <div className="d-flex gap-2">
+                                                    <button
+                                                        className="btn btn-success btn-sm flex-fill"
+                                                        onClick={handleCreateRoom}
+                                                        disabled={!newRoomTitle.trim()}
+                                                    >
+                                                        Créer
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-outline-secondary btn-sm flex-fill"
+                                                        onClick={() => {
+                                                            setShowCreateRoom(false);
+                                                            setNewRoomTitle('');
+                                                        }}
+                                                    >
+                                                        Annuler
+                                                    </button>
                                                 </div>
-                                            )
+                                            </div>
                                         )}
                                     </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="col-lg-8 col-md-7 bg-white shadow-sm">
+                        <div className="p-4 h-100">
+                            {/* Search and Action Bar */}
+                            <div className="bg-light rounded-3 shadow-sm p-3 mb-4">
+                                <div className="d-flex justify-content-between align-items-center gap-3">
+                                    <div className="flex-grow-1">
+                                        {!isSearchVisible ? (
+                                            <button
+                                                type="button"
+                                                onClick={toggleSearchVisibility}
+                                                className="btn btn-outline-primary rounded d-flex align-items-center justify-content-center"
+                                                style={{ width: '40px', height: '40px' }}
+                                                data-testid="search-toggle-icon"
+                                            >
+                                                <Search />
+                                            </button>
+                                        ) : (
+                                            <TextField
+                                                onChange={handleSearch}
+                                                value={searchTerm}
+                                                placeholder="Rechercher un quiz"
+                                                fullWidth
+                                                autoFocus
+                                                className="rounded"
+                                                slotProps={{
+                                                    input: {
+                                                        className:
+                                                            'form-control bg-white fw-medium',
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={toggleSearchVisibility}
+                                                                    className="btn btn-outline-primary btn-sm rounded d-flex align-items-center justify-content-center"
+                                                                    style={{
+                                                                        width: '32px',
+                                                                        height: '32px'
+                                                                    }}
+                                                                    data-testid="search-close-icon"
+                                                                >
+                                                                    <Search fontSize="small" />
+                                                                </button>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="d-flex gap-2">
+                                        <Button
+                                            variant="outlined"
+                                            color="primary"
+                                            startIcon={<Add />}
+                                            onClick={handleCreateQuiz}
+                                            className="btn btn-outline-primary rounded px-3 py-1"
+                                        >
+                                            Nouveau quiz
+                                        </Button>
+
+                                        <Button
+                                            variant="outlined"
+                                            color="primary"
+                                            startIcon={<Upload />}
+                                            onClick={handleOnImport}
+                                            className="btn btn-outline-primary rounded"
+                                        >
+                                            Importer
+                                        </Button>
+                                    </div>
                                 </div>
-                            ))}
+                            </div>
+
+                            {/* Quiz List */}
+                            <div className="list">
+                                {Object.keys(quizzesByFolder).map((folderName) => (
+                                    <div
+                                        key={folderName}
+                                        className="card folder-card my-5 rounded-3 shadow-sm border"
+                                    >
+                                        <div className="folder-tab">{folderName}</div>
+                                        <div className="card-body">
+                                            {quizzesByFolder[folderName].map(
+                                                (quiz: QuizType, index: number) => (
+                                                    <div key={quiz._id}>
+                                                        <div className="quiz d-flex align-items-center py-2 w-100">
+                                                            <div className="title flex-fill">
+                                                                <Tooltip
+                                                                    title="Démarrer"
+                                                                    placement="top"
+                                                                >
+                                                                    <div>
+                                                                        <Button
+                                                                            variant="text"
+                                                                            onClick={() =>
+                                                                                handleLancerQuiz(
+                                                                                    quiz
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                !validateQuiz(
+                                                                                    quiz.content
+                                                                                )
+                                                                            }
+                                                                            startIcon={
+                                                                                <PlayArrow />
+                                                                            }
+                                                                            className="text-start justify-content-start w-100 btn btn-outline-light text-dark"
+                                                                        >
+                                                                            {`${quiz.title} (${quiz.content.length
+                                                                                } question${quiz.content
+                                                                                    .length > 1
+                                                                                    ? 's'
+                                                                                    : ''
+                                                                                })`}
+                                                                        </Button>
+                                                                    </div>
+                                                                </Tooltip>
+                                                            </div>
+
+                                                            <div className="actions flex-shrink-0 d-flex align-items-center gap-1">
+                                                                <div className="dashboard">
+                                                                    <DownloadQuizModal
+                                                                        quiz={quiz}
+                                                                    />
+                                                                </div>
+
+                                                                <Tooltip
+                                                                    title="Modifier"
+                                                                    placement="top"
+                                                                >
+                                                                    <IconButton
+                                                                        onClick={() =>
+                                                                            handleEditQuiz(quiz)
+                                                                        }
+                                                                        size="small"
+                                                                        aria-label="Modifier"
+                                                                    >
+                                                                        <Edit fontSize="small" />
+                                                                    </IconButton>
+                                                                </Tooltip>
+
+                                                                <Tooltip
+                                                                    title="Plus d'actions"
+                                                                    placement="top"
+                                                                >
+                                                                    <IconButton
+                                                                        onClick={(event) =>
+                                                                            handleMenuOpen(
+                                                                                event,
+                                                                                quiz
+                                                                            )
+                                                                        }
+                                                                        size="small"
+                                                                        aria-label="Plus d'actions"
+                                                                    >
+                                                                        <MoreVert
+                                                                            style={{
+                                                                                fontSize: '1.5rem'
+                                                                            }}
+                                                                        />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </div>
+                                                        </div>
+                                                        {index <
+                                                            quizzesByFolder[folderName].length -
+                                                            1 && (
+                                                                <div className="my-1 border-top"></div>
+                                                            )}
+                                                    </div>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Dialogs */}
+                {/* Dialogs */}
 
-            {/* Folder Menu */}
-            <Menu
-                anchorEl={folderMenuAnchor}
-                open={Boolean(folderMenuAnchor)}
-                onClose={handleFolderMenuClose}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-            >
-                <MenuItem onClick={() => handleFolderMenuAction('rename')}>
-                    <Edit className="me-2" style={{ fontSize: '1rem' }} />
-                    Renommer
-                </MenuItem>
-                <MenuItem onClick={() => handleFolderMenuAction('duplicate')}>
-                    <ContentCopy className="me-2" style={{ fontSize: '1rem' }} />
-                    Dupliquer
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={() => handleFolderMenuAction('delete')} className="text-danger">
-                    <DeleteOutline className="me-2" style={{ fontSize: '1rem' }} />
-                    Supprimer
-                </MenuItem>
-            </Menu>
-
-            {/* Error Dialog */}
-            <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
-                <DialogTitle>Erreur</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>Une erreur est survenue.</DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowErrorDialog(false)}>Fermer</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Folder Creation Dialog */}
-            <Dialog open={openAddFolderDialog} onClose={handleCancelCreateFolder} fullWidth>
-                <DialogTitle>Créer un nouveau dossier</DialogTitle>
-                <DialogContent dividers>
-                    <ValidatedTextField
-                        fieldPath="folder.title"
-                        initialValue={newFolderTitle}
-                        onValueChange={(value) => setNewFolderTitle(value)}
-                        label="Titre du dossier"
-                        fullWidth
-                        autoFocus
-                        variant="outlined"
-                        margin="normal"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCancelCreateFolder}>Annuler</Button>
-                    <Button onClick={handleConfirmCreateFolder} variant="contained">
-                        Créer
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Folder Rename Dialog */}
-            <Dialog open={openRenameFolderDialog} onClose={handleCancelRenameFolder} fullWidth>
-                <DialogTitle>Renommer le dossier</DialogTitle>
-                <DialogContent dividers>
-                    <ValidatedTextField
-                        fieldPath="folder.title"
-                        initialValue={renameFolderTitle}
-                        onValueChange={(value) => setRenameFolderTitle(value)}
-                        label="Nouveau titre du dossier"
-                        fullWidth
-                        autoFocus
-                        variant="outlined"
-                        margin="normal"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCancelRenameFolder}>Annuler</Button>
-                    <Button onClick={handleConfirmRenameFolder} variant="contained">
+                {/* Folder Menu */}
+                <Menu
+                    anchorEl={folderMenuAnchor}
+                    open={Boolean(folderMenuAnchor)}
+                    onClose={handleFolderMenuClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right'
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right'
+                    }}
+                >
+                    <MenuItem onClick={() => handleFolderMenuAction('rename')}>
+                        <Edit className="me-2" style={{ fontSize: '1rem' }} />
                         Renommer
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    </MenuItem>
+                    <MenuItem onClick={() => handleFolderMenuAction('duplicate')}>
+                        <ContentCopy className="me-2" style={{ fontSize: '1rem' }} />
+                        Dupliquer
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => handleFolderMenuAction('delete')}
+                        className="text-danger"
+                    >
+                        <DeleteOutline className="me-2" style={{ fontSize: '1rem' }} />
+                        Supprimer
+                    </MenuItem>
+                </Menu>
 
-            {/* Quiz Actions Dropdown Menu */}
-            <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-                <MenuItem onClick={() => handleMenuAction('share')}>
-                    <Share />
-                    Partager
-                </MenuItem>
-                <MenuItem onClick={() => handleMenuAction('duplicate')}>
-                    <ContentCopy />
-                    Dupliquer
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={() => handleMenuAction('delete')}>
-                    <Delete />
-                    Supprimer
-                </MenuItem>
-            </Menu>
+                {/* Error Dialog */}
+                <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
+                    <DialogTitle>Erreur</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>Une erreur est survenue.</DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowErrorDialog(false)}>Fermer</Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* Import Modal */}
-            <ImportModal
-                open={showImportModal}
-                handleOnClose={() => setShowImportModal(false)}
-                handleOnImport={handleOnImport}
-                selectedFolder={selectedFolderId}
-            />
+                {/* Folder Creation Dialog */}
+                <Dialog open={openAddFolderDialog} onClose={handleCancelCreateFolder} fullWidth>
+                    <DialogTitle>Créer un nouveau dossier</DialogTitle>
+                    <DialogContent dividers>
+                        <ValidatedTextField
+                            fieldPath="folder.title"
+                            initialValue={newFolderTitle}
+                            onValueChange={(value) => setNewFolderTitle(value)}
+                            label="Titre du dossier"
+                            fullWidth
+                            autoFocus
+                            variant="outlined"
+                            margin="normal"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCancelCreateFolder}>Annuler</Button>
+                        <Button onClick={handleConfirmCreateFolder} variant="contained">
+                            Créer
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Folder Rename Dialog */}
+                <Dialog open={openRenameFolderDialog} onClose={handleCancelRenameFolder} fullWidth>
+                    <DialogTitle>Renommer le dossier</DialogTitle>
+                    <DialogContent dividers>
+                        <ValidatedTextField
+                            fieldPath="folder.title"
+                            initialValue={renameFolderTitle}
+                            onValueChange={(value) => setRenameFolderTitle(value)}
+                            label="Nouveau titre du dossier"
+                            fullWidth
+                            autoFocus
+                            variant="outlined"
+                            margin="normal"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCancelRenameFolder}>Annuler</Button>
+                        <Button onClick={handleConfirmRenameFolder} variant="contained">
+                            Renommer
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Quiz Actions Dropdown Menu */}
+                <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
+                    <MenuItem onClick={() => handleMenuAction('share')}>
+                        <Share />
+                        Partager
+                    </MenuItem>
+                    <MenuItem onClick={() => handleMenuAction('duplicate')}>
+                        <ContentCopy />
+                        Dupliquer
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem onClick={() => handleMenuAction('delete')}>
+                        <Delete />
+                        Supprimer
+                    </MenuItem>
+                </Menu>
+
+                {/* Import Modal */}
+                <ImportModal
+                    open={showImportModal}
+                    handleOnClose={() => setShowImportModal(false)}
+                    handleOnImport={handleOnImport}
+                    selectedFolder={selectedFolderId}
+                />
             </div>
         </div>
     );
