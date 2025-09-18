@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -37,6 +37,7 @@ const JoinRoom: React.FC = () => {
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -179,12 +180,21 @@ const JoinRoom: React.FC = () => {
     };
 
     const handleReturnKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && 
-            username && 
-            isUsernameValid && 
-            ((!isQRCodeJoin && roomName && isManualRoomNameValid) || 
-             (isQRCodeJoin && roomName && isRoomNameValid))) {
+        if (e.key === 'Enter' &&
+            username &&
+            isUsernameValid &&
+            ((!isQRCodeJoin && roomName && isManualRoomNameValid) ||
+                (isQRCodeJoin && roomName && isRoomNameValid))) {
             handleSocket();
+        }
+    };
+
+    const handleNavigateToV2 = () => {
+        // Preserve the room name if it's a QR code join
+        if (isQRCodeJoin && roomName) {
+            navigate(`/student/join-room-v2?roomName=${roomName}`);
+        } else {
+            navigate('/student/join-room-v2');
         }
     };
 
@@ -278,15 +288,24 @@ const JoinRoom: React.FC = () => {
                         loading={isConnecting}
                         onClick={handleSocket}
                         variant="contained"
-                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
+                        sx={{ marginBottom: '1rem' }}
                         disabled={
-                            !username || 
-                            !isUsernameValid || 
-                            (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
+                            !username ||
+                            !isUsernameValid ||
+                            (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
                             (isQRCodeJoin && (!roomName || !isRoomNameValid))
                         }
                     >
                         {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                    </LoadingButton>
+
+                    <LoadingButton
+                        loading={false}
+                        onClick={handleNavigateToV2}
+                        variant="outlined"
+                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
+                    >
+                        Nouvelle interface
                     </LoadingButton>
                 </LoginContainer>
             );
