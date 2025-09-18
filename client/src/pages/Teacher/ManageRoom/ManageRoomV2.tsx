@@ -57,6 +57,7 @@ const ManageRoomV2: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     const [showQuestions, setShowQuestions] = useState(true);
+    const [showResults, setShowResults] = useState(true);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
 
@@ -680,7 +681,7 @@ const ManageRoomV2: React.FC = () => {
                             <div className="p-4">
                                 {quizQuestions ? (
                                     <div>
-                                        <Box display="flex" justifyContent="left" mb={2}>
+                                        <Box display="flex" justifyContent="left" gap={2} mb={2}>
                                             <Button
                                                 variant="outlined"
                                                 onClick={() => setShowQuestions(!showQuestions)}
@@ -689,20 +690,30 @@ const ManageRoomV2: React.FC = () => {
                                                     ? 'Masquer les questions'
                                                     : 'Afficher les questions'}
                                             </Button>
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() => setShowResults(!showResults)}
+                                            >
+                                                {showResults
+                                                    ? 'Masquer les résultats'
+                                                    : 'Afficher les résultats'}
+                                            </Button>
                                         </Box>
 
                                         <Box display="flex" flexDirection="column" gap={3}>
                                             {/* Results Box */}
-                                            <Box width="100%">
-                                                <LiveResultsComponent
-                                                    quizMode={quizMode}
-                                                    socket={socket}
-                                                    questions={quizQuestions}
-                                                    showSelectedQuestion={showSelectedQuestion}
-                                                    students={students}
-                                                    quizTitle={quiz?.title}
-                                                />
-                                            </Box>
+                                            {showResults && (
+                                                <Box width="100%">
+                                                    <LiveResultsComponent
+                                                        quizMode={quizMode}
+                                                        socket={socket}
+                                                        questions={quizQuestions}
+                                                        showSelectedQuestion={showSelectedQuestion}
+                                                        students={students}
+                                                        quizTitle={quiz?.title}
+                                                    />
+                                                </Box>
+                                            )}
                                             {/* Questions Box */}
                                             {showQuestions && (
                                                 <Box width="100%">
