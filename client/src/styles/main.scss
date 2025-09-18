@@ -29,7 +29,7 @@
   $container-max-widths: vars.$container-max-widths
 );
 
-@use './base';
+@use './global';
 @use './components';
 @use './utilities';
 

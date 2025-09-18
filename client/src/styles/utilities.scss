@@ -10,7 +10,6 @@
 .compact-height {
   min-height: auto;
 
-  // On mobile, use natural height to prevent scrolling
   @media (max-width: vars.$breakpoint-md) {
     min-height: auto;
     display: flex;
@@ -24,7 +23,7 @@
   align-items: flex-start;
   padding: vars.$spacing-sm 0;
 
-  // Mobile breakpoint - compact layout without forced height
+  // Mobile breakpoint
   @media (max-width: vars.$breakpoint-md) {
     padding: vars.$spacing-xs 0;
     min-height: auto;
@@ -34,11 +33,6 @@
   }
 }
 
-.center-content-vertical {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .flex-between {
   display: flex;
@@ -75,7 +69,6 @@
   margin-bottom: 1rem;
 }
 
-// Responsive utilities
 @media (max-width: 768px) {
   .spacer-120 {
     display: none;

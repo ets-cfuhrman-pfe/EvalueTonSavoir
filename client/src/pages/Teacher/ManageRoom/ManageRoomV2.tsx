@@ -424,13 +424,13 @@ const ManageRoomV2: React.FC = () => {
     // Initial quiz launch screen with all options
     if (!formattedRoomName) {
         return (
-            <div className="dashboard-container">
+            <div className="content-container">
                 <div className="container-fluid p-0">
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
                         <div className="container-fluid px-4 py-3">
                             <div className="d-flex justify-content-between align-items-center">
-                                <h1 className="h3 mb-0 text-dark fw-bold">Options de lancement du quiz</h1>
+                                <h1 className="h3 px-4 mb-0 text-dark fw-bold">Options de lancement du quiz</h1>
                                 <button
                                     className="btn btn-outline-secondary"
                                     onClick={handleReturn}
@@ -589,11 +589,11 @@ const ManageRoomV2: React.FC = () => {
 
     // Main room management interface
     return (
-        <div className="dashboard-container">
-            <div className="w-100 p-0 dashboard-full-width">
+        <div className="content-container">
+            <div className="w-100 p-0 content-full-width">
                 {/* Top Header */}
                 <div className="bg-white border-bottom shadow-sm">
-                    <div className="container-fluid px-2 py-4 dashboard-full-width">
+                    <div className="container-fluid px-2 py-4 content-full-width">
                         <div className="d-flex px-3 justify-content-between align-items-center">
                             <Button
                                 variant="outlined"

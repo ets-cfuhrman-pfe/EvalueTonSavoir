@@ -515,11 +515,11 @@ const DashboardV2: React.FC = () => {
     }, [selectedFolderId, folders]);
 
     return (
-        <div className="dashboard-container">
-            <div className="w-100 p-0 dashboard-full-width">
+        <div className="content-container">
+            <div className="w-100 p-0 content-full-width">
                 {/* Top Dashboard Header */}
                 <div className="bg-white border-bottom shadow-sm">
-                    <div className="container-fluid px-2 py-4 dashboard-full-width">
+                    <div className="container-fluid px-2 py-4 content-full-width">
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
                                 <h1 className="h3 mb-0 ms-3 text-dark fw-bold">Tableau de bord</h1>
