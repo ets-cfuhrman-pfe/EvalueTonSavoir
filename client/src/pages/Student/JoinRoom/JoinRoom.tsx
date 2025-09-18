@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -32,18 +32,29 @@ const JoinRoom: React.FC = () => {
     const [answers, setAnswers] = useState<AnswerSubmissionToBackendType[]>([]);
     const [connectionError, setConnectionError] = useState<string>('');
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
+    const [isQRCodeJoin, setIsQRCodeJoin] = useState(false);
+    const [isRoomNameValid, setIsRoomNameValid] = useState(true);
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
         if (roomFromUrl) {
-            // Redirect to V2 component for QR code joins
-            navigate(`/student/join-room-v2?roomName=${roomFromUrl}`, { replace: true });
+            // Validate the room name from URL
+            const validationResult = ValidationService.validateField('room.name', roomFromUrl, { required: true });
+            if (validationResult.isValid) {
+                setRoomName(roomFromUrl);
+                setIsQRCodeJoin(true);
+                setIsRoomNameValid(true);
+                console.log('Mode QR Code détecté, salle:', roomFromUrl);
+            } else {
+                console.error('Nom de salle invalide dans l\'URL QR code:', roomFromUrl, 'Erreurs:', validationResult.errors);
+                setConnectionError(`Nom de salle invalide: ${validationResult.errors[0]}`);
+                setIsRoomNameValid(false);
+            }
         }
-    }, [searchParams, navigate]);
+    }, [searchParams]);
 
     // Validate initial username on mount
     useEffect(() => {
@@ -61,6 +72,7 @@ const JoinRoom: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        console.log(`JoinRoom: useEffect: questions: ${JSON.stringify(questions)}`);
         setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
     }, [questions]);
 
@@ -122,6 +134,7 @@ const JoinRoom: React.FC = () => {
     };
 
     const disconnect = () => {
+        //        localStorage.clear();
         webSocketService.disconnect();
         setSocket(null);
         setQuestion(undefined);
@@ -146,11 +159,6 @@ const JoinRoom: React.FC = () => {
         }
     };
 
-    const handleSocketV2 = () => {
-        // Navigate to the new V2 interface - clean URL without unnecessary parameters
-        navigate('/student/join-room-v2');
-    };
-
     const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
         console.info(`JoinRoom: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
@@ -159,6 +167,7 @@ const JoinRoom: React.FC = () => {
             username: username,
             idQuestion: idQuestion
         };
+        // localStorage.setItem(`Answer${idQuestion}`, JSON.stringify(answer));
         setAnswers((prevAnswers) => {
             console.log(`JoinRoom: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
             const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
@@ -173,8 +182,8 @@ const JoinRoom: React.FC = () => {
         if (e.key === 'Enter' && 
             username && 
             isUsernameValid && 
-            roomName && 
-            isManualRoomNameValid) {
+            ((!isQRCodeJoin && roomName && isManualRoomNameValid) || 
+             (isQRCodeJoin && roomName && isRoomNameValid))) {
             handleSocket();
         }
     };
@@ -184,20 +193,9 @@ const JoinRoom: React.FC = () => {
             <div className='room'>
                 <div className='roomHeader'>
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <DisconnectButton
-                            onReturn={disconnect}
-                            message={`Êtes-vous sûr de vouloir quitter?`} />
-                        
-                        <LoadingButton
-                            loading={false}
-                            onClick={handleSocketV2}
-                            variant="outlined"
-                            size="small"
-                        >
-                            Nouvelle interface
-                        </LoadingButton>
-                    </div>
+                    <DisconnectButton
+                        onReturn={disconnect}
+                        message={`Êtes-vous sûr de vouloir quitter?`} />
 
                     <div className='centerTitle'>
                         <div className='title'>Salle: {roomName}</div>
@@ -237,15 +235,17 @@ const JoinRoom: React.FC = () => {
         default:
             return (
                 <LoginContainer
-                    title='Rejoindre une salle'
+                    title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
                     error={connectionError}
                 >
-                    <ValidatedTextField
-                        fieldPath="room.name"
-                        label="Nom de la salle"
-                        variant="outlined"
-                        initialValue={roomName}
-                        onValueChange={(value, isValid) => {
+                    {/* Afficher champ salle SEULEMENT si pas de QR code */}
+                    {!isQRCodeJoin && (
+                        <ValidatedTextField
+                            fieldPath="room.name"
+                            label="Nom de la salle"
+                            variant="outlined"
+                            initialValue={roomName}
+                            onValueChange={(value, isValid) => {
                                 setRoomName(value.toUpperCase());
                                 setIsManualRoomNameValid(isValid);
                             }}
@@ -255,6 +255,7 @@ const JoinRoom: React.FC = () => {
                             onKeyDown={handleReturnKey}
                             required={true}
                         />
+                    )}
 
                     {/* Champ username toujours visible */}
                     <ValidatedTextField
@@ -277,24 +278,15 @@ const JoinRoom: React.FC = () => {
                         loading={isConnecting}
                         onClick={handleSocket}
                         variant="contained"
-                        sx={{ marginBottom: '0.5rem' }}
+                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
                         disabled={
                             !username || 
                             !isUsernameValid || 
-                            !roomName || 
-                            !isManualRoomNameValid
+                            (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) || 
+                            (isQRCodeJoin && (!roomName || !isRoomNameValid))
                         }
                     >
-                        Rejoindre
-                    </LoadingButton>
-
-                    <LoadingButton
-                        loading={false}
-                        onClick={handleSocketV2}
-                        variant="outlined"
-                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
-                    >
-                        Nouvelle interface
+                        {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
                     </LoadingButton>
                 </LoginContainer>
             );
