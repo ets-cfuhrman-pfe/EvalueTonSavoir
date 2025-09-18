@@ -58,7 +58,7 @@ const ManageRoomV2: React.FC = () => {
 
     const [showQuestions, setShowQuestions] = useState(true);
 
-    const roomUrl = `${window.location.origin}/student/join-room?roomName=${previewRoomName || formattedRoomName}`;
+    const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(roomUrl).then(() => {
