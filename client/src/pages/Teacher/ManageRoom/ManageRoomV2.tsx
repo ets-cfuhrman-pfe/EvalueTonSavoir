@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { BaseQuestion, parse, Question } from 'gift-pegjs';
-import LiveResultsComponent from 'src/components/LiveResults/LiveResults';
+import LiveResultsComponent from 'src/components/LiveResults/LiveResultsV2';
 import webSocketService, {
     AnswerReceptionFromBackendType
 } from '../../../services/WebsocketService';
@@ -15,13 +15,8 @@ import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { checkIfIsCorrect } from './useRooms';
-import { QRCodeCanvas } from 'qrcode.react';
 import { RoomType } from '../../../Types/RoomType';
 import {
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
     Button,
     Alert,
     Card,
@@ -32,12 +27,12 @@ import {
 import {
     ArrowBack,
     QrCode,
-    ContentCopy,
     ChevronLeft,
     ChevronRight,
     Stop,
     Refresh
 } from '@mui/icons-material';
+import QRCodeModal from '../../../components/QRCodeModal';
 import './manageRoom.css';
 
 const ManageRoomV2: React.FC = () => {
@@ -55,13 +50,15 @@ const ManageRoomV2: React.FC = () => {
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [previewRoomName, setPreviewRoomName] = useState('');
 
     // Room selection states
     const [rooms, setRooms] = useState<RoomType[]>([]);
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
+    const [showQuestions, setShowQuestions] = useState(true);
 
-    const roomUrl = `${window.location.origin}/student/join-room?roomName=${formattedRoomName}`;
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${previewRoomName || formattedRoomName}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(roomUrl).then(() => {
@@ -117,7 +114,9 @@ const ManageRoomV2: React.FC = () => {
                 const quiz = await ApiService.getQuiz(quizId);
 
                 if (!quiz) {
-                    alert(`Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`);
+                    alert(
+                        `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
+                    );
                     console.error('Quiz not found for id:', quizId);
                     navigate('/teacher/dashboard');
                     return;
@@ -128,7 +127,9 @@ const ManageRoomV2: React.FC = () => {
 
             fetchQuiz();
         } else {
-            alert(`Une erreur est survenue.\n Le quiz n'a pas été spécifié\nVeuillez réessayer plus tard`);
+            alert(
+                `Une erreur est survenue.\n Le quiz n'a pas été spécifié\nVeuillez réessayer plus tard`
+            );
             console.error('Quiz ID not provided');
             navigate('/teacher/dashboard');
         }
@@ -163,8 +164,6 @@ const ManageRoomV2: React.FC = () => {
 
         fetchRooms();
     }, []);
-
-
 
     const disconnectWebSocket = () => {
         if (socket) {
@@ -284,12 +283,16 @@ const ManageRoomV2: React.FC = () => {
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
-        webSocketService.nextQuestion({
-            roomName: formattedRoomName,
-            questions: quizQuestions,
-            questionIndex: nextQuestionIndex,
-            isLaunch: false
-        });
+
+        // Only send WebSocket update in teacher mode
+        if (quizMode === 'teacher') {
+            webSocketService.nextQuestion({
+                roomName: formattedRoomName,
+                questions: quizQuestions,
+                questionIndex: nextQuestionIndex,
+                isLaunch: false
+            });
+        }
     };
 
     const previousQuestion = () => {
@@ -299,12 +302,16 @@ const ManageRoomV2: React.FC = () => {
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
-        webSocketService.nextQuestion({
-            roomName: formattedRoomName,
-            questions: quizQuestions,
-            questionIndex: prevQuestionIndex,
-            isLaunch: false
-        });
+
+        // Only send WebSocket update in teacher mode
+        if (quizMode === 'teacher') {
+            webSocketService.nextQuestion({
+                roomName: formattedRoomName,
+                questions: quizQuestions,
+                questionIndex: prevQuestionIndex,
+                isLaunch: false
+            });
+        }
     };
 
     const initializeQuizQuestion = () => {
@@ -349,13 +356,17 @@ const ManageRoomV2: React.FC = () => {
             return;
         }
         setQuizQuestions(quizQuestions);
+        // Set the first question as current question so it displays in student mode
+        setCurrentQuestion(quizQuestions[0]);
         webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
     };
 
     const launchQuiz = () => {
         setQuizStarted(true);
         if (!socket || !formattedRoomName || !quiz?.content || quiz?.content.length === 0) {
-            console.log(`Error launching quiz. socket: ${socket}, roomName: ${formattedRoomName}, quiz: ${quiz}`);
+            console.log(
+                `Error launching quiz. socket: ${socket}, roomName: ${formattedRoomName}, quiz: ${quiz}`
+            );
             return;
         }
         // console.log(`Launching quiz in ${quizMode} mode...`);
@@ -397,7 +408,7 @@ const ManageRoomV2: React.FC = () => {
             return;
         }
 
-        const selectedRoom = rooms.find(room => room._id === selectedRoomId);
+        const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
         if (!selectedRoom) {
             alert('Salle non trouvée');
             return;
@@ -409,9 +420,6 @@ const ManageRoomV2: React.FC = () => {
         // Create WebSocket room and launch quiz immediately
         createWebSocketRoom(selectedRoom.title);
     };
-
-
-
 
     if (!quiz) {
         return (
@@ -429,15 +437,19 @@ const ManageRoomV2: React.FC = () => {
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
                         <div className="container-fluid px-4 py-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <h1 className="h3 px-4 mb-0 text-dark fw-bold">Options de lancement du quiz</h1>
-                                <button
-                                    className="btn btn-outline-secondary"
-                                    onClick={handleReturn}
-                                >
-                                    <ArrowBack className="me-2" style={{ fontSize: '1rem' }} />
-                                    Retour au tableau de bord
-                                </button>
+                            <div className="d-flex justify-content-between align-items-center px-4">
+                                <div className="d-flex flex-column align-items-start">
+                                    <h1 className="h3 mb-3 text-dark fw-bold">
+                                        Options de lancement du quiz
+                                    </h1>
+                                    <button
+                                        className="btn btn-outline-secondary"
+                                        onClick={handleReturn}
+                                    >
+                                        <ArrowBack className="me-2" style={{ fontSize: '1rem' }} />
+                                        Retour au tableau de bord
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -469,20 +481,28 @@ const ManageRoomV2: React.FC = () => {
                                 {/* Room Selection Card */}
                                 <div className="card shadow-sm mb-4">
                                     <div className="card-header bg-light">
-                                        <h5 className="card-title mb-0">1. Sélectionner une salle</h5>
+                                        <h5 className="card-title mb-0">
+                                            1. Sélectionner une salle
+                                        </h5>
                                     </div>
                                     <div className="card-body">
                                         <div className="mb-3">
-                                            <label htmlFor="roomSelect" className="form-label">Choisir une salle existante:</label>
+                                            <label htmlFor="roomSelect" className="form-label">
+                                                Choisir une salle existante:
+                                            </label>
                                             <select
                                                 id="roomSelect"
                                                 className="form-select"
                                                 value={selectedRoomId}
                                                 onChange={(e) => setSelectedRoomId(e.target.value)}
                                             >
-                                                <option value="">-- Sélectionner une salle --</option>
+                                                <option value="">
+                                                    -- Sélectionner une salle --
+                                                </option>
                                                 {rooms.length === 0 ? (
-                                                    <option disabled>Aucune salle disponible</option>
+                                                    <option disabled>
+                                                        Aucune salle disponible
+                                                    </option>
                                                 ) : (
                                                     rooms.map((room) => (
                                                         <option key={room._id} value={room._id}>
@@ -509,11 +529,21 @@ const ManageRoomV2: React.FC = () => {
                                                 id="teacherMode"
                                                 value="teacher"
                                                 checked={quizMode === 'teacher'}
-                                                onChange={(e) => setQuizMode(e.target.value as 'teacher' | 'student')}
+                                                onChange={(e) =>
+                                                    setQuizMode(
+                                                        e.target.value as 'teacher' | 'student'
+                                                    )
+                                                }
                                             />
-                                            <label className="form-check-label" htmlFor="teacherMode">
+                                            <label
+                                                className="form-check-label"
+                                                htmlFor="teacherMode"
+                                            >
                                                 <strong>Rythme du professeur</strong>
-                                                <div className="text-muted small">Le professeur contrôle le passage d'une question à l'autre</div>
+                                                <div className="text-muted small">
+                                                    Le professeur contrôle le passage d'une question
+                                                    à l'autre
+                                                </div>
                                             </label>
                                         </div>
                                         <div className="form-check">
@@ -524,11 +554,20 @@ const ManageRoomV2: React.FC = () => {
                                                 id="studentMode"
                                                 value="student"
                                                 checked={quizMode === 'student'}
-                                                onChange={(e) => setQuizMode(e.target.value as 'teacher' | 'student')}
+                                                onChange={(e) =>
+                                                    setQuizMode(
+                                                        e.target.value as 'teacher' | 'student'
+                                                    )
+                                                }
                                             />
-                                            <label className="form-check-label" htmlFor="studentMode">
+                                            <label
+                                                className="form-check-label"
+                                                htmlFor="studentMode"
+                                            >
                                                 <strong>Rythme de l'étudiant</strong>
-                                                <div className="text-muted small">Les étudiants avancent à leur propre rythme</div>
+                                                <div className="text-muted small">
+                                                    Les étudiants avancent à leur propre rythme
+                                                </div>
                                             </label>
                                         </div>
                                     </div>
@@ -546,20 +585,31 @@ const ManageRoomV2: React.FC = () => {
                                 </div>
                                 {!selectedRoomId && (
                                     <div className="alert alert-warning mt-3 mb-0">
-                                        <small>Veuillez sélectionner une salle pour continuer.</small>
+                                        <small>
+                                            Veuillez sélectionner une salle pour continuer.
+                                        </small>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* QR Code Modal */}
+                <QRCodeModal
+                    open={showQrModal}
+                    onClose={() => {
+                        setShowQrModal(false);
+                        setPreviewRoomName('');
+                    }}
+                    roomName={previewRoomName || formattedRoomName}
+                    roomUrl={roomUrl}
+                    copied={copied}
+                    onCopy={handleCopy}
+                />
             </div>
         );
     }
-
-
-
-
 
     // Show connection error if there's one
     if (connectingError) {
@@ -574,7 +624,7 @@ const ManageRoomV2: React.FC = () => {
                         startIcon={<Refresh />}
                         onClick={() => {
                             setConnectingError('');
-                            const selectedRoom = rooms.find(room => room._id === selectedRoomId);
+                            const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
                             if (selectedRoom) {
                                 createWebSocketRoom(selectedRoom.title);
                             }
@@ -589,171 +639,153 @@ const ManageRoomV2: React.FC = () => {
 
     // Main room management interface
     return (
-        <div className="content-container">
-            <div className="w-100 p-0 content-full-width">
-                {/* Top Header */}
-                <div className="bg-white border-bottom shadow-sm">
-                    <div className="container-fluid px-2 py-4 content-full-width">
-                        <div className="d-flex px-3 justify-content-between align-items-center">
-                            <Button
-                                variant="outlined"
-                                startIcon={<ArrowBack />}
-                                onClick={handleReturn}
-                            >
-                                Quitter
-                            </Button>
+        <>
+            <div className="content-container">
+                <div className="w-100 p-0 content-full-width">
+                    {/* Top Header */}
+                    <div className="bg-white border-bottom shadow-sm">
+                        <div className="container-fluid px-2 py-4 content-full-width">
+                            <div className="d-flex px-3 justify-content-between align-items-center">
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<ArrowBack />}
+                                    onClick={handleReturn}
+                                >
+                                    Quitter
+                                </Button>
 
-                            <Box textAlign="center">
-                                <Typography variant="h5" component="h1" fontWeight="bold">
-                                    Salle: {formattedRoomName}
-                                </Typography>
-                                <Typography variant="h6" color="text.secondary">
-                                    {students.length}/60 participants
-                                </Typography>
-                            </Box>
+                                <Box textAlign="center">
+                                    <Typography variant="h5" component="h1" fontWeight="bold">
+                                        Salle: {formattedRoomName}
+                                    </Typography>
+                                    <Typography variant="h6" color="text.secondary">
+                                        {students.length}/60 participants
+                                    </Typography>
+                                </Box>
 
-                            <Button
-                                variant="contained"
-                                startIcon={<QrCode />}
-                                onClick={() => setShowQrModal(true)}
-                            >
-                                Lien de participation
-                            </Button>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<QrCode />}
+                                    onClick={() => setShowQrModal(true)}
+                                >
+                                    Lien de participation
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* QR Code Modal */}
-                <Dialog
-                    open={showQrModal}
-                    onClose={() => setShowQrModal(false)}
-                    maxWidth="sm"
-                    fullWidth
-                >
-                    <DialogTitle>Rejoindre la salle: {formattedRoomName}</DialogTitle>
-                    <DialogContent dividers>
-                        <Typography variant="body1" gutterBottom>
-                            Scannez ce QR code ou partagez le lien ci-dessous:
-                        </Typography>
-
-                        <Box display="flex" justifyContent="center" my={2}>
-                            <QRCodeCanvas value={roomUrl} size={200} />
-                        </Box>
-
-                        <Box textAlign="center">
-                            <Typography variant="h6" gutterBottom>
-                                URL de participation:
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    wordBreak: 'break-all',
-                                    backgroundColor: 'grey.100',
-                                    p: 1,
-                                    borderRadius: 1,
-                                    mb: 2
-                                }}
-                            >
-                                {roomUrl}
-                            </Typography>
-                            <Button
-                                variant="outlined"
-                                startIcon={<ContentCopy />}
-                                onClick={handleCopy}
-                            >
-                                {copied ? 'Copié!' : 'Copier le lien'}
-                            </Button>
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setShowQrModal(false)}>Fermer</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Main Content */}
-                <div className="row g-0">
-                    <div className="col-12 bg-white shadow-sm">
-                        <div className="p-4">
-                            {quizQuestions ? (
-                                <div>
-                                    <Box textAlign="center" mb={3}>
-                                        <Typography variant="h4" gutterBottom>
-                                            {quiz?.title}
-                                        </Typography>
-                                        {!isNaN(Number(currentQuestion?.question.id)) && (
-                                            <Typography variant="body1" color="text.secondary">
-                                                Question {Number(currentQuestion?.question.id)} / {quizQuestions?.length}
-                                            </Typography>
-                                        )}
-                                    </Box>
-
-                                    {quizMode === 'teacher' && (
-                                        <Box display="flex" justifyContent="center" gap={2} mb={3}>
+                    {/* Main Content */}
+                    <div className="row g-0">
+                        <div className="col-12 bg-white shadow-sm">
+                            <div className="p-4">
+                                {quizQuestions ? (
+                                    <div>
+                                        <Box display="flex" justifyContent="left" mb={2}>
                                             <Button
                                                 variant="outlined"
-                                                startIcon={<ChevronLeft />}
-                                                onClick={previousQuestion}
-                                                disabled={Number(currentQuestion?.question.id) <= 1}
+                                                onClick={() => setShowQuestions(!showQuestions)}
                                             >
-                                                Précédente
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                endIcon={<ChevronRight />}
-                                                onClick={nextQuestion}
-                                                disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
-                                            >
-                                                Suivante
+                                                {showQuestions
+                                                    ? 'Masquer les questions'
+                                                    : 'Afficher les questions'}
                                             </Button>
                                         </Box>
-                                    )}
 
-                                    <Box display="flex" gap={3} flexWrap="wrap">
-                                        <Box flex={1} minWidth={300}>
-                                            {currentQuestion && (
-                                                <Card elevation={2}>
-                                                    <CardContent>
-                                                        <QuestionDisplay
-                                                            showAnswer={false}
-                                                            question={currentQuestion?.question as Question}
-                                                        />
-                                                    </CardContent>
-                                                </Card>
+                                        <Box display="flex" flexDirection="column" gap={3}>
+                                            {/* Results Box */}
+                                            <Box width="100%">
+                                                <LiveResultsComponent
+                                                    quizMode={quizMode}
+                                                    socket={socket}
+                                                    questions={quizQuestions}
+                                                    showSelectedQuestion={showSelectedQuestion}
+                                                    students={students}
+                                                    quizTitle={quiz?.title}
+                                                />
+                                            </Box>
+                                            {/* Questions Box */}
+                                            {showQuestions && (
+                                                <Box width="100%">
+                                                    {/* Navigation buttons for questions */}
+
+                                                    <Box
+                                                        display="flex"
+                                                        justifyContent="center"
+                                                        gap={2}
+                                                        mb={3}
+                                                    >
+                                                        <Button
+                                                            variant="outlined"
+                                                            startIcon={<ChevronLeft />}
+                                                            onClick={previousQuestion}
+                                                            disabled={
+                                                                Number(currentQuestion?.question.id) <=
+                                                                1
+                                                            }
+                                                        >
+                                                            Précédente
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            endIcon={<ChevronRight />}
+                                                            onClick={nextQuestion}
+                                                            disabled={
+                                                                Number(currentQuestion?.question.id) >=
+                                                                quizQuestions.length
+                                                            }
+                                                        >
+                                                            Suivante
+                                                        </Button>
+                                                    </Box>
+
+                                                    {currentQuestion && (
+                                                        <Card elevation={2}>
+                                                            <CardContent>
+                                                                <QuestionDisplay
+                                                                    showAnswer={false}
+                                                                    question={
+                                                                        currentQuestion?.question as Question
+                                                                    }
+                                                                />
+                                                            </CardContent>
+                                                        </Card>
+                                                    )}
+                                                </Box>
                                             )}
                                         </Box>
-                                        <Box flex={1} minWidth={300}>
-                                            <LiveResultsComponent
-                                                quizMode={quizMode}
-                                                socket={socket}
-                                                questions={quizQuestions}
-                                                showSelectedQuestion={showSelectedQuestion}
-                                                students={students}
-                                            />
-                                        </Box>
-                                    </Box>
 
-                                    <Box textAlign="center" mt={4}>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            size="large"
-                                            startIcon={<Stop />}
-                                            onClick={finishQuiz}
-                                        >
-                                            Terminer le quiz
-                                        </Button>
+                                        <Box textAlign="center" mt={4}>
+                                            <Button
+                                                variant="contained"
+                                                color="error"
+                                                size="large"
+                                                startIcon={<Stop />}
+                                                onClick={finishQuiz}
+                                            >
+                                                Terminer le quiz
+                                            </Button>
+                                        </Box>
+                                    </div>
+                                ) : (
+                                    <Box textAlign="center" py={8}>
+                                        <LoadingCircle text="Préparation du quiz..." />
                                     </Box>
-                                </div>
-                            ) : (
-                                <Box textAlign="center" py={8}>
-                                    <LoadingCircle text="Préparation du quiz..." />
-                                </Box>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <QRCodeModal
+                open={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                roomName={formattedRoomName}
+                roomUrl={roomUrl}
+                copied={copied}
+                onCopy={handleCopy}
+            />
+        </>
     );
 };
 
