@@ -130,7 +130,7 @@ const ImportModalV2: React.FC<Props> = ({ handleOnClose, handleOnImport, open, s
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
-                        <h5 className="modal-title fw-bold">Importation de quiz (V2)</h5>
+                        <h5 className="modal-title fw-bold">Importation de quiz</h5>
                         <button
                             type="button"
                             className="btn-close"

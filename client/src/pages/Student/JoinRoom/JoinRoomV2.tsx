@@ -268,7 +268,7 @@ const JoinRoomV2: React.FC = () => {
 
                     <div className="w-100" style={{ maxWidth: '400px' }}>
                         <LoginContainerV2
-                            title={isQRCodeJoin ? `Rejoindre la salle ${roomName} (V2)` : 'Rejoindre une salle (V2)'}
+                            title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
                             error={connectionError}
                         >
                             <div className="card-form">
@@ -322,7 +322,7 @@ const JoinRoomV2: React.FC = () => {
                                         (isQRCodeJoin && (!roomName || !isRoomNameValid))
                                     }
                                 >
-                                    {isQRCodeJoin ? 'Rejoindre avec QR Code (V2)' : 'Rejoindre (V2)'}
+                                    {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
                                 </LoadingButton>
 
                                 {connectionError && (
