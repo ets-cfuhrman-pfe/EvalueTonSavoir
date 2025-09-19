@@ -17,7 +17,7 @@ import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
-import { useSearchParams} from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export type AnswerType = Array<string | number | boolean>;
 
