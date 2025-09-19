@@ -1,0 +1,36 @@
+// ===== MAIN SCSS ENTRY POINT =====
+
+@use './variables' as vars;
+@use 'bootstrap/scss/bootstrap' with (
+  $primary: vars.$primary,
+  $secondary: vars.$secondary,
+  $success: vars.$success,
+  $info: vars.$info,
+  $warning: vars.$warning,
+  $danger: vars.$danger,
+  $light: vars.$light,
+  $dark: vars.$dark,
+
+  $font-family-base: vars.$font-family-base,
+  $font-size-base: vars.$font-size-base,
+  $line-height-base: vars.$line-height-base,
+
+  $spacer: vars.$spacer,
+
+  $border-radius: vars.$border-radius,
+  $border-radius-sm: vars.$border-radius-sm,
+  $border-radius-lg: vars.$border-radius-lg,
+
+  $box-shadow-sm: vars.$box-shadow-sm,
+  $box-shadow: vars.$box-shadow,
+  $box-shadow-lg: vars.$box-shadow-lg,
+
+  $grid-breakpoints: vars.$grid-breakpoints,
+  $container-max-widths: vars.$container-max-widths
+);
+
+@use './global';
+@use './components';
+@use './utilities';
+
+@import 'bootstrap-icons/font/bootstrap-icons.css';

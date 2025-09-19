@@ -1,0 +1,104 @@
+// Button component styles
+// All button variants and button-specific styling
+
+@use '../variables' as vars;
+
+// Primary button override for forms
+.btn-primary {
+  width: 100%;
+  height: 45px;
+  background: vars.$primary;
+  border: none;
+  padding: 0.75rem;
+  font-weight: 600;
+  border-radius: vars.$border-radius;
+  
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+// Quiz navigation button styles
+.quiz-nav-buttons {
+  .btn {
+    min-width: 100px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    
+    &:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Scroll to top button
+.btn-scroll-to-top {
+  bottom: 40px;
+  right: 50px;
+  width: 60px;
+  height: 60px;
+  z-index: 1000;
+  background-color: #5271ff !important;
+  border: none !important;
+  
+  &:hover {
+    background-color: darken(#5271ff, 10%) !important;
+  }
+}
+
+// Return button
+.btn-return {
+  background-color: #6c757d !important;
+  border: none !important;
+  font-weight: 500;
+  border-radius: vars.$border-radius;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #5a6268 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Very small screens
+@media (max-width: #{vars.$breakpoint-sm - 1px}) {
+  .quiz-nav-buttons {
+    .btn {
+      min-width: 60px;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.4rem;
+      
+      span {
+        font-size: 0.7rem;
+      }
+    }
+  }
+}
+
+// Mobile quiz navigation buttons
+@media (max-width: #{vars.$breakpoint-lg - 1px}) {
+  .student-mode-quiz-mobile {
+    .quiz-mobile-navigation {
+      .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        
+        &:disabled {
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}

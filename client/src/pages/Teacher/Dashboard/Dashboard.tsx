@@ -408,8 +408,15 @@ const Dashboard: React.FC = () => {
                 {/* Sélecteur de salle */}
                 <div
                     className="roomSelection"
-                    style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px' }}
+                    style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', alignItems: 'center' }}
                 >
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => navigate('/teacher/dashboard-v2')}
+                    >
+                        Interface V2
+                    </Button>
                     <select
                         value={selectedRoom?._id || ''}
                         onChange={(e) => handleSelectRoom(e)}

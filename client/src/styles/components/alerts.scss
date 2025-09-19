@@ -1,0 +1,17 @@
+// Alert component styles
+// All alert variants and notification styling
+
+@use 'sass:color';
+@use '../variables' as vars;
+
+// Error alert
+.alert-error {
+  margin-top: vars.$spacing-xs;
+  padding: vars.$spacing-xs;
+  background-color: color.scale(vars.$danger, $alpha: -90%);
+  border: 1px solid color.scale(vars.$danger, $alpha: -70%);
+  border-radius: vars.$border-radius;
+  color: color.scale(vars.$danger, $lightness: -10%);
+  text-align: center;
+  font-size: 0.875rem;
+}

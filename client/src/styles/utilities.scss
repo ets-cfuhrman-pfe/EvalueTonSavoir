@@ -1,0 +1,76 @@
+// Reusable classes that can be applied to any element
+
+@use './variables' as vars;
+
+// Layout utilities
+.full-height {
+  min-height: 100vh;
+}
+
+.compact-height {
+  min-height: auto;
+
+  @media (max-width: vars.$breakpoint-md) {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: vars.$spacing-sm 0;
+
+  // Mobile breakpoint
+  @media (max-width: vars.$breakpoint-md) {
+    padding: vars.$spacing-xs 0;
+    min-height: auto;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Spacing utilities
+.spacer-120 {
+  width: 120px;
+}
+
+// Logo sizing utility
+.logo-height {
+  height: 60px;
+}
+
+// Drag and drop area utility
+.drop-zone-height {
+  min-height: 150px;
+}
+
+// Icon utilities
+.icon-3xl {
+  font-size: 3rem;
+}
+
+.icon-mb-3 {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .spacer-120 {
+    display: none;
+  }
+}

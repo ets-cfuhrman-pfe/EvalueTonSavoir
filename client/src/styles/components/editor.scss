@@ -1,0 +1,29 @@
+// Editor component styles
+// Custom styling for EditorV2 component
+
+@use '../variables' as vars;
+
+// Editor textarea styling
+.editor-v2-textarea {
+  width: 100% !important;
+  min-height: 50px !important;
+  background-color: #f8f9ff !important;
+  padding: 10px !important;
+  font-size: medium !important;
+  border: 2px solid black !important;
+  border-radius: vars.$border-radius !important;
+  font-family: inherit !important;
+  line-height: 1.5 !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+
+
+  &:focus {
+    outline: none !important;
+    border-color: vars.$primary !important;
+    box-shadow: 0 0 0 0.2rem rgba(82, 113, 255, 0.25) !important;
+  }
+
+  &::placeholder {
+    color: #6c757d !important;
+  }
+}

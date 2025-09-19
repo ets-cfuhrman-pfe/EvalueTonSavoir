@@ -1,0 +1,16 @@
+// Global base styles and foundational elements
+// These are styles that apply to the entire application
+
+@use './variables' as vars;
+
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: vars.$font-family-base;
+  background-color: vars.$light;
+  min-height: 100vh;
+}

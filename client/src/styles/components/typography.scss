@@ -1,0 +1,18 @@
+// Typography component styles 
+// All text-related styling and typography classes
+
+@use '../variables' as vars;
+
+// Title variants
+.title-lg {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: vars.$dark;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: vars.$secondary;
+  margin-bottom: 0;
+}

@@ -1,0 +1,90 @@
+// Main content container
+
+.content-container {
+  width: 80vw !important;
+  max-width: 80vw !important;
+  margin: 0 auto !important;
+  padding: 0;
+  box-sizing: border-box;
+  
+  // Break out of parent container constraints
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -40vw !important;
+  margin-right: -40vw !important;
+}
+
+.content-full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0;
+  padding: 0;
+}
+
+// Override Bootstrap container constraints for main content
+.content-container .container-fluid {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+// Override Bootstrap row margins
+.content-container .row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+// Override Bootstrap column padding but add internal spacing
+.content-container .col-lg-4,
+.content-container .col-md-4 {
+  padding-left: 0 !important;
+  padding-right: 8px !important;
+}
+
+.content-container .col-lg-8,
+.content-container .col-md-7 {
+  padding-left: 8px !important;
+  padding-right: 0 !important;
+}
+
+// Editor specific column overrides to remove all padding
+.editor-main-content .col-lg-6 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+// Also override any row gutters in the editor
+.editor-main-content .row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+// Editor main content layout
+.editor-main-content {
+  height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  
+  // Ensure no padding on container-fluid inside editor
+  &.container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .content-container {
+    width: 95vw !important;
+    max-width: 95vw !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-container {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+}

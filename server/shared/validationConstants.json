@@ -32,8 +32,8 @@
     "username": {
       "minLength": 2,
       "maxLength": 25,
-      "pattern": "^[a-zA-Z0-9]+$",
-      "errorMessage": "Le nom d'utilisateur ne peut contenir que des lettres et des chiffres"
+      "pattern": "^[a-zA-Z0-9,\\s]+$",
+      "errorMessage": "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces"
     }
   },
   "quiz": {

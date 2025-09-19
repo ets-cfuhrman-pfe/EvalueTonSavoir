@@ -168,7 +168,7 @@ describe("Users API Integration Tests", () => {
         })
         .expect(400);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres et des chiffres");
+      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
     });
 
     it("should return 400 for username with invalid characters", async () => {
@@ -177,11 +177,11 @@ describe("Users API Integration Tests", () => {
         .send({
           email: "newuser@example.com",
           password: "ValidPass123",
-          username: "user-name"
+          username: "user@name"
         })
         .expect(400);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres et des chiffres");
+      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
     });
 
     it("should return 400 for email too long", async () => {
@@ -209,7 +209,7 @@ describe("Users API Integration Tests", () => {
         })
         .expect(400);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres et des chiffres");
+      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
     });
 
     it("should accept valid registration data", async () => {
@@ -221,6 +221,21 @@ describe("Users API Integration Tests", () => {
           email: "valid@example.com",
           password: "ValidPass123",
           username: "validuser"
+        })
+        .expect(200);
+
+      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+    });
+
+    it("should accept usernames with commas and spaces", async () => {
+      mockUsersModel.register.mockResolvedValue(true);
+
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: "newuser@example.com",
+          password: "ValidPass123",
+          username: "Test, Use Name"
         })
         .expect(200);
 

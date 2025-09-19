@@ -1,0 +1,70 @@
+// Card component styles
+// All card variants and card-specific styling
+
+@use '../variables' as vars;
+
+// Card header
+.card-header {
+  background: white;
+  box-shadow: vars.$box-shadow-sm;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+// Form card
+.card-form {
+  width: 100%;
+  max-width: 420px;
+  padding: vars.$spacing-md vars.$spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+
+  // Mobile breakpoint
+  @media (max-width: vars.$breakpoint-md) {
+    max-width: 100%;
+    padding: vars.$spacing-sm vars.$spacing-xs;
+    gap: vars.$spacing-xs;
+  }
+}
+
+// Folder card for dashboard
+.folder-card {
+  overflow: visible !important;
+  position: relative;
+  padding-top: 1.25rem; 
+  
+  .folder-tab {
+    position: absolute;
+    top: -33px;
+    left: 9px;
+    padding: 0.3125rem 0.625rem;
+    border-radius: vars.$border-radius vars.$border-radius 0 0;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+    border: 2px solid #e1e1e1;
+    border-bottom: none;
+    background-color: white;
+    color: vars.$primary;
+    font-size: 0.875rem;
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .card-header {
+    padding: 1rem;
+  }
+  
+  .card-form {
+    padding: 1rem 0.75rem;
+  }
+  
+  .folder-card {
+    .folder-tab {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}

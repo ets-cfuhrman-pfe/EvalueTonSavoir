@@ -7,14 +7,18 @@ import Home from './pages/Home/Home';
 
 // Pages espace enseignant
 import Dashboard from './pages/Teacher/Dashboard/Dashboard';
+import DashboardV2 from './pages/Teacher/Dashboard/DashboardV2';
 import Share from './pages/Teacher/Share/Share';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
 import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
+import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
 import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
+import EditorQuizV2 from './pages/Teacher/EditorQuiz/EditorQuizV2';
 
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
+import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
@@ -22,6 +26,8 @@ import AuthDrawer from './pages/AuthManager/AuthDrawer';
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
+
+
 
 import ApiService from './services/ApiService';
 import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
@@ -55,18 +61,23 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="content">
+        <>
             <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
-            <div className="app">
-                <main>
-                    <Routes>
-                        {/* Page main */}
-                        <Route path="/" element={<Home />} />
+            <div className="content">
+                <div className="app">
+                    <main>
+                        <Routes>
+                            {/* Page main */}
+                            <Route path="/" element={<Home />} />
 
-                        {/* Pages espace enseignant */}
+                            {/* Pages espace enseignant */}
                         <Route
                             path="/teacher/dashboard"
                             element={isTeacherAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/dashboard-v2"
+                            element={isTeacherAuthenticated ? <DashboardV2 /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/teacher/share/:id"
@@ -77,14 +88,26 @@ const App: React.FC = () => {
                             element={isTeacherAuthenticated ? <QuizForm /> : <Navigate to="/login" />}
                         />
                         <Route
+                            path="/teacher/editor-quiz-v2/:id"
+                            element={isTeacherAuthenticated ? <EditorQuizV2 /> : <Navigate to="/login" />}
+                        />
+                        <Route
                             path="/teacher/manage-room/:quizId/:roomName"
                             element={isTeacherAuthenticated ? <ManageRoom /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/manage-room-v2/:quizId"
+                            element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
                         <Route
                             path="/student/join-room"
                             element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoom /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/student/join-room-v2"
+                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoomV2 /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages authentification */}
@@ -102,7 +125,8 @@ const App: React.FC = () => {
                 </main>
             </div>
             <Footer />
-        </div>
+            </div>
+        </>
     );
 };
 
