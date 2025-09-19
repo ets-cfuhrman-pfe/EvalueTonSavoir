@@ -37,6 +37,7 @@ const JoinRoom: React.FC = () => {
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -185,6 +186,15 @@ const JoinRoom: React.FC = () => {
             ((!isQRCodeJoin && roomName && isManualRoomNameValid) ||
                 (isQRCodeJoin && roomName && isRoomNameValid))) {
             handleSocket();
+        }
+    };
+
+    const handleNavigateToV2 = () => {
+        // Preserve the room name if it's a QR code join
+        if (isQRCodeJoin && roomName) {
+            navigate(`/student/join-room-v2?roomName=${roomName}`);
+        } else {
+            navigate('/student/join-room-v2');
         }
     };
 
