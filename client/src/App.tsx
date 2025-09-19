@@ -14,6 +14,7 @@ import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPasswo
 import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
 import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
 import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
+import EditorQuizV2 from './pages/Teacher/EditorQuiz/EditorQuizV2';
 
 // Pages espace étudiant
 import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
@@ -85,6 +86,10 @@ const App: React.FC = () => {
                         <Route
                             path="/teacher/editor-quiz/:id"
                             element={isTeacherAuthenticated ? <QuizForm /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/editor-quiz-v2/:id"
+                            element={isTeacherAuthenticated ? <EditorQuizV2 /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/teacher/manage-room/:quizId/:roomName"
