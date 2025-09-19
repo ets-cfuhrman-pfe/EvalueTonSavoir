@@ -5,7 +5,7 @@ import { QuestionType } from '../../Types/QuestionType';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 
 interface TeacherModeQuizV2Props {
     questionInfos: QuestionType;
