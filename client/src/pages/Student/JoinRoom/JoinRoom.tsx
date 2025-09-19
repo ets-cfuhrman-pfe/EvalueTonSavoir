@@ -288,6 +288,15 @@ const JoinRoom: React.FC = () => {
                     >
                         {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
                     </LoadingButton>
+
+                    <LoadingButton
+                        loading={false}
+                        onClick={handleNavigateToV2}
+                        variant="outlined"
+                        sx={{ marginBottom: `${connectionError && '2rem'}` }}
+                    >
+                        Nouvelle interface
+                    </LoadingButton>
                 </LoginContainer>
             );
     }
