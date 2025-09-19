@@ -29,7 +29,6 @@ import {
     ListItemText,
     Box,
     FormControl,
-    InputLabel,
     Select,
     List,
     ListItem,
@@ -170,11 +169,11 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleCreateQuiz = () => {
-        navigate('/teacher/editor-quiz/new');
+        navigate('/teacher/editor-quiz-v2/new');
     };
 
     const handleEditQuiz = (quiz: QuizType) => {
-        navigate(`/teacher/editor-quiz/${quiz._id}`);
+        navigate(`/teacher/editor-quiz-v2/${quiz._id}`);
     };
 
     const handleLancerQuiz = (quiz: QuizType) => {
@@ -866,17 +865,13 @@ const DashboardV2: React.FC = () => {
                                                 slotProps={{
                                                     input: {
                                                         className:
-                                                            'form-control bg-white fw-medium',
+                                                            'form-control bg-white fw-small',
                                                         endAdornment: (
                                                             <InputAdornment position="end">
                                                                 <button
                                                                     type="button"
                                                                     onClick={toggleSearchVisibility}
-                                                                    className="btn btn-outline-primary btn-sm rounded d-flex align-items-center justify-content-center"
-                                                                    style={{
-                                                                        width: '32px',
-                                                                        height: '32px'
-                                                                    }}
+                                                                    className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
                                                                     data-testid="search-close-icon"
                                                                 >
                                                                     <Search fontSize="small" />
@@ -897,7 +892,7 @@ const DashboardV2: React.FC = () => {
                                             onClick={handleCreateQuiz}
                                             className="btn btn-outline-primary rounded px-3 py-1"
                                         >
-                                            Nouveau quiz
+                                            <span className="fw-bold h6 mb-0">Nouveau quiz</span>
                                         </Button>
 
                                         <Button
@@ -907,7 +902,7 @@ const DashboardV2: React.FC = () => {
                                             onClick={handleOnImport}
                                             className="btn btn-outline-primary rounded"
                                         >
-                                            Importer
+                                            <span className="fw-bold h6 mb-0">Importer</span>
                                         </Button>
                                     </div>
                                 </div>
