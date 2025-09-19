@@ -6,16 +6,16 @@
 // Editor textarea styling
 .editor-v2-textarea {
   width: 100% !important;
-  height: 50vh !important;
+  min-height: 50px !important;
   background-color: #f8f9ff !important;
   padding: 10px !important;
   font-size: medium !important;
-  resize: none !important;
-  border: 1px solid #ced4da !important;
+  border: 2px solid black !important;
   border-radius: vars.$border-radius !important;
   font-family: inherit !important;
   line-height: 1.5 !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+
 
   &:focus {
     outline: none !important;

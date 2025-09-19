@@ -122,9 +122,7 @@ const EditorQuizV2: React.FC = () => {
     }, [id, navigate]);
 
     function handleUpdatePreview(value: string) {
-        if (value !== '') {
-            setValue(value);
-        }
+        setValue(value);
 
         // split value when there is at least one blank line
         const linesArray = value.split(/\n{2,}/);
@@ -311,10 +309,10 @@ const EditorQuizV2: React.FC = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="container-fluid px-4 py-4">
+                <div className="container-fluid py-2 editor-main-content">
                     {/* Quiz Configuration Card */}
-                    <div className="card mb-4">
-                        <div className="card-body">
+                    <div className="card mb-3 flex-shrink-0">
+                        <div className="card-body py-3">
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <ValidatedTextField
@@ -325,10 +323,11 @@ const EditorQuizV2: React.FC = () => {
                                         placeholder="Titre du quiz"
                                         fullWidth
                                         variant="outlined"
+                                        size="small"
                                     />
                                 </div>
                                 <div className="col-md-6">
-                                    <FormControl fullWidth variant="outlined">
+                                    <FormControl fullWidth variant="outlined" size="small">
                                         <InputLabel id="select-folder-label">Dossier</InputLabel>
                                         <Select
                                             labelId="select-folder-label"
@@ -353,82 +352,89 @@ const EditorQuizV2: React.FC = () => {
                         </div>
                     </div>
 
-
-                    {/* Main Editor Section */}
-                    <div className="row g-0 min-vh-75">
-                        {/* Left Column */}
-                        <div className="col-lg-6 border-end">
-                            <div className="h-100 d-flex flex-column gap-3 p-3 overflow-auto">
-                                {/* GIFT Editor */}
-                                <div className="flex-shrink-0">
-                                    <EditorV2
-                                        label="Contenu GIFT du quiz:"
-                                        initialValue={value}
-                                        onEditorChange={handleUpdatePreview}
-                                    />
-                                </div>
-
-                                {/* Images Section */}
-                                <div className="flex-shrink-0">
-                                    <div className="border rounded p-3 bg-light">
-                                        <div className="d-flex align-items-center gap-3 mb-3">
-                                            <h5 className="mb-0">Mes images :</h5>
-                                            <ImageGalleryModalV2 handleCopy={handleCopyImage} />
+                    {/* Main Editor Section - Scrollable Content Container */}
+                    <div className="flex-grow-1 overflow-hidden">
+                        <div className="row g-4 h-100">
+                            {/* Editor Column */}
+                            <div className="border rounded col-lg-6 d-flex flex-column h-100">
+                                <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
+                                 
+                                    <div className="overflow-auto flex-grow-1 pe-2">
+                                        {/* GIFT Editor */}
+                                        
+                                        <div className="mb-4">
+                                            <EditorV2
+                                                label="Contenu GIFT du quiz:"
+                                                initialValue={value}
+                                                onEditorChange={handleUpdatePreview}
+                                            />
                                         </div>
 
-                                        <div>
-                                            <p className="mb-2 text-muted">
-                                                <span>(Voir section </span>
-                                                <a
-                                                    href="#images-section"
-                                                    className="text-decoration-none fw-bold"
-                                                    onClick={scrollToImagesSection}
-                                                >
-                                                    <em><strong>9. Images</strong></em>
-                                                </a>
-                                                <span> ci-dessous)</span>
-                                            </p>
-                                            <em className="text-muted small">- Cliquez sur un lien pour le copier</em>
-
-                                            {imageLinks.length > 0 ? (
-                                                <ul className="list-unstyled mt-2">
-                                                    {imageLinks.map((link, index) => {
-                                                        const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle") {T}`;
-                                                        return (
-                                                            <li key={`image-link-${link}-${index}`} className="mb-2">
-                                                                <button
-                                                                    className="btn btn-light text-start w-100 p-2 border rounded"
-                                                                    onClick={() => handleCopyToClipboard(imgTag)}
-                                                                    type="button"
-                                                                >
-                                                                    <code className="text-break small">{imgTag}</code>
-                                                                </button>
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            ) : (
-                                                <div className="text-center text-muted py-2 mt-2">
-                                                    <em>Aucune image ajoutée</em>
+                                        {/* Images Section */}
+                                        <div className="mb-4">
+                                            <div className="border rounded p-3 bg-light">
+                                                <div className="d-flex align-items-center gap-3 mb-3">
+                                                    <h5 className="mb-0">Mes images :</h5>
+                                                    <ImageGalleryModalV2 handleCopy={handleCopyImage} />
                                                 </div>
-                                            )}
+
+                                                <div>
+                                                    <p className="mb-2 text-muted">
+                                                        <span>(Voir section </span>
+                                                        <a
+                                                            href="#images-section"
+                                                            className="text-decoration-none fw-bold"
+                                                            onClick={scrollToImagesSection}
+                                                        >
+                                                            <em><strong>9. Images</strong></em>
+                                                        </a>
+                                                        <span> ci-dessous)</span>
+                                                    </p>
+                                                    <em className="text-muted small">- Cliquez sur un lien pour le copier</em>
+
+                                                    {imageLinks.length > 0 ? (
+                                                        <ul className="list-unstyled mt-2">
+                                                            {imageLinks.map((link, index) => {
+                                                                const imgTag = `[markdown]![alt_text](${escapeForGIFT(link)} "texte de l'infobulle") {T}`;
+                                                                return (
+                                                                    <li key={`image-link-${link}-${index}`} className="mb-2">
+                                                                        <button
+                                                                            className="btn btn-light text-start w-100 p-2 border rounded"
+                                                                            onClick={() => handleCopyToClipboard(imgTag)}
+                                                                            type="button"
+                                                                        >
+                                                                            <code className="text-break small">{imgTag}</code>
+                                                                        </button>
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    ) : (
+                                                        <div className="text-center text-muted py-2 mt-2">
+                                                            <em>Aucune image ajoutée</em>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* GIFT Cheat Sheet */}
+                                        <div className="mb-4">
+                                            <GiftCheatSheetV2 />
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* GIFT Cheat Sheet */}
-                                <div className="flex-shrink-0">
-                                    <GiftCheatSheetV2 />
-                                </div>
                             </div>
-                        </div>                        {/* Right Column - Preview */}
-                        <div className="col-lg-6">
-                            <div className="h-100 d-flex flex-column p-3 overflow-auto">
-                                <div className="mb-3">
-                                    <h5>Prévisualisation</h5>
-                                </div>
-                                <div className="flex-grow-1">
-                                    <GIFTTemplatePreviewV2 questions={filteredValue} />
+
+                            {/* Preview Column */}
+                            <div className="col-lg-6 d-flex flex-column h-100">
+                                <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
+                                    <div className="mb-3 flex-shrink-0">
+                                        <h4>Prévisualisation</h4>
+                                    </div>
+                                    <div className="flex-grow-1  p-3 bg-light overflow-auto pe-2">
+                                        <GIFTTemplatePreviewV2 questions={filteredValue} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
