@@ -3,7 +3,7 @@
     "name": {
       "minLength": 1,
       "maxLength": 25,
-      "pattern": "^[a-zA-Z0-9\\-_\\s]+$",
+      "pattern": "^[a-zA-Z0-9\\u00C0-\\u017F\\-_\\s]+$",
       "errorMessage": "Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces"
     },
     "description": {
@@ -31,8 +31,8 @@
     },
     "username": {
       "minLength": 2,
-      "maxLength": 25,
-      "pattern": "^[a-zA-Z0-9,\\s]+$",
+      "maxLength": 35,
+      "pattern": "^[a-zA-Z0-9\\u00C0-\\u017F,\\s]+$",
       "errorMessage": "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces"
     }
   },
