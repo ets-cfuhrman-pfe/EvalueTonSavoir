@@ -143,7 +143,7 @@ exports[`Numerical snapshot test with image 1`] = `
       &lt;p style="
   color: hsl(0, 0%, 0%);
 " class="present-question-stem"&gt;
-                      Sample Stem with Image &lt;img alt="" src="https://example.com/cat.jpg"&gt;
+                      Sample Stem with Image &lt;img style="--image-max-width: 400px" class="markdown-image" alt="" src="https://example.com/cat.jpg"&gt;
 
                   &lt;/p&gt;
     &lt;/span&gt;
@@ -198,7 +198,7 @@ exports[`Numerical snapshot test with image 1`] = `
   font-size: inherit;
   line-height: inherit;
   width: 90%;
-;width: 100%" placeholder="44"&gt;&lt;div class="feedback-container"&gt;Also Incorrect! &lt;img alt="" src="https://example.com/cat.jpg"&gt;
+;width: 100%" placeholder="44"&gt;&lt;div class="feedback-container"&gt;Also Incorrect! &lt;img style="--image-max-width: 400px" class="markdown-image" alt="" src="https://example.com/cat.jpg"&gt;
 &lt;/div&gt;&lt;/div&gt;&lt;div style="
   position: relative;
   margin-top: 1rem;
