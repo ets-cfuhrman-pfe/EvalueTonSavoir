@@ -45,6 +45,32 @@ describe('ValidatedTextField - Room Entity', () => {
       });
     });
 
+    it('should accept room name with accented characters', async () => {
+      const user = userEvent.setup();
+      render(<ValidatedTextField {...defaultProps} />);
+
+      const input = screen.getByRole('textbox');
+      await user.type(input, 'Salle de Français');
+      fireEvent.blur(input);
+
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute('aria-invalid', 'true');
+      });
+    });
+
+    it('should accept room name with various accents', async () => {
+      const user = userEvent.setup();
+      render(<ValidatedTextField {...defaultProps} />);
+
+      const input = screen.getByRole('textbox');
+      await user.type(input, 'Café Münü Niño');
+      fireEvent.blur(input);
+
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute('aria-invalid', 'true');
+      });
+    });
+
     it('should accept minimum length room name', async () => {
       const user = userEvent.setup();
       render(<ValidatedTextField {...defaultProps} />);

@@ -199,7 +199,7 @@ describe("Users API Integration Tests", () => {
     });
 
     it("should return 400 for username too long", async () => {
-      const longUsername = "a".repeat(26); // 26 chars
+      const longUsername = "a".repeat(36); // 36 chars, exceeds max of 35
       const response = await request(app)
         .post("/api/user/register")
         .send({
@@ -242,6 +242,36 @@ describe("Users API Integration Tests", () => {
       expect(response.body.message).toBe("Utilisateur créé avec succès.");
     });
 
+    it("should accept usernames with accented characters", async () => {
+      mockUsersModel.register.mockResolvedValue(true);
+
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: "gerard@example.com",
+          password: "ValidPass123",
+          username: "Gérard"
+        })
+        .expect(200);
+
+      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+    });
+
+    it("should accept usernames with various accents", async () => {
+      mockUsersModel.register.mockResolvedValue(true);
+
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: "francois@example.com",
+          password: "ValidPass123",
+          username: "François Müller Châteauneuf"
+        })
+        .expect(200);
+
+      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+    });
+
     it("should handle minimum valid lengths", async () => {
       mockUsersModel.register.mockResolvedValue(true);
 
@@ -262,7 +292,7 @@ describe("Users API Integration Tests", () => {
 
       const maxEmail = "a".repeat(59) + "@b.co"; // 64 chars total
       const maxPassword = "ValidP1" + "a".repeat(56); // 64 chars, meets pattern
-      const maxUsername = "a".repeat(25); // 25 chars
+      const maxUsername = "a".repeat(35); // 35 chars
 
       const response = await request(app)
         .post("/api/user/register")

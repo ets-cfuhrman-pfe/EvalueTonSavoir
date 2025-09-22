@@ -272,6 +272,22 @@ describe("Rooms", () => {
         });
       });
 
+      it("should accept room names with accented characters", () => {
+        const validNamesWithAccents = [
+          "Salle de Français",     
+          "Gérard",                  
+          "Müller",                
+          "Niño",                  
+          "José-María-Château-è"             
+        ];
+
+        validNamesWithAccents.forEach(name => {
+          const validation = ValidationUtils.validateRoomName(name);
+          expect(validation.isValid).toBe(true);
+          expect(validation.errors).toEqual([]);
+        });
+      });
+
       it("should reject room names that are too short", () => {
         const shortName = ""; // 0 characters (below minimum of 1)
         

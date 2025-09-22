@@ -87,6 +87,32 @@ describe('ValidatedTextField - User Entity', () => {
       });
     });
 
+    it('should accept username with accented characters', async () => {
+      const user = userEvent.setup();
+      render(<ValidatedTextField {...defaultProps} fieldPath="user.username" />);
+
+      const input = screen.getByRole('textbox');
+      await user.type(input, 'Gérard');
+      fireEvent.blur(input);
+
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute('aria-invalid', 'true');
+      });
+    });
+
+    it('should accept username with various accents', async () => {
+      const user = userEvent.setup();
+      render(<ValidatedTextField {...defaultProps} fieldPath="user.username" />);
+
+      const input = screen.getByRole('textbox');
+      await user.type(input, 'François Müller');
+      fireEvent.blur(input);
+
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute('aria-invalid', 'true');
+      });
+    });
+
     it('should reject username with invalid characters', async () => {
       const user = userEvent.setup();
       render(<ValidatedTextField {...defaultProps} fieldPath="user.username" />);
