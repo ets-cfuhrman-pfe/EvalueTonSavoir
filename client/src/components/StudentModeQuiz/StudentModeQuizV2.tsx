@@ -8,21 +8,34 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
+import QuizResults from '../QuizResults/QuizResults';
+import { StudentType } from '../../Types/StudentType';
+import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
 
 interface StudentModeQuizV2Props {
     questions: QuestionType[];
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    studentName?: string;
+    quizTitle?: string;
+    quizCompleted?: boolean;
 }
 
 const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     questions,
     answers,
     submitAnswer,
-    disconnectWebSocket
+    disconnectWebSocket,
+    studentName,
+    quizTitle,
+    quizCompleted = false
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
+
+    // Check if quiz is completed (all questions answered OR teacher ended quiz)
+    const isQuizCompleted = answers.length === questions.length && answers.every(answer => answer?.answer !== undefined);
+    const shouldShowResults = isQuizCompleted || quizCompleted;
 
     const previousQuestion = () => {
         setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);
@@ -39,6 +52,38 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 
     // Compute if answer is submitted for current question
     const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
+
+    // If quiz is completed, show results
+    if (shouldShowResults) {
+        // Create a student object for the current student
+        const currentStudent: StudentType = {
+            id: 'current-student',
+            name: studentName || 'Vous',
+            answers: answers.map((answer, index) => ({
+                idQuestion: index + 1,
+                answer: answer?.answer,
+                isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
+            }))
+        };
+
+        return (
+            <div className='container-fluid student-mode-quiz-mobile'>
+                <QuizResults
+                    students={[currentStudent]}
+                    questions={questions}
+                    quizTitle={quizTitle}
+                    isStudentView={true}
+                    currentStudent={currentStudent}
+                />
+                <div className='d-flex justify-content-center mt-4'>
+                    <DisconnectButton
+                        onReturn={disconnectWebSocket}
+                        message="Êtes-vous sûr de vouloir quitter?"
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='container-fluid student-mode-quiz-mobile'>
