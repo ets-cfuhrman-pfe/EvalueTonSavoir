@@ -25,10 +25,10 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
     // arrive here the first time after waiting for next question
     useEffect(() => {
-        console.log(`TeacherModeQuizV2: useEffect: answers: ${JSON.stringify(answers)}`);
-        console.log(`TeacherModeQuizV2: useEffect: questionInfos.question.id: ${questionInfos.question.id} answer: ${answer}`);
+        // console.log(`TeacherModeQuizV2: useEffect: answers: ${JSON.stringify(answers)}`);
+        // console.log(`TeacherModeQuizV2: useEffect: questionInfos.question.id: ${questionInfos.question.id} answer: ${answer}`);
         const oldAnswer = answers[Number(questionInfos.question.id) -1 ]?.answer;
-        console.log(`TeacherModeQuizV2: useEffect: oldAnswer: ${oldAnswer}`);
+        // console.log(`TeacherModeQuizV2: useEffect: oldAnswer: ${oldAnswer}`);
         setAnswer(oldAnswer);
         // Reset validation state when question changes to prevent flash
         setIsAnswerSubmitted(false);
@@ -36,7 +36,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
     // handle answer submission state
     useEffect(() => {
-        console.log(`TeacherModeQuizV2: useEffect: answer: ${answer}`);
+        // console.log(`TeacherModeQuizV2: useEffect: answer: ${answer}`);
         setIsAnswerSubmitted(answer !== undefined);
     }, [answer]);
 
