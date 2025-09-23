@@ -31,7 +31,7 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
                 {/* Action Bar with Bootstrap classes */}
                 <Box className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center p-3 border-bottom bg-light">
                     <Typography variant="h5" component="h2" className="mb-2 mb-lg-0 fw-bold text-primary">
-                        {' Résultats de : ' + (quizTitle || 'Quiz')}
+                        {' Résultats pour : ' + (quizTitle || 'Quiz')}
                     </Typography>
                     
                     {/* Controls */}
