@@ -44,6 +44,17 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 
+    // Compute class names for buttons
+    const trueColorClass = shouldShowValidation 
+        ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark');
+    const trueValidationClass = shouldShowValidation && selectedTrue ? 'choice-button-validated-selected' : '';
+
+    const falseColorClass = shouldShowValidation 
+        ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark');
+    const falseValidationClass = shouldShowValidation && selectedFalse ? 'choice-button-validated-selected' : '';
+
     return (
         <div className="quiz-question-area">
             {/* Question text */}
@@ -56,26 +67,10 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div className="row g-3">
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${
-                                shouldShowValidation 
-                                    ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
-                                    : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark')
-                            }`}
+                            className={`w-100 p-3 text-start choice-button ${trueColorClass} ${trueValidationClass}`}
                             onClick={() => !shouldShowValidation && handleOnClickAnswer(true)}
                             disabled={disableButton}
                             variant="outlined"
-                            style={{
-                                border: shouldShowValidation && selectedTrue 
-                                    ? '4px solid #fff' 
-                                    : selectedTrue && !shouldShowValidation 
-                                        ? '2px solid var(--bs-primary)' 
-                                        : '1px solid #dee2e6',
-                                borderRadius: '0.5rem',
-                                boxShadow: shouldShowValidation && selectedTrue 
-                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                    : 'none',
-                                position: 'relative'
-                            }}
                         >
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
@@ -94,26 +89,10 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${
-                                shouldShowValidation 
-                                    ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
-                                    : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark')
-                            }`}
+                            className={`w-100 p-3 text-start choice-button ${falseColorClass} ${falseValidationClass}`}
                             onClick={() => !shouldShowValidation && handleOnClickAnswer(false)}
                             disabled={disableButton}
                             variant="outlined"
-                            style={{
-                                border: shouldShowValidation && selectedFalse 
-                                    ? '4px solid #fff' 
-                                    : selectedFalse && !shouldShowValidation 
-                                        ? '2px solid var(--bs-primary)' 
-                                        : '1px solid #dee2e6',
-                                borderRadius: '0.5rem',
-                                boxShadow: shouldShowValidation && selectedFalse 
-                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                    : 'none',
-                                position: 'relative'
-                            }}
                         >
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">

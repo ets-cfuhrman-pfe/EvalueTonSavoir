@@ -14,7 +14,7 @@ interface PropsV2 {
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+    // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
         if (passedAnswer && passedAnswer.length > 0) {
@@ -29,7 +29,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     }
 
     useEffect(() => {
-        console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+        // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
         } else {
@@ -42,7 +42,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
-            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+            // console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
             const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
 
             if (correctAnswersCount === 1) {
@@ -74,44 +74,27 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Choices */}
             <div className="mb-4">
                 {question.choices.map((choice, i) => {
-                    console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
+                    // console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
                     const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="mb-3">
                             <Button
                                 variant="outlined"
-                                className={`w-100 text-start justify-content-start p-3 ${
+                                className={`w-100 text-start justify-content-start p-3 choice-button ${
                                     shouldShowValidation 
                                         ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
-                                        : (selected ? 'bg-primary text-white' : 'bg-light text-dark')
-                                }`}
+                                        : (selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark')
+                                } ${shouldShowValidation && selected ? 'choice-button-validated-selected' : ''}`}
                                 disabled={disableButton}
                                 onClick={() => !shouldShowValidation && handleOnClickAnswer(choice.formattedText.text)}
-                                style={{
-                                    border: shouldShowValidation && selected 
-                                        ? '4px solid #fff' 
-                                        : selected && !shouldShowValidation 
-                                            ? '2px solid var(--bs-primary)' 
-                                            : '1px solid #dee2e6',
-                                    borderRadius: '0.5rem',
-                                    boxShadow: shouldShowValidation && selected 
-                                        ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                        : 'none',
-                                    position: 'relative'
-                                }}
                             >
                                 <div className="d-flex align-items-center w-100">
                                     <div 
-                                        className={`d-flex align-items-center justify-content-center me-3 rounded-circle border ${
+                                        className={`choice-letter d-flex align-items-center justify-content-center me-3 rounded-circle border ${
                                             shouldShowValidation 
                                                 ? (choice.isCorrect ? 'bg-white text-success' : 'bg-white text-danger')
                                                 : (selected ? 'bg-white text-primary' : 'bg-white text-dark')
                                         }`}
-                                        style={{
-                                            width: '2.5rem',
-                                            height: '2.5rem',
-                                            fontWeight: 'bold'
-                                        }}
                                     >
                                         {alphabet[i]}
                                     </div>

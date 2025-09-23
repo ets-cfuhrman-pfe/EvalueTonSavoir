@@ -73,7 +73,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     
                     {/* Submit button */}
                     {handleOnSubmitAnswer && (
-                        <div className="d-grid gap-2 col-md-4 col-12 mt-4">
+                        <div className="d-grid gap-2 mb-4 mt-4">
                             <Button
                                 variant="contained"
                                 size="large"
