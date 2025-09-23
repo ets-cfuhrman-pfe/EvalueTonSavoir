@@ -63,12 +63,14 @@ describe('WebSocketService', () => {
     test('launchStudentModeQuiz should emit launch-student-mode event with correct parameters', () => {
         const roomName = 'testRoom';
         const questions = [{ id: 1, text: 'Sample Question' }];
+        const quizTitle = 'Test Quiz';
 
         mockSocket = WebsocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
-        WebsocketService.launchStudentModeQuiz(roomName, questions);
+        WebsocketService.launchStudentModeQuiz(roomName, questions, quizTitle);
         expect(mockSocket.emit).toHaveBeenCalledWith('launch-student-mode', {
             roomName,
-            questions
+            questions,
+            quizTitle
         });
     });
 

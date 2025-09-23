@@ -12,13 +12,15 @@ interface TeacherModeQuizV2Props {
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    quizTitle?: string;
 }
 
 const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     questionInfos,
     answers,
     submitAnswer,
-    disconnectWebSocket
+    disconnectWebSocket,
+    quizTitle
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -51,16 +53,9 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             <div className='row py-2 border-bottom quiz-header sticky-top'>
                 <div className='col-12'>
                     <div className='d-flex align-items-center justify-content-between'>
-                        {/* Left: Question counter and waiting message */}
+                        {/* Left: Quiz title */}
                         <div className='d-flex align-items-center'>
-                            <div className='text-start'>
-                                <h6 className='mb-0 question-counter'>
-                                    Question {questionInfos.question.id}
-                                </h6>
-                                <div className={`text-muted small mt-1 ${isAnswerSubmitted ? '' : 'invisible'}`}>
-                                    En attente pour la prochaine question...
-                                </div>
-                            </div>
+                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
                         </div>
                         
                         {/* Right: Disconnect button */}
@@ -75,9 +70,17 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
             {/* Main content area */}
             <div className='row'>
-                {/* Question area - takes full width, left-aligned */}
+                {/* Question area */}
                 <div className='col-12'>
                     <div className='p-4'>
+                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
+                            <h6 className='mb-0 question-counter'>
+                                Question {questionInfos.question.id}
+                            </h6>
+                            <div className={`text-muted small ${isAnswerSubmitted ? '' : 'invisible'}`}>
+                                En attente pour la prochaine question...
+                            </div>
+                        </div>
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}

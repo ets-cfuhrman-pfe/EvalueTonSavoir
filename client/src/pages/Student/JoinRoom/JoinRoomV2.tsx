@@ -38,6 +38,7 @@ const JoinRoomV2: React.FC = () => {
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
+    const [quizTitle, setQuizTitle] = useState<string>('Quiz');
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -99,14 +100,15 @@ const JoinRoomV2: React.FC = () => {
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
-        socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
+        socket.on('launch-teacher-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
             // console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  
             setQuestions(questions);
+            setQuizTitle(quizTitle);
         });
-        socket.on('launch-student-mode', (questions: QuestionType[]) => {
+        socket.on('launch-student-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
             // console.log('on(launch-student-mode): Received launch-student-mode:', questions);
 
             setQuizMode('student');
@@ -114,6 +116,7 @@ const JoinRoomV2: React.FC = () => {
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             setQuestion(questions[0]);
+            setQuizTitle(quizTitle);
         });
         socket.on('end-quiz', () => {
             disconnect();
@@ -246,6 +249,7 @@ const JoinRoomV2: React.FC = () => {
                         answers={answers}
                         submitAnswer={handleOnSubmitAnswer}
                         disconnectWebSocket={disconnect}
+                        quizTitle={quizTitle}
                     />
                 </div>
             );
@@ -258,6 +262,7 @@ const JoinRoomV2: React.FC = () => {
                             answers={answers}
                             submitAnswer={handleOnSubmitAnswer}
                             disconnectWebSocket={disconnect}
+                            quizTitle={quizTitle}
                         />
                     )}
                 </div>

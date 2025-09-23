@@ -14,13 +14,15 @@ interface StudentModeQuizV2Props {
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    quizTitle?: string;
 }
 
 const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     questions,
     answers,
     submitAnswer,
-    disconnectWebSocket
+    disconnectWebSocket,
+    quizTitle
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
 
@@ -41,14 +43,15 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
 
     return (
-        <div className='container-fluid student-mode-quiz-mobile'>
+        <div className="container-fluid student-mode-quiz-mobile">
             {/* Header */}
-            <div className='row py-2 border-bottom quiz-header sticky-top'>
-                <div className='col-12'>
-                    <div className='d-flex align-items-center justify-content-between'>
-                        {/* Left: Navigation buttons and question counter */}
-                        <div className='d-flex align-items-center gap-3 p-2'>
-                            <div className='d-flex gap-2 quiz-nav-buttons'>
+            <div className="row py-2 border-bottom quiz-header sticky-top">
+                <div className="col-12">
+                    <div className="d-flex align-items-center justify-content-between">
+                        {/* Left: Quiz title and navigation buttons */}
+                        <div className="d-flex align-items-center gap-3 p-2">
+                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
+                            <div className="d-flex gap-2 quiz-nav-buttons">
                                 <Button
                                     variant="outlined"
                                     onClick={previousQuestion}
@@ -57,7 +60,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                                 >
                                     <ChevronLeft />
                                 </Button>
-                                
+
                                 <Button
                                     variant="outlined"
                                     onClick={nextQuestion}
@@ -67,39 +70,40 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                                     <ChevronRight />
                                 </Button>
                             </div>
-                            
-                            <div className='text-center'>
-                                <h6 className='mb-0 question-counter'>
-                                    Question {questionInfos.question.id}/{questions.length}
-                                </h6>
-                            </div>
                         </div>
-                        
+
                         {/* Right: Disconnect button */}
                         <div>
                             <DisconnectButton
                                 onReturn={disconnectWebSocket}
-                                message={`Êtes-vous sûr de vouloir quitter?`} />
+                                message={`Êtes-vous sûr de vouloir quitter?`}
+                            />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Main content area */}
-            <div className='row'>
+            <div className="row">
                 {/* Question area */}
-                <div className='col-12'>
-                    <div className='p-4 quiz-question-area'>
+                <div className="col-12">
+                    <div className="p-4 quiz-question-area">
+                        <div className="text-start mb-3 border-bottom-light">
+                            <h4 className="mb-0 question-counter">
+                                Question {questionInfos.question.id}/{questions.length}
+                            </h4>
+                        </div>
+                        
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             question={questionInfos.question as Question}
                             showAnswer={isAnswerSubmitted}
-                            answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                            answer={answers[Number(questionInfos.question.id) - 1]?.answer}
                         />
-                        
+
                         {/* Reserved feedback space - always present */}
-                        <div className='mt-4 min-height-feedback'>
+                        <div className="mt-4 min-height-feedback">
                             {/* Feedback will be displayed here when available */}
                         </div>
                     </div>
