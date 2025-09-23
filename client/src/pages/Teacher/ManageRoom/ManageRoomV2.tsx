@@ -11,7 +11,7 @@ import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 
-import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
+import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { checkIfIsCorrect } from './useRooms';
@@ -86,10 +86,11 @@ const ManageRoomV2: React.FC = () => {
                     roomName: formattedRoomName,
                     questions: quizQuestions,
                     questionIndex: Number(currentQuestion?.question.id) - 1,
-                    isLaunch: true // started late
+                    isLaunch: true, // started late
+                    quizTitle: quiz?.title
                 });
             } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions, quiz?.title);
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
@@ -344,7 +345,8 @@ const ManageRoomV2: React.FC = () => {
             roomName: formattedRoomName,
             questions: quizQuestions,
             questionIndex: 0,
-            isLaunch: true
+            isLaunch: true,
+            quizTitle: quiz?.title
         });
     };
 
@@ -359,7 +361,7 @@ const ManageRoomV2: React.FC = () => {
         setQuizQuestions(quizQuestions);
         // Set the first question as current question so it displays in student mode
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions, quiz?.title);
     };
 
     const launchQuiz = () => {
@@ -662,6 +664,11 @@ const ManageRoomV2: React.FC = () => {
                                     <Typography variant="h6" color="text.secondary">
                                         {students.length}/60 participants
                                     </Typography>
+                                    {quiz?.title && (
+                                        <Typography variant="body1" color="primary" fontWeight="bold">
+                                            Quiz: {quiz.title}
+                                        </Typography>
+                                    )}
                                 </Box>
 
                                 <Button
@@ -748,11 +755,12 @@ const ManageRoomV2: React.FC = () => {
                                                             Suivante
                                                         </Button>
                                                     </Box>
-
+                                                    {/* Current Question Display */}
+                                                    <div className="quiz-question-card">
                                                     {currentQuestion && (
                                                         <Card elevation={2}>
                                                             <CardContent>
-                                                                <QuestionDisplay
+                                                                <QuestionDisplayV2
                                                                     showAnswer={false}
                                                                     question={
                                                                         currentQuestion?.question as Question
@@ -761,6 +769,7 @@ const ManageRoomV2: React.FC = () => {
                                                             </CardContent>
                                                         </Card>
                                                     )}
+                                                   </div> 
                                                 </Box>
                                             )}
                                         </Box>

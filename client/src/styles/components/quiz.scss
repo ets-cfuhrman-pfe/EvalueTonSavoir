@@ -51,10 +51,7 @@
   
   // Question counter styling
   .question-counter {
-    background: vars.$primary;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: vars.$primary;
     font-weight: 700;
     letter-spacing: 0.5px;
     font-size: 1.1rem;
@@ -103,4 +100,26 @@
       padding-bottom: 2rem !important;
     }
   }
+}
+
+// Choice button styles
+.choice-button {
+  border-radius: 0.5rem;
+  position: relative;
+  border: 1px solid #dee2e6;
+}
+
+.choice-button-selected {
+  border: 2px solid var(--bs-primary);
+}
+
+.choice-button-validated-selected {
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 3px #007bff, 0 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+.choice-letter {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-weight: bold;
 }
