@@ -48,32 +48,41 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {showAnswer ? (
                 <div className="mb-4">
-                    {(() => {
-                        const userAnswer = answer[0] as number;
-                        let isCorrect = false;
-                        if (isSimpleNumericalAnswer(correctAnswers[0])) {
-                            isCorrect = userAnswer === correctAnswers[0].number;
-                        } else if (isRangeNumericalAnswer(correctAnswers[0])) {
-                            const choice = correctAnswers[0];
-                            isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
-                        } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
-                            const choice = correctAnswers[0];
-                            isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
-                        }
-                        return (
-                            <>
-                                <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
-                                    {isCorrect ? 'Correct' : 'Incorrect'}
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Bonne réponse :</strong> {correctAnswer}
-                                </div>
-                            </>
-                        );
-                    })()}
+                    {answer && answer.length > 0 && answer[0] !== undefined && answer[0] !== null ? (
+                        (() => {
+                            const userAnswer = answer[0] as number;
+                            let isCorrect = false;
+                            if (isSimpleNumericalAnswer(correctAnswers[0])) {
+                                isCorrect = userAnswer === correctAnswers[0].number;
+                            } else if (isRangeNumericalAnswer(correctAnswers[0])) {
+                                const choice = correctAnswers[0];
+                                isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
+                            } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
+                                const choice = correctAnswers[0];
+                                isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
+                            }
+                            return (
+                                <>
+                                    <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
+                                        {isCorrect ? 'Correct' : 'Incorrect'}
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Bonne réponse :</strong> {correctAnswer}
+                                    </div>
+                                </>
+                            );
+                        })()
+                    ) : (
+                        // Teacher view - just show the correct answer
+                        <div>
+                            <div className="mt-2">
+                                <strong>Bonne réponse :</strong> {correctAnswer}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="mb-4">

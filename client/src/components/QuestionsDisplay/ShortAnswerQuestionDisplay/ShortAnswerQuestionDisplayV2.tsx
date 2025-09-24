@@ -35,23 +35,32 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {showAnswer ? (
                 <div className="mb-4">
-                    {(() => {
-                        const userAnswer = (answer[0] || '').toString().toLowerCase();
-                        const isCorrect = question.choices.some(choice => choice.text.toLowerCase() === userAnswer);
-                        return (
-                            <>
-                                <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
-                                    {isCorrect ? 'Correct' : 'Incorrect'}
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
-                                </div>
-                            </>
-                        );
-                    })()}
+                    {answer && answer.length > 0 && answer[0] ? (
+                        (() => {
+                            const userAnswer = (answer[0] || '').toString().toLowerCase();
+                            const isCorrect = question.choices.some(choice => choice.text.toLowerCase() === userAnswer);
+                            return (
+                                <>
+                                    <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
+                                        {isCorrect ? 'Correct' : 'Incorrect'}
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
+                                    </div>
+                                </>
+                            );
+                        })()
+                    ) : (
+                        // Teacher view - just show the correct answer
+                        <div>
+                            <div className="mt-2">
+                                <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="mb-4">

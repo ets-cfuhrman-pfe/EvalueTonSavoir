@@ -41,7 +41,9 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     };
 
     // Prevent validation styling from showing immediately on question change
-    const shouldShowValidation = showAnswer && answer !== undefined;
+    // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
+    // For student view, only show validation after they've submitted an answer
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer !== undefined);
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 

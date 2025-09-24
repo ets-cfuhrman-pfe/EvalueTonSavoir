@@ -795,6 +795,10 @@ const ManageRoomV2: React.FC = () => {
                                                                         currentQuestion?.question as Question
                                                                     }
                                                                 />
+                                                                {/* Reserved feedback space - always present */}
+                                                                <div className="mt-4 min-height-feedback">
+                                                                    {/* Feedback will be displayed here when available */}
+                                                                </div>
                                                             </CardContent>
                                                         </Card>
                                                     )}
