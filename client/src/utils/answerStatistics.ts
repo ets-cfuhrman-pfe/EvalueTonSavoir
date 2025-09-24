@@ -1,5 +1,7 @@
 import { StudentType } from '../Types/StudentType';
 
+type AnswerOption = string | number | boolean;
+
 export interface AnswerStatistics {
     [answerText: string]: {
         count: number;
@@ -37,7 +39,7 @@ export const calculateAnswerStatistics = (
             // Handle different answer types
             if (Array.isArray(studentAnswer.answer)) {
                 // Multiple choice - can have multiple selections
-                studentAnswer.answer.forEach((answerOption: string | number | boolean) => {
+                studentAnswer.answer.forEach((answerOption: AnswerOption) => {
                     const answerText = String(answerOption);
                     if (!statistics[answerText]) {
                         statistics[answerText] = { count: 0, percentage: 0 };
