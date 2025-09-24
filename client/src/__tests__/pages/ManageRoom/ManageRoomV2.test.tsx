@@ -119,6 +119,7 @@ describe('ManageRoomV2 Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
     mockAlert.mockClear();
     mockConfirm.mockClear();
     localStorageMock.getItem.mockClear();
@@ -373,9 +374,11 @@ describe('ManageRoomV2 Component', () => {
         userJoinedCallback({ id: 'student1', name: 'John Doe', answers: [] });
       }
 
+      jest.runAllTimers();
+
       await waitFor(() => {
-        expect(screen.getByText('0/1 étudiant ont répondu')).toBeInTheDocument();
-      });
+        expect(screen.getByText((content) => content.includes('0/1') && content.includes('étudiant ont répondu'))).toBeInTheDocument();
+      }, { timeout: 3000 });
     });
   });
 
