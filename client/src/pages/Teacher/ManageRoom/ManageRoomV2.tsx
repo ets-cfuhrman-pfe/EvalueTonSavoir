@@ -305,6 +305,8 @@ const ManageRoomV2: React.FC = () => {
 
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
+        // Reset show answers state BEFORE changing question 
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
 
         // Only send WebSocket update in teacher mode
@@ -324,6 +326,9 @@ const ManageRoomV2: React.FC = () => {
         const prevQuestionIndex = Number(currentQuestion?.question.id) - 2;
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
+        
+        // Reset show answers state BEFORE changing question
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
 
         // Only send WebSocket update in teacher mode
@@ -361,6 +366,7 @@ const ManageRoomV2: React.FC = () => {
             return;
         }
 
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[0]);
         webSocketService.nextQuestion({
             roomName: formattedRoomName,
@@ -381,6 +387,7 @@ const ManageRoomV2: React.FC = () => {
         }
         setQuizQuestions(quizQuestions);
         // Set the first question as current question so it displays in student mode
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[0]);
         webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions, quiz?.title);
     };
@@ -404,6 +411,8 @@ const ManageRoomV2: React.FC = () => {
 
     const showSelectedQuestion = (questionIndex: number) => {
         if (quiz?.content && quizQuestions) {
+            // Reset show answers state BEFORE changing question
+            setShowCorrectAnswers(false);
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
@@ -790,6 +799,7 @@ const ManageRoomV2: React.FC = () => {
                                                         <Card elevation={2}>
                                                             <CardContent>
                                                                 <QuestionDisplayV2
+                                                                    key={currentQuestion.question.id}
                                                                     showAnswer={showCorrectAnswers}
                                                                     question={
                                                                         currentQuestion?.question as Question
