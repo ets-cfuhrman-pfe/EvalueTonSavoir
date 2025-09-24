@@ -13,6 +13,7 @@ interface TeacherModeQuizV2Props {
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
     quizTitle?: string;
+    totalQuestions?: number;
 }
 
 const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
@@ -20,7 +21,8 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     answers,
     submitAnswer,
     disconnectWebSocket,
-    quizTitle
+    quizTitle,
+    totalQuestions
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -75,7 +77,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                     <div className='p-4'>
                          <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
                             <h6 className='mb-0 question-counter'>
-                                Question {questionInfos.question.id}
+                                {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
                             </h6>
                             <div className={`text-muted small ${isAnswerSubmitted ? '' : 'invisible'}`}>
                                 En attente pour la prochaine question...
@@ -85,8 +87,9 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             question={questionInfos.question as Question}
-                            showAnswer={isAnswerSubmitted}
+                            showAnswer={false}
                             answer={answer}
+                            disabled={isAnswerSubmitted}
                         />
                         
                         {/* Reserved feedback space - always present */}
