@@ -12,10 +12,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    disabled?: boolean;
 }
 
 const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
@@ -85,7 +86,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 type="number"
                                 id={question.formattedStem.text}
                                 name={question.formattedStem.text}
-                                disabled={showAnswer}
+                                disabled={showAnswer || disabled}
                                 aria-label="number-input"
                                 fullWidth
                                 label="Votre réponse (nombre)"
@@ -103,7 +104,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     answer !== undefined &&
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
+                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number) || disabled}
                                 className="btn-primary"
                             >
                                 Répondre
@@ -116,7 +117,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}

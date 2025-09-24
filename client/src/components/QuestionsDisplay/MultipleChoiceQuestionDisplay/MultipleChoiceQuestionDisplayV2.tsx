@@ -10,10 +10,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    disabled?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -85,8 +86,8 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                         ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
                                         : (selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark')
                                 } ${shouldShowValidation && selected ? 'choice-button-validated-selected' : ''}`}
-                                disabled={disableButton}
-                                onClick={() => !shouldShowValidation && handleOnClickAnswer(choice.formattedText.text)}
+                                disabled={disableButton || disabled}
+                                onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(choice.formattedText.text)}
                             >
                                 <div className="d-flex align-items-center w-100">
                                     <div 
@@ -132,7 +133,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         onClick={() =>
                             answer.length > 0 && handleOnSubmitAnswer?.(answer)
                         }
-                        disabled={answer.length === 0}
+                        disabled={answer.length === 0 || disabled}
                         className="btn-primary"
                     >
                         Répondre
@@ -143,7 +144,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div
                             dangerouslySetInnerHTML={{
                                 __html: FormattedTextTemplate(question.formattedGlobalFeedback),

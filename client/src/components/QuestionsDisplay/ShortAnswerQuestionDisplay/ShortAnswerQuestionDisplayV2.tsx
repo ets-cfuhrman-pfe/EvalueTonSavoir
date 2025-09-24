@@ -11,10 +11,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    disabled?: boolean;
 }
 
 const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -63,7 +64,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 type="text"
                                 id={question.formattedStem.text}
                                 name={question.formattedStem.text}
-                                disabled={showAnswer}
+                                disabled={showAnswer || disabled}
                                 aria-label="short-answer-input"
                                 fullWidth
                                 label="Votre réponse"
@@ -80,7 +81,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 onClick={() =>
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={!answer[0] || answer[0].toString().trim() === ''}
+                                disabled={!answer[0] || answer[0].toString().trim() === '' || disabled}
                                 className="btn-primary"
                             >
                                 Répondre
@@ -93,7 +94,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}

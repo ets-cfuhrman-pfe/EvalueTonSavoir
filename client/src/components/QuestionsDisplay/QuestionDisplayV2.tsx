@@ -12,6 +12,7 @@ interface QuestionV2Props {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     answer?: AnswerType;
+    disabled?: boolean;
 }
 
 const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
@@ -19,6 +20,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     handleOnSubmitAnswer,
     showAnswer,
     answer,
+    disabled = false,
 }) => {
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -29,6 +31,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    disabled={disabled}
                 />
             );
             break;
@@ -39,6 +42,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    disabled={disabled}
                 />
             );
             break;
@@ -50,6 +54,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
                             passedAnswer={answer}
+                            disabled={disabled}
                         />
                     );
             }
@@ -61,6 +66,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    disabled={disabled}
                 />
             );
             break;

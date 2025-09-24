@@ -10,10 +10,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    disabled?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
@@ -68,8 +69,8 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start choice-button ${trueColorClass} ${trueValidationClass}`}
-                            onClick={() => !shouldShowValidation && handleOnClickAnswer(true)}
-                            disabled={disableButton}
+                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(true)}
+                            disabled={disableButton || disabled}
                             variant="outlined"
                         >
                             <div className="d-flex align-items-center">
@@ -79,10 +80,8 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             </div>
                         </Button>
                         {showAnswer && answer && question.trueFormattedFeedback && (
-                            <div className="mt-2">
-                                <div className="alert alert-info small">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
-                                </div>
+                            <div className="true-feedback">
+                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
                             </div>
                         )}
                     </div>
@@ -90,8 +89,8 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start choice-button ${falseColorClass} ${falseValidationClass}`}
-                            onClick={() => !shouldShowValidation && handleOnClickAnswer(false)}
-                            disabled={disableButton}
+                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(false)}
+                            disabled={disableButton || disabled}
                             variant="outlined"
                         >
                             <div className="d-flex align-items-center">
@@ -101,10 +100,8 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             </div>
                         </Button>
                         {showAnswer && !answer && question.falseFormattedFeedback && (
-                            <div className="mt-2">
-                                <div className="alert alert-info small">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
-                                </div>
+                            <div className="false-feedback">
+                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
                             </div>
                         )}
                     </div>
@@ -120,7 +117,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         onClick={() =>
                             answer !== undefined && handleOnSubmitAnswer?.([answer])
                         }
-                        disabled={answer === undefined}
+                        disabled={answer === undefined || disabled}
                         className="btn-primary"
                     >
                         Répondre
@@ -131,7 +128,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}
