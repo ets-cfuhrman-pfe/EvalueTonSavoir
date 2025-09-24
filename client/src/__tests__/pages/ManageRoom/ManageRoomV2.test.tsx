@@ -2,16 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import ManageRoomV2 from '../../../../pages/Teacher/ManageRoom/ManageRoomV2';
-import ApiService from '../../../../services/ApiService';
-import webSocketService from '../../../../services/WebsocketService';
-import { QuizType } from '../../../../Types/QuizType';
-import { RoomType } from '../../../../Types/RoomType';
+import ManageRoomV2 from 'src/pages/Teacher/ManageRoom/ManageRoomV2';
+import ApiService from 'src/services/ApiService';
+import webSocketService from 'src/services/WebsocketService';
+import { QuizType } from 'src/Types/QuizType';
+import { RoomType } from 'src/Types/RoomType';
 
 
 // Mock dependencies
-jest.mock('../../../../services/ApiService');
-jest.mock('../../../../services/WebsocketService');
+jest.mock('src/services/ApiService');
+jest.mock('src/services/WebsocketService');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock('react-router-dom', () => ({
 jest.mock('gift-pegjs', () => ({
   parse: jest.fn(),
 }));
-jest.mock('../../../../components/LiveResults/LiveResultsV2', () => {
+jest.mock('src/components/LiveResults/LiveResultsV2', () => {
   return function MockLiveResults({ students, quizTitle }: any) {
     return (
       <div data-testid="live-results">
@@ -30,7 +30,7 @@ jest.mock('../../../../components/LiveResults/LiveResultsV2', () => {
     );
   };
 });
-jest.mock('../../../../components/QuestionsDisplay/QuestionDisplay', () => {
+jest.mock('src/components/QuestionsDisplay/QuestionDisplay', () => {
   return function MockQuestionDisplay({ question }: any) {
     return (
       <div data-testid="question-display">
@@ -39,7 +39,7 @@ jest.mock('../../../../components/QuestionsDisplay/QuestionDisplay', () => {
     );
   };
 });
-jest.mock('../../../../components/QRCodeModal', () => {
+jest.mock('src/components/QRCodeModal', () => {
   return function MockQRCodeModal({ open, onClose, roomName, roomUrl }: any) {
     return open ? (
       <div data-testid="qr-modal">
@@ -50,7 +50,7 @@ jest.mock('../../../../components/QRCodeModal', () => {
     ) : null;
   };
 });
-jest.mock('../../../../components/LoadingCircle/LoadingCircle', () => {
+jest.mock('src/components/LoadingCircle/LoadingCircle', () => {
   return function MockLoadingCircle({ text }: any) {
     return <div data-testid="loading-circle">{text}</div>;
   };
@@ -374,7 +374,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('1/60 participants')).toBeInTheDocument();
+        expect(screen.getByText('0/1 étudiant ont répondu')).toBeInTheDocument();
       });
     });
   });
