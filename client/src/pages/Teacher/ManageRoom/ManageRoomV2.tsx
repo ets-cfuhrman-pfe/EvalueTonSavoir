@@ -57,7 +57,7 @@ const ManageRoomV2: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     const [showQuestions, setShowQuestions] = useState(true);
-    const [showResults, setShowResults] = useState(false);
+    const [showResults, setShowResults] = useState(true);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
@@ -74,7 +74,6 @@ const ManageRoomV2: React.FC = () => {
     useEffect(() => {
         if (newlyConnectedUser) {
             // console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
-            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
 
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
@@ -215,6 +214,7 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
+            setStudents((prev) => [...prev, student]);
             setNewlyConnectedUser(student);
         });
 
