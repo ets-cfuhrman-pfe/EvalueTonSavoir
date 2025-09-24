@@ -57,7 +57,8 @@ const ManageRoomV2: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     const [showQuestions, setShowQuestions] = useState(true);
-    const [showResults, setShowResults] = useState(true);
+    const [showResults, setShowResults] = useState(false);
+    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
 
@@ -108,6 +109,26 @@ const ManageRoomV2: React.FC = () => {
         };
 
         verifyLogin();
+    }, []);
+
+    // Hide header when component mounts, show when unmounts
+    useEffect(() => {
+        // Find and hide potential header elements
+        const possibleHeaders = document.querySelectorAll('header, .header, .app-header, .main-header, .navbar, nav, .top-header, .site-header');
+        
+        possibleHeaders.forEach((header) => {
+            (header as HTMLElement).style.display = 'none';
+        });
+        
+        document.body.classList.add('hide-header');
+        
+        return () => {
+            // Restore headers when leaving
+            possibleHeaders.forEach((header) => {
+                (header as HTMLElement).style.display = '';
+            });
+            document.body.classList.remove('hide-header');
+        };
     }, []);
 
     useEffect(() => {
@@ -435,7 +456,7 @@ const ManageRoomV2: React.FC = () => {
     // Initial quiz launch screen with all options
     if (!formattedRoomName) {
         return (
-            <div className="content-container">
+            <div className="content-container manage-room-v2">
                 <div className="container-fluid p-0">
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
@@ -643,41 +664,62 @@ const ManageRoomV2: React.FC = () => {
     // Main room management interface
     return (
         <>
-            <div className="content-container">
+            <div className="content-container manage-room-v2">
                 <div className="w-100 p-0 content-full-width">
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
-                        <div className="container-fluid px-2 py-4 content-full-width">
-                            <div className="d-flex px-3 justify-content-between align-items-center">
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<ArrowBack />}
-                                    onClick={handleReturn}
-                                >
-                                    Quitter
-                                </Button>
-
-                                <Box textAlign="center">
-                                    <Typography variant="h5" component="h1" fontWeight="bold">
-                                        Salle: {formattedRoomName}
-                                    </Typography>
-                                    <Typography variant="h6" color="text.secondary">
-                                        {students.length}/60 participants
-                                    </Typography>
+                        <div className="container-fluid px-2 py-3 content-full-width">
+                            {/* Quiz title row */}
+                            <div className="d-flex px-3 justify-content-center align-items-center mb-3">
+                                <Box>
                                     {quiz?.title && (
-                                        <Typography variant="body1" color="primary" fontWeight="bold">
-                                            Quiz: {quiz.title}
+                                        <Typography variant="h4" component="h1" fontWeight="bold" color="primary">
+                                            {quiz.title}
                                         </Typography>
                                     )}
                                 </Box>
+                            </div>
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<QrCode />}
-                                    onClick={() => setShowQrModal(true)}
-                                >
-                                    Lien de participation
-                                </Button>
+                            {/* Toggle buttons and action buttons row */}
+                            <div className="d-flex px-3 justify-content-between align-items-center mb-2">
+                                {/* Toggle buttons on left */}
+                                <Box display="flex" gap={2}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => setShowResults(!showResults)}
+                                    >
+                                        {showResults
+                                            ? 'Masquer les résultats'
+                                            : 'Afficher les résultats'}
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => setShowQuestions(!showQuestions)}
+                                    >
+                                        {showQuestions
+                                            ? 'Masquer les questions'
+                                            : 'Afficher les questions'}
+                                    </Button>
+                                </Box>
+
+                                {/* Action buttons on right */}
+                                <Box display="flex" gap={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        startIcon={<Stop />}
+                                        onClick={finishQuiz}
+                                    >
+                                        Terminer le quiz
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<QrCode />}
+                                        onClick={() => setShowQrModal(true)}
+                                    >
+                                        Lien de participation
+                                    </Button>
+                                </Box>
                             </div>
                         </div>
                     </div>
@@ -688,67 +730,67 @@ const ManageRoomV2: React.FC = () => {
                             <div className="p-4">
                                 {quizQuestions ? (
                                     <div>
-                                        <Box display="flex" justifyContent="left" gap={2} mb={2}>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() => setShowQuestions(!showQuestions)}
-                                            >
-                                                {showQuestions
-                                                    ? 'Masquer les questions'
-                                                    : 'Afficher les questions'}
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() => setShowResults(!showResults)}
-                                            >
-                                                {showResults
-                                                    ? 'Masquer les résultats'
-                                                    : 'Afficher les résultats'}
-                                            </Button>
-                                        </Box>
+                                        {/* Navigation buttons and question counter */}
+                                        {quizQuestions && currentQuestion && (
+                                            <div className="d-flex px-3 justify-content-center align-items-center gap-4 mb-3">
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<ChevronLeft />}
+                                                    onClick={previousQuestion}
+                                                    disabled={Number(currentQuestion?.question.id) <= 1}
+                                                >
+                                                    Précédente
+                                                </Button>
+                                                
+                                                <Typography variant="h6" fontWeight="bold" color="text.primary">
+                                                    {currentQuestion?.question.id} / {quizQuestions.length}
+                                                </Typography>
+                                                
+                                                <Button
+                                                    variant="outlined"
+                                                    endIcon={<ChevronRight />}
+                                                    onClick={nextQuestion}
+                                                    disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
+                                                >
+                                                    Suivante
+                                                </Button>
+                                            </div>
+                                        )}
 
                                         <Box display="flex" flexDirection="column" gap={3}>
                                             {/* Questions Box */}
                                             {showQuestions && (
                                                 <Box width="100%">
-                                                    {/* Navigation buttons for questions */}
+                                                    {/* Show answers button and student counter*/}
+                                                    {quizQuestions && currentQuestion && (
+                                                        <div className="d-flex align-items-center justify-content-center mb-2 px-2 py-2">
+                                                            <Button
+                                                                variant="outlined"
+                                                                color="success"
+                                                                className='me-3'
+                                                                onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
+                                                            >
+                                                                {showCorrectAnswers ? 'Masquer les réponses' : 'Afficher les réponses'}
+                                                            </Button>
+                                                            
+                                                            <Typography variant="body1" color="text.secondary">
+                                                                {(() => {
+                                                                    const studentsWhoAnswered = students.filter(student => 
+                                                                        student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
+                                                                    ).length;
+                                                                    return `${studentsWhoAnswered}/${students.length} étudiant${students.length !== 1 ? 's' : ''} ont répondu`;
+                                                                })()}
+                                                            </Typography>
+                                                        </div>
+                                                    )}
 
-                                                    <Box
-                                                        display="flex"
-                                                        justifyContent="center"
-                                                        gap={2}
-                                                        mb={3}
-                                                    >
-                                                        <Button
-                                                            variant="outlined"
-                                                            startIcon={<ChevronLeft />}
-                                                            onClick={previousQuestion}
-                                                            disabled={
-                                                                Number(currentQuestion?.question.id) <=
-                                                                1
-                                                            }
-                                                        >
-                                                            Précédente
-                                                        </Button>
-                                                        <Button
-                                                            variant="outlined"
-                                                            endIcon={<ChevronRight />}
-                                                            onClick={nextQuestion}
-                                                            disabled={
-                                                                Number(currentQuestion?.question.id) >=
-                                                                quizQuestions.length
-                                                            }
-                                                        >
-                                                            Suivante
-                                                        </Button>
-                                                    </Box>
                                                     {/* Current Question Display */}
                                                     <div className="quiz-question-card">
                                                     {currentQuestion && (
                                                         <Card elevation={2}>
                                                             <CardContent>
                                                                 <QuestionDisplayV2
-                                                                    showAnswer={false}
+                                                                    showAnswer={showCorrectAnswers}
                                                                     question={
                                                                         currentQuestion?.question as Question
                                                                     }
@@ -773,18 +815,6 @@ const ManageRoomV2: React.FC = () => {
                                                     />
                                                 </Box>
                                             )}
-                                        </Box>
-
-                                        <Box textAlign="center" mt={4}>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="large"
-                                                startIcon={<Stop />}
-                                                onClick={finishQuiz}
-                                            >
-                                                Terminer le quiz
-                                            </Button>
                                         </Box>
                                     </div>
                                 ) : (
