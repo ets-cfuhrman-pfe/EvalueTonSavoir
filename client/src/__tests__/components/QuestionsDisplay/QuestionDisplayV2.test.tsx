@@ -22,8 +22,8 @@ describe('QuestionDisplayV2 Component', () => {
         parse('::Sample Short Answer Question:: Sample Short Answer Question {=Correct Answer =Another Answer}')[0];
 
     // Set question IDs for statistics
-    sampleTrueFalseQuestion.id = 1;
-    sampleMultipleChoiceQuestion.id = 2;
+    (sampleTrueFalseQuestion as any).id = 1;
+    (sampleMultipleChoiceQuestion as any).id = 2;
 
     const mockStudents: StudentType[] = [
         {
