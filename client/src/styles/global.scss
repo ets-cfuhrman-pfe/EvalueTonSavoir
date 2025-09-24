@@ -14,3 +14,52 @@ body {
   background-color: vars.$light;
   min-height: 100vh;
 }
+
+// Hide the main app header specifically in ManageRoomV2 component
+.manage-room-v2 {
+  min-height: 100vh;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: relative;
+  z-index: 1000;
+}
+
+// When body has the hide-header class, hide specific header elements
+body.hide-header {
+  // Hide common header selectors but be more specific
+  > header,
+  > .header,
+  > .app-header,
+  > .main-header,
+  > .navbar,
+  > nav,
+  > .top-header,
+  > .site-header {
+    display: none !important;
+  }
+
+  // Target React app root and look for headers inside
+  #root > header,
+  #root > .header,
+  #root > .app-header,
+  #root > .main-header,
+  #root > .navbar,
+  #root > nav,
+  #root > .top-header,
+  #root > .site-header,
+  #root > div > header,
+  #root > div > .header,
+  #root > div > .app-header,
+  #root > div > .main-header,
+  #root > div > .navbar,
+  #root > div > nav {
+    display: none !important;
+  }
+
+  // Ensure our manage room content is always visible
+  .manage-room-v2,
+  .content-container.manage-room-v2 {
+    display: block !important;
+    visibility: visible !important;
+  }
+}
