@@ -708,19 +708,6 @@ const ManageRoomV2: React.FC = () => {
                                         </Box>
 
                                         <Box display="flex" flexDirection="column" gap={3}>
-                                            {/* Results Box */}
-                                            {showResults && (
-                                                <Box width="100%">
-                                                    <LiveResultsComponent
-                                                        quizMode={quizMode}
-                                                        socket={socket}
-                                                        questions={quizQuestions}
-                                                        showSelectedQuestion={showSelectedQuestion}
-                                                        students={students}
-                                                        quizTitle={quiz?.title}
-                                                    />
-                                                </Box>
-                                            )}
                                             {/* Questions Box */}
                                             {showQuestions && (
                                                 <Box width="100%">
@@ -770,6 +757,20 @@ const ManageRoomV2: React.FC = () => {
                                                         </Card>
                                                     )}
                                                    </div> 
+                                                </Box>
+                                            )}
+
+                                              {/* Results Box */}
+                                            {showResults && (
+                                                <Box width="100%">
+                                                    <LiveResultsComponent
+                                                        quizMode={quizMode}
+                                                        socket={socket}
+                                                        questions={quizQuestions}
+                                                        showSelectedQuestion={showSelectedQuestion}
+                                                        students={students}
+                                                        quizTitle={quiz?.title}
+                                                    />
                                                 </Box>
                                             )}
                                         </Box>
