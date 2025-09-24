@@ -263,6 +263,7 @@ const JoinRoomV2: React.FC = () => {
                             submitAnswer={handleOnSubmitAnswer}
                             disconnectWebSocket={disconnect}
                             quizTitle={quizTitle}
+                            totalQuestions={questions.length}
                         />
                     )}
                 </div>
