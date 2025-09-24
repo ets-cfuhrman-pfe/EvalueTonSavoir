@@ -4,6 +4,8 @@ import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { StudentType } from 'src/Types/StudentType';
+import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: TrueFalseQuestion;
@@ -11,10 +13,12 @@ interface PropsV2 {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     disabled?: boolean;
+    students?: StudentType[];
+    showStatistics?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false, students = [], showStatistics = false } = props;
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
@@ -58,6 +62,9 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
         : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark');
     const falseValidationClass = shouldShowValidation && selectedFalse ? 'choice-button-validated-selected' : '';
 
+    // Calculate answer statistics if we should show them
+    const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+
     return (
         <div className="quiz-question-area">
             {/* Question text */}
@@ -79,6 +86,13 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
+                                {showStatistics && (
+                                    <div className="ms-auto px-2">
+                                        <span className="badge bg-secondary fs-6 px-2 py-1">
+                                            {getAnswerPercentage(answerStatistics, 'true')}%
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </Button>
                         {showAnswer && answer && question.trueFormattedFeedback && (
@@ -99,6 +113,13 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
+                                {showStatistics && (
+                                    <div className="ms-auto px-2">
+                                        <span className="badge bg-secondary fs-6 px-2 py-1">
+                                            {getAnswerPercentage(answerStatistics, 'false')}%
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </Button>
                         {showAnswer && !answer && question.falseFormattedFeedback && (

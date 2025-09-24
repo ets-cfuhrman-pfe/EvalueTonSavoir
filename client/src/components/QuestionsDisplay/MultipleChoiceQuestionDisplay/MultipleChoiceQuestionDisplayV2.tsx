@@ -4,6 +4,8 @@ import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { StudentType } from 'src/Types/StudentType';
+import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: MultipleChoiceQuestion;
@@ -11,10 +13,12 @@ interface PropsV2 {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     disabled?: boolean;
+    students?: StudentType[];
+    showStatistics?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false, students = [], showStatistics = false } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -67,6 +71,9 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
 
+    // Calculate answer statistics if we should show them
+    const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+
     return (
         <div className="quiz-question-area">
             {/* Question text */}
@@ -108,6 +115,13 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                             }}
                                         />
                                     </div>
+                                    {showStatistics && (
+                                        <div className="ms-auto">
+                                            <span className="badge bg-secondary fs-6 px-2 py-1">
+                                                {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </Button>
                             {choice.formattedFeedback && showAnswer && (

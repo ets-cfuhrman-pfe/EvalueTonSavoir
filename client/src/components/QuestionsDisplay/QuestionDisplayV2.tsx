@@ -6,6 +6,7 @@ import MultipleChoiceQuestionDisplayV2 from './MultipleChoiceQuestionDisplay/Mul
 import NumericalQuestionDisplayV2 from './NumericalQuestionDisplay/NumericalQuestionDisplayV2';
 import ShortAnswerQuestionDisplayV2 from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplayV2';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { StudentType } from 'src/Types/StudentType';
 
 interface QuestionV2Props {
     question: Question;
@@ -13,6 +14,8 @@ interface QuestionV2Props {
     showAnswer?: boolean;
     answer?: AnswerType;
     disabled?: boolean;
+    students?: StudentType[];
+    showStatistics?: boolean;
 }
 
 const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
@@ -21,6 +24,8 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     showAnswer,
     answer,
     disabled = false,
+    students = [],
+    showStatistics = false,
 }) => {
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -32,6 +37,8 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     showAnswer={showAnswer}
                     passedAnswer={answer}
                     disabled={disabled}
+                    students={students}
+                    showStatistics={showStatistics}
                 />
             );
             break;
@@ -43,6 +50,8 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     showAnswer={showAnswer}
                     passedAnswer={answer}
                     disabled={disabled}
+                    students={students}
+                    showStatistics={showStatistics}
                 />
             );
             break;
