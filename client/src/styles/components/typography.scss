@@ -17,11 +17,8 @@
   margin-bottom: 0;
 }
 
-// Question display text sizes
-.quiz-question-area {
-  font-size: 1.4em;
-}
 
+// These are for the older non-Bootstrap components
 .question-container {
   font-size: 1.6em;
 }
@@ -46,18 +43,7 @@
   font-size: 1.4em;
 }
 
+// Legacy feedback containers
 .feedback-container {
-  font-size: 1em;
-}
-
-.global-feedback {
-  font-size: 1em;
-}
-
-.true-feedback {
-  font-size: 1em;
-}
-
-.false-feedback {
   font-size: 1em;
 }
