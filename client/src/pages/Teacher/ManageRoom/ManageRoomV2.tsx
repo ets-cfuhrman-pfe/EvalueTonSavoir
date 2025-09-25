@@ -33,6 +33,7 @@ import {
     Refresh
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
+import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
 import './manageRoom.css';
 
 const ManageRoomV2: React.FC = () => {
@@ -49,6 +50,7 @@ const ManageRoomV2: React.FC = () => {
     const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
     const [copied, setCopied] = useState(false);
     const [previewRoomName, setPreviewRoomName] = useState('');
 
@@ -426,8 +428,17 @@ const ManageRoomV2: React.FC = () => {
     };
 
     const finishQuiz = () => {
+        setShowFinishConfirm(true);
+    };
+
+    const handleFinishConfirm = () => {
+        setShowFinishConfirm(false);
         disconnectWebSocket();
         navigate('/teacher/dashboard-v2');
+    };
+
+    const handleFinishCancel = () => {
+        setShowFinishConfirm(false);
     };
 
     const handleReturn = () => {
@@ -851,6 +862,15 @@ const ManageRoomV2: React.FC = () => {
                 roomUrl={roomUrl}
                 copied={copied}
                 onCopy={handleCopy}
+            />
+
+            <ConfirmDialog
+                open={showFinishConfirm}
+                title="Terminer le quiz"
+                message="Êtes-vous sûr de vouloir terminer le quiz ?"
+                onConfirm={handleFinishConfirm}
+                onCancel={handleFinishCancel}
+                buttonOrderType="warning"
             />
         </>
     );
