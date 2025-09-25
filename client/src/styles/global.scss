@@ -15,6 +15,28 @@ body {
   min-height: 100vh;
 }
 
+// CSS Custom Properties for quiz styling
+:root {
+  --quiz-answer-correct-bg: rgba(25, 135, 84, 0.9);
+  --quiz-answer-incorrect-bg: rgba(220, 53, 69, 0.6);
+  --quiz-answer-incorrect-opacity: 0.8;
+  --quiz-feedback-bg: rgba(13, 202, 240, 0.08);
+  --quiz-feedback-border: rgba(13, 202, 240, 0.2);
+  --quiz-feedback-text: #055160;
+  --quiz-global-feedback-bg: rgba(255, 193, 7, 0.1);
+  --quiz-global-feedback-border: rgba(255, 193, 7, 0.3);
+  --quiz-global-feedback-text: #664d03;
+  --quiz-feedback-indent: 3rem;
+  --quiz-feedback-indent-mobile: 2rem;
+  
+  // Quiz text styling variables
+  --quiz-choice-letter-size: 1.2rem;
+  --quiz-choice-text-size: 1.2rem;
+  --quiz-choice-text-weight: 400;
+  --quiz-choice-line-height: 1.4;
+  --quiz-button-text-size: 1.2rem;
+}
+
 // Hide the main app header specifically in ManageRoomV2 component
 .manage-room-v2 {
   min-height: 100vh;
