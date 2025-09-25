@@ -24,6 +24,12 @@ describe('checkIfIsCorrect', () => {
         expect(result).toBe(true);
     });
 
+    test('returns true when only one correct answer is selected', () => {
+        const answer: AnswerType = ['Answer1'];
+        const result = checkIfIsCorrect(answer, 1, mockQuestions);
+        expect(result).toBe(true);
+    });
+
     test('returns false when some selected answers are incorrect', () => {
         const answer: AnswerType = ['Answer1', 'Answer3'];
         const result = checkIfIsCorrect(answer, 1, mockQuestions);
