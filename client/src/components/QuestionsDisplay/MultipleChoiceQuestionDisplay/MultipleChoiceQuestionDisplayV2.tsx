@@ -117,7 +117,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     </div>
                                     {showStatistics && (
                                         <div className="ms-auto">
-                                            <span className="badge bg-secondary fs-6 px-2 py-1">
+                                            <span className="stats-badge">
                                                 {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
                                             </span>
                                         </div>

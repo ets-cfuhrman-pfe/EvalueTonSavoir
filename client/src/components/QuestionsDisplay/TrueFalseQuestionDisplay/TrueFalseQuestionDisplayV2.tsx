@@ -88,7 +88,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 </div>
                                 {showStatistics && (
                                     <div className="ms-auto px-2">
-                                        <span className="badge bg-secondary fs-6 px-2 py-1">
+                                        <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
                                         </span>
                                     </div>
@@ -115,7 +115,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 </div>
                                 {showStatistics && (
                                     <div className="ms-auto px-2">
-                                        <span className="badge bg-secondary fs-6 px-2 py-1">
+                                        <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
                                         </span>
                                     </div>

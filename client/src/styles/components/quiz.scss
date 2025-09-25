@@ -278,6 +278,32 @@
   }
 }
 
+// Statistics badge styling for answer percentages
+.stats-badge {
+  background-color: var(--bs-light);
+  color: var(--bs-dark);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  display: inline-block;
+  min-width: 2.5rem;
+  text-align: center;
+  
+  // Ensure good contrast and readability
+  @media (prefers-contrast: high) {
+    background-color: var(--bs-dark);
+    color: var(--bs-white);
+  }
+  
+  // Mobile responsive sizing
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    font-size: 0.875rem;
+    padding: 0.2rem 0.4rem;
+    min-width: 2rem;
+  }
+}
+
 // Answer choice enhancements
 .quiz-question-area .choice-button {
   // Better visual separation between choices
