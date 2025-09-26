@@ -112,7 +112,7 @@ describe("Rooms API Integration Tests", () => {
         .expect(201);
 
       expect(response.body).toEqual({
-        message: "Room créée avec succès.",
+        message: "Salle créée avec succès.",
         roomId: "room123",
       });
 
@@ -210,14 +210,30 @@ describe("Rooms API Integration Tests", () => {
       expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
     });
 
-    it("should reject title with accented characters", async () => {
+    it("should accept title with accented characters", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room124" });
+
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
         .send({ title: "Salle de Français" })
-        .expect(400);
+        .expect(201);
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      expect(response.body.message).toBe("Salle créée avec succès.");
+    });
+
+    it("should accept title with various accents", async () => {
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.create.mockResolvedValue({ insertedId: "room125" });
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: "Gérard Pâtisserie" })
+        .expect(201);
+
+      expect(response.body.message).toBe("Salle créée avec succès.");
     });
 
     it("should reject SQL injection attempts", async () => {
@@ -528,6 +544,20 @@ describe("Rooms API Integration Tests", () => {
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
         .send({ roomId: "room123", newTitle: "Valid New Name" })
+        .expect(200);
+
+      expect(response.body.message).toContain("mis à jour avec succès");
+    });
+
+    it("should accept newTitle with accented characters", async () => {
+      mockRoomsModel.getOwner.mockResolvedValue("user123");
+      mockRoomsModel.roomExists.mockResolvedValue(false);
+      mockRoomsModel.rename.mockResolvedValue(true);
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId: "room123", newTitle: "Salle de Français" })
         .expect(200);
 
       expect(response.body.message).toContain("mis à jour avec succès");
