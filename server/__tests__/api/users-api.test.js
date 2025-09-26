@@ -16,7 +16,7 @@ const {
 const asyncHandler = require("../../routers/routerUtils");
 
 // Import validation constants
-const validationConstants = require("../../../shared/validationConstants.json");
+const validationConstants = require("../../shared/validationConstants.json");
 
 // Mock the database model
 const mockUsersModel = {
@@ -293,8 +293,8 @@ describe("Users API Integration Tests", () => {
     it("should handle maximum valid lengths", async () => {
       mockUsersModel.register.mockResolvedValue(true);
 
-      const maxEmail = "a".repeat(validationConstants.user.email.maxLength - 5) + "@b.co";
-      const maxPassword = "ValidP1" + "a".repeat(validationConstants.user.password.maxLength - 8);
+      const maxEmail = "a".repeat(validationConstants.user.email.maxLength - "@b.co".length) + "@b.co";
+      const maxPassword = "ValidP1" + "a".repeat(validationConstants.user.password.maxLength - "ValidP1".length);
       const maxUsername = "a".repeat(validationConstants.user.username.maxLength); 
 
       const response = await request(app)
