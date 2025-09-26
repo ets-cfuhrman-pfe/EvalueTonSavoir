@@ -9,7 +9,7 @@ jest.mock("../middleware/AppError", () => {
 const Rooms = require("../models/room");
 const ValidationUtils = require("../utils/validationUtils");
 const ObjectId = require("mongodb").ObjectId;
-const validationConstants = require("../../shared/validationConstants.json");
+const validationConstants = require("../shared/validationConstants.json");
 
 describe("Rooms", () => {
   let rooms;
