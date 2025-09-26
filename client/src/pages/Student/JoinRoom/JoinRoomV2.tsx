@@ -88,6 +88,9 @@ const JoinRoomV2: React.FC = () => {
     const handleCreateSocket = () => {
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
 
+        socket.on('connect', () => console.log("WS connect", username, socket.id));
+        socket.on('disconnect', (reason) => console.log("WS disconnect", username, reason));
+
         socket.on('join-success', (roomJoinedName) => {
             setIsWaitingForTeacher(true);
             setIsConnecting(false);
@@ -313,6 +316,7 @@ const JoinRoomV2: React.FC = () => {
                                         fullWidth={true}
                                         onKeyDown={handleReturnKey}
                                         required={true}
+                                        data-testid="username-input"
                                     />
                                 </div>
 
@@ -327,6 +331,7 @@ const JoinRoomV2: React.FC = () => {
                                         (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
                                         (isQRCodeJoin && (!roomName || !isRoomNameValid))
                                     }
+                                    data-testid="join-button"
                                 >
                                     {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
                                 </LoadingButton>
