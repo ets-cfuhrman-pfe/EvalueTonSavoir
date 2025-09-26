@@ -16,3 +16,34 @@
   color: vars.$secondary;
   margin-bottom: 0;
 }
+
+
+// These are for the older non-Bootstrap components
+.question-container {
+  font-size: 1.6em;
+}
+
+.question-wrapper {
+  font-size: 1.6em;
+}
+
+.choices-container {
+  font-size: 1.4em;
+}
+
+.choice-container {
+  font-size: 1.4em;
+}
+
+.answer-wrapper {
+  font-size: 1.4em;
+}
+
+.answer-text {
+  font-size: 1.4em;
+}
+
+// Legacy feedback containers
+.feedback-container {
+  font-size: 1em;
+}

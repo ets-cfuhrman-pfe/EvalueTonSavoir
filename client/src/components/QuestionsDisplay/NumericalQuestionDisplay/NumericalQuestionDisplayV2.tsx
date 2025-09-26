@@ -12,10 +12,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    disabled?: boolean;
 }
 
 const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
@@ -47,32 +48,41 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {showAnswer ? (
                 <div className="mb-4">
-                    {(() => {
-                        const userAnswer = answer[0] as number;
-                        let isCorrect = false;
-                        if (isSimpleNumericalAnswer(correctAnswers[0])) {
-                            isCorrect = userAnswer === correctAnswers[0].number;
-                        } else if (isRangeNumericalAnswer(correctAnswers[0])) {
-                            const choice = correctAnswers[0];
-                            isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
-                        } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
-                            const choice = correctAnswers[0];
-                            isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
-                        }
-                        return (
-                            <>
-                                <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
-                                    {isCorrect ? 'Correct' : 'Incorrect'}
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Bonne réponse :</strong> {correctAnswer}
-                                </div>
-                            </>
-                        );
-                    })()}
+                    {answer && answer.length > 0 && answer[0] !== undefined && answer[0] !== null ? (
+                        (() => {
+                            const userAnswer = answer[0] as number;
+                            let isCorrect = false;
+                            if (isSimpleNumericalAnswer(correctAnswers[0])) {
+                                isCorrect = userAnswer === correctAnswers[0].number;
+                            } else if (isRangeNumericalAnswer(correctAnswers[0])) {
+                                const choice = correctAnswers[0];
+                                isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
+                            } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
+                                const choice = correctAnswers[0];
+                                isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
+                            }
+                            return (
+                                <>
+                                    <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
+                                        {isCorrect ? 'Correct' : 'Incorrect'}
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Bonne réponse :</strong> {correctAnswer}
+                                    </div>
+                                </>
+                            );
+                        })()
+                    ) : (
+                        // Teacher view - just show the correct answer
+                        <div>
+                            <div className="mt-2">
+                                <strong>Bonne réponse :</strong> {correctAnswer}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="mb-4">
@@ -85,7 +95,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 type="number"
                                 id={question.formattedStem.text}
                                 name={question.formattedStem.text}
-                                disabled={showAnswer}
+                                disabled={showAnswer || disabled}
                                 aria-label="number-input"
                                 fullWidth
                                 label="Votre réponse (nombre)"
@@ -95,7 +105,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
                     {/* Submit button */}
                     {handleOnSubmitAnswer && (
-                        <div className="d-grid gap-2 col-md-4 col-12 mt-4">
+                        <div className="d-grid gap-2 mb-4 mt-4">
                             <Button
                                 variant="contained"
                                 size="large"
@@ -103,7 +113,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     answer !== undefined &&
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
+                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number) || disabled}
                                 className="btn-primary"
                             >
                                 Répondre
@@ -116,7 +126,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}

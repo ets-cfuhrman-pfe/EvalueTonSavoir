@@ -61,9 +61,9 @@ class WebSocketService {
     //     }
     // }
 
-    nextQuestion(args: {roomName: string, questions: QuestionType[] | undefined, questionIndex: number, isLaunch: boolean}) {
+    nextQuestion(args: {roomName: string, questions: QuestionType[] | undefined, questionIndex: number, isLaunch: boolean, quizTitle?: string}) {
         // deconstruct args
-        const { roomName, questions, questionIndex, isLaunch } = args;
+        const { roomName, questions, questionIndex, isLaunch, quizTitle } = args;
         console.log('WebsocketService: nextQuestion', roomName, questions, questionIndex, isLaunch);
         if (!questions || !questions[questionIndex]) {
             throw new Error('WebsocketService: nextQuestion: question is null');
@@ -71,17 +71,17 @@ class WebSocketService {
         
         if (this.socket) {
             if (isLaunch) {
-                this.socket.emit('launch-teacher-mode', { roomName, questions });
+                this.socket.emit('launch-teacher-mode', { roomName, questions, quizTitle });
             }
             const question = questions[questionIndex];
             this.socket.emit('next-question', { roomName, question });
         }
     }
 
-    launchStudentModeQuiz(roomName: string, questions: unknown) {
+    launchStudentModeQuiz(roomName: string, questions: unknown, quizTitle?: string) {
         console.log('WebsocketService: launchStudentModeQuiz', roomName, questions, this.socket);
         if (this.socket) {
-            this.socket.emit('launch-student-mode', { roomName, questions });
+            this.socket.emit('launch-student-mode', { roomName, questions, quizTitle });
         }
     }
 

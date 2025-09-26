@@ -96,30 +96,34 @@ describe("websocket server", () => {
   });
 
   test("should launch student mode", (done) => {
-    studentSocket.on("launch-student-mode", (questions) => {
+    studentSocket.on("launch-student-mode", ({ questions, quizTitle }) => {
       expect(questions).toEqual([
         { question: "question1" },
         { question: "question2" },
       ]);
+      expect(quizTitle).toBe("Test Quiz");
       done();
     });
     teacherSocket.emit("launch-student-mode", {
       roomName: "ROOM1",
       questions: [{ question: "question1" }, { question: "question2" }],
+      quizTitle: "Test Quiz"
     });
   });
 
   test("should launch teacher mode", (done) => {
-    studentSocket.on("launch-teacher-mode", (questions) => {
+    studentSocket.on("launch-teacher-mode", ({ questions, quizTitle }) => {
       expect(questions).toEqual([
         { question: "question1" },
         { question: "question2" },
       ]);
+      expect(quizTitle).toBe("Test Quiz");
       done();
     });
     teacherSocket.emit("launch-teacher-mode", {
       roomName: "ROOM1",
       questions: [{ question: "question1" }, { question: "question2" }],
+      quizTitle: "Test Quiz"
     });
   });
 
