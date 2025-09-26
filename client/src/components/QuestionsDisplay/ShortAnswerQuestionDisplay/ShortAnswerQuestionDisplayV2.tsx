@@ -23,8 +23,6 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
         }
     }, [passedAnswer]);
     
-    console.log("Answer V2", answer);
-
     return (
         <div className="quiz-question-area">
             {/* Question text */}
