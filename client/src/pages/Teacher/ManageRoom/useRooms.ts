@@ -62,14 +62,9 @@ export function checkIfIsCorrect(
       if (correctChoices.length === 0) {
         return false;
       }
-      // check if all selected answers are correct (no incorrect answers selected)
-      if (multipleAnswers.length === 0) {
-        return false;
-      }
-      return multipleAnswers.every(
-        (selectedAnswer) => correctChoices.some(
-          (choice) => choice.formattedText.text === selectedAnswer
-        )
+      // check if all (and only) correct choices are in the multipleAnswers array
+      return correctChoices.length === multipleAnswers.length && correctChoices.every(
+        (choice) => multipleAnswers.includes(choice.formattedText.text)
       );
     } else if (question.type === 'Numerical') {
       if (isMultipleNumericalAnswer(question.choices[0])) { // Multiple numerical answers
