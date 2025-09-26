@@ -116,7 +116,7 @@ describe('ValidatedTextField - Room Entity', () => {
       render(<ValidatedTextField {...defaultProps} />);
 
       const input = screen.getByRole('textbox');
-      const longName = 'A'.repeat(26); // 26 characters, max is 25
+      const longName = 'A'.repeat(validationConstants.room.name.maxLength + 1); 
       await user.type(input, longName);
       fireEvent.blur(input);
 

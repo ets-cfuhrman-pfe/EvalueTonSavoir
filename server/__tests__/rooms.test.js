@@ -9,6 +9,8 @@ jest.mock("../middleware/AppError", () => {
 const Rooms = require("../models/room");
 const ValidationUtils = require("../utils/validationUtils");
 const ObjectId = require("mongodb").ObjectId;
+const validationConstants = require("../../shared/validationConstants.json");
+
 describe("Rooms", () => {
   let rooms;
   let db;
@@ -257,12 +259,12 @@ describe("Rooms", () => {
   });
 
   describe("Room Field Length Validation", () => {
-    describe("Room name length validation (minLength: 1, maxLength: 50)", () => {
+    describe("Room name length validation", () => {
       it("should accept room names with valid lengths", () => {
         const validNames = [
           "A",                    // minimum length (1 character)
           "Valid Room",           // normal length
-          "A".repeat(25)          // maximum length (25 characters)
+          "A".repeat(validationConstants.room.name.maxLength)          // maximum length
         ];
 
         validNames.forEach(name => {
@@ -299,7 +301,7 @@ describe("Rooms", () => {
       });
 
       it("should reject room names that are too long", () => {
-        const longName = "A".repeat(51); // 51 characters (exceeds maximum of 50)
+        const longName = "A".repeat(validationConstants.room.name.maxLength + 1); // exceeds maximum
         
         const validation = ValidationUtils.validateRoomName(longName);
         expect(validation.isValid).toBe(false);
@@ -309,12 +311,12 @@ describe("Rooms", () => {
       });
     });
 
-    describe("Room description length validation (maxLength: 500)", () => {
+    describe("Room description length validation", () => {
       it("should accept descriptions with valid lengths", () => {
         const validDescriptions = [
           "",                     // empty description (no minimum)
           "Short description",    // normal length
-          "A".repeat(500)         // maximum length (500 characters)
+          "A".repeat(validationConstants.room.description.maxLength)         // maximum length
         ];
 
         validDescriptions.forEach(description => {
@@ -325,7 +327,7 @@ describe("Rooms", () => {
       });
 
       it("should reject descriptions that are too long", () => {
-        const longDescription = "A".repeat(501); // 501 characters (exceeds maximum of 500)
+        const longDescription = "A".repeat(validationConstants.room.description.maxLength + 1); // exceeds maximum
         
         const validation = ValidationUtils.validateRoomDescription(longDescription);
         expect(validation.isValid).toBe(false);
@@ -335,12 +337,12 @@ describe("Rooms", () => {
       });
     });
 
-    describe("Room password length validation (minLength: 4, maxLength: 50)", () => {
+    describe("Room password length validation", () => {
       it("should accept passwords with valid lengths", () => {
         const validPasswords = [
-          "1234",                 // minimum length (4 characters)
+          "A".repeat(validationConstants.room.password.minLength),                 // minimum length
           "password123",          // normal length
-          "A".repeat(25)          // maximum length (25 characters)
+          "A".repeat(validationConstants.room.password.maxLength)          // maximum length
         ];
 
         validPasswords.forEach(password => {
@@ -355,7 +357,7 @@ describe("Rooms", () => {
           "",       // 0 characters
           "1",      // 1 character
           "12",     // 2 characters
-          "123"     // 3 characters (all below minimum of 4)
+          "A".repeat(validationConstants.room.password.minLength - 1)     // below minimum
         ];
 
         shortPasswords.forEach(password => {
@@ -368,7 +370,7 @@ describe("Rooms", () => {
       });
 
       it("should reject passwords that are too long", () => {
-        const longPassword = "A".repeat(51); // 51 characters (exceeds maximum of 50)
+        const longPassword = "A".repeat(validationConstants.room.password.maxLength + 1); // exceeds maximum
         
         const validation = ValidationUtils.validateRoomPassword(longPassword);
         expect(validation.isValid).toBe(false);
@@ -383,10 +385,10 @@ describe("Rooms", () => {
         // Test exact boundary values
         const testCases = [
           { method: 'validateRoomName', value: "A", shouldPass: true },           
-          { method: 'validateRoomName', value: "A".repeat(25), shouldPass: true }, 
-          { method: 'validateRoomDescription', value: "A".repeat(500), shouldPass: true }, 
-          { method: 'validateRoomPassword', value: "1234", shouldPass: true },    
-          { method: 'validateRoomPassword', value: "A".repeat(25), shouldPass: true } 
+          { method: 'validateRoomName', value: "A".repeat(validationConstants.room.name.maxLength), shouldPass: true }, 
+          { method: 'validateRoomDescription', value: "A".repeat(validationConstants.room.description.maxLength), shouldPass: true }, 
+          { method: 'validateRoomPassword', value: "A".repeat(validationConstants.room.password.minLength), shouldPass: true },    
+          { method: 'validateRoomPassword', value: "A".repeat(validationConstants.room.password.maxLength), shouldPass: true } 
         ];
 
         testCases.forEach(({ method, value, shouldPass }) => {
