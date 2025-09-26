@@ -35,7 +35,7 @@ class RoomsController {
       const result = await this.rooms.create(normalizedTitle, req.user.userId);
 
       return res.status(201).json({
-        message: "Room créée avec succès.",
+        message: "Salle créée avec succès.",
         roomId: result.insertedId,
       });
     } catch (error) {
