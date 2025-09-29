@@ -91,11 +91,6 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                             answer={answer}
                             disabled={isAnswerSubmitted}
                         />
-                        
-                        {/* Reserved feedback space - always present */}
-                        <div className='mt-4 min-height-feedback'>
-                            {/* Feedback will be displayed here when available */}
-                        </div>
                     </div>
                 </div>
             </div>

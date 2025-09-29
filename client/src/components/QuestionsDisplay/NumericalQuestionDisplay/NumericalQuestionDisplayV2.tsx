@@ -124,7 +124,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             )}
 
             {/* Global feedback - always reserve space */}
-            <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
+            <div className="d-flex flex-column" >
                 {question.formattedGlobalFeedback && showAnswer && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />

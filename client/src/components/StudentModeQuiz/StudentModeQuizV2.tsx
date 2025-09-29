@@ -101,11 +101,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             showAnswer={isAnswerSubmitted}
                             answer={answers[Number(questionInfos.question.id) - 1]?.answer}
                         />
-
-                        {/* Reserved feedback space - always present */}
-                        <div className="mt-4 min-height-feedback">
-                            {/* Feedback will be displayed here when available */}
-                        </div>
                     </div>
                 </div>
             </div>

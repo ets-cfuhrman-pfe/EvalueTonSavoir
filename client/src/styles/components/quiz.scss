@@ -3,13 +3,6 @@
 
 @use '../variables' as vars;
 
-// Quiz layout styles
-.min-height-feedback {
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-}
-
 .quiz-question-area {
   text-align: left;
   // Consistent font size for V2 components
