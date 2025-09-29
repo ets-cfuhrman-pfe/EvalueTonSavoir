@@ -1,5 +1,5 @@
 // StudentModeQuizV2.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
 import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
@@ -32,10 +32,20 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     quizCompleted = false
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
+    const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
+    const [hasShownResultsOnce, setHasShownResultsOnce] = useState(false);
 
     // Check if quiz is completed (all questions answered OR teacher ended quiz)
     const isQuizCompleted = answers.length === questions.length && answers.every(answer => answer?.answer !== undefined);
     const shouldShowResults = isQuizCompleted || quizCompleted;
+
+    // Auto-show results modal on first completion
+    useEffect(() => {
+        if (shouldShowResults && !hasShownResultsOnce) {
+            setIsResultsModalOpen(true);
+            setHasShownResultsOnce(true);
+        }
+    }, [shouldShowResults, hasShownResultsOnce]);
 
     const previousQuestion = () => {
         setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);
@@ -46,44 +56,29 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
-        const idQuestion = Number(questionInfos.question.id) || -1;
-        submitAnswer(answer, idQuestion);
+        if (shouldShowResults) {
+            // Quiz is completed, show results instead of submitting
+            setIsResultsModalOpen(true);
+        } else {
+            // Quiz is still in progress, submit the answer
+            const idQuestion = Number(questionInfos.question.id) || -1;
+            submitAnswer(answer, idQuestion);
+        }
     };
 
     // Compute if answer is submitted for current question
     const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
 
-    // If quiz is completed, show results
-    if (shouldShowResults) {
-        // Create a student object for the current student
-        const currentStudent: StudentType = {
-            id: 'current-student',
-            name: studentName || 'Vous',
-            answers: answers.map((answer, index) => ({
-                idQuestion: index + 1,
-                answer: answer?.answer,
-                isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-            }))
-        };
-
-        return (
-            <div className='container-fluid student-mode-quiz-mobile'>
-                <QuizResults
-                    students={[currentStudent]}
-                    questions={questions}
-                    quizTitle={quizTitle}
-                    isStudentView={true}
-                    currentStudent={currentStudent}
-                />
-                <div className='d-flex justify-content-center mt-4'>
-                    <DisconnectButton
-                        onReturn={disconnectWebSocket}
-                        message="Êtes-vous sûr de vouloir quitter?"
-                    />
-                </div>
-            </div>
-        );
-    }
+    // Create a student object for the current student
+    const currentStudent: StudentType = {
+        id: 'current-student',
+        name: studentName || 'Vous',
+        answers: answers.map((answer, index) => ({
+            idQuestion: index + 1,
+            answer: answer?.answer,
+            isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
+        }))
+    };
 
     return (
         <div className='container-fluid student-mode-quiz-mobile'>
@@ -141,6 +136,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             question={questionInfos.question as Question}
                             showAnswer={isAnswerSubmitted}
                             answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                            buttonText={shouldShowResults ? 'Voir les résultats' : 'Répondre'}
                         />
                         
                         {/* Reserved feedback space - always present */}
@@ -150,6 +146,17 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Quiz Results Modal */}
+            <QuizResults
+                students={[currentStudent]}
+                questions={questions}
+                quizTitle={quizTitle}
+                isStudentView={true}
+                currentStudent={currentStudent}
+                isOpen={isResultsModalOpen}
+                onClose={() => setIsResultsModalOpen(false)}
+            />
         </div>
     );
 };

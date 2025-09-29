@@ -19,9 +19,6 @@ import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
 import { useSearchParams } from 'react-router-dom';
 import { setCurrentRoomName, clearCurrentRoomName } from '../../../utils/roomUtils';
-import QuizResults from '../../../components/QuizResults/QuizResults';
-import { StudentType } from '../../../Types/StudentType';
-import { checkIfIsCorrect } from '../../Teacher/ManageRoom/useRooms';
 
 export type AnswerType = Array<string | number | boolean>;
 
@@ -246,39 +243,9 @@ const JoinRoomV2: React.FC = () => {
     }
 
     // Check if student has completed all questions
-    const hasCompletedAllQuestions = questions.length > 0 && 
-        answers.length === questions.length && 
+    const hasCompletedAllQuestions = questions.length > 0 &&
+        answers.length === questions.length &&
         answers.every(answer => answer?.answer !== undefined);
-
-    if (quizCompleted || hasCompletedAllQuestions) {
-        // Create a student object for the current student
-        const currentStudent: StudentType = {
-            id: 'current-student',
-            name: username,
-            answers: answers.map((answer, index) => ({
-                idQuestion: index + 1,
-                answer: answer?.answer,
-                isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-            }))
-        };
-
-        return (
-            <div className="d-flex flex-column full-height">
-                <QuizResults
-                    students={[currentStudent]}
-                    questions={questions}
-                    isStudentView={true}
-                    currentStudent={currentStudent}
-                />
-                <div className='d-flex justify-content-center mt-4'>
-                    <DisconnectButton
-                        onReturn={disconnect}
-                        message="Êtes-vous sûr de vouloir quitter?"
-                    />
-                </div>
-            </div>
-        );
-    }
 
     switch (quizMode) {
         case 'student':
@@ -307,43 +274,7 @@ const JoinRoomV2: React.FC = () => {
                             questions={questions}
                             studentName={username}
                         />
-                    ) : (quizCompleted || hasCompletedAllQuestions) && questions.length > 0 ? (
-                        // Show results when quiz is completed but no current question
-                        <div className='container-fluid'>
-                            <QuizResults
-                                students={[{
-                                    id: 'current-student',
-                                    name: username,
-                                    answers: answers.map((answer, index) => ({
-                                        idQuestion: index + 1,
-                                        answer: answer?.answer,
-                                        isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-                                    }))
-                                }]}
-                                questions={questions}
-                                isStudentView={true}
-                                currentStudent={{
-                                    id: 'current-student',
-                                    name: username,
-                                    answers: answers.map((answer, index) => ({
-                                        idQuestion: index + 1,
-                                        answer: answer?.answer,
-                                        isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-                                    }))
-                                }}
-                            />
-                            <div className='d-flex justify-content-center mt-4'>
-                                <DisconnectButton
-                                    onReturn={disconnect}
-                                    message="Êtes-vous sûr de vouloir quitter?"
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        // Fallback: show waiting message
-                        <div className="center-content">
-                            <p>En attente...</p>
-                        </div>
+                    ) : (<div>Chargement de la question...</div>
                     )}
                 </div>
             );

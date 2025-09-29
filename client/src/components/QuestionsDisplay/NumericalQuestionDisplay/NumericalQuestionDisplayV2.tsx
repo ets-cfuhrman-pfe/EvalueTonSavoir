@@ -12,10 +12,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    buttonText?: string;
 }
 
 const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre' } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
@@ -94,7 +95,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     </div>
 
                     {/* Submit button */}
-                    {handleOnSubmitAnswer && (
+                    {(!showAnswer || buttonText === 'Voir les résultats') && handleOnSubmitAnswer && (
                         <div className="d-grid gap-2 col-md-4 col-12 mt-4">
                             <Button
                                 variant="contained"
@@ -103,10 +104,10 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     answer !== undefined &&
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number)}
+                                disabled={buttonText !== 'Voir les résultats' && (answer === undefined || answer === null || isNaN(answer[0] as number))}
                                 className="btn-primary"
                             >
-                                Répondre
+                                {buttonText}
                             </Button>
                         </div>
                     )}
