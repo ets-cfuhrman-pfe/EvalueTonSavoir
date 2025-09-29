@@ -14,7 +14,7 @@ interface PropsV2 {
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
-    console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+    //console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
         if (passedAnswer && passedAnswer.length > 0) {
@@ -29,7 +29,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     }
 
     useEffect(() => {
-        console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+       // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
         } else {
@@ -42,7 +42,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
-            console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+           // console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
             const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
 
             if (correctAnswersCount === 1) {
@@ -74,7 +74,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Choices */}
             <div className="mb-4">
                 {question.choices.map((choice, i) => {
-                    console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
+                    //console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
                     const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="mb-3">

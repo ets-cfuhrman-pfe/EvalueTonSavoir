@@ -126,12 +126,12 @@ const JoinRoomV2: React.FC = () => {
             const roomFromUrl = searchParams.get('roomName');
             const isQRCodeMode = !!roomFromUrl;
             
-            console.log('roomFromUrl:', roomFromUrl);
-            console.log('isQRCodeMode:', isQRCodeMode);
+            // console.log('roomFromUrl:', roomFromUrl);
+            // console.log('isQRCodeMode:', isQRCodeMode);
 
             // If room doesn't exist and it's QR code mode, show waiting page instead of error
             if (message === "Le nom de la salle n'existe pas" && isQRCodeMode) {
-                console.log('Showing waiting page for QR code join');
+                // console.log('Showing waiting page for QR code join');
                 setIsWaitingForTeacher(true);
                 setIsConnecting(false);
                 // Set the room name in global storage for header display
@@ -178,7 +178,7 @@ const JoinRoomV2: React.FC = () => {
         }
 
         if (username && roomName) {
-            console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
+            // console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
 
             webSocketService.joinRoom(roomName, username);
         }
