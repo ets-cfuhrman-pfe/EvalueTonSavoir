@@ -59,7 +59,7 @@ const ManageRoomV2: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     const [showQuestions, setShowQuestions] = useState(true);
-    const [showResults, setShowResults] = useState(true);
+    const [showResults, setShowResults] = useState(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
@@ -817,11 +817,7 @@ const ManageRoomV2: React.FC = () => {
                                                                     }
                                                                     students={students}
                                                                     showStatistics={showCorrectAnswers}
-                                                                />
-                                                                {/* Reserved feedback space - always present */}
-                                                                <div className="mt-4 min-height-feedback">
-                                                                    {/* Feedback will be displayed here when available */}
-                                                                </div>
+                                                                />                                                       
                                                             </CardContent>
                                                         </Card>
                                                     )}
