@@ -3,6 +3,7 @@
 
 @use '../variables' as vars;
 
+// Quiz layout
 .quiz-question-area {
   text-align: left;
   // Consistent font size for V2 components
@@ -115,97 +116,6 @@
   }
 }
 
-// Choice button styles
-.choice-button {
-  border-radius: 0.5rem;
-  position: relative;
-  border: 1px solid #dee2e6;
-  transition: all 0.2s ease-in-out;
-  
-  // Text styling for choice content
-  font-size: var(--quiz-button-text-size);
-  font-weight: var(--quiz-choice-text-weight);
-  line-height: var(--quiz-choice-line-height);
-  
-  // Wrong answer styling - less opaque and softer appearance
-  &.bg-danger {
-    background-color: var(--quiz-answer-incorrect-bg) !important;
-    border-color: rgba(220, 53, 69, 0.4) !important;
-    opacity: var(--quiz-answer-incorrect-opacity);
-    
-    // Subtle desaturation effect for wrong answers
-    filter: saturate(0.9);
-    
-    &:hover {
-      opacity: 0.9;
-      filter: saturate(0.9);
-    }
-    
-    // Ensure text remains readable
-    &.text-white {
-      color: rgba(255, 255, 255, 0.95) !important;
-    }
-  }
-  
-  // Correct answer styling
-  &.bg-success {
-    background-color: var(--quiz-answer-correct-bg) !important;
-    border-color: rgba(25, 135, 84, 0.7) !important;
-    
-    // Slight boost in saturation for correct answers
-    filter: saturate(1.1);
-    
-    &:hover {
-      filter: saturate(1.2);
-    }
-  }
-  
-  // Focus states for accessibility
-  &:focus-visible {
-    outline: 2px solid var(--bs-primary);
-    outline-offset: 2px;
-  }
-}
-
-.choice-button-selected {
-  border: 2px solid var(--bs-primary);
-}
-
-.choice-button-validated-selected {
-  border: 4px solid #fff;
-  box-shadow: 0 0 0 3px #007bff, 0 0 0 10px rgba(0, 123, 255, 0.3);
-}
-
-.choice-letter {
-  width: 2.5rem;
-  height: 2.5rem;
-  font-weight: bold;
-  font-size: var(--quiz-choice-letter-size);
-  letter-spacing: 0.5px;
-}
-
-// Choice content styling (for mathematical expressions and text)
-.choice-button .flex-grow-1 {
-  font-size: var(--quiz-choice-text-size);
-  font-weight: var(--quiz-choice-text-weight);
-  line-height: var(--quiz-choice-line-height);
-  
-  // Mathematical expressions styling  
-  .katex {
-    font-size: 1.3rem !important;
-    font-weight: 500;
-  }
-  
-  // Mobile responsive text size
-  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
-    font-size: 1rem;
-    
-    .katex {
-      font-size: 1rem !important;
-    }
-  }
-}
-
 // Feedback styling improvements
 .alert-info {
   &.small {
@@ -294,32 +204,5 @@
     font-size: 0.875rem;
     padding: 0.2rem 0.4rem;
     min-width: 2rem;
-  }
-}
-
-// Answer choice enhancements
-.quiz-question-area .choice-button {
-  // Better visual separation between choices
-  margin-bottom: 0.75rem;
-  
-  // Ensure proper min-height for consistency
-  min-height: 3.5rem;
-  
-  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
-    margin-bottom: 0.5rem;
-    padding: 0.75rem 1rem !important;
-    min-height: 3rem;
-  }
-  
-  // Choice letter styling within quiz context
-  .choice-letter {
-    min-width: 2.5rem;
-    
-    @media (max-width: #{vars.$breakpoint-sm - 1px}) {
-      min-width: 2rem;
-      width: 2rem;
-      height: 2rem;
-      font-size: 0.9rem;
-    }
   }
 }

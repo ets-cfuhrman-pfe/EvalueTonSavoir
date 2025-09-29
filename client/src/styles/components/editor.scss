@@ -27,3 +27,27 @@
     color: #6c757d !important;
   }
 }
+
+// Editor main content layout
+.editor-main-content {
+  height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  
+  // Ensure no padding on container-fluid inside editor
+  &.container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+// Editor specific column overrides to remove all padding
+.editor-main-content .col-lg-6 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+// Override any row gutters in the editor
+.editor-main-content .row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
