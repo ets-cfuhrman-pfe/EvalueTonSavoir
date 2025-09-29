@@ -82,30 +82,27 @@ describe('TeacherModeQuizV2', () => {
     });
 
     test('handles answer submission', () => {
-        // Mock the QuestionDisplayV2 component's answer submission
-        // Since we can't directly interact with QuestionDisplayV2 in this test,
-        // we'll test that the component properly handles the answer prop
-        const answersWithSubmission = [{ answer: ['Option A'] } as AnswerSubmissionToBackendType];
-
+        // Click on an option to select it
+        const optionA = screen.getByText('Option A');
         act(() => {
-            rerender(
-                <MemoryRouter>
-                    <TeacherModeQuizV2
-                        questionInfos={{ question: mockQuestion }}
-                        answers={answersWithSubmission}
-                        submitAnswer={mockSubmitAnswer}
-                        disconnectWebSocket={mockDisconnectWebSocket}
-                        quizTitle="Sample Quiz"
-                        totalQuestions={2} />
-                </MemoryRouter>
-            );
+            fireEvent.click(optionA);
         });
 
-        // The component should handle the existing answer properly
+        // Click the submit button
+        const submitButton = screen.getByText('Répondre');
+        act(() => {
+            fireEvent.click(submitButton);
+        });
+
+        // Check that submitAnswer was called with the correct arguments
+        expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A'], 1);
+
+        // Check that the waiting message is now visible
         expect(screen.getByText('En attente pour la prochaine question...')).toBeVisible();
     });
 
     test('renders without quiz title and total questions', () => {
+        // Rerender if quizTitle and totalQuestions props are not provided
         act(() => {
             rerender(
                 <MemoryRouter>
