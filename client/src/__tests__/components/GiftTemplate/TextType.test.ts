@@ -105,7 +105,7 @@ describe('TextType', () => {
             text: '![](https\\://www.etsmtl.ca/assets/img/ets.svg "\\=50px")',
             format: 'markdown'
         };
-        const expectedOutput = '<img width="50p" alt="" src="https://www.etsmtl.ca/assets/img/ets.svg">\n';
+        const expectedOutput = '<img width="50p" style="--image-max-width: 50p" class="markdown-image" alt="" src="https://www.etsmtl.ca/assets/img/ets.svg">\n';
         expect(FormattedTextTemplate(input)).toBe(expectedOutput);
     });
 });

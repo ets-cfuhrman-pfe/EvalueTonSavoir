@@ -13,6 +13,9 @@ import './styles/main.scss';
 import './cssReset.css';
 import './index.css';
 
+// Initialize lightbox functionality
+import './utils/lightboxManager';
+
 const theme = createTheme({
     palette: {
         primary: {
