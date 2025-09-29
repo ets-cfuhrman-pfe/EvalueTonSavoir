@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuizResults from 'src/components/QuizResults/QuizResults';
 import { StudentType } from 'src/Types/StudentType';
@@ -33,12 +33,38 @@ const mockStudents: StudentType[] = [
 ];
 
 describe('QuizResults Component', () => {
+    it('does not render when isOpen is false', () => {
+        const { container } = render(
+            <QuizResults
+                students={mockStudents}
+                questions={mockQuestions}
+                isOpen={false}
+            />
+        );
+
+        expect(container.firstChild).toBeNull();
+    });
+
+    it('renders the modal when isOpen is true', () => {
+        render(
+            <QuizResults
+                students={mockStudents}
+                questions={mockQuestions}
+                isOpen={true}
+            />
+        );
+
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText('Résultats du Quiz')).toBeInTheDocument();
+    });
+
     it('renders the quiz results with title', () => {
         render(
             <QuizResults
                 students={mockStudents}
                 questions={mockQuestions}
                 quizTitle="Sample Quiz"
+                isOpen={true}
             />
         );
 
@@ -52,13 +78,14 @@ describe('QuizResults Component', () => {
             <QuizResults
                 students={mockStudents}
                 questions={mockQuestions}
+                isOpen={true}
             />
         );
 
         expect(screen.getByText('Alice')).toBeInTheDocument();
         expect(screen.getByText('Bob')).toBeInTheDocument();
-        expect(screen.getByText('67%')).toBeInTheDocument(); 
-        expect(screen.getByText('33%')).toBeInTheDocument(); 
+        expect(screen.getByText('67%')).toBeInTheDocument();
+        expect(screen.getByText('33%')).toBeInTheDocument();
         expect(screen.getByText('2 / 3')).toBeInTheDocument();
         expect(screen.getByText('1 / 3')).toBeInTheDocument();
     });
@@ -80,6 +107,7 @@ describe('QuizResults Component', () => {
                 questions={mockQuestions}
                 isStudentView={true}
                 currentStudent={currentStudent}
+                isOpen={true}
             />
         );
 
@@ -100,6 +128,7 @@ describe('QuizResults Component', () => {
             <QuizResults
                 students={[studentWithNoAnswers]}
                 questions={mockQuestions}
+                isOpen={true}
             />
         );
 
@@ -114,7 +143,7 @@ describe('QuizResults Component', () => {
             name: 'Dave',
             answers: [
                 { answer: 'A' as any, isCorrect: true, idQuestion: 1 },
-                { answer: 'A' as any, isCorrect: false, idQuestion: 1 }, 
+                { answer: 'A' as any, isCorrect: false, idQuestion: 1 },
                 { answer: 'B' as any, isCorrect: true, idQuestion: 2 },
             ],
         };
@@ -123,6 +152,7 @@ describe('QuizResults Component', () => {
             <QuizResults
                 students={[studentWithDuplicates]}
                 questions={mockQuestions}
+                isOpen={true}
             />
         );
 
@@ -136,10 +166,47 @@ describe('QuizResults Component', () => {
             <QuizResults
                 students={mockStudents}
                 questions={mockQuestions}
+                isOpen={true}
             />
         );
 
         expect(screen.getByText('Quiz terminé!')).toBeInTheDocument();
         expect(screen.queryByText('Sample Quiz')).not.toBeInTheDocument();
+    });
+
+    it('calls onClose when close button is clicked', () => {
+        const mockOnClose = jest.fn();
+
+        render(
+            <QuizResults
+                students={mockStudents}
+                questions={mockQuestions}
+                isOpen={true}
+                onClose={mockOnClose}
+            />
+        );
+
+        const closeButton = screen.getByLabelText('Close');
+        fireEvent.click(closeButton);
+
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onClose when footer close button is clicked', () => {
+        const mockOnClose = jest.fn();
+
+        render(
+            <QuizResults
+                students={mockStudents}
+                questions={mockQuestions}
+                isOpen={true}
+                onClose={mockOnClose}
+            />
+        );
+
+        const closeButton = screen.getByText('Fermer');
+        fireEvent.click(closeButton);
+
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 });
