@@ -105,24 +105,40 @@
   }
 }
 
-// Quiz modal styles
-.quiz-results-modal {
-  // Native dialog styling
-  border: none;
-  border-radius: 0.375rem;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  max-width: 900px;
-  width: 90vw;
-  z-index: 1060; 
-  // Ensure proper positioning
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+// Quiz modal styles for results display
+.quiz-results-dialog {
+  .MuiDialog-paper {
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    max-width: 900px;
+    width: 90vw;
+  }
   
-  // Custom backdrop with proper z-index
-  &::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1050; 
+  .quiz-results-title {
+    background-color: vars.$light;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 1rem 1.5rem;
+    
+    .MuiTypography-root {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+  }
+  
+  .quiz-results-content {
+    padding: 0; 
+    .container-fluid {
+      padding: 1.5rem;
+    }
+  }
+  
+  .quiz-results-actions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: vars.$light;
+    
+    .MuiButton-root {
+      font-weight: 500;
+    }
   }
 }

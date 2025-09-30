@@ -1,4 +1,6 @@
 import React from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { StudentType } from '../../Types/StudentType';
 import { QuestionType } from '../../Types/QuestionType';
 
@@ -54,85 +56,97 @@ const QuizResults: React.FC<QuizResultsProps> = ({
     if (!isOpen) return null;
 
     return (
-        <dialog 
-            className="quiz-results-modal" 
-            open
+        <Dialog
+            open={isOpen}
             onClose={onClose}
+            maxWidth="md"
+            fullWidth
+            className="quiz-results-dialog"
         >
-            <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">Résultats du Quiz</h5>
-                        <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body">
-                        <div className="container-fluid">
-                            <div className="row justify-content-center">
-                                <div className="col-lg-12 col-md-12 col-12">
-                                    <div className="card shadow-lg mb-4">
-                                        <div className="card-body text-center py-5">
-                                            <h1 className="display-4 text-primary fw-bold mb-3">
-                                                Quiz terminé!
-                                            </h1>
-                                            {quizTitle && (
-                                                <h5 className="text-muted mb-0">
-                                                    {quizTitle}
-                                                </h5>
-                                            )}
-                                        </div>
-                                    </div>
+            <DialogTitle className="quiz-results-title">
+                Résultats du Quiz
+                <IconButton
+                    aria-label="Close"
+                    onClick={onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent className="quiz-results-content">
+                <div className="container-fluid">
+                    <div className="row justify-content-center">
+                        <div className="col-lg-12 col-md-12 col-12">
+                            <div className="card shadow-lg mb-4">
+                                <div className="card-body text-center py-5">
+                                    <h1 className="display-4 text-primary fw-bold mb-3">
+                                        Quiz terminé!
+                                    </h1>
+                                    {quizTitle && (
+                                        <h5 className="text-muted mb-0">
+                                            {quizTitle}
+                                        </h5>
+                                    )}
+                                </div>
+                            </div>
 
-                                    <div className="card shadow">
-                                        <div className="card-body">
-                                            <h5 className="card-title fw-bold mb-4">
-                                                Résultats finaux
-                                            </h5>
+                            <div className="card shadow">
+                                <div className="card-body">
+                                    <h5 className="card-title fw-bold mb-4">
+                                        Résultats finaux
+                                    </h5>
 
-                                            <div className="table-responsive">
-                                                <table className="table table-hover">
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th className="fw-bold">
-                                                                {isStudentView ? 'Votre résultat' : 'Étudiant'}
-                                                            </th>
-                                                            <th className="text-center fw-bold">
-                                                                Score (%)
-                                                            </th>
-                                                            <th className="text-center fw-bold">
-                                                                Correct / Total
-                                                            </th>
+                                    <div className="table-responsive">
+                                        <table className="table table-hover">
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th className="fw-bold">
+                                                        {isStudentView ? 'Votre résultat' : 'Étudiant'}
+                                                    </th>
+                                                    <th className="text-center fw-bold">
+                                                        Score (%)
+                                                    </th>
+                                                    <th className="text-center fw-bold">
+                                                        Correct / Total
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayStudents.map((student) => {
+                                                    const grade = getStudentGrade(student);
+                                                    return (
+                                                        <tr key={student.id}>
+                                                            <td>
+                                                                {isStudentView ? currentStudent?.name || 'Vous' : student.name}
+                                                            </td>
+                                                            <td className="text-center fw-bold">
+                                                                {grade.percentage}%
+                                                            </td>
+                                                            <td className="text-center">
+                                                                {grade.correct} / {grade.total}
+                                                            </td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {displayStudents.map((student) => {
-                                                            const grade = getStudentGrade(student);
-                                                            return (
-                                                                <tr key={student.id}>
-                                                                    <td>
-                                                                        {isStudentView ? currentStudent?.name || 'Vous' : student.name}
-                                                                    </td>
-                                                                    <td className="text-center fw-bold">
-                                                                        {grade.percentage}%
-                                                                    </td>
-                                                                    <td className="text-center">
-                                                                        {grade.correct} / {grade.total}
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" onClick={onClose}>Fermer</button>
-                    </div>
                 </div>
-        </dialog>
+            </DialogContent>
+            <DialogActions className="quiz-results-actions">
+                <Button onClick={onClose} variant="contained" color="secondary">
+                    Fermer
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 
