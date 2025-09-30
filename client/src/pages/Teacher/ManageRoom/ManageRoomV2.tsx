@@ -816,7 +816,7 @@ const ManageRoomV2: React.FC = () => {
                                                                         currentQuestion?.question as Question
                                                                     }
                                                                     students={students}
-                                                                    showStatistics={showCorrectAnswers}
+                                                                    showStatistics={true}
                                                                 />                                                       
                                                             </CardContent>
                                                         </Card>
