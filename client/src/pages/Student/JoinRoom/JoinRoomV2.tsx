@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Socket } from 'socket.io-client';
 import { ENV_VARIABLES } from 'src/constants';
+import { useBeforeUnload, useSearchParams } from 'react-router-dom';
 
 import StudentModeQuizV2 from 'src/components/StudentModeQuiz/StudentModeQuizV2';
 import TeacherModeQuizV2 from 'src/components/TeacherModeQuiz/TeacherModeQuizV2';
@@ -17,7 +18,6 @@ import LoginContainerV2 from 'src/components/LoginContainer/LoginContainerV2';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
-import { useSearchParams } from 'react-router-dom';
 import { setCurrentRoomName, clearCurrentRoomName } from '../../../utils/roomUtils';
 
 export type AnswerType = Array<string | number | boolean>;
@@ -73,6 +73,63 @@ const JoinRoomV2: React.FC = () => {
             disconnect();
         };
     }, []);
+
+    // Hide header when component mounts, show when unmounts
+    useEffect(() => {
+        // Find and hide potential header elements
+        const possibleHeaders = document.querySelectorAll('header, .header, .app-header, .main-header, .navbar, nav, .top-header, .site-header');
+        
+        possibleHeaders.forEach((header) => {
+            (header as HTMLElement).style.display = 'none';
+        });
+        
+        document.body.classList.add('hide-header');
+        
+        return () => {
+            // Restore headers when leaving
+            possibleHeaders.forEach((header) => {
+                (header as HTMLElement).style.display = '';
+            });
+            document.body.classList.remove('hide-header');
+        };
+    }, []);
+
+    // Prevent accidental browser refresh/close during active quiz
+    useBeforeUnload(
+        React.useCallback((event) => {
+            if (isWaitingForTeacher || quizMode) {
+                event.preventDefault();
+                event.returnValue = "Êtes-vous sûr de vouloir quitter? Votre progression sera perdue.";
+            }
+        }, [isWaitingForTeacher, quizMode])
+    );
+
+    // Block browser back button during active quiz
+    useEffect(() => {
+        const handlePopState = (_event: PopStateEvent) => {
+            if (isWaitingForTeacher || quizMode) {
+                const shouldLeave = window.confirm(
+                    "Êtes-vous sûr de vouloir quitter? Votre progression dans le questionnaire sera perdue."
+                );
+                if (!shouldLeave) {
+                    // Push the state back to prevent navigation
+                    window.history.pushState(null, '', window.location.href);
+                } else {
+                    disconnect();
+                }
+            }
+        };
+
+        // Add initial state to enable popstate detection
+        if (isWaitingForTeacher || quizMode) {
+            window.history.pushState(null, '', window.location.href);
+            window.addEventListener('popstate', handlePopState);
+        }
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [isWaitingForTeacher, quizMode]);
 
     // Clear room name when component unmounts
     useEffect(() => {
@@ -228,7 +285,8 @@ const JoinRoomV2: React.FC = () => {
                         <div>
                             <DisconnectButton
                                 onReturn={disconnect}
-                                message={`Êtes-vous sûr de vouloir quitter?`} />
+                                askConfirm={true}
+                                message={`Êtes-vous sûr de vouloir quitter la salle ${roomName}?`} />
                         </div>
 
                         <div className='flex-grow-1 text-center'>
