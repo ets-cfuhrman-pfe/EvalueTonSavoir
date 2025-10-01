@@ -12,13 +12,14 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    buttonText?: string;
     disabled?: boolean;
     students?: StudentType[];
     showStatistics?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false, students = [], showStatistics = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -141,7 +142,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             </div>
 
             {/* Submit button */}
-            {!showAnswer && handleOnSubmitAnswer && (
+            {(!showAnswer || buttonText === 'Voir les résultats') && handleOnSubmitAnswer && (
                 <div className="d-grid gap-2 mb-4">
                     <Button
                         variant="contained"
@@ -149,10 +150,10 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         onClick={() =>
                             answer.length > 0 && handleOnSubmitAnswer?.(answer)
                         }
-                        disabled={answer.length === 0 || disabled}
+                        disabled={buttonText !== 'Voir les résultats' && answer.length === 0}
                         className="btn-primary"
                     >
-                        Répondre
+                        {buttonText}
                     </Button>
                 </div>
             )}

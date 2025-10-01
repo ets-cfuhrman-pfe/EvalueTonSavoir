@@ -6,12 +6,18 @@ import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
+import QuizResults from '../QuizResults/QuizResults';
+import { StudentType } from '../../Types/StudentType';
+import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
 
 interface TeacherModeQuizV2Props {
     questionInfos: QuestionType;
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    quizCompleted?: boolean;
+    questions?: QuestionType[];
+    studentName?: string;
     quizTitle?: string;
     totalQuestions?: number;
 }
@@ -21,32 +27,86 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     answers,
     submitAnswer,
     disconnectWebSocket,
+    quizCompleted = false,
+    questions = [],
+    studentName,
     quizTitle,
     totalQuestions
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [hasShownModalOnce, setHasShownModalOnce] = useState(false);
 
     // arrive here the first time after waiting for next question
     useEffect(() => {
-        // console.log(`TeacherModeQuizV2: useEffect: answers: ${JSON.stringify(answers)}`);
-        // console.log(`TeacherModeQuizV2: useEffect: questionInfos.question.id: ${questionInfos.question.id} answer: ${answer}`);
         const oldAnswer = answers[Number(questionInfos.question.id) -1 ]?.answer;
-        // console.log(`TeacherModeQuizV2: useEffect: oldAnswer: ${oldAnswer}`);
         setAnswer(oldAnswer);
         // Reset validation state when question changes to prevent flash
         setIsAnswerSubmitted(false);
-    }, [questionInfos.question, answers]);
+    }, [questionInfos?.question, answers]);
 
     // handle answer submission state
     useEffect(() => {
-        // console.log(`TeacherModeQuizV2: useEffect: answer: ${answer}`);
         setIsAnswerSubmitted(answer !== undefined);
     }, [answer]);
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
-        const idQuestion = Number(questionInfos.question.id) || -1;
-        submitAnswer(answer, idQuestion);
+        if (shouldShowResults) {
+            // Quiz is completed, show results instead of submitting
+            setIsModalOpen(true);
+        } else {
+            // Quiz is still in progress, submit the answer
+            const idQuestion = Number(questionInfos.question.id) || -1;
+            submitAnswer(answer, idQuestion);
+        }
+    };
+
+    // Check if student has answered all questions
+    const hasAnsweredAllQuestions = questions && questions.length > 0 && 
+        answers.length === questions.length && 
+        answers.every(answer => answer?.answer !== undefined);
+
+    // Check if we should show results (quiz completed or all questions answered)
+    const shouldShowResults = hasAnsweredAllQuestions || quizCompleted;
+
+    // Auto-show modal on first completion
+    useEffect(() => {
+        if (shouldShowResults && !hasShownModalOnce && questions && questions.length > 0 && studentName) {
+            setIsModalOpen(true);
+            setHasShownModalOnce(true);
+        }
+    }, [shouldShowResults, hasShownModalOnce, questions, studentName]);
+
+    // Determine button text based on quiz completion status
+    const buttonText = shouldShowResults ? 'Voir les résultats' : 'Répondre';
+
+    // Render modal if quiz is completed
+    const renderModal = () => {
+        if (!shouldShowResults || !questions || questions.length === 0 || !studentName) {
+            return null;
+        }
+
+        const currentStudent: StudentType = {
+            id: 'current-student',
+            name: studentName,
+            answers: answers.map((answer, index) => ({
+                idQuestion: index + 1,
+                answer: answer?.answer,
+                isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
+            }))
+        };
+
+        return (
+            <QuizResults
+                students={[currentStudent]}
+                questions={questions}
+                isStudentView={true}
+                currentStudent={currentStudent}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
+        );
     };
 
     return (

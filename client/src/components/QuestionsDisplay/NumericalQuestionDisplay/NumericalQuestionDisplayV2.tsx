@@ -12,11 +12,12 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    buttonText?: string;
     disabled?: boolean;
 }
 
 const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, disabled = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
@@ -104,8 +105,8 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     </div>
 
                     {/* Submit button */}
-                    {handleOnSubmitAnswer && (
-                        <div className="d-grid gap-2 mb-4 mt-4">
+                    {(!showAnswer || buttonText === 'Voir les résultats') && handleOnSubmitAnswer && (
+                        <div className="d-grid gap-2 col-md-4 col-12 mt-4">
                             <Button
                                 variant="contained"
                                 size="large"
@@ -113,10 +114,10 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     answer !== undefined &&
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={answer === undefined || answer === null || isNaN(answer[0] as number) || disabled}
+                                disabled={buttonText !== 'Voir les résultats' && (answer === undefined || answer === null || isNaN(answer[0] as number))}
                                 className="btn-primary"
                             >
-                                Répondre
+                                {buttonText}
                             </Button>
                         </div>
                     )}

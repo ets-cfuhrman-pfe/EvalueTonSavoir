@@ -13,6 +13,7 @@ interface QuestionV2Props {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     answer?: AnswerType;
+    buttonText?: string;
     disabled?: boolean;
     students?: StudentType[];
     showStatistics?: boolean;
@@ -23,6 +24,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     handleOnSubmitAnswer,
     showAnswer,
     answer,
+    buttonText = 'Répondre',
     disabled = false,
     students = [],
     showStatistics = false,
@@ -36,6 +38,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    buttonText={buttonText}
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
@@ -49,6 +52,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    buttonText={buttonText}
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
@@ -63,6 +67,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             showAnswer={showAnswer}
                             passedAnswer={answer}
+                            buttonText={buttonText}
                             disabled={disabled}
                         />
                     );
@@ -75,6 +80,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     handleOnSubmitAnswer={handleOnSubmitAnswer}
                     showAnswer={showAnswer}
                     passedAnswer={answer}
+                    buttonText={buttonText}
                     disabled={disabled}
                 />
             );

@@ -10,7 +10,7 @@ import {
     CardContent,
 } from '@mui/material';
 import { StudentType } from '../../Types/StudentType';
-import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
+import LiveResultsTableV2 from './LiveResultsTable/LiveResultsTableV2';
 
 interface LiveResultsProps {
     socket: Socket | null;
@@ -19,9 +19,10 @@ interface LiveResultsProps {
     quizMode: 'teacher' | 'student';
     students: StudentType[];
     quizTitle?: string;
+    selectedQuestionIndex?: number;
 }
 
-const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students, quizTitle }) => {
+const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQuestion, students, quizTitle, selectedQuestionIndex }) => {
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
 
@@ -33,7 +34,7 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
                     <Typography variant="h5" component="h2" className="mb-2 mb-lg-0 fw-bold text-primary">
                         {' Résultats pour : ' + (quizTitle || 'Quiz')}
                     </Typography>
-                    
+
                     {/* Controls */}
                     <Box className="d-flex flex-column flex-sm-row gap-2 gap-sm-3">
                         <FormControlLabel
@@ -73,14 +74,14 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
                     </Box>
                 </Box>
 
-                {/* Table Container with Bootstrap responsive classes */}
                 <Box className="table-responsive" sx={{ maxHeight: '600px', overflowY: 'auto' }}>
-                    <LiveResultsTable
+                    <LiveResultsTableV2
                         students={students}
                         questions={questions}
                         showCorrectAnswers={showCorrectAnswers}
                         showSelectedQuestion={showSelectedQuestion}
                         showUsernames={showUsernames}
+                        selectedQuestionIndex={selectedQuestionIndex}
                     />
                 </Box>
             </CardContent>

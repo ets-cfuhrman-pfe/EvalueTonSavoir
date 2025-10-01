@@ -835,6 +835,7 @@ const ManageRoomV2: React.FC = () => {
                                                         showSelectedQuestion={showSelectedQuestion}
                                                         students={students}
                                                         quizTitle={quiz?.title}
+                                                        selectedQuestionIndex={currentQuestion ? Number(currentQuestion.question.id) - 1 : undefined}
                                                     />
                                                 </Box>
                                             )}
