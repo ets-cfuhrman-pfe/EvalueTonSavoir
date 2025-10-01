@@ -29,8 +29,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     disconnectWebSocket,
     studentName,
     quizTitle,
-    quizCompleted = false,
-    quizTitle
+    quizCompleted = false
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);

@@ -15,11 +15,11 @@ interface TeacherModeQuizV2Props {
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    quizTitle?: string;
+    totalQuestions?: number;
     quizCompleted?: boolean;
     questions?: QuestionType[];
     studentName?: string;
-    quizTitle?: string;
-    totalQuestions?: number;
 }
 
 const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
@@ -27,11 +27,11 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     answers,
     submitAnswer,
     disconnectWebSocket,
+    quizTitle,
+    totalQuestions,
     quizCompleted = false,
     questions = [],
-    studentName,
-    quizTitle,
-    totalQuestions
+    studentName
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -149,11 +149,12 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                             question={questionInfos.question as Question}
                             showAnswer={false}
                             answer={answer}
-                            disabled={isAnswerSubmitted}
+                            buttonText={buttonText}
                         />
                     </div>
                 </div>
             </div>
+            {renderModal()}
         </div>
     );
 };
