@@ -39,6 +39,7 @@ const JoinRoomV2: React.FC = () => {
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
     const [quizCompleted, setQuizCompleted] = useState(false);
+    const [quizTitle, setQuizTitle] = useState<string>('Quiz');
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -100,14 +101,15 @@ const JoinRoomV2: React.FC = () => {
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
-        socket.on('launch-teacher-mode', (questions: QuestionType[]) => {
+        socket.on('launch-teacher-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
             // console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  
             setQuestions(questions);
+            setQuizTitle(quizTitle);
         });
-        socket.on('launch-student-mode', (questions: QuestionType[]) => {
+        socket.on('launch-student-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
             // console.log('on(launch-student-mode): Received launch-student-mode:', questions);
 
             setQuizMode('student');
@@ -115,6 +117,7 @@ const JoinRoomV2: React.FC = () => {
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
             setQuestions(questions);
             setQuestion(questions[0]);
+            setQuizTitle(quizTitle);
         });
         socket.on('end-quiz', () => {
             setQuizCompleted(true);
@@ -258,6 +261,7 @@ const JoinRoomV2: React.FC = () => {
                         disconnectWebSocket={disconnect}
                         studentName={username}
                         quizCompleted={quizCompleted || hasCompletedAllQuestions}
+                        quizTitle={quizTitle}
                     />
                 </div>
             );
@@ -273,6 +277,8 @@ const JoinRoomV2: React.FC = () => {
                             quizCompleted={quizCompleted || hasCompletedAllQuestions}
                             questions={questions}
                             studentName={username}
+                            quizTitle={quizTitle}
+                            totalQuestions={questions.length}
                         />
                     ) : (<div>Chargement de la question...</div>
                     )}

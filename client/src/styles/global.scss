@@ -14,3 +14,75 @@ body {
   background-color: vars.$light;
   min-height: 100vh;
 }
+
+// CSS Custom Properties for quiz styling
+:root {
+  --quiz-answer-correct-bg: rgba(25, 135, 84, 0.9);
+  --quiz-answer-incorrect-bg: rgba(220, 53, 69, 0.6);
+  --quiz-answer-incorrect-opacity: 0.8;
+  --quiz-feedback-bg: rgba(13, 202, 240, 0.08);
+  --quiz-feedback-border: rgba(13, 202, 240, 0.2);
+  --quiz-feedback-text: #055160;
+  --quiz-global-feedback-bg: rgba(255, 193, 7, 0.1);
+  --quiz-global-feedback-border: rgba(255, 193, 7, 0.3);
+  --quiz-global-feedback-text: #664d03;
+  --quiz-feedback-indent: 3rem;
+  --quiz-feedback-indent-mobile: 2rem;
+  
+  // Quiz text styling variables
+  --quiz-choice-letter-size: 1.4rem;
+  --quiz-choice-text-size: 1.5rem;
+  --quiz-choice-text-weight: 400;
+  --quiz-choice-line-height: 1.4;
+  --quiz-button-text-size: 1.4rem;
+  --quiz-katex-text-size: 1.6rem;
+}
+
+// Hide the main app header specifically in ManageRoomV2 component
+.manage-room-v2 {
+  min-height: 100vh;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: relative;
+  z-index: 1000;
+}
+
+// When body has the hide-header class, hide specific header elements
+body.hide-header {
+  // Hide common header selectors but be more specific
+  > header,
+  > .header,
+  > .app-header,
+  > .main-header,
+  > .navbar,
+  > nav,
+  > .top-header,
+  > .site-header {
+    display: none !important;
+  }
+
+  // Target React app root and look for headers inside
+  #root > header,
+  #root > .header,
+  #root > .app-header,
+  #root > .main-header,
+  #root > .navbar,
+  #root > nav,
+  #root > .top-header,
+  #root > .site-header,
+  #root > div > header,
+  #root > div > .header,
+  #root > div > .app-header,
+  #root > div > .main-header,
+  #root > div > .navbar,
+  #root > div > nav {
+    display: none !important;
+  }
+
+  // Ensure our manage room content is always visible
+  .manage-room-v2,
+  .content-container.manage-room-v2 {
+    display: block !important;
+    visibility: visible !important;
+  }
+}

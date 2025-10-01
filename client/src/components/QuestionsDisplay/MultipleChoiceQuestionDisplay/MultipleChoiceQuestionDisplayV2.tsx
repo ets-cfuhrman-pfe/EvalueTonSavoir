@@ -4,6 +4,8 @@ import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { StudentType } from 'src/Types/StudentType';
+import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: MultipleChoiceQuestion;
@@ -11,11 +13,14 @@ interface PropsV2 {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     buttonText?: string;
+    disabled?: boolean;
+    students?: StudentType[];
+    showStatistics?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre' } = props;
-    //console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
+    // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
         if (passedAnswer && passedAnswer.length > 0) {
@@ -30,7 +35,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     }
 
     useEffect(() => {
-       // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
+        // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
         if (passedAnswer !== undefined) {
             setAnswer(passedAnswer);
         } else {
@@ -39,11 +44,13 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     }, [passedAnswer, question.id]);
 
     // Prevent validation styling from showing immediately on question change
-    const shouldShowValidation = showAnswer && answer.length > 0;
+    // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
+    // For student view, only show validation after they've submitted an answer
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer.length > 0);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
-           // console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
+            // console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
             const correctAnswersCount = question.choices.filter((c) => c.isCorrect).length;
 
             if (correctAnswersCount === 1) {
@@ -65,6 +72,9 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const alpha = Array.from(Array(26)).map((_e, i) => i + 65);
     const alphabet = alpha.map((x) => String.fromCharCode(x));
 
+    // Calculate answer statistics if we should show them
+    const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+
     return (
         <div className="quiz-question-area">
             {/* Question text */}
@@ -75,44 +85,27 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             {/* Choices */}
             <div className="mb-4">
                 {question.choices.map((choice, i) => {
-                    //console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
+                    // console.log(`answer: ${answer}, choice: ${choice.formattedText.text}`);
                     const selected = answer.includes(choice.formattedText.text) ? 'selected' : '';
                     return (
                         <div key={choice.formattedText.text + i} className="mb-3">
                             <Button
                                 variant="outlined"
-                                className={`w-100 text-start justify-content-start p-3 ${
+                                className={`w-100 text-start justify-content-start p-3 choice-button ${
                                     shouldShowValidation 
                                         ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
-                                        : (selected ? 'bg-primary text-white' : 'bg-light text-dark')
-                                }`}
-                                disabled={disableButton}
-                                onClick={() => !shouldShowValidation && handleOnClickAnswer(choice.formattedText.text)}
-                                style={{
-                                    border: shouldShowValidation && selected 
-                                        ? '4px solid #fff' 
-                                        : selected && !shouldShowValidation 
-                                            ? '2px solid var(--bs-primary)' 
-                                            : '1px solid #dee2e6',
-                                    borderRadius: '0.5rem',
-                                    boxShadow: shouldShowValidation && selected 
-                                        ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                        : 'none',
-                                    position: 'relative'
-                                }}
+                                        : (selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark')
+                                } ${shouldShowValidation && selected ? 'choice-button-validated-selected' : ''}`}
+                                disabled={disableButton || disabled}
+                                onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(choice.formattedText.text)}
                             >
                                 <div className="d-flex align-items-center w-100">
                                     <div 
-                                        className={`d-flex align-items-center justify-content-center me-3 rounded-circle border ${
+                                        className={`choice-letter d-flex align-items-center justify-content-center me-3 rounded-circle border ${
                                             shouldShowValidation 
                                                 ? (choice.isCorrect ? 'bg-white text-success' : 'bg-white text-danger')
                                                 : (selected ? 'bg-white text-primary' : 'bg-white text-dark')
                                         }`}
-                                        style={{
-                                            width: '2.5rem',
-                                            height: '2.5rem',
-                                            fontWeight: 'bold'
-                                        }}
                                     >
                                         {alphabet[i]}
                                     </div>
@@ -123,6 +116,13 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                             }}
                                         />
                                     </div>
+                                    {showStatistics && (
+                                        <div className="ms-auto">
+                                            <span className="stats-badge">
+                                                {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </Button>
                             {choice.formattedFeedback && showAnswer && (
@@ -159,9 +159,9 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             )}
 
             {/* Global feedback - always reserve space */}
-            <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
+            <div className="d-flex flex-column">
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div
                             dangerouslySetInnerHTML={{
                                 __html: FormattedTextTemplate(question.formattedGlobalFeedback),

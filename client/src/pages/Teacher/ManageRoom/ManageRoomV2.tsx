@@ -11,7 +11,7 @@ import { ENV_VARIABLES } from 'src/constants';
 import { StudentType, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 
-import QuestionDisplay from 'src/components/QuestionsDisplay/QuestionDisplay';
+import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2';
 import ApiService from '../../../services/ApiService';
 import { QuestionType } from 'src/Types/QuestionType';
 import { checkIfIsCorrect } from './useRooms';
@@ -33,6 +33,7 @@ import {
     Refresh
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
+import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
 import './manageRoom.css';
 
 const ManageRoomV2: React.FC = () => {
@@ -49,6 +50,7 @@ const ManageRoomV2: React.FC = () => {
     const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
     const [copied, setCopied] = useState(false);
     const [previewRoomName, setPreviewRoomName] = useState('');
 
@@ -57,7 +59,8 @@ const ManageRoomV2: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
     const [showQuestions, setShowQuestions] = useState(true);
-    const [showResults, setShowResults] = useState(true);
+    const [showResults, setShowResults] = useState(false);
+    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
 
@@ -73,7 +76,6 @@ const ManageRoomV2: React.FC = () => {
     useEffect(() => {
         if (newlyConnectedUser) {
             // console.log(`Handling newly connected user: ${newlyConnectedUser.name}`);
-            setStudents((prevStudents) => [...prevStudents, newlyConnectedUser]);
 
             // only send nextQuestion if the quiz has started
             if (!quizStarted) {
@@ -86,10 +88,11 @@ const ManageRoomV2: React.FC = () => {
                     roomName: formattedRoomName,
                     questions: quizQuestions,
                     questionIndex: Number(currentQuestion?.question.id) - 1,
-                    isLaunch: true // started late
+                    isLaunch: true, // started late
+                    quizTitle: quiz?.title
                 });
             } else if (quizMode === 'student') {
-                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+                webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions, quiz?.title);
             } else {
                 console.error('Invalid quiz mode:', quizMode);
             }
@@ -107,6 +110,26 @@ const ManageRoomV2: React.FC = () => {
         };
 
         verifyLogin();
+    }, []);
+
+    // Hide header when component mounts, show when unmounts
+    useEffect(() => {
+        // Find and hide potential header elements
+        const possibleHeaders = document.querySelectorAll('header, .header, .app-header, .main-header, .navbar, nav, .top-header, .site-header');
+        
+        possibleHeaders.forEach((header) => {
+            (header as HTMLElement).style.display = 'none';
+        });
+        
+        document.body.classList.add('hide-header');
+        
+        return () => {
+            // Restore headers when leaving
+            possibleHeaders.forEach((header) => {
+                (header as HTMLElement).style.display = '';
+            });
+            document.body.classList.remove('hide-header');
+        };
     }, []);
 
     useEffect(() => {
@@ -193,6 +216,7 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
+            setStudents((prev) => [...prev, student]);
             setNewlyConnectedUser(student);
         });
 
@@ -283,6 +307,8 @@ const ManageRoomV2: React.FC = () => {
 
         if (nextQuestionIndex === undefined || nextQuestionIndex > quizQuestions.length - 1) return;
 
+        // Reset show answers state BEFORE changing question 
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[nextQuestionIndex]);
 
         // Only send WebSocket update in teacher mode
@@ -302,6 +328,9 @@ const ManageRoomV2: React.FC = () => {
         const prevQuestionIndex = Number(currentQuestion?.question.id) - 2;
 
         if (prevQuestionIndex === undefined || prevQuestionIndex < 0) return;
+        
+        // Reset show answers state BEFORE changing question
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[prevQuestionIndex]);
 
         // Only send WebSocket update in teacher mode
@@ -339,12 +368,14 @@ const ManageRoomV2: React.FC = () => {
             return;
         }
 
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[0]);
         webSocketService.nextQuestion({
             roomName: formattedRoomName,
             questions: quizQuestions,
             questionIndex: 0,
-            isLaunch: true
+            isLaunch: true,
+            quizTitle: quiz?.title
         });
     };
 
@@ -358,8 +389,9 @@ const ManageRoomV2: React.FC = () => {
         }
         setQuizQuestions(quizQuestions);
         // Set the first question as current question so it displays in student mode
+        setShowCorrectAnswers(false);
         setCurrentQuestion(quizQuestions[0]);
-        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions);
+        webSocketService.launchStudentModeQuiz(formattedRoomName, quizQuestions, quiz?.title);
     };
 
     const launchQuiz = () => {
@@ -381,6 +413,8 @@ const ManageRoomV2: React.FC = () => {
 
     const showSelectedQuestion = (questionIndex: number) => {
         if (quiz?.content && quizQuestions) {
+            // Reset show answers state BEFORE changing question
+            setShowCorrectAnswers(false);
             setCurrentQuestion(quizQuestions[questionIndex]);
             if (quizMode === 'teacher') {
                 webSocketService.nextQuestion({
@@ -394,8 +428,17 @@ const ManageRoomV2: React.FC = () => {
     };
 
     const finishQuiz = () => {
+        setShowFinishConfirm(true);
+    };
+
+    const handleFinishConfirm = () => {
+        setShowFinishConfirm(false);
         disconnectWebSocket();
         navigate('/teacher/dashboard-v2');
+    };
+
+    const handleFinishCancel = () => {
+        setShowFinishConfirm(false);
     };
 
     const handleReturn = () => {
@@ -433,7 +476,7 @@ const ManageRoomV2: React.FC = () => {
     // Initial quiz launch screen with all options
     if (!formattedRoomName) {
         return (
-            <div className="content-container">
+            <div className="content-container manage-room-v2">
                 <div className="container-fluid p-0">
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
@@ -641,36 +684,62 @@ const ManageRoomV2: React.FC = () => {
     // Main room management interface
     return (
         <>
-            <div className="content-container">
+            <div className="content-container manage-room-v2">
                 <div className="w-100 p-0 content-full-width">
                     {/* Top Header */}
                     <div className="bg-white border-bottom shadow-sm">
-                        <div className="container-fluid px-2 py-4 content-full-width">
-                            <div className="d-flex px-3 justify-content-between align-items-center">
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<ArrowBack />}
-                                    onClick={handleReturn}
-                                >
-                                    Quitter
-                                </Button>
+                        <div className="container-fluid px-2 py-3 content-full-width">
+                            {/* Quiz title row */}
+                            <div className="d-flex px-3 justify-content-center align-items-center mb-3">
+                                <Box>
+                                    {quiz?.title && (
+                                        <Typography variant="h4" component="h1" fontWeight="bold" color="primary">
+                                            {quiz.title}
+                                        </Typography>
+                                    )}
+                                </Box>
+                            </div>
 
-                                <Box textAlign="center">
-                                    <Typography variant="h5" component="h1" fontWeight="bold">
-                                        Salle: {formattedRoomName}
-                                    </Typography>
-                                    <Typography variant="h6" color="text.secondary">
-                                        {students.length}/60 participants
-                                    </Typography>
+                            {/* Toggle buttons and action buttons row */}
+                            <div className="d-flex px-3 justify-content-between align-items-center mb-2">
+                                {/* Toggle buttons on left */}
+                                <Box display="flex" gap={2}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => setShowResults(!showResults)}
+                                    >
+                                        {showResults
+                                            ? 'Masquer les résultats'
+                                            : 'Afficher les résultats'}
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => setShowQuestions(!showQuestions)}
+                                    >
+                                        {showQuestions
+                                            ? 'Masquer les questions'
+                                            : 'Afficher les questions'}
+                                    </Button>
                                 </Box>
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<QrCode />}
-                                    onClick={() => setShowQrModal(true)}
-                                >
-                                    Lien de participation
-                                </Button>
+                                {/* Action buttons on right */}
+                                <Box display="flex" gap={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        startIcon={<Stop />}
+                                        onClick={finishQuiz}
+                                    >
+                                        Terminer le quiz
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<QrCode />}
+                                        onClick={() => setShowQrModal(true)}
+                                    >
+                                        Lien de participation
+                                    </Button>
+                                </Box>
                             </div>
                         </div>
                     </div>
@@ -681,27 +750,82 @@ const ManageRoomV2: React.FC = () => {
                             <div className="p-4">
                                 {quizQuestions ? (
                                     <div>
-                                        <Box display="flex" justifyContent="left" gap={2} mb={2}>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() => setShowQuestions(!showQuestions)}
-                                            >
-                                                {showQuestions
-                                                    ? 'Masquer les questions'
-                                                    : 'Afficher les questions'}
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() => setShowResults(!showResults)}
-                                            >
-                                                {showResults
-                                                    ? 'Masquer les résultats'
-                                                    : 'Afficher les résultats'}
-                                            </Button>
-                                        </Box>
+                                        {/* Navigation buttons and question counter */}
+                                        {quizQuestions && currentQuestion && (
+                                            <div className="d-flex px-3 justify-content-center align-items-center gap-4 mb-3">
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<ChevronLeft />}
+                                                    onClick={previousQuestion}
+                                                    disabled={Number(currentQuestion?.question.id) <= 1}
+                                                >
+                                                    Précédente
+                                                </Button>
+                                                
+                                                <Typography variant="h6" fontWeight="bold" color="text.primary">
+                                                    {currentQuestion?.question.id} / {quizQuestions.length}
+                                                </Typography>
+                                                
+                                                <Button
+                                                    variant="outlined"
+                                                    endIcon={<ChevronRight />}
+                                                    onClick={nextQuestion}
+                                                    disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
+                                                >
+                                                    Suivante
+                                                </Button>
+                                            </div>
+                                        )}
 
                                         <Box display="flex" flexDirection="column" gap={3}>
-                                            {/* Results Box */}
+                                            {/* Questions Box */}
+                                            {showQuestions && (
+                                                <Box width="100%">
+                                                    {/* Show answers button and student counter*/}
+                                                    {quizQuestions && currentQuestion && (
+                                                        <div className="d-flex align-items-center justify-content-center mb-2 px-2 py-2">
+                                                            <Button
+                                                                variant="outlined"
+                                                                color="success"
+                                                                className='me-3'
+                                                                onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
+                                                            >
+                                                                {showCorrectAnswers ? 'Masquer les réponses' : 'Afficher les réponses'}
+                                                            </Button>
+                                                            
+                                                            <Typography variant="body1" color="text.secondary">
+                                                                {(() => {
+                                                                    const studentsWhoAnswered = students.filter(student => 
+                                                                        student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
+                                                                    ).length;
+                                                                    return `${studentsWhoAnswered}/${students.length} étudiant${students.length !== 1 ? 's' : ''} ont répondu`;
+                                                                })()}
+                                                            </Typography>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Current Question Display */}
+                                                    <div className="quiz-question-card">
+                                                    {currentQuestion && (
+                                                        <Card elevation={2}>
+                                                            <CardContent>
+                                                                <QuestionDisplayV2
+                                                                    key={currentQuestion.question.id}
+                                                                    showAnswer={showCorrectAnswers}
+                                                                    question={
+                                                                        currentQuestion?.question as Question
+                                                                    }
+                                                                    students={students}
+                                                                    showStatistics={true}
+                                                                />                                                       
+                                                            </CardContent>
+                                                        </Card>
+                                                    )}
+                                                   </div> 
+                                                </Box>
+                                            )}
+
+                                              {/* Results Box */}
                                             {showResults && (
                                                 <Box width="100%">
                                                     <LiveResultsComponent
@@ -715,67 +839,6 @@ const ManageRoomV2: React.FC = () => {
                                                     />
                                                 </Box>
                                             )}
-                                            {/* Questions Box */}
-                                            {showQuestions && (
-                                                <Box width="100%">
-                                                    {/* Navigation buttons for questions */}
-
-                                                    <Box
-                                                        display="flex"
-                                                        justifyContent="center"
-                                                        gap={2}
-                                                        mb={3}
-                                                    >
-                                                        <Button
-                                                            variant="outlined"
-                                                            startIcon={<ChevronLeft />}
-                                                            onClick={previousQuestion}
-                                                            disabled={
-                                                                Number(currentQuestion?.question.id) <=
-                                                                1
-                                                            }
-                                                        >
-                                                            Précédente
-                                                        </Button>
-                                                        <Button
-                                                            variant="outlined"
-                                                            endIcon={<ChevronRight />}
-                                                            onClick={nextQuestion}
-                                                            disabled={
-                                                                Number(currentQuestion?.question.id) >=
-                                                                quizQuestions.length
-                                                            }
-                                                        >
-                                                            Suivante
-                                                        </Button>
-                                                    </Box>
-
-                                                    {currentQuestion && (
-                                                        <Card elevation={2}>
-                                                            <CardContent>
-                                                                <QuestionDisplay
-                                                                    showAnswer={false}
-                                                                    question={
-                                                                        currentQuestion?.question as Question
-                                                                    }
-                                                                />
-                                                            </CardContent>
-                                                        </Card>
-                                                    )}
-                                                </Box>
-                                            )}
-                                        </Box>
-
-                                        <Box textAlign="center" mt={4}>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="large"
-                                                startIcon={<Stop />}
-                                                onClick={finishQuiz}
-                                            >
-                                                Terminer le quiz
-                                            </Button>
                                         </Box>
                                     </div>
                                 ) : (
@@ -796,6 +859,15 @@ const ManageRoomV2: React.FC = () => {
                 roomUrl={roomUrl}
                 copied={copied}
                 onCopy={handleCopy}
+            />
+
+            <ConfirmDialog
+                open={showFinishConfirm}
+                title="Terminer le quiz"
+                message="Êtes-vous sûr de vouloir terminer le quiz ?"
+                onConfirm={handleFinishConfirm}
+                onCancel={handleFinishCancel}
+                buttonOrderType="warning"
             />
         </>
     );

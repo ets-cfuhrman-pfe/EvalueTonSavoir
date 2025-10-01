@@ -69,7 +69,7 @@ describe('LiveResultsV2', () => {
             />
         );
 
-        expect(screen.getByText('Résultats de : Quiz')).toBeInTheDocument();
+        expect(screen.getByText('Résultats pour : Quiz')).toBeInTheDocument();
         expect(screen.getByTestId('live-results-table-v2')).toBeInTheDocument();
     });
 
@@ -86,7 +86,7 @@ describe('LiveResultsV2', () => {
             />
         );
 
-        expect(screen.getByText(`Résultats de : ${customTitle}`)).toBeInTheDocument();
+        expect(screen.getByText(`Résultats pour : ${customTitle}`)).toBeInTheDocument();
     });
 
     test('toggles show usernames switch', () => {

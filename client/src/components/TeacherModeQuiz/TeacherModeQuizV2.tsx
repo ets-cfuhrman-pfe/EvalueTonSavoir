@@ -15,6 +15,8 @@ interface TeacherModeQuizV2Props {
     answers: AnswerSubmissionToBackendType[];
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
+    quizTitle?: string;
+    totalQuestions?: number;
     quizCompleted?: boolean;
     questions?: QuestionType[];
     studentName?: string;
@@ -25,6 +27,8 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     answers,
     submitAnswer,
     disconnectWebSocket,
+    quizTitle,
+    totalQuestions,
     quizCompleted = false,
     questions = [],
     studentName
@@ -106,58 +110,52 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     };
 
     return (
-        <>
-            <div className='container-fluid'>
-                {/* Header */}
-                <div className='row py-2 border-bottom quiz-header sticky-top'>
-                    <div className='col-12'>
-                        <div className='d-flex align-items-center justify-content-between'>
-                            {/* Left: Question counter and waiting message */}
-                            <div className='d-flex align-items-center'>
-                                <div className='text-start'>
-                                    <h6 className='mb-0 question-counter'>
-                                        Question {questionInfos.question.id}
-                                    </h6>
-                                    <div className={`text-muted small mt-1 ${isAnswerSubmitted ? '' : 'invisible'}`}>
-                                        En attente pour la prochaine question...
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Right: Disconnect button */}
-                            <div>
-                                <DisconnectButton
-                                    onReturn={disconnectWebSocket}
-                                    message={`Êtes-vous sûr de vouloir quitter?`} />
-                            </div>
+        <div className='container-fluid'>
+            {/* Header */}
+            <div className='row py-2 border-bottom quiz-header sticky-top'>
+                <div className='col-12'>
+                    <div className='d-flex align-items-center justify-content-between'>
+                        {/* Left: Quiz title */}
+                        <div className='d-flex align-items-center'>
+                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
                         </div>
-                    </div>
-                </div>
-
-                {/* Main content area */}
-                <div className='row'>
-                    {/* Question area - takes full width, left-aligned */}
-                    <div className='col-12'>
-                        <div className='p-4'>
-                            <QuestionDisplayV2
-                                key={questionInfos.question.id} // Force remount on question change to prevent flicker
-                                handleOnSubmitAnswer={handleOnSubmitAnswer}
-                                question={questionInfos.question as Question}
-                                showAnswer={isAnswerSubmitted}
-                                answer={answer}
-                                buttonText={buttonText}
-                            />
-                            
-                            {/* Reserved feedback space - always present */}
-                            <div className='mt-4 min-height-feedback'>
-                                {/* Feedback will be displayed here when available */}
-                            </div>
+                        
+                        {/* Right: Disconnect button */}
+                        <div>
+                            <DisconnectButton
+                                onReturn={disconnectWebSocket}
+                                message={`Êtes-vous sûr de vouloir quitter?`} />
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Main content area */}
+            <div className='row'>
+                {/* Question area */}
+                <div className='col-12'>
+                    <div className='p-4'>
+                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
+                            <h6 className='mb-0 question-counter'>
+                                {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
+                            </h6>
+                            <div className={`text-muted small ${isAnswerSubmitted ? '' : 'invisible'}`}>
+                                En attente pour la prochaine question...
+                            </div>
+                        </div>
+                        <QuestionDisplayV2
+                            key={questionInfos.question.id} // Force remount on question change to prevent flicker
+                            handleOnSubmitAnswer={handleOnSubmitAnswer}
+                            question={questionInfos.question as Question}
+                            showAnswer={false}
+                            answer={answer}
+                            buttonText={buttonText}
+                        />
+                    </div>
+                </div>
+            </div>
             {renderModal()}
-        </>
+        </div>
     );
 };
 

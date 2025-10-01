@@ -3,15 +3,16 @@
 
 @use '../variables' as vars;
 
-// Quiz layout styles
-.min-height-feedback {
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-}
-
+// Quiz layout
 .quiz-question-area {
   text-align: left;
+  // Consistent font size for V2 components
+  font-size: 2rem; 
+  
+  // Font size on mobile
+  @media (max-width: #{vars.$breakpoint-md - 1px}) {
+    font-size: 1.3rem;
+  }
   
   // Prevent validation styling flicker when transitioning between questions
   .question-transition {
@@ -26,6 +27,24 @@
         color: var(--bs-dark) !important;
         transition: none;
       }
+    }
+  }
+  
+  // Improve spacing and hierarchy
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+    
+    @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+      margin-bottom: 1rem !important;
+    }
+  }
+  
+  // Better button spacing in quiz
+  .d-grid {
+    margin-top: 1.5rem;
+    
+    @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+      margin-top: 1rem;
     }
   }
 }
@@ -51,10 +70,7 @@
   
   // Question counter styling
   .question-counter {
-    background: vars.$primary;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: vars.$primary;
     font-weight: 700;
     letter-spacing: 0.5px;
     font-size: 1.1rem;
@@ -140,5 +156,96 @@
     .MuiButton-root {
       font-weight: 500;
     }
+  }
+}
+
+// Feedback styling improvements
+.alert-info {
+  &.small {
+    padding: 0.5rem 0.75rem;
+    font-size: 1.1rem;
+    margin: 0.5rem 0 0 var(--quiz-feedback-indent);
+    border-left: 3px solid var(--bs-info);
+    border-radius: 0.375rem;
+    background-color: var(--quiz-feedback-bg);
+    color: var(--quiz-feedback-text);
+    border-color: var(--quiz-feedback-border);
+    
+    // Icon or visual indicator for feedback
+    &::before {
+      margin-right: 0.25rem;
+      opacity: 0.7;
+    }
+    
+    // Mobile responsive indent
+    @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+      margin-left: var(--quiz-feedback-indent-mobile);
+    }
+  }
+}
+
+// True/False specific feedback
+.true-feedback,
+.false-feedback {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.1rem;
+  border-left: 3px solid var(--bs-info);
+  border-radius: 0.375rem;
+  background-color: var(--quiz-feedback-bg);
+  color: var(--quiz-feedback-text);
+  border-color: var(--quiz-feedback-border);
+  
+  &::before {
+    margin-right: 0.25rem;
+    opacity: 0.7;
+  }
+}
+
+// Global feedback styling
+.global-feedback {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  background-color: var(--quiz-global-feedback-bg);
+  border: 1px solid var(--quiz-global-feedback-border);
+  border-radius: 0.5rem;
+  color: var(--quiz-global-feedback-text);
+  margin-top: 1rem;
+  line-height: 1.4;
+  
+  &::before {
+    margin-right: 0.5rem;
+  }
+  
+  // Mobile responsive
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+// Statistics badge styling for answer percentages
+.stats-badge {
+  background-color: var(--bs-light);
+  color: var(--bs-dark);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  display: inline-block;
+  min-width: 2.5rem;
+  text-align: center;
+  
+  // Ensure good contrast and readability
+  @media (prefers-contrast: high) {
+    background-color: var(--bs-dark);
+    color: var(--bs-white);
+  }
+  
+  // Mobile responsive sizing
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    font-size: 0.875rem;
+    padding: 0.2rem 0.4rem;
+    min-width: 2rem;
   }
 }

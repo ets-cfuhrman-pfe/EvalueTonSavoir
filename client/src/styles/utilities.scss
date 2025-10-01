@@ -69,6 +69,16 @@
   margin-bottom: 1rem;
 }
 
+// Border utilities
+.border-light {
+  border: 1px solid #e9ecef;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .spacer-120 {
     display: none;

@@ -12,10 +12,11 @@ interface PropsV2 {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     buttonText?: string;
+    disabled?: boolean;
 }
 
 const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre' } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -33,23 +34,32 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {showAnswer ? (
                 <div className="mb-4">
-                    {(() => {
-                        const userAnswer = (answer[0] || '').toString().toLowerCase();
-                        const isCorrect = question.choices.some(choice => choice.text.toLowerCase() === userAnswer);
-                        return (
-                            <>
-                                <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
-                                    {isCorrect ? 'Correct' : 'Incorrect'}
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
-                                </div>
-                                <div className="mt-2">
-                                    <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
-                                </div>
-                            </>
-                        );
-                    })()}
+                    {answer && answer.length > 0 && answer[0] ? (
+                        (() => {
+                            const userAnswer = (answer[0] || '').toString().toLowerCase();
+                            const isCorrect = question.choices.some(choice => choice.text.toLowerCase() === userAnswer);
+                            return (
+                                <>
+                                    <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>
+                                        {isCorrect ? 'Correct' : 'Incorrect'}
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Question :</strong> <span dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
+                                    </div>
+                                    <div className="mt-2">
+                                        <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
+                                    </div>
+                                </>
+                            );
+                        })()
+                    ) : (
+                        // Teacher view - just show the correct answer
+                        <div>
+                            <div className="mt-2">
+                                <strong>Bonne réponse :</strong> {question.choices.map(choice => choice.text).join(', ')}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="mb-4">
@@ -62,7 +72,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 type="text"
                                 id={question.formattedStem.text}
                                 name={question.formattedStem.text}
-                                disabled={showAnswer}
+                                disabled={showAnswer || disabled}
                                 aria-label="short-answer-input"
                                 fullWidth
                                 label="Votre réponse"
@@ -90,9 +100,9 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             )}
 
             {/* Global feedback - always reserve space */}
-            <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
+            <div className="d-flex flex-column">
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}

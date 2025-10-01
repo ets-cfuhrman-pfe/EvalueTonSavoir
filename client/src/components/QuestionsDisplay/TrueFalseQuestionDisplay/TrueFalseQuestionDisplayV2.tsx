@@ -4,6 +4,8 @@ import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { StudentType } from 'src/Types/StudentType';
+import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: TrueFalseQuestion;
@@ -11,10 +13,13 @@ interface PropsV2 {
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
     buttonText?: string;
+    disabled?: boolean;
+    students?: StudentType[];
+    showStatistics?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre' } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
@@ -41,9 +46,25 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     };
 
     // Prevent validation styling from showing immediately on question change
-    const shouldShowValidation = showAnswer && answer !== undefined;
+    // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
+    // For student view, only show validation after they've submitted an answer
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer !== undefined);
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
+
+    // Compute class names for buttons
+    const trueColorClass = shouldShowValidation 
+        ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark');
+    const trueValidationClass = shouldShowValidation && selectedTrue ? 'choice-button-validated-selected' : '';
+
+    const falseColorClass = shouldShowValidation 
+        ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark');
+    const falseValidationClass = shouldShowValidation && selectedFalse ? 'choice-button-validated-selected' : '';
+
+    // Calculate answer statistics if we should show them
+    const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
 
     return (
         <div className="quiz-question-area">
@@ -57,76 +78,54 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div className="row g-3">
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${
-                                shouldShowValidation 
-                                    ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
-                                    : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark')
-                            }`}
-                            onClick={() => !shouldShowValidation && handleOnClickAnswer(true)}
-                            disabled={disableButton}
+                            className={`w-100 p-3 text-start choice-button ${trueColorClass} ${trueValidationClass}`}
+                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(true)}
+                            disabled={disableButton || disabled}
                             variant="outlined"
-                            style={{
-                                border: shouldShowValidation && selectedTrue 
-                                    ? '4px solid #fff' 
-                                    : selectedTrue && !shouldShowValidation 
-                                        ? '2px solid var(--bs-primary)' 
-                                        : '1px solid #dee2e6',
-                                borderRadius: '0.5rem',
-                                boxShadow: shouldShowValidation && selectedTrue 
-                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                    : 'none',
-                                position: 'relative'
-                            }}
                         >
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
+                                {showStatistics && (
+                                    <div className="ms-auto px-2">
+                                        <span className="stats-badge">
+                                            {getAnswerPercentage(answerStatistics, 'true')}%
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </Button>
                         {showAnswer && answer && question.trueFormattedFeedback && (
-                            <div className="mt-2">
-                                <div className="alert alert-info small">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
-                                </div>
+                            <div className="true-feedback">
+                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
                             </div>
                         )}
                     </div>
                     
                     <div className="col-md-6">
                         <Button
-                            className={`w-100 p-3 text-start ${
-                                shouldShowValidation 
-                                    ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white')
-                                    : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark')
-                            }`}
-                            onClick={() => !shouldShowValidation && handleOnClickAnswer(false)}
-                            disabled={disableButton}
+                            className={`w-100 p-3 text-start choice-button ${falseColorClass} ${falseValidationClass}`}
+                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(false)}
+                            disabled={disableButton || disabled}
                             variant="outlined"
-                            style={{
-                                border: shouldShowValidation && selectedFalse 
-                                    ? '4px solid #fff' 
-                                    : selectedFalse && !shouldShowValidation 
-                                        ? '2px solid var(--bs-primary)' 
-                                        : '1px solid #dee2e6',
-                                borderRadius: '0.5rem',
-                                boxShadow: shouldShowValidation && selectedFalse 
-                                    ? '0 0 0 3px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.3)' 
-                                    : 'none',
-                                position: 'relative'
-                            }}
                         >
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
+                                {showStatistics && (
+                                    <div className="ms-auto px-2">
+                                        <span className="stats-badge">
+                                            {getAnswerPercentage(answerStatistics, 'false')}%
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </Button>
                         {showAnswer && !answer && question.falseFormattedFeedback && (
-                            <div className="mt-2">
-                                <div className="alert alert-info small">
-                                    <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
-                                </div>
+                            <div className="false-feedback">
+                                <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
                             </div>
                         )}
                     </div>
@@ -151,9 +150,9 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
             )}
 
             {/* Global feedback - always reserve space */}
-            <div className="d-flex flex-column" style={{minHeight: '5rem'}}>
+            <div className="d-flex flex-column">
                 {question.formattedGlobalFeedback && showAnswer && (
-                    <div className="alert alert-warning">
+                    <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>
                 )}
