@@ -15,7 +15,7 @@ const OAuthCallback: React.FC = () => {
         if (user) {
             apiService.saveToken(user);
             apiService.saveUsername(username || "");
-            navigate('/teacher/dashboard');
+            navigate('/teacher/dashboard-v2');
         } else {
             navigate('/login');
         }

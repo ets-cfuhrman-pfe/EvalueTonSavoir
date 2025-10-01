@@ -288,7 +288,6 @@ const JoinRoomV2: React.FC = () => {
         default:
             return (
                 <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
-
                     <div className="w-100" style={{ maxWidth: '400px' }}>
                         <LoginContainerV2
                             title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}

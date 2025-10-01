@@ -22,7 +22,7 @@ const Share: React.FC = () => {
             try {
                 if (!id) {
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard');
+                    navigate('/teacher/dashboard-v2');
                     return;
                 }
 
