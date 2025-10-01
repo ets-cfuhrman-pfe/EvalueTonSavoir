@@ -11,10 +11,11 @@ interface PropsV2 {
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
     showAnswer?: boolean;
     passedAnswer?: AnswerType;
+    buttonText?: string;
 }
 
 const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre' } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -70,7 +71,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     </div>
                     
                     {/* Submit button */}
-                    {handleOnSubmitAnswer && (
+                    {(!showAnswer || buttonText === 'Voir les résultats') && handleOnSubmitAnswer && (
                         <div className="d-grid gap-2 col-md-4 col-12 mt-4">
                             <Button
                                 variant="contained"
@@ -78,10 +79,10 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 onClick={() =>
                                     handleOnSubmitAnswer?.(answer)
                                 }
-                                disabled={!answer[0] || answer[0].toString().trim() === ''}
+                                disabled={buttonText !== 'Voir les résultats' && (!answer[0] || answer[0].toString().trim() === '')}
                                 className="btn-primary"
                             >
-                                Répondre
+                                {buttonText}
                             </Button>
                         </div>
                     )}

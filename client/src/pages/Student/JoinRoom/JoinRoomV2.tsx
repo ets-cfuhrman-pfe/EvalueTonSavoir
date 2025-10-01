@@ -38,6 +38,7 @@ const JoinRoomV2: React.FC = () => {
     const [isUsernameValid, setIsUsernameValid] = useState(true);
     const [isManualRoomNameValid, setIsManualRoomNameValid] = useState(true);
     const [searchParams] = useSearchParams();
+    const [quizCompleted, setQuizCompleted] = useState(false);
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -116,7 +117,7 @@ const JoinRoomV2: React.FC = () => {
             setQuestion(questions[0]);
         });
         socket.on('end-quiz', () => {
-            disconnect();
+            setQuizCompleted(true);
         });
         socket.on('join-failure', (message) => {
             console.log('Failed to join the room.');
@@ -164,10 +165,14 @@ const JoinRoomV2: React.FC = () => {
         setQuestion(undefined);
         setIsWaitingForTeacher(false);
         setQuizMode('');
-        setRoomName('');
-        setUsername('');
-        setIsConnecting(false);
+        setQuestions([]);
+        setAnswers([]);
+        setQuizCompleted(false);
         clearCurrentRoomName();
+        // Reset to initial login state
+        setUsername(ApiService.getUsername());
+        setConnectionError('');
+        setIsConnecting(false);
     };
 
     const handleSocket = () => {
@@ -237,6 +242,11 @@ const JoinRoomV2: React.FC = () => {
         );
     }
 
+    // Check if student has completed all questions
+    const hasCompletedAllQuestions = questions.length > 0 &&
+        answers.length === questions.length &&
+        answers.every(answer => answer?.answer !== undefined);
+
     switch (quizMode) {
         case 'student':
             return (
@@ -246,22 +256,29 @@ const JoinRoomV2: React.FC = () => {
                         answers={answers}
                         submitAnswer={handleOnSubmitAnswer}
                         disconnectWebSocket={disconnect}
+                        studentName={username}
+                        quizCompleted={quizCompleted || hasCompletedAllQuestions}
                     />
                 </div>
             );
-        case 'teacher':
+        case 'teacher': {
             return (
                 <div className="d-flex flex-column full-height">
-                    {question && (
+                    {question ? (
                         <TeacherModeQuizV2
                             questionInfos={question}
                             answers={answers}
                             submitAnswer={handleOnSubmitAnswer}
                             disconnectWebSocket={disconnect}
+                            quizCompleted={quizCompleted || hasCompletedAllQuestions}
+                            questions={questions}
+                            studentName={username}
                         />
+                    ) : (<div>Chargement de la question...</div>
                     )}
                 </div>
             );
+        }
         default:
             return (
                 <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
