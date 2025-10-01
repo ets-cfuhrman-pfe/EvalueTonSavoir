@@ -7,7 +7,12 @@
 .quiz-question-area {
   text-align: left;
   // Consistent font size for V2 components
-  font-size: 1.4rem; 
+  font-size: 2rem; 
+  
+  // Font size on mobile
+  @media (max-width: #{vars.$breakpoint-md - 1px}) {
+    font-size: 1.3rem;
+  }
   
   // Prevent validation styling flicker when transitioning between questions
   .question-transition {

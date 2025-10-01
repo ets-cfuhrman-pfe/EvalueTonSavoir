@@ -30,11 +30,12 @@ body {
   --quiz-feedback-indent-mobile: 2rem;
   
   // Quiz text styling variables
-  --quiz-choice-letter-size: 1.2rem;
-  --quiz-choice-text-size: 1.2rem;
+  --quiz-choice-letter-size: 1.4rem;
+  --quiz-choice-text-size: 1.5rem;
   --quiz-choice-text-weight: 400;
   --quiz-choice-line-height: 1.4;
-  --quiz-button-text-size: 1.2rem;
+  --quiz-button-text-size: 1.4rem;
+  --quiz-katex-text-size: 1.6rem;
 }
 
 // Hide the main app header specifically in ManageRoomV2 component
