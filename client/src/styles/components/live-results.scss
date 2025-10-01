@@ -1,0 +1,83 @@
+// LiveResults component styles
+// Custom styles for LiveResults table components
+
+@use '../variables' as vars;
+
+// Sticky column and header styles for table
+.sticky-column {
+  position: sticky;
+  left: 0;
+  background-color: vars.$light;
+  z-index: 1;
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background-color: vars.$light;
+  z-index: 2;
+}
+
+// Table container styles
+.table-container {
+  overflow-x: auto;
+  position: relative;
+}
+
+// Cursor pointer utility
+.cursor-pointer {
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(vars.$primary, 0.1);
+  }
+}
+
+// Question cell styles
+.question-cell {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.10);
+  }
+
+  &.selected {
+    background-color: vars.$primary !important;
+    color: white !important;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.2) !important;
+    }
+  }
+}
+
+// Responsive table styles
+.table-responsive {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+// Custom table cell styling
+.table-success {
+  background-color: rgba(vars.$success, 0.1);
+  border-color: rgba(vars.$success, 0.2);
+}
+
+.table-danger {
+  background-color: rgba(vars.$danger, 0.1);
+  border-color: rgba(vars.$danger, 0.2);
+}
+
+// Mobile responsive adjustments
+@media (max-width: vars.$breakpoint-md) {
+  .sticky-column,
+  .sticky-header {
+    position: static;
+  }
+
+  .table-responsive {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
