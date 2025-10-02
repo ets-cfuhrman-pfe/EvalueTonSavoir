@@ -55,10 +55,11 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
         if (shouldShowResults) {
             // Quiz is completed, show results instead of submitting
             setIsModalOpen(true);
-        } else {
-            // Quiz is still in progress, submit the answer
+        } else if (!isAnswerSubmitted) {
+            // Quiz is still in progress and no answer submitted yet, submit the answer
             const idQuestion = Number(questionInfos.question.id) || -1;
             submitAnswer(answer, idQuestion);
+            setAnswer(answer);
         }
     };
 
@@ -79,7 +80,10 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     }, [shouldShowResults, hasShownModalOnce, questions, studentName]);
 
     // Determine button text based on quiz completion status
-    const buttonText = shouldShowResults ? 'Voir les résultats' : 'Répondre';
+    let buttonText = 'Répondre';
+    if (shouldShowResults) {
+        buttonText = 'Voir les résultats';
+    }
 
     // Render modal if quiz is completed
     const renderModal = () => {
@@ -147,7 +151,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
                             question={questionInfos.question as Question}
-                            showAnswer={false}
+                            showAnswer={isAnswerSubmitted}
                             answer={answer}
                             buttonText={buttonText}
                         />

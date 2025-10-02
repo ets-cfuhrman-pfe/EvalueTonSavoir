@@ -120,29 +120,43 @@ describe('StudentModeQuiz', () => {
         expect(screen.getByText('Répondre')).toBeInTheDocument();
     });
 
-    // le test suivant est fait dans MultipleChoiceQuestionDisplay.test.tsx
-//     test('allows multiple answers to be selected for a question', async () => {
-//         // Simulate selecting multiple answers
-//         act(() => {
-//             fireEvent.click(screen.getByText('Option A'));
-//         });
-//         act(() => {
-//             fireEvent.click(screen.getByText('Option B'));
-//         });
+    test('prevents changing answer after submission', async () => {
+        // Initial state - should show submit button
+        expect(screen.getByText('Répondre')).toBeInTheDocument();
 
-//         // Simulate submitting the answers
-//         act(() => {
-//             fireEvent.click(screen.getByText('Répondre'));
-//         });
+        // Click on an option to select it
+        act(() => {
+            fireEvent.click(screen.getByText('Option A'));
+        });
 
-//         // Verify that the mockSubmitAnswer function is called with both answers
-//         expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A', 'Option B'], 1);
+        // Click the submit button
+        act(() => {
+            fireEvent.click(screen.getByText('Répondre'));
+        });
 
-//         // Verify that the selected answers are displayed as selected
-//         const buttonA = screen.getByRole('button', { name: '✅ A Option A' });
-//         const buttonB = screen.getByRole('button', { name: '✅ B Option B' });
-//         expect(buttonA).toBeInTheDocument();
-//         expect(buttonB).toBeInTheDocument();
-//     });
+        // Verify submitAnswer was called with the first answer
+        expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A'], 1);
+        
+        // After submission, the submit button should disappear
+        expect(screen.queryByText('Répondre')).not.toBeInTheDocument();
+        
+        // The answer should be shown as selected with checkmark
+        expect(screen.getByRole("button", {name: '✅ A Option A'})).toBeInTheDocument();
+        
+        // Clear the mock to track subsequent calls
+        mockSubmitAnswer.mockClear();
+
+        // Try to click on a different option (Option B)
+        const optionB = screen.getByRole("button", {name: '✅ B Option B'});
+        act(() => {
+            fireEvent.click(optionB);
+        });
+
+        // Verify submitAnswer was NOT called again (no new submission)
+        expect(mockSubmitAnswer).not.toHaveBeenCalled();
+        
+        // The submit button should still not be present
+        expect(screen.queryByText('Répondre')).not.toBeInTheDocument();
+    });
 
 });

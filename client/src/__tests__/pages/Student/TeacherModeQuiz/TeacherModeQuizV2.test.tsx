@@ -32,6 +32,10 @@ describe('TeacherModeQuizV2', () => {
     let rerender: (ui: React.ReactElement) => void;
 
     beforeEach(async () => {
+        // Clear mocks before each test
+        mockSubmitAnswer.mockClear();
+        mockDisconnectWebSocket.mockClear();
+        
         const utils = render(
             <MemoryRouter>
                 <TeacherModeQuizV2
@@ -151,5 +155,85 @@ describe('TeacherModeQuizV2', () => {
 
         expect(screen.getByText('2/2')).toBeInTheDocument();
         expect(screen.getByText('Sample Question 2')).toBeInTheDocument();
+    });
+
+    test('prevents changing answer after submission', () => {
+        // Initial render without submitted answer
+        expect(screen.getByText('Répondre')).toBeInTheDocument();
+
+        // Click on an option to select it
+        const optionA = screen.getByText('Option A');
+        act(() => {
+            fireEvent.click(optionA);
+        });
+
+        // Click the submit button
+        const submitButton = screen.getByText('Répondre');
+        act(() => {
+            fireEvent.click(submitButton);
+        });
+
+        // Verify submitAnswer was called once
+        expect(mockSubmitAnswer).toHaveBeenCalledWith(['Option A'], 1);
+        expect(mockSubmitAnswer).toHaveBeenCalledTimes(1);
+
+        // Clear the mock to track subsequent calls
+        mockSubmitAnswer.mockClear();
+
+        // Render with answer submitted in the answers array
+        const answersWithSubmission = [{ answer: ['Option A'] } as AnswerSubmissionToBackendType];
+
+        act(() => {
+            rerender(
+                <MemoryRouter>
+                    <TeacherModeQuizV2
+                        questionInfos={{ question: mockQuestion }}
+                        answers={answersWithSubmission}
+                        submitAnswer={mockSubmitAnswer}
+                        disconnectWebSocket={mockDisconnectWebSocket}
+                        quizTitle="Sample Quiz"
+                        totalQuestions={2} />
+                </MemoryRouter>
+            );
+        });
+
+        // Try to click on a different option
+        const optionB = screen.getByText('Option B');
+        act(() => {
+            fireEvent.click(optionB);
+        });
+
+        // Verify the submit button is no longer available (which prevents changing answers)
+        expect(screen.queryByText('Répondre')).not.toBeInTheDocument();
+
+        // Verify submitAnswer was NOT called again
+        expect(mockSubmitAnswer).not.toHaveBeenCalled();
+    });
+
+    test('shows results when quiz is completed', () => {
+        const answersWithAllSubmissions = [
+            { answer: ['Option A'] } as AnswerSubmissionToBackendType,
+            { answer: ['Option B'] } as AnswerSubmissionToBackendType
+        ];
+
+        act(() => {
+            rerender(
+                <MemoryRouter>
+                    <TeacherModeQuizV2
+                        questionInfos={{ question: mockQuestion }}
+                        answers={answersWithAllSubmissions}
+                        submitAnswer={mockSubmitAnswer}
+                        disconnectWebSocket={mockDisconnectWebSocket}
+                        quizTitle="Sample Quiz"
+                        totalQuestions={2}
+                        quizCompleted={true}
+                        questions={mockQuestions}
+                        studentName="Test Student" />
+                </MemoryRouter>
+            );
+        });
+
+        // When quiz is completed, button should show "Voir les résultats"
+        expect(screen.getByText('Voir les résultats')).toBeInTheDocument();
     });
 });
