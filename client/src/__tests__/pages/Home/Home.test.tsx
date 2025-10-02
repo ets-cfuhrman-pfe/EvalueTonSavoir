@@ -26,11 +26,11 @@ describe('Home', () => {
         const studentButton = screen.getByText(/Espace\s*étudiant/);
         expect(studentButton).toBeInTheDocument();
         fireEvent.click(studentButton);
-        expect(window.location.pathname).toBe('/student/join-room');
+        expect(window.location.pathname).toBe('/student/join-room-v2');
 
         const teacherButton = screen.getByText(/Espace\s*enseignant/);
         expect(teacherButton).toBeInTheDocument();
         fireEvent.click(teacherButton);
-        expect(window.location.pathname).toBe('/teacher/dashboard');
+        expect(window.location.pathname).toBe('/teacher/dashboard-v2');
     });
 });

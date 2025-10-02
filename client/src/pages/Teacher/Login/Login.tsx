@@ -31,7 +31,7 @@ const Login: React.FC = () => {
             return;
         }
         else {
-            navigate("/teacher/Dashboard")
+            navigate("/teacher/dashboard-v2")
         }
 
     };

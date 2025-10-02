@@ -142,7 +142,7 @@ const ManageRoomV2: React.FC = () => {
                         `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
                     );
                     console.error('Quiz not found for id:', quizId);
-                    navigate('/teacher/dashboard');
+                    navigate('/teacher/dashboard-v2');
                     return;
                 }
 
@@ -155,7 +155,7 @@ const ManageRoomV2: React.FC = () => {
                 `Une erreur est survenue.\n Le quiz n'a pas été spécifié\nVeuillez réessayer plus tard`
             );
             console.error('Quiz ID not provided');
-            navigate('/teacher/dashboard');
+            navigate('/teacher/dashboard-v2');
         }
     }, [quizId]);
 

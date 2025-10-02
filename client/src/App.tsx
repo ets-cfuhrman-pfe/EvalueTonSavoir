@@ -23,6 +23,9 @@ import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
 
+// Components
+import InterfaceToggle from './components/InterfaceToggle/InterfaceToggle';
+
 // Header/Footer import
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
@@ -60,9 +63,23 @@ const App: React.FC = () => {
         setIsTeacherAuthenticated(false);
     };
 
+    // Determine if we should show interface toggle based on current route
+    const shouldShowInterfaceToggle = () => {
+        const path = location.pathname;
+        return path === '/teacher/dashboard-v2' || path === '/teacher/dashboard';
+    };
+
+    // Determine current interface version
+    const getCurrentVersion = (): 'v2' | 'v1' => {
+        return location.pathname.includes('-v2') ? 'v2' : 'v1';
+    };
+
     return (
         <>
             <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
+            {shouldShowInterfaceToggle() && (
+                <InterfaceToggle currentVersion={getCurrentVersion()} />
+            )}
             <div className="content">
                 <div className="app">
                     <main>

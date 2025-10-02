@@ -44,7 +44,7 @@ const ManageRoom: React.FC = () => {
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState('');
     const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
-    const roomUrl = `${window.location.origin}/student/join-room?roomName=${roomName}`;
+    const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${roomName}`;
     const [showQrModal, setShowQrModal] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -112,7 +112,7 @@ const ManageRoom: React.FC = () => {
                 `Une erreur est survenue.\n La salle ou le quiz n'a pas été spécifié.\nVeuillez réessayer plus tard.`
             );
             console.error(`Room "${roomName}" or Quiz "${quizId}" not found.`);
-            navigate('/teacher/dashboard');
+            navigate('/teacher/dashboard-v2');
         }
         if (roomName && !socket) {
             createWebSocketRoom();
@@ -132,7 +132,7 @@ const ManageRoom: React.FC = () => {
                         `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
                     );
                     console.error('Quiz not found for id:', quizId);
-                    navigate('/teacher/dashboard');
+                    navigate('/teacher/dashboard-v2');
                     return;
                 }
 
@@ -145,7 +145,7 @@ const ManageRoom: React.FC = () => {
                 `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
             );
             console.error('Quiz not found for id:', quizId);
-            navigate('/teacher/dashboard');
+            navigate('/teacher/dashboard-v2');
             return;
         }
     }, [quizId]);
@@ -383,12 +383,12 @@ const ManageRoom: React.FC = () => {
 
     const finishQuiz = () => {
         disconnectWebSocket();
-        navigate('/teacher/dashboard');
+        navigate('/teacher/dashboard-v2');
     };
 
     const handleReturn = () => {
         disconnectWebSocket();
-        navigate('/teacher/dashboard');
+        navigate('/teacher/dashboard-v2');
     };
 
     if (!formattedRoomName) {
