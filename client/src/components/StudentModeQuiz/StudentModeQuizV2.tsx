@@ -114,7 +114,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                         <div>
                             <DisconnectButton
                                 onReturn={disconnectWebSocket}
-                                message={`Êtes-vous sûr de vouloir quitter?`}
+                                askConfirm={!shouldShowResults}
+                                message={`Êtes-vous sûr de vouloir quitter? Vos réponses seront perdues.`}
                             />
                         </div>
                     </div>

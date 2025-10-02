@@ -126,11 +126,46 @@ describe('TeacherModeQuizV2', () => {
         expect(screen.queryByText('1/2')).not.toBeInTheDocument();
     });
 
-    test('handles disconnect button click', () => {
+    test('shows confirmation dialog on disconnect button click', () => {
         const disconnectButton = screen.getByText('Quitter');
+        
+        // Click the disconnect button - should show confirmation dialog
         act(() => {
             fireEvent.click(disconnectButton);
         });
+        
+        // Dialog should appear with confirmation message (askConfirm is true when quiz is not completed)
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Êtes-vous sûr de vouloir quitter\? Vos réponses seront perdues\./)).toBeInTheDocument();
+        
+        // Disconnect should not be called yet (dialog is shown)
+        expect(mockDisconnectWebSocket).not.toHaveBeenCalled();
+        
+        // Click the cancel button to dismiss the dialog
+        const cancelButton = screen.getByText('Annuler');
+        act(() => {
+            fireEvent.click(cancelButton);
+        });
+        
+        // Dialog should be closed and disconnect should still not be called
+        expect(mockDisconnectWebSocket).not.toHaveBeenCalled();
+    });
+
+    test('calls disconnect when confirmation is accepted', () => {
+        const disconnectButton = screen.getByText('Quitter');
+        
+        // Click the disconnect button
+        act(() => {
+            fireEvent.click(disconnectButton);
+        });
+        
+        // Confirm the disconnect action
+        const confirmButton = screen.getByTestId('modal-confirm-button');
+        act(() => {
+            fireEvent.click(confirmButton);
+        });
+        
+        // Now disconnect should be called
         expect(mockDisconnectWebSocket).toHaveBeenCalled();
     });
 
