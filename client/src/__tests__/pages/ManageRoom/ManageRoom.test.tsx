@@ -222,7 +222,7 @@ describe('ManageRoom', () => {
 
         await waitFor(() => {
             expect(webSocketService.disconnect).toHaveBeenCalled();
-            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard');
+            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
         });
     });
 
@@ -326,7 +326,7 @@ describe('ManageRoom', () => {
         fireEvent.click(finishQuizButton);
     
         await waitFor(() => {
-            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard');
+            expect(navigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
         });
     });
     
@@ -366,7 +366,7 @@ describe('ManageRoom', () => {
         
         fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
         
-        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=Test Room`;
         expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
     });
 
@@ -375,7 +375,7 @@ describe('ManageRoom', () => {
         
         fireEvent.click(screen.getByRole('button', { name: /lien de participation/i }));
         
-        const roomUrl = `${window.location.origin}/student/join-room?roomName=Test Room`;
+        const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=Test Room`;
         expect(screen.getByTestId('qr-code')).toHaveTextContent(roomUrl);
     });
 });

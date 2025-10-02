@@ -190,7 +190,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz quiz1 n\'a pas été trouvé')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
       });
     });
 
@@ -201,7 +201,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz n\'a pas été spécifié')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
       });
     });
 
