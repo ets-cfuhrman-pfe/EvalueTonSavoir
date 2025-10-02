@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button, Chip, Box } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import { SwapHoriz } from '@mui/icons-material';
 
 interface InterfaceToggleProps {
@@ -70,32 +70,21 @@ const InterfaceToggle: React.FC<InterfaceToggleProps> = ({ currentVersion, onTog
     };
 
     return (
-        <Box className="interface-toggle">
+        <div className="interface-toggle">
             <Button
                 variant="outlined"
                 size="small"
                 onClick={handleToggle}
                 startIcon={<SwapHoriz />}
-                sx={{ 
-                    minWidth: 'auto',
-                    fontSize: '0.75rem',
-                    padding: '4px 8px',
-                    borderRadius: '16px',
-                    textTransform: 'none'
-                }}
+                className="btn btn-outline-secondary text-nowrap"
             >
                 <Chip 
                     label={currentVersion === 'v2' ? 'Interface V2' : 'Interface V1'} 
                     size="small" 
                     variant={currentVersion === 'v2' ? 'filled' : 'outlined'}
-                    sx={{ 
-                        fontSize: '0.7rem',
-                        height: '20px',
-                        marginLeft: '4px'
-                    }}
                 />
             </Button>
-        </Box>
+        </div>
     );
 };
 
