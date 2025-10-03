@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
+import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { StudentType } from 'src/Types/StudentType';
 import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
@@ -82,13 +83,18 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(true)}
                             disabled={disableButton || disabled}
                             variant="outlined"
+                            style={{ position: 'relative', overflow: 'hidden' }}
                         >
-                            <div className="d-flex align-items-center">
+                            <ProgressOverlay 
+                                percentage={getAnswerPercentage(answerStatistics, 'true')}
+                                show={showStatistics && !shouldShowValidation}
+                            />
+                            <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2">
+                                    <div className="ms-auto px-2" style={{ position: 'relative', zIndex: 1 }}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
                                         </span>
@@ -109,13 +115,18 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(false)}
                             disabled={disableButton || disabled}
                             variant="outlined"
+                            style={{ position: 'relative', overflow: 'hidden' }}
                         >
-                            <div className="d-flex align-items-center">
+                            <ProgressOverlay 
+                                percentage={getAnswerPercentage(answerStatistics, 'false')}
+                                show={showStatistics && !shouldShowValidation}
+                            />
+                            <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2">
+                                    <div className="ms-auto px-2" style={{ position: 'relative', zIndex: 1 }}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
                                         </span>
