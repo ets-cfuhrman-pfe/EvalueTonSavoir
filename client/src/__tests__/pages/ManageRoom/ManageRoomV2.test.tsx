@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import ManageRoomV2 from 'src/pages/Teacher/ManageRoom/ManageRoomV2';
@@ -7,6 +7,9 @@ import ApiService from 'src/services/ApiService';
 import webSocketService from 'src/services/WebsocketService';
 import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
+
+
+const questionDisplayV2MockProps: any[] = [];
 
 
 // Mock dependencies
@@ -20,6 +23,21 @@ jest.mock('react-router-dom', () => ({
 jest.mock('gift-pegjs', () => ({
   parse: jest.fn(),
 }));
+jest.mock('src/components/QuestionsDisplay/QuestionDisplayV2', () => {
+  const React = require('react');
+  const mockComponent = jest.fn((props) => {
+    questionDisplayV2MockProps.push(props);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'question-display-v2' },
+      props.showStatistics ? 'stats-on' : 'stats-off'
+    );
+  });
+  return {
+    __esModule: true,
+    default: mockComponent,
+  };
+});
 jest.mock('src/components/LiveResults/LiveResultsV2', () => {
   return function MockLiveResults({ students, quizTitle }: any) {
     return (
@@ -120,6 +138,7 @@ describe('ManageRoomV2 Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    questionDisplayV2MockProps.length = 0;
     mockAlert.mockClear();
     mockConfirm.mockClear();
     localStorageMock.getItem.mockClear();
@@ -377,7 +396,7 @@ describe('ManageRoomV2 Component', () => {
       jest.runAllTimers();
 
       await waitFor(() => {
-        expect(screen.getByText((content) => content.includes('0/1') && content.includes('étudiant ont répondu'))).toBeInTheDocument();
+  expect(screen.getByText(/0\/1 étudiants? ont répondu/)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -623,6 +642,52 @@ describe('ManageRoomV2 Component', () => {
         expect(screen.getByText('Rythme du professeur')).toBeInTheDocument();
         expect(screen.getByText('Rythme de l\'étudiant')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Afficher progression button', () => {
+    test('should toggle statistics visibility and update question display props', async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      expect(mockWebSocketService.connect).toHaveBeenCalled();
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+
+      const showProgressButton = await screen.findByRole('button', {
+        name: /Afficher progression/i,
+      });
+
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
+
+      fireEvent.click(showProgressButton);
+
+      const hideProgressButton = await screen.findByRole('button', {
+        name: /Masquer progression/i,
+      });
+
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-on');
+      expect(questionDisplayV2MockProps.some((props) => props.showStatistics)).toBe(true);
+
+      fireEvent.click(hideProgressButton);
+
+      await screen.findByRole('button', {
+        name: /Afficher progression/i,
+      });
+      expect(screen.getByRole('button', { name: /Afficher progression/i })).toBeInTheDocument();
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
+      expect(questionDisplayV2MockProps.at(-1)?.showStatistics).toBe(false);
     });
   });
 });
