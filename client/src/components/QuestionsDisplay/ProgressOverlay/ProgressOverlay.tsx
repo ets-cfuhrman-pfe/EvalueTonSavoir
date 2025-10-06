@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 interface ProgressOverlayProps {
     percentage: number;
     show: boolean;
+    color?: string;
 }
 
 /**
@@ -11,7 +12,7 @@ interface ProgressOverlayProps {
  * from left to right to show answer percentage distribution.
  * Creates a visual "fill" effect on top of the button content.
  */
-const ProgressOverlay: React.FC<ProgressOverlayProps> = ({ percentage, show }) => {
+const ProgressOverlay: React.FC<ProgressOverlayProps> = ({ percentage, show, color = 'rgba(33, 150, 243, 0.35)' }) => {
     if (!show) return null;
 
     return (
@@ -23,7 +24,7 @@ const ProgressOverlay: React.FC<ProgressOverlayProps> = ({ percentage, show }) =
                 bottom: 0,
                 width: `${percentage}%`,
                 height: '100%',
-                backgroundColor: 'rgba(33, 150, 243, 0.35)', // Light blue overlay
+                backgroundColor: color,
                 borderRadius: 'inherit',
                 transition: 'width 0.3s ease-in-out',
                 zIndex: 0,

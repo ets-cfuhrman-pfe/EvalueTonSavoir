@@ -6,7 +6,7 @@ import { MultipleChoiceQuestion } from 'gift-pegjs';
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { StudentType } from 'src/Types/StudentType';
-import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
+import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: MultipleChoiceQuestion;
@@ -75,6 +75,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
     // Calculate answer statistics if we should show them
     const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+    const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
     return (
         <div className="quiz-question-area">
@@ -90,14 +91,20 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     const isChoiceCorrect = choice.isCorrect;
 
                     let buttonStateClass = '';
-                    if (shouldShowValidation) {
+                    if (shouldShowValidation && !showStatistics) {
                         buttonStateClass = isChoiceCorrect ? 'bg-success text-white' : 'bg-danger text-white';
+                    } else if (shouldShowValidation && showStatistics) {
+                        // When showing both validation and statistics, use neutral background
+                        buttonStateClass = 'bg-light text-dark';
                     } else {
                         buttonStateClass = selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark';
                     }
 
                     let letterStateClass = '';
-                    if (shouldShowValidation) {
+                    if (shouldShowValidation && !showStatistics) {
+                        letterStateClass = isChoiceCorrect ? 'bg-white text-success' : 'bg-white text-danger';
+                    } else if (shouldShowValidation && showStatistics) {
+                        // When showing both validation and statistics, use validation colors for letter
                         letterStateClass = isChoiceCorrect ? 'bg-white text-success' : 'bg-white text-danger';
                     } else {
                         letterStateClass = selected ? 'bg-white text-primary' : 'bg-white text-dark';
@@ -116,7 +123,11 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             >
                                 <ProgressOverlay 
                                     percentage={getAnswerPercentage(answerStatistics, choice.formattedText.text)}
-                                    show={showStatistics && !shouldShowValidation}
+                                    show={showStatistics}
+                                    color={shouldShowValidation ? 
+                                        (isChoiceCorrect ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
+                                        'rgba(33, 150, 243, 0.35)'
+                                    }
                                 />
                                 <div className="d-flex align-items-center w-100" style={{ position: 'relative', zIndex: 1 }}>
                                     <div 
@@ -132,9 +143,13 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                         />
                                     </div>
                                     {showStatistics && (
-                                        <div className="ms-auto" style={{ position: 'relative', zIndex: 1 }}>
+                                        <div className="ms-auto d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
                                             <span className="stats-badge">
                                                 {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
+                                            </span>
+                                            <span>|</span>
+                                            <span className="stats-fraction px-2">
+                                                {getAnswerCount(answerStatistics, choice.formattedText.text)}/{totalWhoAnswered}
                                             </span>
                                         </div>
                                     )}

@@ -6,7 +6,7 @@ import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/Tex
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { StudentType } from 'src/Types/StudentType';
-import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
+import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: TrueFalseQuestion;
@@ -54,18 +54,23 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const selectedFalse = answer === false ? 'selected' : '';
 
     // Compute class names for buttons
-    const trueColorClass = shouldShowValidation 
+    const trueColorClass = shouldShowValidation && !showStatistics
         ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : shouldShowValidation && showStatistics
+        ? 'bg-light text-dark'
         : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark');
     const trueValidationClass = shouldShowValidation && selectedTrue ? 'choice-button-validated-selected' : '';
 
-    const falseColorClass = shouldShowValidation 
+    const falseColorClass = shouldShowValidation && !showStatistics
         ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : shouldShowValidation && showStatistics
+        ? 'bg-light text-dark'
         : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark');
     const falseValidationClass = shouldShowValidation && selectedFalse ? 'choice-button-validated-selected' : '';
 
     // Calculate answer statistics if we should show them
     const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+    const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
     return (
         <div className="quiz-question-area">
@@ -87,16 +92,23 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         >
                             <ProgressOverlay 
                                 percentage={getAnswerPercentage(answerStatistics, 'true')}
-                                show={showStatistics && !shouldShowValidation}
+                                show={showStatistics}
+                                color={shouldShowValidation ? 
+                                    (question.isTrue ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
+                                    'rgba(33, 150, 243, 0.35)'
+                                }
                             />
                             <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2" style={{ position: 'relative', zIndex: 1 }}>
+                                    <div className="ms-auto d-flex align-items-center gap-2 px-2" style={{ position: 'relative', zIndex: 1 }}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
+                                        </span>
+                                        <span className="stats-fraction text-muted" style={{ fontSize: '0.85em' }}>
+                                            ({getAnswerCount(answerStatistics, 'true')}/{totalWhoAnswered})
                                         </span>
                                     </div>
                                 )}
@@ -119,16 +131,23 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         >
                             <ProgressOverlay 
                                 percentage={getAnswerPercentage(answerStatistics, 'false')}
-                                show={showStatistics && !shouldShowValidation}
+                                show={showStatistics}
+                                color={shouldShowValidation ? 
+                                    (!question.isTrue ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
+                                    'rgba(33, 150, 243, 0.35)'
+                                }
                             />
                             <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2" style={{ position: 'relative', zIndex: 1 }}>
+                                    <div className="ms-auto d-flex align-items-center gap-2 px-2" style={{ position: 'relative', zIndex: 1 }}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
+                                        </span>
+                                        <span className="stats-fraction text-muted" style={{ fontSize: '0.85em' }}>
+                                            ({getAnswerCount(answerStatistics, 'false')}/{totalWhoAnswered})
                                         </span>
                                     </div>
                                 )}
