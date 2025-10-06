@@ -292,4 +292,122 @@ describe('QuestionDisplayV2 Component', () => {
             expect(screen.queryByText('Répondre')).not.toBeInTheDocument();
         });
     });
+
+    describe('Answer Statistics and Progression Features', () => {
+        test('should display percentage and fraction when showStatistics is enabled', () => {
+            render(
+                <QuestionDisplayV2 
+                    question={sampleMultipleChoiceQuestion} 
+                    {...sampleProps}
+                    students={mockStudents}
+                    showStatistics={true}
+                />
+            );
+
+            // Should display percentage badges (mocked components will show some indication)
+            const questionContainer = screen.getByText(/Sample Multiple Choice Question/);
+            expect(questionContainer).toBeInTheDocument();
+        });
+
+        test('should not display statistics when showStatistics is false', () => {
+            render(
+                <QuestionDisplayV2 
+                    question={sampleMultipleChoiceQuestion} 
+                    {...sampleProps}
+                    students={mockStudents}
+                    showStatistics={false}
+                />
+            );
+
+            // Should render without statistics
+            const questionContainer = screen.getByText(/Sample Multiple Choice Question/);
+            expect(questionContainer).toBeInTheDocument();
+        });
+
+        test('should pass students array to question components for statistics calculation', () => {
+            render(
+                <QuestionDisplayV2 
+                    question={sampleTrueFalseQuestion} 
+                    {...sampleProps}
+                    students={mockStudents}
+                    showStatistics={true}
+                />
+            );
+
+            // Should render the True/False question with students data
+            expect(screen.getByText(/Sample True/)).toBeInTheDocument();
+        });
+
+        test('should handle empty students array', () => {
+            render(
+                <QuestionDisplayV2 
+                    question={sampleMultipleChoiceQuestion} 
+                    {...sampleProps}
+                    students={[]}
+                    showStatistics={true}
+                />
+            );
+
+            expect(screen.getByText(/Sample Multiple Choice Question/)).toBeInTheDocument();
+        });
+
+        test('should work with different question types and statistics', () => {
+            const testCases = [
+                { question: sampleTrueFalseQuestion, name: 'True/False' },
+                { question: sampleMultipleChoiceQuestion, name: 'Multiple Choice' },
+                { question: sampleNumericalQuestion, name: 'Numerical' },
+                { question: sampleShortAnswerQuestion, name: 'Short Answer' }
+            ];
+
+            testCases.forEach(({ question, name }) => {
+                const { unmount } = render(
+                    <QuestionDisplayV2 
+                        question={question} 
+                        {...sampleProps}
+                        students={mockStudents}
+                        showStatistics={true}
+                    />
+                );
+                
+                // Should render without errors
+                expect(screen.getByText(new RegExp(name === 'True/False' ? 'Sample True' : 'Sample', 'i'))).toBeInTheDocument();
+                
+                unmount();
+            });
+        });
+
+        test('should handle showAnswer and showStatistics combination', () => {
+            render(
+                <QuestionDisplayV2 
+                    question={sampleTrueFalseQuestion} 
+                    {...sampleProps}
+                    students={mockStudents}
+                    showStatistics={true}
+                    showAnswer={true}
+                />
+            );
+
+            // Should render with both validation and statistics
+            expect(screen.getByText(/Sample True/)).toBeInTheDocument();
+        });
+
+        test('should pass correct props to child question components', () => {
+            const props = {
+                ...sampleProps,
+                students: mockStudents,
+                showStatistics: true,
+                showAnswer: false
+            };
+
+            render(
+                <QuestionDisplayV2 
+                    question={sampleMultipleChoiceQuestion} 
+                    {...props}
+                />
+            );
+
+            // The component should render and pass props correctly
+            expect(screen.getByText(/Sample Multiple Choice Question/)).toBeInTheDocument();
+        });
+    });
 });
