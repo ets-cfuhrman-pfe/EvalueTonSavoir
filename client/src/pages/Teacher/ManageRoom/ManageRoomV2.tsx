@@ -804,11 +804,12 @@ const ManageRoomV2: React.FC = () => {
                                                             
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
-                        
-                                                                    const studentsWhoAnswered = students.filter(student => 
+        
+                                                                    const connectedStudents = students.filter(student => student.isConnected !== false);
+                                                                    const studentsWhoAnswered = connectedStudents.filter(student => 
                                                                         student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
                                                                     ).length;
-                                                                    const totalStudents = students.length;
+                                                                    const totalStudents = connectedStudents.length;
 
                                                                     return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu`;
                                                                 })()}
