@@ -13,10 +13,11 @@ interface PropsV2 {
     passedAnswer?: AnswerType;
     buttonText?: string;
     disabled?: boolean;
+    hideAnswerFeedback?: boolean;
 }
 
 const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, hideAnswerFeedback = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -32,7 +33,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
 
-            {showAnswer ? (
+            {showAnswer && !hideAnswerFeedback ? (
                 <div className="mb-4">
                     {answer && answer.length > 0 && answer[0] ? (
                         (() => {
@@ -60,6 +61,26 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             </div>
                         </div>
                     )}
+                </div>
+            ) : showAnswer && hideAnswerFeedback ? (
+                // Show the input field disabled when hideAnswerFeedback is true
+                <div className="mb-4">
+                    <div className="row">
+                        <div className="col-md-8">
+                            <ValidatedTextField
+                                fieldPath="text.short"
+                                initialValue={answer[0] || ''}
+                                onValueChange={() => {}} // No-op function since it's disabled
+                                type="text"
+                                id={question.formattedStem.text}
+                                name={question.formattedStem.text}
+                                disabled={true}
+                                aria-label="short-answer-input"
+                                fullWidth
+                                label="Votre réponse"
+                            />
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className="mb-4">
@@ -101,7 +122,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>

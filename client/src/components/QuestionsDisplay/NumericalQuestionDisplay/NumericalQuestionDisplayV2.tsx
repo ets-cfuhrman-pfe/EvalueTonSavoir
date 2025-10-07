@@ -14,10 +14,11 @@ interface PropsV2 {
     passedAnswer?: AnswerType;
     buttonText?: string;
     disabled?: boolean;
+    hideAnswerFeedback?: boolean;
 }
 
 const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, hideAnswerFeedback = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     const correctAnswers = question.choices;
     let correctAnswer = '';
@@ -47,7 +48,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
             </div>
 
-            {showAnswer ? (
+            {showAnswer && !hideAnswerFeedback ? (
                 <div className="mb-4">
                     {answer && answer.length > 0 && answer[0] !== undefined && answer[0] !== null ? (
                         (() => {
@@ -84,6 +85,26 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             </div>
                         </div>
                     )}
+                </div>
+            ) : showAnswer && hideAnswerFeedback ? (
+                // Show the input field disabled when hideAnswerFeedback is true
+                <div className="mb-4">
+                    <div className="row">
+                        <div className="col-md-8">
+                            <ValidatedTextField
+                                fieldPath="number.decimal"
+                                initialValue={answer[0]?.toString() || ''}
+                                onValueChange={() => {}} // No-op function since it's disabled
+                                type="number"
+                                id={question.formattedStem.text}
+                                name={question.formattedStem.text}
+                                disabled={true}
+                                aria-label="number-input"
+                                fullWidth
+                                label="Votre réponse (nombre)"
+                            />
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className="mb-4">
@@ -126,7 +147,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column" >
-                {question.formattedGlobalFeedback && showAnswer && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>

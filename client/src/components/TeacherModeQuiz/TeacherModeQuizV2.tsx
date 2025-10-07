@@ -40,16 +40,12 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
     // arrive here the first time after waiting for next question
     useEffect(() => {
-        const oldAnswer = answers[Number(questionInfos.question.id) -1 ]?.answer;
+        const answerSubmission = answers[Number(questionInfos.question.id) - 1];
+        const oldAnswer = answerSubmission?.answer;
         setAnswer(oldAnswer);
-        // Reset validation state when question changes to prevent flash
-        setIsAnswerSubmitted(false);
+        // Set answer submission state based on whether answer exists and is not just an empty object
+        setIsAnswerSubmitted(oldAnswer !== undefined && answerSubmission?.roomName !== undefined);
     }, [questionInfos?.question, answers]);
-
-    // handle answer submission state
-    useEffect(() => {
-        setIsAnswerSubmitted(answer !== undefined);
-    }, [answer]);
 
     const handleOnSubmitAnswer = (answer: AnswerType) => {
         if (shouldShowResults) {
@@ -60,13 +56,14 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             const idQuestion = Number(questionInfos.question.id) || -1;
             submitAnswer(answer, idQuestion);
             setAnswer(answer);
+            setIsAnswerSubmitted(true);
         }
     };
 
     // Check if student has answered all questions
     const hasAnsweredAllQuestions = questions && questions.length > 0 && 
         answers.length === questions.length && 
-        answers.every(answer => answer?.answer !== undefined);
+        answers.every(answer => answer?.answer !== undefined && answer?.roomName !== undefined);
 
     // Check if we should show results (quiz completed or all questions answered)
     const shouldShowResults = hasAnsweredAllQuestions || quizCompleted;
