@@ -804,13 +804,13 @@ const ManageRoomV2: React.FC = () => {
                                                             
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
-                                                                    const connectedCount = students.filter(s => s.isConnected !== false).length;
+                        
                                                                     const studentsWhoAnswered = students.filter(student => 
                                                                         student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
                                                                     ).length;
                                                                     const totalStudents = students.length;
-                                                                    const connectionInfo = totalStudents > 0 ? ` (${connectedCount} connecté${connectedCount !== 1 ? 's' : ''})` : '';
-                                                                    return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu${connectionInfo}`;
+
+                                                                    return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu`;
                                                                 })()}
                                                             </Typography>
                                                         </div>
