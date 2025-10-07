@@ -164,15 +164,34 @@ describe('LiveResults', () => {
         );
 
         // Check if the correct answers per question are displayed correctly
-        mockQuestions.forEach((_, index) => {
-            const correctAnswers = mockStudents.filter(student => student.answers.some(answer => answer.idQuestion === index + 1 && answer.isCorrect)).length;
-            const correctAnswersPercentage = (correctAnswers / mockStudents.length) * 100;
+        for (let index = 0; index < mockQuestions.length; index++) {
+            const questionId = index + 1;
+            
+            // Count students who answered this question
+            let studentsWhoAnsweredCount = 0;
+            let correctAnswersCount = 0;
+            
+            for (const student of mockStudents) {
+                const studentAnswer = student.answers.find(answer => answer.idQuestion === questionId);
+                if (studentAnswer) {
+                    studentsWhoAnsweredCount++;
+                    if (studentAnswer.isCorrect) {
+                        correctAnswersCount++;
+                    }
+                }
+            }
+            
+            let correctAnswersPercentage = 0;
+            if (studentsWhoAnsweredCount > 0) {
+                correctAnswersPercentage = (correctAnswersCount / studentsWhoAnsweredCount) * 100;
+            }
+            
             const correctAnswersElements = screen.getAllByText(`${correctAnswersPercentage.toFixed()} %`);
             const correctAnswersElement = correctAnswersElements.find((element) => {
                 return element.closest('td')?.classList.contains('MuiTableCell-root');
             });
             expect(correctAnswersElement).toBeInTheDocument();
-        });
+        }
     });
 
 });
