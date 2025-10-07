@@ -6,6 +6,8 @@ import { ShortAnswerQuestion } from 'gift-pegjs';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import ValidatedTextField from '../../ValidatedTextField/ValidatedTextField';
 
+const noop = () => {};
+
 interface PropsV2 {
     question: ShortAnswerQuestion;
     handleOnSubmitAnswer?: (answer: AnswerType) => void;
@@ -70,7 +72,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             <ValidatedTextField
                                 fieldPath="text.short"
                                 initialValue={answer[0] || ''}
-                                onValueChange={() => {}} // No-op function since it's disabled
+                                onValueChange={noop} // No-op function since it's disabled
                                 type="text"
                                 id={question.formattedStem.text}
                                 name={question.formattedStem.text}

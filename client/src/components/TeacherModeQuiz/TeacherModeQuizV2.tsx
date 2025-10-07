@@ -40,6 +40,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
     // arrive here the first time after waiting for next question
     useEffect(() => {
+        setIsAnswerSubmitted(false); // Reset to prevent flash
         const answerSubmission = answers[Number(questionInfos.question.id) - 1];
         const oldAnswer = answerSubmission?.answer;
         setAnswer(oldAnswer);
