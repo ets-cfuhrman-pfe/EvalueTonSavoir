@@ -88,26 +88,25 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(true)}
                             disabled={disableButton || disabled}
                             variant="outlined"
-                            style={{ position: 'relative', overflow: 'hidden' }}
                         >
                             <ProgressOverlay 
                                 percentage={getAnswerPercentage(answerStatistics, 'true')}
                                 show={showStatistics}
-                                color={shouldShowValidation ? 
-                                    (question.isTrue ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
-                                    'rgba(33, 150, 243, 0.35)'
+                                colorClass={shouldShowValidation ? 
+                                    (question.isTrue ? 'progress-overlay-correct' : 'progress-overlay-incorrect') : 
+                                    'progress-overlay-default'
                                 }
                             />
-                            <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
+                            <div className="d-flex align-items-center choice-button-content">
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto d-flex align-items-center gap-2 px-2" style={{ position: 'relative', zIndex: 1 }}>
+                                    <div className="ms-auto d-flex align-items-center gap-2 px-2 choice-button-content">
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
                                         </span>
-                                        <span className="stats-fraction text-muted" style={{ fontSize: '0.85em' }}>
+                                        <span className="stats-fraction text-muted">
                                             ({getAnswerCount(answerStatistics, 'true')}/{totalWhoAnswered})
                                         </span>
                                     </div>
@@ -127,26 +126,25 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(false)}
                             disabled={disableButton || disabled}
                             variant="outlined"
-                            style={{ position: 'relative', overflow: 'hidden' }}
                         >
                             <ProgressOverlay 
                                 percentage={getAnswerPercentage(answerStatistics, 'false')}
                                 show={showStatistics}
-                                color={shouldShowValidation ? 
-                                    (!question.isTrue ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
-                                    'rgba(33, 150, 243, 0.35)'
+                                colorClass={shouldShowValidation ? 
+                                    (!question.isTrue ? 'progress-overlay-correct' : 'progress-overlay-incorrect') : 
+                                    'progress-overlay-default'
                                 }
                             />
-                            <div className="d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
+                            <div className="d-flex align-items-center choice-button-content">
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto d-flex align-items-center gap-2 px-2" style={{ position: 'relative', zIndex: 1 }}>
+                                    <div className="ms-auto d-flex align-items-center gap-2 px-2 choice-button-content">
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
                                         </span>
-                                        <span className="stats-fraction text-muted" style={{ fontSize: '0.85em' }}>
+                                        <span className="stats-fraction text-muted">
                                             ({getAnswerCount(answerStatistics, 'false')}/{totalWhoAnswered})
                                         </span>
                                     </div>

@@ -119,17 +119,16 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                 }`}
                                 disabled={disableButton || disabled}
                                 onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(choice.formattedText.text)}
-                                style={{ position: 'relative', overflow: 'hidden' }}
                             >
                                 <ProgressOverlay 
                                     percentage={getAnswerPercentage(answerStatistics, choice.formattedText.text)}
                                     show={showStatistics}
-                                    color={shouldShowValidation ? 
-                                        (isChoiceCorrect ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)') : 
-                                        'rgba(33, 150, 243, 0.35)'
+                                    colorClass={shouldShowValidation ? 
+                                        (isChoiceCorrect ? 'progress-overlay-correct' : 'progress-overlay-incorrect') : 
+                                        'progress-overlay-default'
                                     }
                                 />
-                                <div className="d-flex align-items-center w-100" style={{ position: 'relative', zIndex: 1 }}>
+                                <div className="d-flex align-items-center w-100 choice-button-content">
                                     <div 
                                         className={`choice-letter d-flex align-items-center justify-content-center me-3 rounded-circle border ${letterStateClass}`}
                                     >
@@ -143,7 +142,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                         />
                                     </div>
                                     {showStatistics && (
-                                        <div className="ms-auto d-flex align-items-center" style={{ position: 'relative', zIndex: 1 }}>
+                                        <div className="ms-auto d-flex align-items-center choice-button-content">
                                             <span className="stats-badge">
                                                 {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
                                             </span>
