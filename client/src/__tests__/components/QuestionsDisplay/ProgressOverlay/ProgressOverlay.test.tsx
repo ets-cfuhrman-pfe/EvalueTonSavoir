@@ -3,13 +3,29 @@ import { render, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ProgressOverlay from 'src/components/QuestionsDisplay/ProgressOverlay/ProgressOverlay';
 
+// Test constants
+const TEST_PERCENTAGES = {
+  ZERO: 0,
+  QUARTER: 25,
+  THIRD: 33.33,
+  HALF: 50,
+  THREE_QUARTERS: 75,
+  FULL: 100,
+  SIXTY: 60
+} as const;
+
+const COLOR_CLASSES = {
+  CORRECT: 'progress-overlay-correct',
+  INCORRECT: 'progress-overlay-incorrect'
+} as const;
+
 describe('ProgressOverlay Component', () => {
   afterEach(() => {
     cleanup();
   });
 
   test('should render when show is true', () => {
-    const { container } = render(<ProgressOverlay percentage={50} show={true} />);
+    const { container } = render(<ProgressOverlay percentage={TEST_PERCENTAGES.HALF} show={true} />);
     
     const overlay = container.firstChild as HTMLElement;
     expect(overlay).toBeInTheDocument();
@@ -17,49 +33,41 @@ describe('ProgressOverlay Component', () => {
   });
 
   test('should render with different percentages', () => {
-    const { container: container1 } = render(<ProgressOverlay percentage={75} show={true} />);
-    const overlay1 = container1.firstChild as HTMLElement;
-    expect(overlay1).toBeInTheDocument();
-    cleanup();
+    const percentages = [TEST_PERCENTAGES.THREE_QUARTERS, TEST_PERCENTAGES.QUARTER, TEST_PERCENTAGES.ZERO, TEST_PERCENTAGES.FULL];
 
-    const { container: container2 } = render(<ProgressOverlay percentage={25} show={true} />);
-    const overlay2 = container2.firstChild as HTMLElement;
-    expect(overlay2).toBeInTheDocument();
-    cleanup();
-
-    const { container: container3 } = render(<ProgressOverlay percentage={0} show={true} />);
-    const overlay3 = container3.firstChild as HTMLElement;
-    expect(overlay3).toBeInTheDocument();
-    cleanup();
-
-    const { container: container4 } = render(<ProgressOverlay percentage={100} show={true} />);
-    const overlay4 = container4.firstChild as HTMLElement;
-    expect(overlay4).toBeInTheDocument();
+    percentages.forEach(percentage => {
+      const { container } = render(<ProgressOverlay percentage={percentage} show={true} />);
+      const overlay = container.firstChild as HTMLElement;
+      expect(overlay).toBeInTheDocument();
+      cleanup();
+    });
   });
 
   test('should render with different colors', () => {
     const { container: container1 } = render(
-      <ProgressOverlay percentage={50} show={true} color="rgba(40, 167, 69, 0.8)" />
+      <ProgressOverlay percentage={TEST_PERCENTAGES.HALF} show={true} colorClass={COLOR_CLASSES.CORRECT} />
     );
     const overlay1 = container1.firstChild as HTMLElement;
     expect(overlay1).toBeInTheDocument();
+    expect(overlay1).toHaveClass(COLOR_CLASSES.CORRECT);
     cleanup();
 
     const { container: container2 } = render(
-      <ProgressOverlay percentage={50} show={true} color="rgba(220, 53, 69, 0.8)" />
+      <ProgressOverlay percentage={TEST_PERCENTAGES.HALF} show={true} colorClass={COLOR_CLASSES.INCORRECT} />
     );
     const overlay2 = container2.firstChild as HTMLElement;
     expect(overlay2).toBeInTheDocument();
+    expect(overlay2).toHaveClass(COLOR_CLASSES.INCORRECT);
   });
 
   test('should not render when show is false', () => {
-    const { container } = render(<ProgressOverlay percentage={50} show={false} />);
+    const { container } = render(<ProgressOverlay percentage={TEST_PERCENTAGES.HALF} show={false} />);
     
     expect(container.firstChild).toBeNull();
   });
 
   test('should render as MUI Box component', () => {
-    const { container } = render(<ProgressOverlay percentage={60} show={true} />);
+    const { container } = render(<ProgressOverlay percentage={TEST_PERCENTAGES.SIXTY} show={true} />);
     
     const overlay = container.firstChild as HTMLElement;
     expect(overlay).toBeInTheDocument();
@@ -68,55 +76,50 @@ describe('ProgressOverlay Component', () => {
 
   test('should handle prop changes correctly', () => {
     const TestWrapper = ({ 
-      percentage = 50, 
+      percentage = TEST_PERCENTAGES.HALF, 
       show = true, 
-      color 
+      colorClass 
     }: { 
       percentage?: number; 
       show?: boolean; 
-      color?: string; 
+      colorClass?: string; 
     }) => (
       <div data-testid="wrapper">
-        <ProgressOverlay percentage={percentage} show={show} color={color} />
+        <ProgressOverlay percentage={percentage} show={show} colorClass={colorClass} />
       </div>
     );
 
-    const { rerender, getByTestId } = render(<TestWrapper percentage={50} />);
+    const { rerender, getByTestId } = render(<TestWrapper percentage={TEST_PERCENTAGES.HALF} />);
     let wrapper = getByTestId('wrapper');
     let overlay = wrapper.firstChild as HTMLElement;
     expect(overlay).toHaveClass('MuiBox-root');
 
     // Test show=false
-    rerender(<TestWrapper percentage={50} show={false} />);
+    rerender(<TestWrapper percentage={TEST_PERCENTAGES.HALF} show={false} />);
     wrapper = getByTestId('wrapper');
     expect(wrapper.firstChild).toBeNull();
 
     // Test show=true again
-    rerender(<TestWrapper percentage={75} show={true} />);
+    rerender(<TestWrapper percentage={TEST_PERCENTAGES.THREE_QUARTERS} show={true} />);
     wrapper = getByTestId('wrapper');
     overlay = wrapper.firstChild as HTMLElement;
     expect(overlay).toHaveClass('MuiBox-root');
 
-    // Test with color
-    rerender(<TestWrapper percentage={75} show={true} color="rgba(40, 167, 69, 0.8)" />);
+    // Test with colorClass
+    rerender(<TestWrapper percentage={TEST_PERCENTAGES.THREE_QUARTERS} show={true} colorClass={COLOR_CLASSES.CORRECT} />);
     wrapper = getByTestId('wrapper');
     overlay = wrapper.firstChild as HTMLElement;
     expect(overlay).toHaveClass('MuiBox-root');
+    expect(overlay).toHaveClass(COLOR_CLASSES.CORRECT);
   });
 
   test('should work with edge case values', () => {
-    // Test with 0%
-    const { container: container1 } = render(<ProgressOverlay percentage={0} show={true} />);
-    expect(container1.firstChild).toBeInTheDocument();
-    cleanup();
+    const edgeCases = [TEST_PERCENTAGES.ZERO, TEST_PERCENTAGES.FULL, TEST_PERCENTAGES.THIRD];
 
-    // Test with 100%
-    const { container: container2 } = render(<ProgressOverlay percentage={100} show={true} />);
-    expect(container2.firstChild).toBeInTheDocument();
-    cleanup();
-
-    // Test with decimal percentage
-    const { container: container3 } = render(<ProgressOverlay percentage={33.33} show={true} />);
-    expect(container3.firstChild).toBeInTheDocument();
+    edgeCases.forEach(percentage => {
+      const { container } = render(<ProgressOverlay percentage={percentage} show={true} />);
+      expect(container.firstChild).toBeInTheDocument();
+      cleanup();
+    });
   });
 });
