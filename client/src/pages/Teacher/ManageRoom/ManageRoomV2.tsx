@@ -196,6 +196,7 @@ const ManageRoomV2: React.FC = () => {
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
+            // Clear all students when teacher closes the room
             setStudents(new Array<StudentType>());
         }
     };
@@ -216,8 +217,10 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
-            setStudents((prev) => [...prev, student]);
-            setNewlyConnectedUser(student);
+            // Mark new student as connected
+            const newStudent = { ...student, isConnected: true };
+            setStudents((prev) => [...prev, newStudent]);
+            setNewlyConnectedUser(newStudent);
         });
 
         socket.on('join-failure', (message) => {
@@ -226,8 +229,14 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-disconnected', (userId: string) => {
-            // console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            // Mark student as disconnected instead of removing them
+            setStudents((prevUsers) => 
+                prevUsers.map((user) => 
+                    user.id === userId 
+                        ? { ...user, isConnected: false }
+                        : user
+                )
+            );
         });
 
         setSocket(socket);
@@ -795,10 +804,13 @@ const ManageRoomV2: React.FC = () => {
                                                             
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
+                                                                    const connectedCount = students.filter(s => s.isConnected !== false).length;
                                                                     const studentsWhoAnswered = students.filter(student => 
                                                                         student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
                                                                     ).length;
-                                                                    return `${studentsWhoAnswered}/${students.length} étudiant${students.length !== 1 ? 's' : ''} ont répondu`;
+                                                                    const totalStudents = students.length;
+                                                                    const connectionInfo = totalStudents > 0 ? ` (${connectedCount} connecté${connectedCount !== 1 ? 's' : ''})` : '';
+                                                                    return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu${connectionInfo}`;
                                                                 })()}
                                                             </Typography>
                                                         </div>

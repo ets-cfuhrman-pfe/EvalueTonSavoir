@@ -22,10 +22,16 @@ const LiveResultsTableBodyV2: React.FC<LiveResultsTableBodyProps> = ({
 
     return (
         <tbody>
-            {students.map((student) => (
-                <tr key={student.id}>
+            {students.map((student) => {
+                // Visual indication for disconnected students
+                const disconnectedClass = student.isConnected === false ? 'student-disconnected' : '';
+                
+                return (
+                <tr key={student.id} className={disconnectedClass}>
                     <td className="sticky-column bg-white fw-medium">
-                        {showUsernames ? student.name : '******'}
+                        {showUsernames ? (
+                            <span className="student-name">{student.name}</span>
+                        ) : '******'}
                     </td>
                     {Array.from({ length: maxQuestions }, (_, index) => {
                         const answer = student.answers.find(
@@ -64,7 +70,8 @@ const LiveResultsTableBodyV2: React.FC<LiveResultsTableBodyProps> = ({
                         {getStudentGrade(student).toFixed()} %
                     </td>
                 </tr>
-            ))}
+                );
+            })}
         </tbody>
     );
 };
