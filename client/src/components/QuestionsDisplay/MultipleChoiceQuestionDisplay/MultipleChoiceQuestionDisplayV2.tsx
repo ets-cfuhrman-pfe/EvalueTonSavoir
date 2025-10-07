@@ -146,7 +146,6 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                             <span className="stats-badge">
                                                 {getAnswerPercentage(answerStatistics, choice.formattedText.text)}%
                                             </span>
-                                            <span>|</span>
                                             <span className="stats-fraction px-2">
                                                 {getAnswerCount(answerStatistics, choice.formattedText.text)}/{totalWhoAnswered}
                                             </span>

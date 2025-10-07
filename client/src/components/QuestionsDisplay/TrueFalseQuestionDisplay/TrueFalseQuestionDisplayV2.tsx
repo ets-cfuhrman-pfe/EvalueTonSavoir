@@ -22,6 +22,8 @@ interface PropsV2 {
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
 
+    const statsContainerClass = 'ms-auto d-flex align-items-center gap-2 px-2 choice-button-content';
+
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
             return passedAnswer[0];
@@ -102,7 +104,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     <strong>Vrai</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto d-flex align-items-center gap-2 px-2 choice-button-content">
+                                    <div className={statsContainerClass}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
                                         </span>
@@ -140,7 +142,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     <strong>Faux</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto d-flex align-items-center gap-2 px-2 choice-button-content">
+                                    <div className={statsContainerClass}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
                                         </span>

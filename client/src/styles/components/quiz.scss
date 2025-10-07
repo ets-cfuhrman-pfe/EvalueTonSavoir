@@ -248,6 +248,13 @@
     padding: 0.2rem 0.4rem;
     min-width: 2rem;
   }
+
+  // Separator after the badge
+  &::after {
+    content: '|';
+    padding-left: 0.8rem;
+    color: var(--bs-dark);
+  }
 }
 
 // Statistics fraction styling
