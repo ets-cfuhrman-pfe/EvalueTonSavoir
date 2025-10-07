@@ -16,24 +16,39 @@ const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({
 }) => {
 
     const getCorrectAnswersPerQuestion = (index: number): number => {
-        return (
-            (students.filter((student) =>
-                student.answers.some(
-                    (answer) =>
-                        parseInt(answer.idQuestion.toString()) === index + 1 && answer.isCorrect
-                )
-            ).length / students.length) * 100
+        const studentsWhoAnswered = students.filter((student) =>
+            student.answers.some(
+                (answer) => parseInt(answer.idQuestion.toString()) === index + 1
+            )
         );
+        
+        const studentsWhoGotItCorrect = students.filter((student) =>
+            student.answers.some(
+                (answer) =>
+                    parseInt(answer.idQuestion.toString()) === index + 1 && answer.isCorrect
+            )
+        );
+
+        if (studentsWhoAnswered.length === 0) {
+            return 0;
+        }
+
+        return (studentsWhoGotItCorrect.length / studentsWhoAnswered.length) * 100;
     };
 
     const classAverage: number = useMemo(() => {
-        let classTotal = 0;
+        const studentsWithAnswers = students.filter(student => student.answers.length > 0);
+        
+        if (studentsWithAnswers.length === 0) {
+            return 0;
+        }
 
-        students.forEach((student) => {
+        let classTotal = 0;
+        studentsWithAnswers.forEach((student) => {
             classTotal += getStudentGrade(student);
         });
 
-        return classTotal / students.length;
+        return classTotal / studentsWithAnswers.length;
     }, [students]);
 
     return (
