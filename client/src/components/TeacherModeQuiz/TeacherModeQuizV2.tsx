@@ -155,6 +155,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                             showAnswer={isAnswerSubmitted}
                             answer={answer}
                             buttonText={buttonText}
+                            hideAnswerFeedback={true}
                         />
                     </div>
                 </div>

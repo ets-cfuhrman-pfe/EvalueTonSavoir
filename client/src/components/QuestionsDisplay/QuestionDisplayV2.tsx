@@ -17,6 +17,7 @@ interface QuestionV2Props {
     disabled?: boolean;
     students?: StudentType[];
     showStatistics?: boolean;
+    hideAnswerFeedback?: boolean;
 }
 
 const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
@@ -28,6 +29,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     disabled = false,
     students = [],
     showStatistics = false,
+    hideAnswerFeedback = false,
 }) => {
     let questionTypeComponent = null;
     switch (question?.type) {
@@ -42,6 +44,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
+                    hideAnswerFeedback={hideAnswerFeedback}
                 />
             );
             break;
@@ -56,6 +59,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
+                    hideAnswerFeedback={hideAnswerFeedback}
                 />
             );
             break;
@@ -69,6 +73,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                             passedAnswer={answer}
                             buttonText={buttonText}
                             disabled={disabled}
+                            hideAnswerFeedback={hideAnswerFeedback}
                         />
                     );
             }
@@ -82,6 +87,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     passedAnswer={answer}
                     buttonText={buttonText}
                     disabled={disabled}
+                    hideAnswerFeedback={hideAnswerFeedback}
                 />
             );
             break;
