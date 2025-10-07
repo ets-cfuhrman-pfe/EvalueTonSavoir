@@ -83,6 +83,12 @@
   }
 }
 
+// Disconnected student name styling
+.student-name-disconnected {
+  color: vars.$danger;
+  opacity: 0.7;
+}
+
 // Mobile responsive adjustments
 @media (max-width: vars.$breakpoint-md) {
   .sticky-column,

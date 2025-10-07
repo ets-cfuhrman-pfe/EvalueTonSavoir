@@ -30,7 +30,7 @@ const LiveResultsTableBodyV2: React.FC<LiveResultsTableBodyProps> = ({
                 <tr key={student.id} className={disconnectedClass}>
                     <td className="sticky-column bg-white fw-medium">
                         {showUsernames ? (
-                            <span className="student-name">{student.name}</span>
+                            <span className={`student-name${student.isConnected === false ? ' student-name-disconnected' : ''}`}>{student.name}</span>
                         ) : '******'}
                     </td>
                     {Array.from({ length: maxQuestions }, (_, index) => {

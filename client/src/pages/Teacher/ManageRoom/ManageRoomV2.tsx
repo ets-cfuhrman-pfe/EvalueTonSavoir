@@ -36,6 +36,8 @@ import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
 import './manageRoom.css';
 
+const isStudentConnected = (student: StudentType) => student.isConnected !== false;
+
 const ManageRoomV2: React.FC = () => {
     const navigate = useNavigate();
     const { quizId = '' } = useParams<{ quizId: string }>();
@@ -805,7 +807,7 @@ const ManageRoomV2: React.FC = () => {
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
         
-                                                                    const connectedStudents = students.filter(student => student.isConnected !== false);
+                                                                    const connectedStudents = students.filter(isStudentConnected);
                                                                     const studentsWhoAnswered = connectedStudents.filter(student => 
                                                                         student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
                                                                     ).length;
