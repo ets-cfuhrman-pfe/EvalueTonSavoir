@@ -37,7 +37,9 @@ describe('LiveResultsTableFooter', () => {
             />
         );
 
-        expect(screen.getByText('50 %')).toBeInTheDocument();
+        // Question 1: 1 correct out of 1 who answered = 100%
+        expect(screen.getByText('100 %')).toBeInTheDocument();
+        // Question 2: 0 correct out of 1 who answered = 0%
         expect(screen.getByText('0 %')).toBeInTheDocument();
     });
 
@@ -50,6 +52,7 @@ describe('LiveResultsTableFooter', () => {
             />
         );
 
-        expect(screen.getByText('50 %')).toBeInTheDocument();
+        // Class average: (50% + 0%) / 2 = 25%
+        expect(screen.getByText('25 %')).toBeInTheDocument();
     });
 });

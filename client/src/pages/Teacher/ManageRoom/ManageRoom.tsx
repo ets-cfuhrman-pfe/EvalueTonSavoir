@@ -501,7 +501,7 @@ const ManageRoom: React.FC = () => {
                             }}
                         >
                             <GroupIcon style={{ marginRight: '5px', verticalAlign: 'middle' }} />{' '}
-                            {students.length}/60
+                            {students.filter(student => student.isConnected !== false).length}/60
                         </div>
                     </h1>
                 </div>
