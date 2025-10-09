@@ -48,7 +48,6 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    // In teacher mode rhythm, hide validation when hideAnswerFeedback is true
     const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer.length > 0);
 
     const handleOnClickAnswer = (choice: string) => {
@@ -116,12 +115,10 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         <div key={choice.formattedText.text + i} className="mb-3">
                             <Button
                                 variant="outlined"
-                                className={`w-100 text-start justify-content-start p-3 choice-button ${
-                                    shouldShowValidation 
-                                        ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
-                                        : (selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark')
-                                } ${shouldShowValidation && selected ? 'choice-button-validated-selected' : ''}`}
-                                disabled={disableButton || disabled || (showAnswer && hideAnswerFeedback)}
+                                className={`w-100 text-start justify-content-start p-3 choice-button ${buttonStateClass} ${
+                                    shouldShowValidation && selected ? 'choice-button-validated-selected' : ''
+                                }`}
+                                 disabled={disableButton || disabled || (showAnswer && hideAnswerFeedback)}
                                 onClick={() => !shouldShowValidation && !disabled && !(showAnswer && hideAnswerFeedback) && handleOnClickAnswer(choice.formattedText.text)}
                             >
                                 <ProgressOverlay 
@@ -192,7 +189,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
+                 {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
                     <div className="global-feedback">
                         <div
                             dangerouslySetInnerHTML={{
