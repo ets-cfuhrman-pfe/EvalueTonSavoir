@@ -17,10 +17,11 @@ interface PropsV2 {
     disabled?: boolean;
     students?: StudentType[];
     showStatistics?: boolean;
+    hideAnswerFeedback?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -47,7 +48,8 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer.length > 0);
+    // In teacher mode rhythm, hide validation when hideAnswerFeedback is true
+    const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer.length > 0);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
@@ -114,11 +116,13 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                         <div key={choice.formattedText.text + i} className="mb-3">
                             <Button
                                 variant="outlined"
-                                className={`w-100 text-start justify-content-start p-3 choice-button ${buttonStateClass} ${
-                                    shouldShowValidation && selected ? 'choice-button-validated-selected' : ''
-                                }`}
-                                disabled={disableButton || disabled}
-                                onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(choice.formattedText.text)}
+                                className={`w-100 text-start justify-content-start p-3 choice-button ${
+                                    shouldShowValidation 
+                                        ? (choice.isCorrect ? 'bg-success text-white' : 'bg-danger text-white')
+                                        : (selected ? 'bg-primary text-white choice-button-selected' : 'bg-light text-dark')
+                                } ${shouldShowValidation && selected ? 'choice-button-validated-selected' : ''}`}
+                                disabled={disableButton || disabled || (showAnswer && hideAnswerFeedback)}
+                                onClick={() => !shouldShowValidation && !disabled && !(showAnswer && hideAnswerFeedback) && handleOnClickAnswer(choice.formattedText.text)}
                             >
                                 <ProgressOverlay 
                                     percentage={getAnswerPercentage(answerStatistics, choice.formattedText.text)}
@@ -153,7 +157,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     )}
                                 </div>
                             </Button>
-                            {choice.formattedFeedback && showAnswer && (
+                            {choice.formattedFeedback && showAnswer && !hideAnswerFeedback && (
                                 <div className="mt-2">
                                     <div className="alert alert-info small">
                                         <div
@@ -188,7 +192,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
                     <div className="global-feedback">
                         <div
                             dangerouslySetInnerHTML={{

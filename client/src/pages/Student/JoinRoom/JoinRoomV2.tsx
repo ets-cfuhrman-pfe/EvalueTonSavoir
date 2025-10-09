@@ -306,7 +306,7 @@ const JoinRoomV2: React.FC = () => {
     // Check if student has completed all questions
     const hasCompletedAllQuestions = questions.length > 0 &&
         answers.length === questions.length &&
-        answers.every(answer => answer?.answer !== undefined);
+        answers.every(answer => answer?.answer !== undefined && answer?.roomName !== undefined);
 
     switch (quizMode) {
         case 'student':

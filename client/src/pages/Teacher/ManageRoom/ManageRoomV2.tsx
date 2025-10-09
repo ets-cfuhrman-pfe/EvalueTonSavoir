@@ -36,6 +36,8 @@ import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
 import './manageRoom.css';
 
+const isStudentConnected = (student: StudentType) => student.isConnected !== false;
+
 const ManageRoomV2: React.FC = () => {
     const navigate = useNavigate();
     const { quizId = '' } = useParams<{ quizId: string }>();
@@ -197,6 +199,7 @@ const ManageRoomV2: React.FC = () => {
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
+            // Clear all students when teacher closes the room
             setStudents(new Array<StudentType>());
         }
     };
@@ -217,8 +220,10 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-joined', (student: StudentType) => {
-            setStudents((prev) => [...prev, student]);
-            setNewlyConnectedUser(student);
+            // Mark new student as connected
+            const newStudent = { ...student, isConnected: true };
+            setStudents((prev) => [...prev, newStudent]);
+            setNewlyConnectedUser(newStudent);
         });
 
         socket.on('join-failure', (message) => {
@@ -227,8 +232,14 @@ const ManageRoomV2: React.FC = () => {
         });
 
         socket.on('user-disconnected', (userId: string) => {
-            // console.log(`Student left: id = ${userId}`);
-            setStudents((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            // Mark student as disconnected instead of removing them
+            setStudents((prevUsers) => 
+                prevUsers.map((user) => 
+                    user.id === userId 
+                        ? { ...user, isConnected: false }
+                        : user
+                )
+            );
         });
 
         setSocket(socket);
@@ -803,10 +814,14 @@ const ManageRoomV2: React.FC = () => {
                                                             
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
-                                                                    const studentsWhoAnswered = students.filter(student => 
+        
+                                                                    const connectedStudents = students.filter(isStudentConnected);
+                                                                    const studentsWhoAnswered = connectedStudents.filter(student => 
                                                                         student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
                                                                     ).length;
-                                                                    return `${studentsWhoAnswered}/${students.length} étudiant${students.length !== 1 ? 's' : ''} ont répondu`;
+                                                                    const totalStudents = connectedStudents.length;
+
+                                                                    return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu`;
                                                                 })()}
                                                             </Typography>
                                                         </div>
