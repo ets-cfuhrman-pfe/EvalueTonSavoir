@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { StudentType } from 'src/Types/StudentType';
+import { StudentType, Answer } from 'src/Types/StudentType';
 import LiveResultsTableFooter from 'src/components/LiveResults/LiveResultsTable/TableComponents/LiveResultTableFooter';
 
 
 const mockStudents: StudentType[] = [
-    { id: "1", name: 'Student 1', answers: [{ idQuestion: 1, answer: ['Answer 1'], isCorrect: true }] },
-    { id: "2", name: 'Student 2', answers: [{ idQuestion: 2, answer: ['Answer 2'], isCorrect: false }] },
+    new StudentType('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
+    new StudentType('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
 ];
 
 const mockGetStudentGrade = jest.fn((student: StudentType) => {

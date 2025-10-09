@@ -1,17 +1,29 @@
 //StudentType.test.tsx
 import { StudentType, Answer } from "../../Types/StudentType";
 
-const user : StudentType = {
-    name: 'Student',
-    id: '123',
-    answers: new Array<Answer>()
-}
+const user = new StudentType('Student', '123', 'TestRoom');
 
 describe('StudentType', () => {
-    test('creates a student with name, id and answers', () => {
-
+    test('creates a student with name, id, room, answers and isConnected', () => {
         expect(user.name).toBe('Student');
         expect(user.id).toBe('123');
+        expect(user.room).toBe('TestRoom');
         expect(user.answers).toHaveLength(0);
+        expect(user.isConnected).toBe(false);
+    });
+
+    test('creates student with custom answers', () => {
+        const answer = new Answer(['test'], true, 1);
+        const studentWithAnswers = new StudentType('Student2', '456', 'Room2', [answer]);
+        
+        expect(studentWithAnswers.answers).toHaveLength(1);
+        expect(studentWithAnswers.answers[0].answer).toEqual(['test']);
+        expect(studentWithAnswers.answers[0].isCorrect).toBe(true);
+        expect(studentWithAnswers.answers[0].idQuestion).toBe(1);
+    });
+
+    test('creates student with custom isConnected', () => {
+        const connectedStudent = new StudentType('Student3', '789', 'Room3', [], true);
+        expect(connectedStudent.isConnected).toBe(true);
     });
 });

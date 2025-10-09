@@ -7,6 +7,7 @@ import ApiService from 'src/services/ApiService';
 import webSocketService from 'src/services/WebsocketService';
 import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
+import { StudentType } from 'src/Types/StudentType';
 
 
 // Mock dependencies
@@ -371,7 +372,7 @@ describe('ManageRoomV2 Component', () => {
       )?.[1];
 
       if (userJoinedCallback) {
-        userJoinedCallback({ id: 'student1', name: 'John Doe', answers: [] });
+        userJoinedCallback(new StudentType('John Doe', 'student1', 'TestRoom'));
       }
 
       jest.runAllTimers();
