@@ -4,7 +4,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2';
 import { parse, Question } from 'gift-pegjs';
-import { StudentType } from 'src/Types/StudentType';
+import { StudentType, Answer } from 'src/Types/StudentType';
 
 describe('QuestionDisplayV2 Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
@@ -26,21 +26,9 @@ describe('QuestionDisplayV2 Component', () => {
     (sampleMultipleChoiceQuestion as any).id = 2;
 
     const mockStudents: StudentType[] = [
-        {
-            id: 'student1',
-            name: 'John Doe',
-            answers: [{ idQuestion: 1, answer: [true], isCorrect: true }]
-        },
-        {
-            id: 'student2',
-            name: 'Jane Smith',
-            answers: [{ idQuestion: 1, answer: [false], isCorrect: false }]
-        },
-        {
-            id: 'student3',
-            name: 'Bob Johnson',
-            answers: [{ idQuestion: 1, answer: [true], isCorrect: true }]
-        }
+        new StudentType('John Doe', 'student1', 'TestRoom', [new Answer([true], true, 1)]),
+        new StudentType('Jane Smith', 'student2', 'TestRoom', [new Answer([false], false, 1)]),
+        new StudentType('Bob Johnson', 'student3', 'TestRoom', [new Answer([true], true, 1)]),
     ];
 
     const sampleProps = {
@@ -156,16 +144,8 @@ describe('QuestionDisplayV2 Component', () => {
 
         it('shows statistics for multiple choice when enabled', () => {
             const mcStudents: StudentType[] = [
-                {
-                    id: 'student1',
-                    name: 'John Doe',
-                    answers: [{ idQuestion: 2, answer: ['Choice 1'], isCorrect: true }]
-                },
-                {
-                    id: 'student2',
-                    name: 'Jane Smith',
-                    answers: [{ idQuestion: 2, answer: ['Choice 2'], isCorrect: false }]
-                }
+                new StudentType('John Doe', 'student1', 'TestRoom', [new Answer(['Choice 1'], true, 2)]),
+                new StudentType('Jane Smith', 'student2', 'TestRoom', [new Answer(['Choice 2'], false, 2)]),
             ];
 
             renderComponent(sampleMultipleChoiceQuestion, {

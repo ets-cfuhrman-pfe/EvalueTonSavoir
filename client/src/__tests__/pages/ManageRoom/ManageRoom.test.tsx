@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import { MemoryRouter, useNavigate, useParams } from 'react-router-dom';
 import ManageRoom from 'src/pages/Teacher/ManageRoom/ManageRoom';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { StudentType } from 'src/Types/StudentType';
 import { QuizType } from 'src/Types/QuizType';
 import webSocketService, { AnswerReceptionFromBackendType } from 'src/services/WebsocketService';
 import ApiService from 'src/services/ApiService';

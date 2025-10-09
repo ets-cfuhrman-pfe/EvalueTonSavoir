@@ -9,7 +9,7 @@ import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import QuizResults from '../QuizResults/QuizResults';
-import { StudentType } from '../../Types/StudentType';
+import { StudentType, Answer } from '../../Types/StudentType';
 import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
 
 interface StudentModeQuizV2Props {
@@ -70,15 +70,16 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
 
     // Create a student object for the current student
-    const currentStudent: StudentType = {
-        id: 'current-student',
-        name: studentName || 'Vous',
-        answers: answers.map((answer, index) => ({
-            idQuestion: index + 1,
-            answer: answer?.answer,
-            isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-        }))
-    };
+    const currentStudent: StudentType = new StudentType(
+        studentName || 'Vous',
+        'current-student',
+        'current-room',
+        answers.map((answer, index) => new Answer(
+            answer?.answer,
+            answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false,
+            index + 1
+        ))
+    );
 
     return (
         <div className="container-fluid student-mode-quiz-mobile">
