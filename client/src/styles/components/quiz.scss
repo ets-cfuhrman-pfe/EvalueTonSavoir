@@ -248,4 +248,29 @@
     padding: 0.2rem 0.4rem;
     min-width: 2rem;
   }
+
+  // Separator after the badge
+  &::after {
+    content: '|';
+    padding-left: 0.8rem;
+    color: var(--bs-dark);
+  }
+}
+
+// Statistics fraction styling
+.stats-fraction {
+  font-size: 0.85em;
+}
+
+// Progress overlay colors
+.progress-overlay-correct {
+  background-color: rgba(40, 167, 69, 0.8) !important;
+}
+
+.progress-overlay-incorrect {
+  background-color: rgba(220, 53, 69, 0.8) !important;
+}
+
+.progress-overlay-default {
+  background-color: rgba(33, 150, 243, 0.35) !important;
 }

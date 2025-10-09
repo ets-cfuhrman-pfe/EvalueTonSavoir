@@ -63,6 +63,7 @@ const ManageRoomV2: React.FC = () => {
     const [showQuestions, setShowQuestions] = useState(true);
     const [showResults, setShowResults] = useState(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+    const [showStatistics, setShowStatistics] = useState(false);
 
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
 
@@ -803,6 +804,13 @@ const ManageRoomV2: React.FC = () => {
                                                             >
                                                                 {showCorrectAnswers ? 'Masquer les réponses' : 'Afficher les réponses'}
                                                             </Button>
+                                                            <Button
+                                                                variant="outlined"
+                                                                className='me-3'
+                                                                onClick={() => setShowStatistics(!showStatistics)}
+                                                            >
+                                                                {showStatistics ? ' Masquer progression' : 'Afficher progression'}
+                                                            </Button>
                                                             
                                                             <Typography variant="body1" color="text.secondary">
                                                                 {(() => {
@@ -831,7 +839,7 @@ const ManageRoomV2: React.FC = () => {
                                                                         currentQuestion?.question as Question
                                                                     }
                                                                     students={students}
-                                                                    showStatistics={true}
+                                                                    showStatistics={showStatistics}
                                                                 />                                                       
                                                             </CardContent>
                                                         </Card>
