@@ -85,13 +85,18 @@ describe('LiveResultsTable', () => {
             />
         );
 
-        //50% because only one of the two questions have been answered (getALLByText, because there are a value 50% for the %reussite de la question
-        // and a second one for the student grade)
+        // Student 1: 1 correct out of 2 total questions = 50%
+        // Student 2: 0 correct out of 2 total questions = 0%
         const gradeElements = screen.getAllByText('50 %');
-        expect(gradeElements).toHaveLength(2);
+        expect(gradeElements).toHaveLength(1); // Only student grade, not question percentage
 
         const gradeElements2 = screen.getAllByText('0 %');
-        expect(gradeElements2).toHaveLength(2);    });
+        expect(gradeElements2).toHaveLength(2); // Student grade and Q2 percentage (0 out of 1 who answered)
+        
+        // Question 1: 1 correct out of 1 who answered = 100%
+        const q1PercentageElements = screen.getAllByText('100 %');
+        expect(q1PercentageElements).toHaveLength(1);
+    });
 
     test('calculates and displays class average', () => {
         render(

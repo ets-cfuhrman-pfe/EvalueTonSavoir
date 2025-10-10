@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
+import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
 import { StudentType } from 'src/Types/StudentType';
-import { calculateAnswerStatistics, getAnswerPercentage } from 'src/utils/answerStatistics';
+import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
     question: TrueFalseQuestion;
@@ -16,10 +17,13 @@ interface PropsV2 {
     disabled?: boolean;
     students?: StudentType[];
     showStatistics?: boolean;
+    hideAnswerFeedback?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false } = props;
+
+    const statsContainerClass = 'ms-auto d-flex align-items-center gap-2 px-2 choice-button-content';
 
     const [answer, setAnswer] = useState<boolean | undefined>(() => {
         if (passedAnswer && (passedAnswer[0] === true || passedAnswer[0] === false)) {
@@ -48,23 +52,29 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer !== undefined);
+    // In teacher mode rhythm, hide validation when hideAnswerFeedback is true
+    const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer !== undefined);
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 
     // Compute class names for buttons
-    const trueColorClass = shouldShowValidation 
+    const trueColorClass = shouldShowValidation && !showStatistics
         ? (question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : shouldShowValidation && showStatistics
+        ? 'bg-light text-dark'
         : (selectedTrue ? 'bg-primary text-white' : 'bg-light text-dark');
     const trueValidationClass = shouldShowValidation && selectedTrue ? 'choice-button-validated-selected' : '';
 
-    const falseColorClass = shouldShowValidation 
+    const falseColorClass = shouldShowValidation && !showStatistics
         ? (!question.isTrue ? 'bg-success text-white' : 'bg-danger text-white') 
+        : shouldShowValidation && showStatistics
+        ? 'bg-light text-dark'
         : (selectedFalse ? 'bg-primary text-white' : 'bg-light text-dark');
     const falseValidationClass = shouldShowValidation && selectedFalse ? 'choice-button-validated-selected' : '';
 
     // Calculate answer statistics if we should show them
     const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
+    const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
     return (
         <div className="quiz-question-area">
@@ -79,24 +89,35 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start choice-button ${trueColorClass} ${trueValidationClass}`}
-                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(true)}
-                            disabled={disableButton || disabled}
+                            onClick={() => !shouldShowValidation && !disabled && !(showAnswer && hideAnswerFeedback) && handleOnClickAnswer(true)}
+                            disabled={disableButton || disabled || (showAnswer && hideAnswerFeedback)}
                             variant="outlined"
                         >
-                            <div className="d-flex align-items-center">
+                            <ProgressOverlay 
+                                percentage={getAnswerPercentage(answerStatistics, 'true')}
+                                show={showStatistics}
+                                colorClass={shouldShowValidation ? 
+                                    (question.isTrue ? 'progress-overlay-correct' : 'progress-overlay-incorrect') : 
+                                    'progress-overlay-default'
+                                }
+                            />
+                            <div className="d-flex align-items-center choice-button-content">
                                 <div className="flex-grow-1">
                                     <strong>Vrai</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2">
+                                    <div className={statsContainerClass}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'true')}%
+                                        </span>
+                                        <span className="stats-fraction text-muted">
+                                            ({getAnswerCount(answerStatistics, 'true')}/{totalWhoAnswered})
                                         </span>
                                     </div>
                                 )}
                             </div>
                         </Button>
-                        {showAnswer && answer && question.trueFormattedFeedback && (
+                        {showAnswer && answer && question.trueFormattedFeedback && !hideAnswerFeedback && (
                             <div className="true-feedback">
                                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.trueFormattedFeedback) }} />
                             </div>
@@ -106,24 +127,35 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                     <div className="col-md-6">
                         <Button
                             className={`w-100 p-3 text-start choice-button ${falseColorClass} ${falseValidationClass}`}
-                            onClick={() => !shouldShowValidation && !disabled && handleOnClickAnswer(false)}
-                            disabled={disableButton || disabled}
+                            onClick={() => !shouldShowValidation && !disabled && !(showAnswer && hideAnswerFeedback) && handleOnClickAnswer(false)}
+                            disabled={disableButton || disabled || (showAnswer && hideAnswerFeedback)}
                             variant="outlined"
                         >
-                            <div className="d-flex align-items-center">
+                            <ProgressOverlay 
+                                percentage={getAnswerPercentage(answerStatistics, 'false')}
+                                show={showStatistics}
+                                colorClass={shouldShowValidation ? 
+                                    (!question.isTrue ? 'progress-overlay-correct' : 'progress-overlay-incorrect') : 
+                                    'progress-overlay-default'
+                                }
+                            />
+                            <div className="d-flex align-items-center choice-button-content">
                                 <div className="flex-grow-1">
                                     <strong>Faux</strong>
                                 </div>
                                 {showStatistics && (
-                                    <div className="ms-auto px-2">
+                                    <div className={statsContainerClass}>
                                         <span className="stats-badge">
                                             {getAnswerPercentage(answerStatistics, 'false')}%
+                                        </span>
+                                        <span className="stats-fraction text-muted">
+                                            ({getAnswerCount(answerStatistics, 'false')}/{totalWhoAnswered})
                                         </span>
                                     </div>
                                 )}
                             </div>
                         </Button>
-                        {showAnswer && !answer && question.falseFormattedFeedback && (
+                        {showAnswer && !answer && question.falseFormattedFeedback && !hideAnswerFeedback && (
                             <div className="false-feedback">
                                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.falseFormattedFeedback) }} />
                             </div>
@@ -151,7 +183,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>

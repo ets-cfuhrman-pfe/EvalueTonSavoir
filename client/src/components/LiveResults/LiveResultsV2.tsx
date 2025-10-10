@@ -26,6 +26,15 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
     const [showUsernames, setShowUsernames] = useState<boolean>(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
 
+    // Sort students: connected first, then disconnected
+    const sortedStudents = [...students].sort((a, b) => {
+        const aConnected = a.isConnected !== false;
+        const bConnected = b.isConnected !== false;
+        if (aConnected && !bConnected) return -1;
+        if (!aConnected && bConnected) return 1;
+        return 0;
+    });
+
     return (
         <Card elevation={2} className="h-100">
             <CardContent className="p-0">
@@ -76,7 +85,7 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
 
                 <Box className="table-responsive" sx={{ maxHeight: '600px', overflowY: 'auto' }}>
                     <LiveResultsTableV2
-                        students={students}
+                        students={sortedStudents}
                         questions={questions}
                         showCorrectAnswers={showCorrectAnswers}
                         showSelectedQuestion={showSelectedQuestion}

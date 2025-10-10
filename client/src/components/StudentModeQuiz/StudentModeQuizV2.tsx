@@ -67,7 +67,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     };
 
     // Compute if answer is submitted for current question
-    const isAnswerSubmitted = answers[Number(questionInfos.question.id) - 1]?.answer !== undefined;
+    const answerSubmission = answers[Number(questionInfos.question.id) - 1];
+    const isAnswerSubmitted = answerSubmission?.answer !== undefined && answerSubmission?.roomName !== undefined;
 
     // Create a student object for the current student
     const currentStudent: StudentType = new StudentType(

@@ -76,6 +76,7 @@
 .choice-button {
   border-radius: 0.5rem;
   position: relative;
+  overflow: hidden;
   border: 1px solid #dee2e6;
   transition: all 0.2s ease-in-out;
   
@@ -161,6 +162,12 @@
       font-size: 1rem !important;
     }
   }
+}
+
+// Choice button content overlay (for progress bars)
+.choice-button-content {
+  position: relative;
+  z-index: 1;
 }
 
 // Answer choice button enhancements

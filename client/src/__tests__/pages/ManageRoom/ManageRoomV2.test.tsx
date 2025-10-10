@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import ManageRoomV2 from 'src/pages/Teacher/ManageRoom/ManageRoomV2';
@@ -7,12 +7,17 @@ import ApiService from 'src/services/ApiService';
 import webSocketService from 'src/services/WebsocketService';
 import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
+import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 import { StudentType } from 'src/Types/StudentType';
+
+
+const questionDisplayV2MockProps: any[] = [];
 
 
 // Mock dependencies
 jest.mock('src/services/ApiService');
 jest.mock('src/services/WebsocketService');
+jest.mock('src/utils/answerStatistics');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(),
@@ -21,6 +26,21 @@ jest.mock('react-router-dom', () => ({
 jest.mock('gift-pegjs', () => ({
   parse: jest.fn(),
 }));
+jest.mock('src/components/QuestionsDisplay/QuestionDisplayV2', () => {
+  const React = require('react');
+  const mockComponent = jest.fn((props) => {
+    questionDisplayV2MockProps.push(props);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'question-display-v2' },
+      props.showStatistics ? 'stats-on' : 'stats-off'
+    );
+  });
+  return {
+    __esModule: true,
+    default: mockComponent,
+  };
+});
 jest.mock('src/components/LiveResults/LiveResultsV2', () => {
   return function MockLiveResults({ students, quizTitle }: any) {
     return (
@@ -121,6 +141,7 @@ describe('ManageRoomV2 Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    questionDisplayV2MockProps.length = 0;
     mockAlert.mockClear();
     mockConfirm.mockClear();
     localStorageMock.getItem.mockClear();
@@ -142,7 +163,10 @@ describe('ManageRoomV2 Component', () => {
     mockWebSocketService.endQuiz.mockImplementation(() => {});
     mockWebSocketService.disconnect.mockImplementation(() => {});
 
-    mockParse.mockReturnValue([{ id: '1', stem: 'Test question?' }]);
+    mockParse.mockReturnValue([
+      { id: '1', stem: 'Test question 1?' },
+      { id: '2', stem: 'Test question 2?' }
+    ]);
 
     localStorageMock.getItem.mockReturnValue('room1');
   });
@@ -378,7 +402,7 @@ describe('ManageRoomV2 Component', () => {
       jest.runAllTimers();
 
       await waitFor(() => {
-        expect(screen.getByText((content) => content.includes('0/1') && content.includes('étudiant ont répondu'))).toBeInTheDocument();
+  expect(screen.getByText(/0\/1 étudiants? ont répondu/)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -624,6 +648,297 @@ describe('ManageRoomV2 Component', () => {
         expect(screen.getByText('Rythme du professeur')).toBeInTheDocument();
         expect(screen.getByText('Rythme de l\'étudiant')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Afficher progression button', () => {
+    test('should toggle statistics visibility and update question display props', async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      expect(mockWebSocketService.connect).toHaveBeenCalled();
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+
+      const showProgressButton = await screen.findByRole('button', {
+        name: /Afficher progression/i,
+      });
+
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
+
+      fireEvent.click(showProgressButton);
+
+      const hideProgressButton = await screen.findByRole('button', {
+        name: /Masquer progression/i,
+      });
+
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-on');
+      expect(questionDisplayV2MockProps.some((props) => props.showStatistics)).toBe(true);
+
+      fireEvent.click(hideProgressButton);
+
+      await screen.findByRole('button', {
+        name: /Afficher progression/i,
+      });
+      expect(screen.getByRole('button', { name: /Afficher progression/i })).toBeInTheDocument();
+      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
+      expect(questionDisplayV2MockProps.at(-1)?.showStatistics).toBe(false);
+    });
+
+    test('should pass correct student data to QuestionDisplayV2 for statistics calculation', async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      // Simulate students joining and answering
+      const userJoinedCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'user-joined'
+      )?.[1];
+
+      if (userJoinedCallback) {
+        userJoinedCallback({ id: 'student1', name: 'John Doe', answers: [] });
+        userJoinedCallback({ id: 'student2', name: 'Jane Smith', answers: [] });
+      }
+
+      // Simulate answer submissions
+      const submitAnswerCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'submit-answer-room'
+      )?.[1];
+
+      if (submitAnswerCallback) {
+        submitAnswerCallback({
+          userId: 'student1',
+          idQuestion: 1,
+          answer: ['Choice A'],
+          timestamp: Date.now()
+        });
+        submitAnswerCallback({
+          userId: 'student2', 
+          idQuestion: 1,
+          answer: ['Choice B'],
+          timestamp: Date.now()
+        });
+      }
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+
+      const showProgressButton = await screen.findByRole('button', {
+        name: /Afficher progression/i,
+      });
+
+      fireEvent.click(showProgressButton);
+
+      // Verify that students array is passed to QuestionDisplayV2
+      const latestProps = questionDisplayV2MockProps.at(-1);
+      expect(latestProps).toHaveProperty('students');
+      expect(latestProps.students).toHaveLength(2);
+      expect(latestProps.showStatistics).toBe(true);
+    });
+
+    test('should display student answer count when students have answered', async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      // Simulate students joining
+      const userJoinedCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'user-joined'
+      )?.[1];
+
+      if (userJoinedCallback) {
+        userJoinedCallback({ id: 'student1', name: 'John', answers: [{ idQuestion: 2, answer: ['A'], isCorrect: true }] });
+        userJoinedCallback({ id: 'student2', name: 'Jane', answers: [{ idQuestion: 2, answer: ['B'], isCorrect: false }] });
+        userJoinedCallback({ id: 'student3', name: 'Bob', answers: [] }); // No answer yet
+      }
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should show that 2 out of 3 students answered
+      await waitFor(() => {
+        expect(screen.getByText(/2\/3 étudiants? ont répondu/)).toBeInTheDocument();
+      });
+    });
+
+    test('should update student count dynamically as students join and answer', async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      // Simulate the connect event to trigger quiz launch
+      const connectCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'connect'
+      )?.[1];
+
+      if (connectCallback) {
+        connectCallback();
+      }
+
+      // Initially no students
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Add one student who already has answered the current question (question 2)
+      const userJoinedCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'user-joined'
+      )?.[1];
+
+      if (userJoinedCallback) {
+        userJoinedCallback({ 
+          id: 'student1', 
+          name: 'John', 
+          answers: [{ idQuestion: 2, answer: ['Choice A'], isCorrect: true }] 
+        });
+      }
+
+      await act(async () => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Should now show 1/1 students answered
+      await waitFor(() => {
+        expect(screen.getByText(/1\/1 étudiants? ont répondu/)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Answer Statistics Features', () => {
+    const mockStudents: StudentType[] = [
+      {
+        id: 'student1',
+        name: 'John Doe',
+        answers: [{ idQuestion: 1, answer: ['Choice A'], isCorrect: true }]
+      },
+      {
+        id: 'student2', 
+        name: 'Jane Smith',
+        answers: [{ idQuestion: 1, answer: ['Choice B'], isCorrect: false }]
+      },
+      {
+        id: 'student3',
+        name: 'Bob Johnson',
+        answers: [{ idQuestion: 1, answer: ['Choice A'], isCorrect: true }]
+      },
+      {
+        id: 'student4',
+        name: 'Alice Brown',
+        answers: [] // No answer
+      }
+    ];
+
+    beforeEach(() => {
+      // Mock the answer statistics functions
+      (calculateAnswerStatistics as jest.Mock).mockImplementation((_students, _questionId) => ({
+        'Choice A': { count: 2, percentage: 67 },
+        'Choice B': { count: 1, percentage: 33 }
+      }));
+      
+      (getAnswerPercentage as jest.Mock).mockImplementation((stats, choice) => 
+        stats[choice]?.percentage || 0
+      );
+      
+      (getAnswerCount as jest.Mock).mockImplementation((stats, choice) => 
+        stats[choice]?.count || 0
+      );
+      
+      (getTotalStudentsWhoAnswered as jest.Mock).mockReturnValue(3);
+    });
+
+    test('should calculate answer statistics correctly', () => {
+      const stats = calculateAnswerStatistics(mockStudents, 1);
+      
+      expect(stats).toEqual({
+        'Choice A': { count: 2, percentage: 67 },
+        'Choice B': { count: 1, percentage: 33 }
+      });
+    });
+
+    test('should get correct answer percentage', () => {
+      const stats = {
+        'Choice A': { count: 2, percentage: 67 },
+        'Choice B': { count: 1, percentage: 33 }
+      };
+      
+      expect(getAnswerPercentage(stats, 'Choice A')).toBe(67);
+      expect(getAnswerPercentage(stats, 'Choice B')).toBe(33);
+      expect(getAnswerPercentage(stats, 'Choice C')).toBe(0);
+    });
+
+    test('should get correct answer count', () => {
+      const stats = {
+        'Choice A': { count: 2, percentage: 67 },
+        'Choice B': { count: 1, percentage: 33 }
+      };
+      
+      expect(getAnswerCount(stats, 'Choice A')).toBe(2);
+      expect(getAnswerCount(stats, 'Choice B')).toBe(1);
+      expect(getAnswerCount(stats, 'Choice C')).toBe(0);
+    });
+
+    test('should get total students who answered correctly', () => {
+      expect(getTotalStudentsWhoAnswered(mockStudents, 1)).toBe(3);
+    });
+
+    test('should handle empty student array', () => {
+      (calculateAnswerStatistics as jest.Mock).mockReturnValue({});
+      (getTotalStudentsWhoAnswered as jest.Mock).mockReturnValue(0);
+      
+      const stats = calculateAnswerStatistics([], 1);
+      const total = getTotalStudentsWhoAnswered([], 1);
+      
+      expect(stats).toEqual({});
+      expect(total).toBe(0);
+    });
+
+    test('should handle students with no answers', () => {
+      const studentsNoAnswers: StudentType[] = [
+        { id: 'student1', name: 'John', answers: [] },
+        { id: 'student2', name: 'Jane', answers: [] }
+      ];
+      
+      (calculateAnswerStatistics as jest.Mock).mockReturnValue({});
+      (getTotalStudentsWhoAnswered as jest.Mock).mockReturnValue(0);
+      
+      const stats = calculateAnswerStatistics(studentsNoAnswers, 1);
+      const total = getTotalStudentsWhoAnswered(studentsNoAnswers, 1);
+      
+      expect(stats).toEqual({});
+      expect(total).toBe(0);
     });
   });
 });

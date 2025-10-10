@@ -79,3 +79,31 @@ export const getAnswerPercentage = (
 ): number => {
     return statistics[answerText]?.percentage || 0;
 };
+
+/**
+ * Gets the count for a specific answer option
+ * @param statistics The answer statistics object
+ * @param answerText The answer text to look for
+ * @returns The count of students who selected this answer
+ */
+export const getAnswerCount = (
+    statistics: AnswerStatistics,
+    answerText: string
+): number => {
+    return statistics[answerText]?.count || 0;
+};
+
+/**
+ * Gets the total number of students who answered a specific question
+ * @param students Array of students with their answers
+ * @param questionId The ID of the question to analyze
+ * @returns Total number of students who provided an answer for this question
+ */
+export const getTotalStudentsWhoAnswered = (
+    students: StudentType[],
+    questionId: number
+): number => {
+    return students.filter(student =>
+        student.answers.some(answer => answer.idQuestion === questionId)
+    ).length;
+};
