@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import { MemoryRouter, useNavigate, useParams } from 'react-router-dom';
 import ManageRoom from 'src/pages/Teacher/ManageRoom/ManageRoom';
-import { Student } from 'src/Types/StudentType';
+import { Answer, Student } from 'src/Types/StudentType';
 import { QuizType } from 'src/Types/QuizType';
 import webSocketService, { AnswerReceptionFromBackendType } from 'src/services/WebsocketService';
 import ApiService from 'src/services/ApiService';
@@ -44,8 +44,8 @@ const mockQuiz: QuizType = {
 };
 
 const mockStudents: Student[] = [
-    new Student('Student 1', '1', 'TestRoom'),
-    new Student('Student 2', '2', 'TestRoom'),
+    new Student('Student 1', '1', 'TestRoom', [new Answer(['Answer1'], true, 1)], true),
+    new Student('Student 2', '2', 'TestRoom', [new Answer(['Answer1'], true, 1)], true)
 ];
 
 const mockAnswerData: AnswerReceptionFromBackendType = {
