@@ -141,14 +141,14 @@ class FoldersController {
             if (req.logDbOperation) {
                 req.logDbOperation('select', 'folders', dbOperationTime, true, {
                     folderId,
-                    contentCount: content.quizzes?.length || 0
+                    contentCount: content.length
                 });
             }
             
             if (req.logAction) {
                 req.logAction('folder_content_accessed', {
                     folderId,
-                    contentCount: content.quizzes?.length || 0,
+                    contentCount: content.length,
                     dbOperationTime: `${dbOperationTime}ms`
                 });
             }
