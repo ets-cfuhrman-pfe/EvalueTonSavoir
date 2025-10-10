@@ -22,8 +22,25 @@ class UsersController {
             if (!this.users) {
                 throw new AppError('Users model not found');
             }
+
+            const startTime = Date.now();
             await this.users.register(email, password);
-    
+            const dbOperationTime = Date.now() - startTime;
+            
+            // Log database operation
+            if (req.logDbOperation) {
+                req.logDbOperation('insert', 'users', dbOperationTime, true, { email });
+            }
+
+            // Log user action
+            if (req.logAction) {
+                req.logAction('user_register', { 
+                    email, 
+                    registrationMethod: 'email',
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
+            }
+
             emailer.registerConfirmation(email);
     
             return res.status(200).json({
@@ -31,6 +48,13 @@ class UsersController {
             });
     
         } catch (error) {
+            // Log registration failure
+            if (req.logSecurity) {
+                req.logSecurity('registration_failed', 'warn', {
+                    email: req.body?.email,
+                    error: error.message
+                });
+            }
             return next(error);
         }
     }
