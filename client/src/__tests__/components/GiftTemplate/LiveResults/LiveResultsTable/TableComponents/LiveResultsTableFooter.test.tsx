@@ -1,16 +1,16 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import LiveResultsTableFooter from 'src/components/LiveResults/LiveResultsTable/TableComponents/LiveResultTableFooter';
 
 
-const mockStudents: StudentType[] = [
-    new StudentType('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
-    new StudentType('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
+const mockStudents: Student[] = [
+    new Student('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
+    new Student('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
 ];
 
-const mockGetStudentGrade = jest.fn((student: StudentType) => {
+const mockGetStudentGrade = jest.fn((student: Student) => {
     const correctAnswers = student.answers.filter(answer => answer.isCorrect).length;
     return (correctAnswers / 2) * 100; // Assuming there are 2 questions
 });

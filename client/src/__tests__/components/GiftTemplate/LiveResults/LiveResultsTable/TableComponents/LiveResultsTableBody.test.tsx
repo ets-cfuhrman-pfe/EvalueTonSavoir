@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import LiveResultsTableBody from 'src/components/LiveResults/LiveResultsTable/TableComponents/LiveResultsTableBody';
 import { QuestionType } from 'src/Types/QuestionType';
 import { BaseQuestion, parse } from 'gift-pegjs';
@@ -19,12 +19,12 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
     return {question : newMockQuestion as BaseQuestion};
 });
 
-const mockStudents: StudentType[] = [
-    new StudentType('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
-    new StudentType('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
+const mockStudents: Student[] = [
+    new Student('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
+    new Student('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
 ];
 
-const mockGetStudentGrade = jest.fn((student: StudentType) => {
+const mockGetStudentGrade = jest.fn((student: Student) => {
     const correctAnswers = student.answers.filter(answer => answer.isCorrect).length;
     return (correctAnswers / mockQuestions.length) * 100;
 });

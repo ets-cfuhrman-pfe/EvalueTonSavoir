@@ -9,7 +9,7 @@ import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import QuizResults from '../QuizResults/QuizResults';
-import { StudentType, Answer } from '../../Types/StudentType';
+import { Student, Answer } from '../../Types/StudentType';
 import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
 
 interface StudentModeQuizV2Props {
@@ -71,7 +71,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const isAnswerSubmitted = answerSubmission?.answer !== undefined && answerSubmission?.roomName !== undefined;
 
     // Create a student object for the current student
-    const currentStudent: StudentType = new StudentType(
+    const currentStudent: Student = new Student(
         studentName || 'Vous',
         'current-student',
         'current-room',

@@ -3,13 +3,13 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import StudentWaitPage from 'src/components/StudentWaitPage/StudentWaitPage';
-import { StudentType } from '../../../Types/StudentType';
+import { Student } from '../../../Types/StudentType';
 
 describe('StudentWaitPage Component', () => {
-    const mockUsers: StudentType[] = [
-        new StudentType('User1', '1', 'TestRoom'),
-        new StudentType('User2', '2', 'TestRoom'),
-        new StudentType('User3', '3', 'TestRoom'),
+    const mockUsers: Student[] = [
+        new Student('User1', '1', 'TestRoom'),
+        new Student('User2', '2', 'TestRoom'),
+        new Student('User3', '3', 'TestRoom'),
     ];
 
     const mockProps = {

@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LiveResults from 'src/components/LiveResults/LiveResults';
 import { QuestionType } from 'src/Types/QuestionType';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import { Socket } from 'socket.io-client';
 import { BaseQuestion, parse } from 'gift-pegjs';
 
@@ -37,13 +37,13 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
 console.log(`mockQuestions: ${JSON.stringify(mockQuestions)}`);
 
 // each student should have a different score for the tests to pass
-const mockStudents: StudentType[] = [
-    new StudentType('Student 1', '1', 'TestRoom'),
-    new StudentType('Student 2', '2', 'TestRoom', [
+const mockStudents: Student[] = [
+    new Student('Student 1', '1', 'TestRoom'),
+    new Student('Student 2', '2', 'TestRoom', [
         new Answer(['Choice 3'], false, 1),
         new Answer([true], true, 2)
     ]),
-    new StudentType('Student 3', '3', 'TestRoom', [
+    new Student('Student 3', '3', 'TestRoom', [
         new Answer(['Choice 1', 'Choice 2'], true, 1),
         new Answer([true], true, 2)
     ]),

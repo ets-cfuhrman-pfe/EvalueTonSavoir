@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import LiveResultsTable from 'src/components/LiveResults/LiveResultsTable/LiveResultsTable';
 import { QuestionType } from 'src/Types/QuestionType';
 import { BaseQuestion, parse } from 'gift-pegjs';
@@ -19,9 +19,9 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
 });
 
 
-const mockStudents: StudentType[] = [
-    new StudentType('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
-    new StudentType('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
+const mockStudents: Student[] = [
+    new Student('Student 1', '1', 'TestRoom', [new Answer(['Answer 1'], true, 1)]),
+    new Student('Student 2', '2', 'TestRoom', [new Answer(['Answer 2'], false, 2)]),
 ];
 
 const mockShowSelectedQuestion = jest.fn();

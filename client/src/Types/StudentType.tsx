@@ -12,7 +12,7 @@ export class Answer {
     }
 }
 
-export class StudentType {
+export class Student {
     name: string;
     id: string;
     room: string;

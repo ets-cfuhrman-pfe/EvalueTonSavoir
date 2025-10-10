@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LiveResultsV2 from 'src/components/LiveResults/LiveResultsV2';
 import { QuestionType } from 'src/Types/QuestionType';
-import { StudentType, Answer } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import { Socket } from 'socket.io-client';
 import { BaseQuestion, parse } from 'gift-pegjs';
 
@@ -34,33 +34,19 @@ const mockQuestions: QuestionType[] = mockGiftQuestions.map((question, index) =>
     return { question: newMockQuestion as BaseQuestion };
 });
 
-const mockStudents: StudentType[] = [
-    {
-        id: '1',
-        name: 'Connected Student',
-        answers: [
-            { idQuestion: 1, answer: ['Choice 1'], isCorrect: true },
-            { idQuestion: 2, answer: [true], isCorrect: true }
-        ],
-        isConnected: true
-    },
-    {
-        id: '2',
-        name: 'Disconnected Student',
-        answers: [
-            { idQuestion: 1, answer: ['Choice 2'], isCorrect: false },
-            { idQuestion: 2, answer: [false], isCorrect: false }
-        ],
-        isConnected: false
-    },
-    {
-        id: '3',
-        name: 'Another Connected Student',
-        answers: [
-            { idQuestion: 1, answer: ['Choice 1'], isCorrect: true },
-            { idQuestion: 2, answer: [true], isCorrect: true }
-        ]
-    }
+const mockStudents: Student[] = [
+    new Student('Connected Student', '1', 'TestRoom', [
+        new Answer(['Choice 1'], true, 1),
+        new Answer([true], true, 2)
+    ], true),
+    new Student('Disconnected Student', '2', 'TestRoom', [
+        new Answer(['Choice 2'], false, 1),
+        new Answer([false], false, 2)
+    ], false),
+    new Student('Another Connected Student', '3', 'TestRoom', [
+        new Answer(['Choice 1'], true, 1),
+        new Answer([true], true, 2)
+    ], true)
 ];
 
 const mockShowSelectedQuestion = jest.fn();
