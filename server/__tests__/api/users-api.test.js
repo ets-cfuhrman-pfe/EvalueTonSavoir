@@ -33,11 +33,35 @@ jest.mock("../../config/email.js", () => ({
   newPasswordConfirmation: jest.fn(),
 }));
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
+// Import request ID middleware
+const { requestIdMiddleware } = require("../../config/httpLogger");
+
 // Create test app with manual routing
 const createTestApp = () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Add request ID middleware
+  app.use(requestIdMiddleware);
 
   // Create controller instance with mock model
   const usersController = new UsersController(mockUsersModel);

@@ -4,6 +4,24 @@ const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
 // Import the actual components
 const ImagesController = require("../../controllers/images");
 const jwtMiddleware = require("../../middleware/jwtToken");
@@ -159,9 +177,9 @@ describe("Images API Integration Tests", () => {
         .post("/api/image/upload")
         .set("Authorization", `Bearer ${authToken}`)
         .attach('image', mockFile.buffer, 'test-image.jpg')
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -209,9 +227,9 @@ describe("Images API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/image/get/image123")
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -265,9 +283,9 @@ describe("Images API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/image/getImages")
-        .expect(505);
+        .expect(500);
       
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -333,9 +351,9 @@ describe("Images API Integration Tests", () => {
       const response = await request(app)
         .get("/api/image/getUserImages?uid=user123")
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -388,9 +406,9 @@ describe("Images API Integration Tests", () => {
       const response = await request(app)
         .delete("/api/image/delete?uid=user123&imgId=image456")
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(505);
+        .expect(500);
       
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 });

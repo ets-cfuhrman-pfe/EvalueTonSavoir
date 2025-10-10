@@ -2,6 +2,24 @@ const request = require("supertest");
 const express = require("express");
 const bodyParser = require("body-parser");
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
 // Import the actual components
 const authController = require("../../controllers/auth");
 const errorHandler = require("../../middleware/errorHandler");
@@ -93,21 +111,21 @@ describe("Auth API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/auth/getActiveAuth")
-        .expect(505);
-      expect(response.statusCode).toBe(505);
+        .expect(500);
+      expect(response.statusCode).toBe(500);
 
     });
 
     it("should handle getActiveAuth error", async () => {
       mockAuthConfig.getActiveAuth.mockImplementation(() => {
-        throw new Error("Database error");
+        throw new Error("GetActiveAuth failed");
       });
 
       const response = await request(app)
         .get("/api/auth/getActiveAuth")
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
 
     it("should return error when no auth configuration available", async () => {
@@ -162,9 +180,9 @@ describe("Auth API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/auth/getRoomsRequireAuth")
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 });
