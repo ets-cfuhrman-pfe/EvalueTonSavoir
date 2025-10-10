@@ -20,10 +20,36 @@ class FoldersController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
+            const startTime = Date.now();
             const result = await this.folders.create(title, req.user.userId);
+            const dbOperationTime = Date.now() - startTime;
     
             if (!result) {
+                // Log folder creation failure
+                if (req.logAction) {
+                    req.logAction('folder_creation_failed', {
+                        title,
+                        reason: 'folder_already_exists',
+                        dbOperationTime: `${dbOperationTime}ms`
+                    });
+                }
                 throw new AppError(FOLDER_ALREADY_EXISTS);
+            }
+    
+            // Log successful folder creation
+            if (req.logDbOperation) {
+                req.logDbOperation('insert', 'folders', dbOperationTime, true, { 
+                    folderId: result,
+                    title 
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('folder_created', {
+                    folderId: result,
+                    title,
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
             }
     
             return res.status(200).json({
@@ -37,10 +63,32 @@ class FoldersController {
     
     getUserFolders = async (req, res, next) => {
         try {
+            const startTime = Date.now();
             const folders = await this.folders.getUserFolders(req.user.userId);
+            const dbOperationTime = Date.now() - startTime;
     
             if (!folders) {
+                // Log folder not found
+                if (req.logDbOperation) {
+                    req.logDbOperation('select', 'folders', dbOperationTime, false, {
+                        reason: 'no_folders_found'
+                    });
+                }
                 throw new AppError(FOLDER_NOT_FOUND);
+            }
+    
+            // Log successful folder retrieval
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'folders', dbOperationTime, true, {
+                    folderCount: folders.length
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('folders_retrieved', {
+                    folderCount: folders.length,
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
             }
     
             return res.status(200).json({
@@ -61,16 +109,48 @@ class FoldersController {
             }
     
             // Is this folder mine
+            const startTime = Date.now();
             const owner = await this.folders.getOwner(folderId);
-    
+            
             if (owner != req.user.userId) {
+                // Log unauthorized folder access attempt
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_folder_access', 'warn', {
+                        folderId,
+                        attemptedBy: req.user.userId,
+                        actualOwner: owner
+                    });
+                }
                 throw new AppError(FOLDER_NOT_FOUND);
             }
     
             const content = await this.folders.getContent(folderId);
+            const dbOperationTime = Date.now() - startTime;
     
             if (!content) {
+                if (req.logDbOperation) {
+                    req.logDbOperation('select', 'folders', dbOperationTime, false, {
+                        folderId,
+                        reason: 'content_not_found'
+                    });
+                }
                 throw new AppError(GETTING_FOLDER_ERROR);
+            }
+    
+            // Log successful folder content retrieval
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'folders', dbOperationTime, true, {
+                    folderId,
+                    contentCount: content.quizzes?.length || 0
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('folder_content_accessed', {
+                    folderId,
+                    contentCount: content.quizzes?.length || 0,
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
             }
     
             return res.status(200).json({
