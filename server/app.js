@@ -58,6 +58,9 @@ process.env['FRONTEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${proces
 process.env['BACKEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['PORT']}`:"")
 
 const errorHandler = require("./middleware/errorHandler.js");
+const logger = require('./config/logger');
+const httpLogger = require('./config/httpLogger');
+const loggingMiddleware = require('./middleware/logging');
 
 // Start app
 const app = express();
@@ -66,7 +69,7 @@ const bodyParser = require('body-parser');
 let isDev = process.env.NODE_ENV === 'development';
 
 const configureServer = (httpServer, isDev) => {
-  console.log(`Configuring server with isDev: ${isDev}`);
+  logger.info(`Configuring server with isDev: ${isDev}`);
   return new Server(httpServer, {
     path: "/socket.io",
     cors: {
@@ -81,17 +84,23 @@ const configureServer = (httpServer, isDev) => {
 // Start sockets (depending on the dev or prod environment)
 const server = http.createServer(app);
 
-console.log(`Environnement: ${process.env.NODE_ENV} (${isDev ? 'dev' : 'prod'})`);
+logger.info(`Environment: ${process.env.NODE_ENV} (${isDev ? 'dev' : 'prod'})`);
 
 const io = configureServer(server, isDev);
-console.log(`Server configured with cors.origin: ${io.opts.cors.origin} and secure: ${io.opts.secure}`);
+logger.info(`Server configured with cors.origin: ${io.opts.cors.origin} and secure: ${io.opts.secure}`);
 
 setupWebsocket(io);
-console.log(`Websocket setup with on() listeners.`);
+logger.info(`Websocket setup with on() listeners`);
 
+// Apply logging middleware early in the stack
+app.use(httpLogger.requestIdMiddleware);
+app.use(httpLogger.middleware);
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Add comprehensive logging middleware after body parsing
+app.use(loggingMiddleware.comprehensiveLogging);
 
 // Create routes
 app.use('/api/user', userRouter);
@@ -117,21 +126,39 @@ app.use(errorHandler);
 async function start() {
   const port = process.env.PORT || 4400;
 
-  // Check DB connection
-  await db.connect();
-  db.getConnection();
-  console.log(`Connexion MongoDB établie`);
+  try {
+    // Check DB connection
+    await db.connect();
+    db.getConnection();
+    logger.info('MongoDB connection established');
 
-  server.listen(port, () => {
-    console.log(`Serveur écoutant sur le port ${port}`);
-  });
+    server.listen(port, () => {
+      logger.info(`Server listening on port ${port}`, {
+        port,
+        environment: process.env.NODE_ENV,
+        nodeVersion: process.version
+      });
+    });
+  } catch (error) {
+    logger.error('Failed to start server', {
+      error: error.message,
+      stack: error.stack
+    });
+    process.exit(1);
+  }
 }
 
 // Graceful shutdown on SIGINT (Ctrl+C)
 process.on('SIGINT', async () => {
-  console.log('Shutting down...');
-  await db.closeConnection();
-  process.exit(0);
+  logger.info('Received SIGINT, shutting down gracefully...');
+  try {
+    await db.closeConnection();
+    logger.info('Database connection closed');
+    process.exit(0);
+  } catch (error) {
+    logger.error('Error during shutdown', { error: error.message });
+    process.exit(1);
+  }
 });
 
 start();
