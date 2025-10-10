@@ -20,6 +20,9 @@ jest.mock("../../config/logger", () => ({
   logDatabaseOperation: jest.fn(),
 }));
 
+// Import the mocked logger
+const logger = require("../../config/logger");
+
 // Import the actual components
 const authController = require("../../controllers/auth");
 const errorHandler = require("../../middleware/errorHandler");
@@ -41,6 +44,19 @@ const createTestApp = () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Mock logging middleware
+  app.use((req, res, next) => {
+    req.logAction = (action, details) => {
+      if (req.user) {
+        logger.logUserAction(req.user.userId, req.user.email, action, details);
+      } else {
+        logger.warn(`Action attempted without authentication: ${action}`, details);
+      }
+    };
+    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
+    next();
+  });
 
   // Define routes
   app.get("/api/auth/getActiveAuth", asyncHandler(authController.getActive));
@@ -102,6 +118,16 @@ describe("Auth API Integration Tests", () => {
 
       expect(mockAuthConfig.loadConfig).toHaveBeenCalled();
       expect(mockAuthConfig.getActiveAuth).toHaveBeenCalled();
+
+      // Verify logging
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Action attempted without authentication: auth_config_accessed',
+        expect.objectContaining({
+          operation: 'getActive',
+          activeAuthMethods: 0, // authActive is an object, not array
+          operationTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should handle configuration loading error", async () => {
@@ -114,6 +140,15 @@ describe("Auth API Integration Tests", () => {
         .expect(500);
       expect(response.statusCode).toBe(500);
 
+      // Verify error logging
+      expect(logger.logSecurityEvent).toHaveBeenCalledWith(
+        'auth_config_error',
+        'error',
+        expect.objectContaining({
+          operation: 'getActive',
+          error: 'Configuration loading failed'
+        })
+      );
     });
 
     it("should handle getActiveAuth error", async () => {
@@ -126,6 +161,16 @@ describe("Auth API Integration Tests", () => {
         .expect(500);
 
       expect(response.statusCode).toBe(500);
+
+      // Verify error logging
+      expect(logger.logSecurityEvent).toHaveBeenCalledWith(
+        'auth_config_error',
+        'error',
+        expect.objectContaining({
+          operation: 'getActive',
+          error: 'GetActiveAuth failed'
+        })
+      );
     });
 
     it("should return error when no auth configuration available", async () => {
@@ -156,6 +201,16 @@ describe("Auth API Integration Tests", () => {
       });
 
       expect(mockAuthConfig.getRoomsRequireAuth).toHaveBeenCalled();
+
+      // Verify logging
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Action attempted without authentication: room_auth_requirements_accessed',
+        expect.objectContaining({
+          operation: 'getRoomsRequireAuth',
+          requiresAuth: true,
+          operationTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should return false when rooms do not require auth", async () => {
@@ -171,6 +226,16 @@ describe("Auth API Integration Tests", () => {
       });
 
       expect(mockAuthConfig.getRoomsRequireAuth).toHaveBeenCalled();
+
+      // Verify logging
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Action attempted without authentication: room_auth_requirements_accessed',
+        expect.objectContaining({
+          operation: 'getRoomsRequireAuth',
+          requiresAuth: false,
+          operationTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should handle getRoomsRequireAuth error", async () => {
@@ -183,6 +248,16 @@ describe("Auth API Integration Tests", () => {
         .expect(500);
 
       expect(response.statusCode).toBe(500);
+
+      // Verify error logging
+      expect(logger.logSecurityEvent).toHaveBeenCalledWith(
+        'room_auth_config_error',
+        'error',
+        expect.objectContaining({
+          operation: 'getRoomsRequireAuth',
+          error: 'Configuration error'
+        })
+      );
     });
   });
 });
