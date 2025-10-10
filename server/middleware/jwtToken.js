@@ -15,22 +15,21 @@ class Token {
         try {
             const token = req.header('Authorization') && req.header('Authorization').split(' ')[1];
             if (!token) {
-                throw new AppError(UNAUTHORIZED_NO_TOKEN_GIVEN);
+                return next(new AppError(UNAUTHORIZED_NO_TOKEN_GIVEN));
             }
 
             jwt.verify(token, process.env.JWT_SECRET, (error, payload) => {
                 if (error) {
-                    throw new AppError(UNAUTHORIZED_INVALID_TOKEN)
+                    return next(new AppError(UNAUTHORIZED_INVALID_TOKEN));
                 }
 
                 req.user = payload;
+                return next();
             });
 
         } catch (error) {
             return next(error);
         }
-
-        return next();
     }
 }
 
