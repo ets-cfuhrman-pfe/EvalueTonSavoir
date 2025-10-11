@@ -33,11 +33,52 @@ jest.mock("../../config/email.js", () => ({
   newPasswordConfirmation: jest.fn(),
 }));
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
+// Import the mocked logger
+const logger = require("../../config/logger");
+
+// Import request ID middleware
+const { requestIdMiddleware } = require("../../config/httpLogger");
+
 // Create test app with manual routing
 const createTestApp = () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Add request ID middleware
+  app.use(requestIdMiddleware);
+
+  // Mock logging middleware
+  app.use((req, res, next) => {
+    req.logAction = (action, details) => {
+      if (req.user) {
+        logger.logUserAction(req.user.userId, req.user.email, action, details);
+      } else {
+        logger.warn(`Action attempted without authentication: ${action}`, details);
+      }
+    };
+    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
+    req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
+    next();
+  });
 
   // Create controller instance with mock model
   const usersController = new UsersController(mockUsersModel);
@@ -119,6 +160,24 @@ describe("Users API Integration Tests", () => {
       expect(mockUsersModel.register).toHaveBeenCalledWith(
         "newuser@example.com",
         "ValidPass123"
+      );
+
+      // Verify logging
+      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+        'insert',
+        'users',
+        expect.any(Number),
+        true,
+        { email: 'newuser@example.com' }
+      );
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Action attempted without authentication: user_register',
+        expect.objectContaining({
+          email: 'newuser@example.com',
+          registrationMethod: 'email',
+          dbOperationTime: expect.stringMatching(/^\d+ms$/)
+        })
       );
     });
 

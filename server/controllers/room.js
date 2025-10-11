@@ -27,12 +27,42 @@ class RoomsController {
 
       const normalizedTitle = title.toUpperCase().trim();
       
+      const existsStartTime = Date.now();
       const roomExists = await this.rooms.roomExists(normalizedTitle, req.user.userId);
+      
       if (roomExists) {
+        // Log room creation failure
+        if (req.logAction) {
+          req.logAction('room_creation_failed', {
+            roomTitle: normalizedTitle,
+            reason: 'room_already_exists',
+            checkTime: `${Date.now() - existsStartTime}ms`
+          });
+        }
         throw new AppError(ROOM_ALREADY_EXISTS);
       }
 
+      const createStartTime = Date.now();
       const result = await this.rooms.create(normalizedTitle, req.user.userId);
+      const createTime = Date.now() - createStartTime;
+      const totalTime = Date.now() - existsStartTime;
+
+      // Log successful room creation
+      if (req.logDbOperation) {
+        req.logDbOperation('insert', 'rooms', createTime, true, {
+          roomId: result.insertedId,
+          roomTitle: normalizedTitle
+        });
+      }
+      
+      if (req.logAction) {
+        req.logAction('room_created', {
+          roomId: result.insertedId,
+          roomTitle: normalizedTitle,
+          createTime: `${createTime}ms`,
+          totalTime: `${totalTime}ms`
+        });
+      }
 
       return res.status(201).json({
         message: "Salle créée avec succès.",
@@ -46,10 +76,32 @@ class RoomsController {
 
   getUserRooms = async (req, res, next) => {
     try {
+      const startTime = Date.now();
       const rooms = await this.rooms.getUserRooms(req.user.userId);
+      const retrievalTime = Date.now() - startTime;
 
       if (!rooms) {
+        // Log no rooms found
+        if (req.logDbOperation) {
+          req.logDbOperation('select', 'rooms', retrievalTime, false, {
+            reason: 'no_rooms_found'
+          });
+        }
         throw new AppError(ROOM_NOT_FOUND);
+      }
+
+      // Log successful rooms retrieval
+      if (req.logDbOperation) {
+        req.logDbOperation('select', 'rooms', retrievalTime, true, {
+          roomCount: rooms.length
+        });
+      }
+      
+      if (req.logAction) {
+        req.logAction('user_rooms_retrieved', {
+          roomCount: rooms.length,
+          retrievalTime: `${retrievalTime}ms`
+        });
       }
 
       return res.status(200).json({
@@ -67,10 +119,35 @@ class RoomsController {
       if (!roomId) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
+      
+      const startTime = Date.now();
       const content = await this.rooms.getContent(roomId);
+      const retrievalTime = Date.now() - startTime;
 
       if (!content) {
+        // Log room content not found
+        if (req.logDbOperation) {
+          req.logDbOperation('select', 'rooms', retrievalTime, false, {
+            roomId,
+            reason: 'room_content_not_found'
+          });
+        }
         throw new AppError(GETTING_ROOM_ERROR);
+      }
+
+      // Log successful room content retrieval
+      if (req.logDbOperation) {
+        req.logDbOperation('select', 'rooms', retrievalTime, true, {
+          roomId,
+          contentType: typeof content
+        });
+      }
+      
+      if (req.logAction) {
+        req.logAction('room_content_accessed', {
+          roomId,
+          retrievalTime: `${retrievalTime}ms`
+        });
       }
 
       return res.status(200).json({

@@ -19,16 +19,73 @@ class QuizController {
             }
     
             // Is this folder mine
+            const ownerStartTime = Date.now();
             const owner = await this.folders.getOwner(folderId);
-    
+            
             if (owner != req.user.userId) {
+                // Log unauthorized quiz creation attempt
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_quiz_creation_attempt', 'warn', {
+                        folderId,
+                        attemptedBy: req.user.userId,
+                        folderOwner: owner,
+                        quizTitle: title
+                    });
+                }
                 throw new AppError(FOLDER_NOT_FOUND);
             }
     
+            const createStartTime = Date.now();
             const result = await this.quizzes.create(title, content, folderId, req.user.userId);
+            const createTime = Date.now() - createStartTime;
+            const totalTime = Date.now() - ownerStartTime;
     
             if (!result) {
+                // Log quiz creation failure
+                if (req.logAction) {
+                    req.logAction('quiz_creation_failed', {
+                        title,
+                        folderId,
+                        reason: 'quiz_already_exists',
+                        totalTime: `${totalTime}ms`
+                    });
+                }
                 throw new AppError(QUIZ_ALREADY_EXISTS);
+            }
+    
+            // Log successful quiz creation with content backup
+            if (req.logDbOperation) {
+                req.logDbOperation('insert', 'quizzes', createTime, true, {
+                    quizId: result,
+                    title,
+                    folderId,
+                    contentLength: content.length,
+                    contentHash: require('crypto').createHash('md5').update(content).digest('hex')
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('quiz_created', {
+                    quizId: result,
+                    title,
+                    folderId,
+                    contentLength: content.length,
+                    createTime: `${createTime}ms`,
+                    totalTime: `${totalTime}ms`
+                });
+            }
+
+            // Create backup of newly created quiz
+            if (req.logger) {
+                req.logger.info('Quiz created - content backup', {
+                    quizId: result,
+                    title,
+                    folderId,
+                    content: content, // Full GIFT text for recovery
+                    contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+                    creationTimestamp: new Date().toISOString(),
+                    operation: 'quiz_creation_backup'
+                });
             }
     
             return res.status(200).json({
@@ -48,15 +105,51 @@ class QuizController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
+            const startTime = Date.now();
             const content = await this.quizzes.getContent(quizId);
+            const retrievalTime = Date.now() - startTime;
     
             if (!content) {
+                // Log quiz not found
+                if (req.logDbOperation) {
+                    req.logDbOperation('select', 'quizzes', retrievalTime, false, {
+                        quizId,
+                        reason: 'quiz_not_found'
+                    });
+                }
                 throw new AppError(GETTING_QUIZ_ERROR);
             }
     
             // Is this quiz mine
             if (content.userId != req.user.userId) {
+                // Log unauthorized quiz access attempt
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_quiz_access', 'warn', {
+                        quizId,
+                        attemptedBy: req.user.userId,
+                        actualOwner: content.userId,
+                        quizTitle: content.title
+                    });
+                }
                 throw new AppError(QUIZ_NOT_FOUND);
+            }
+    
+            // Log successful quiz retrieval
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'quizzes', retrievalTime, true, {
+                    quizId,
+                    quizTitle: content.title,
+                    contentLength: content.content?.length || 0
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('quiz_accessed', {
+                    quizId,
+                    quizTitle: content.title,
+                    contentLength: content.content?.length || 0,
+                    retrievalTime: `${retrievalTime}ms`
+                });
             }
     
             return res.status(200).json({
@@ -75,18 +168,71 @@ class QuizController {
             if (!quizId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
+
+            // Get content before deletion for recovery backup
+            const content = await this.quizzes.getContent(quizId);
     
             // Is this quiz mine
             const owner = await this.quizzes.getOwner(quizId);
     
             if (owner != req.user.userId) {
+                // Log unauthorized deletion attempt
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_quiz_deletion_attempt', 'warn', {
+                        quizId,
+                        attemptedBy: req.user.userId,
+                        actualOwner: owner,
+                        quizTitle: content?.title || 'unknown'
+                    });
+                }
                 throw new AppError(QUIZ_NOT_FOUND);
             }
+
+            // Create pre-deletion backup with content for recovery
+            if (req.logger && content) {
+                req.logger.info('Quiz deletion backup - content preserved', {
+                    quizId,
+                    title: content.title,
+                    content: content.content, // Full GIFT text preserved before deletion
+                    contentHash: require('crypto').createHash('md5').update(content.content || '').digest('hex'),
+                    folderId: content.folderId,
+                    deletionTimestamp: new Date().toISOString(),
+                    operation: 'quiz_deletion_backup'
+                });
+            }
     
+            const startTime = Date.now();
             const result = await this.quizzes.delete(quizId);
+            const deleteTime = Date.now() - startTime;
     
             if (!result) {
+                // Log deletion failure
+                if (req.logAction) {
+                    req.logAction('quiz_deletion_failed', {
+                        quizId,
+                        quizTitle: content?.title || 'unknown',
+                        deleteTime: `${deleteTime}ms`
+                    });
+                }
                 throw new AppError(DELETE_QUIZ_ERROR);
+            }
+
+            // Log successful deletion
+            if (req.logDbOperation) {
+                req.logDbOperation('delete', 'quizzes', deleteTime, true, {
+                    quizId,
+                    quizTitle: content?.title || 'unknown',
+                    contentLength: content?.content?.length || 0
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('quiz_deleted', {
+                    quizId,
+                    quizTitle: content?.title || 'unknown',
+                    contentLength: content?.content?.length || 0,
+                    deleteTime: `${deleteTime}ms`
+                });
             }
     
             return res.status(200).json({
@@ -106,17 +252,115 @@ class QuizController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
+            // Get the original content for backup logging
+            const originalContent = await this.quizzes.getContent(quizId);
+            
             // Is this quiz mine
             const owner = await this.quizzes.getOwner(quizId);
     
             if (owner != req.user.userId) {
+                // Log unauthorized quiz update attempt
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_quiz_update_attempt', 'warn', {
+                        quizId,
+                        attemptedBy: req.user.userId,
+                        actualOwner: owner,
+                        attemptedTitle: newTitle
+                    });
+                }
                 throw new AppError(QUIZ_NOT_FOUND);
             }
+
+            // Log quiz save attempt with  content for recovery
+            if (req.logger) {
+                req.logger.info('Quiz save attempt initiated', {
+                    quizId,
+                    originalTitle: originalContent?.title || 'unknown',
+                    newTitle,
+                    originalContentLength: originalContent?.content?.length || 0,
+                    newContentLength: newContent.length,
+                    contentPreview: newContent.substring(0, 100) + (newContent.length > 100 ? '...' : ''),
+                    operation: 'quiz_update_attempt'
+                });
+            }
+
+            // Create backup log entry with  content
+            if (req.logger) {
+                req.logger.info('Quiz content backup before update', {
+                    quizId,
+                    backupType: 'pre_update',
+                    timestamp: new Date().toISOString(),
+                    originalTitle: originalContent?.title || 'unknown',
+                    originalContent: originalContent?.content || '',
+                    newTitle,
+                    newContent: newContent, // Full GIFT text for recovery
+                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex'),
+                    operation: 'quiz_content_backup'
+                });
+            }
     
+            const startTime = Date.now();
             const result = await this.quizzes.update(quizId, newTitle, newContent);
+            const updateTime = Date.now() - startTime;
     
             if (!result) {
+                // Log update failure with content for recovery
+                if (req.logger) {
+                    req.logger.error('Quiz update failed - content preserved for recovery', {
+                        quizId,
+                        newTitle,
+                        newContent: newContent, // Full GIFT text preserved
+                        updateTime: `${updateTime}ms`,
+                        operation: 'quiz_update_failed'
+                    });
+                }
+                
+                if (req.logAction) {
+                    req.logAction('quiz_update_failed', {
+                        quizId,
+                        newTitle,
+                        contentLength: newContent.length,
+                        updateTime: `${updateTime}ms`,
+                        reason: 'database_operation_failed'
+                    });
+                }
                 throw new AppError(UPDATE_QUIZ_ERROR);
+            }
+
+            // Log successful update with verification
+            if (req.logDbOperation) {
+                req.logDbOperation('update', 'quizzes', updateTime, true, {
+                    quizId,
+                    titleChanged: originalContent?.title !== newTitle,
+                    contentChanged: originalContent?.content !== newContent,
+                    newTitle,
+                    newContentLength: newContent.length,
+                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex')
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('quiz_updated_successfully', {
+                    quizId,
+                    oldTitle: originalContent?.title || 'unknown',
+                    newTitle,
+                    oldContentLength: originalContent?.content?.length || 0,
+                    newContentLength: newContent.length,
+                    updateTime: `${updateTime}ms`
+                });
+            }
+
+            // Create post-update verification log
+            if (req.logger) {
+                req.logger.info('Quiz update completed successfully', {
+                    quizId,
+                    newTitle,
+                    newContent: newContent, // Full GIFT text saved
+                    updateTime: `${updateTime}ms`,
+                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex'),
+                    operation: 'quiz_update_success',
+                    verificationTimestamp: new Date().toISOString()
+                });
             }
     
             return res.status(200).json({
@@ -124,6 +368,18 @@ class QuizController {
             });
     
         } catch (error) {
+            // Log critical error with content preservation
+            if (req.logger && req.body) {
+                req.logger.error('Critical quiz update error - preserving content for recovery', {
+                    quizId: req.body.quizId,
+                    newTitle: req.body.newTitle,
+                    newContent: req.body.newContent || '', // Preserve attempted content
+                    error: error.message,
+                    stack: error.stack,
+                    operation: 'quiz_update_critical_error',
+                    recoveryTimestamp: new Date().toISOString()
+                });
+            }
             return next(error);
         }
     };
@@ -135,11 +391,22 @@ class QuizController {
             if (!quizId || !newFolderId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
+
+            // Get quiz details for logging
+            const quizContent = await this.quizzes.getContent(quizId);
     
             // Is this quiz mine
             const quizOwner = await this.quizzes.getOwner(quizId);
     
             if (quizOwner != req.user.userId) {
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_quiz_move_attempt', 'warn', {
+                        quizId,
+                        newFolderId,
+                        attemptedBy: req.user.userId,
+                        actualOwner: quizOwner
+                    });
+                }
                 throw new AppError(QUIZ_NOT_FOUND);
             }
     
@@ -147,17 +414,56 @@ class QuizController {
             const folderOwner = await this.folders.getOwner(newFolderId);
     
             if (folderOwner != req.user.userId) {
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_folder_move_attempt', 'warn', {
+                        quizId,
+                        newFolderId,
+                        attemptedBy: req.user.userId,
+                        folderOwner
+                    });
+                }
                 throw new AppError(FOLDER_NOT_FOUND);
             }
     
+            const startTime = Date.now();
             const result = await this.quizzes.move(quizId, newFolderId);
+            const moveTime = Date.now() - startTime;
     
             if (!result) {
+                if (req.logAction) {
+                    req.logAction('quiz_move_failed', {
+                        quizId,
+                        quizTitle: quizContent?.title || 'unknown',
+                        oldFolderId: quizContent?.folderId || 'unknown',
+                        newFolderId,
+                        moveTime: `${moveTime}ms`
+                    });
+                }
                 throw new AppError(MOVING_QUIZ_ERROR);
+            }
+
+            // Log successful move
+            if (req.logDbOperation) {
+                req.logDbOperation('update', 'quizzes', moveTime, true, {
+                    quizId,
+                    operation: 'move_folder',
+                    oldFolderId: quizContent?.folderId || 'unknown',
+                    newFolderId
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('quiz_moved', {
+                    quizId,
+                    quizTitle: quizContent?.title || 'unknown',
+                    oldFolderId: quizContent?.folderId || 'unknown',
+                    newFolderId,
+                    moveTime: `${moveTime}ms`
+                });
             }
     
             return res.status(200).json({
-                message: 'Utilisateur déplacé avec succès.'
+                message: 'Quiz déplacé avec succès.'
             });
     
         } catch (error) {
@@ -218,17 +524,19 @@ class QuizController {
     };
     
     duplicate = async (req, res, next) => {
-        const { quizId } = req.body;
-    
         try {
+            const { quizId } = req.body;
+    
+            if (!quizId) {
+                throw new AppError(MISSING_REQUIRED_PARAMETER);
+            }
+
             const newQuizId = await this.quizzes.duplicate(quizId, req.user.userId);
             res.status(200).json({ success: true, newQuizId });
         } catch (error) {
             return next(error);
         }
-    };
-    
-    quizExists = async (title, userId) => {
+    };    quizExists = async (title, userId) => {
         try {
             const existingFile = await this.quizzes.quizExists(title, userId);
             return existingFile !== null;
@@ -310,7 +618,117 @@ class QuizController {
         } catch (error) {
             return next(error);
         }
-    };    
+    };
+
+    // Auto-save method to be implemented
+    // autoSave = async (req, res, next) => {
+    //     try {
+    //         const { quizId, title, content, isDraft = true } = req.body;
+
+    //         if (!quizId || !title || !content) {
+    //             throw new AppError(MISSING_REQUIRED_PARAMETER);
+    //         }
+
+    //         // Verify ownership
+    //         const owner = await this.quizzes.getOwner(quizId);
+    //         if (owner != req.user.userId) {
+    //             if (req.logSecurity) {
+    //                 req.logSecurity('unauthorized_quiz_autosave_attempt', 'warn', {
+    //                     quizId,
+    //                     attemptedBy: req.user.userId,
+    //                     actualOwner: owner
+    //                 });
+    //             }
+    //             throw new AppError(QUIZ_NOT_FOUND);
+    //         }
+
+    //         // Create comprehensive auto-save log with full content
+    //         if (req.logger) {
+    //             req.logger.info('Quiz auto-save checkpoint', {
+    //                 quizId,
+    //                 title,
+    //                 content: content, // Full GIFT text for recovery
+    //                 contentLength: content.length,
+    //                 contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+    //                 isDraft,
+    //                 autoSaveTimestamp: new Date().toISOString(),
+    //                 sessionId: req.sessionID || 'unknown',
+    //                 operation: 'quiz_autosave',
+    //                 // Additional recovery metadata
+    //                 userAgent: req.get('User-Agent'),
+    //                 clientIP: req.ip
+    //             });
+    //         }
+
+    //         // Log user action for analytics
+    //         if (req.logAction) {
+    //             req.logAction('quiz_autosaved', {
+    //                 quizId,
+    //                 title,
+    //                 contentLength: content.length,
+    //                 isDraft,
+    //                 sessionId: req.sessionID || 'unknown'
+    //             });
+    //         }
+
+    //         // If this is not just a draft, update the actual quiz
+    //         if (!isDraft) {
+    //             const startTime = Date.now();
+    //             const result = await this.quizzes.update(quizId, title, content);
+    //             const updateTime = Date.now() - startTime;
+
+    //             if (!result) {
+    //                 // Log auto-save failure with content preservation
+    //                 if (req.logger) {
+    //                     req.logger.error('Auto-save failed - content preserved for recovery', {
+    //                         quizId,
+    //                         title,
+    //                         content: content, // Full GIFT text preserved
+    //                         contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+    //                         updateTime: `${updateTime}ms`,
+    //                         operation: 'quiz_autosave_failed',
+    //                         failureTimestamp: new Date().toISOString()
+    //                     });
+    //                 }
+    //                 throw new AppError(UPDATE_QUIZ_ERROR);
+    //             }
+
+    //             // Log successful auto-save
+    //             if (req.logger) {
+    //                 req.logger.info('Quiz auto-save completed successfully', {
+    //                     quizId,
+    //                     title,
+    //                     content: content, // Full GIFT text saved
+    //                     contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+    //                     updateTime: `${updateTime}ms`,
+    //                     operation: 'quiz_autosave_success',
+    //                     completionTimestamp: new Date().toISOString()
+    //                 });
+    //             }
+    //         }
+
+    //         return res.status(200).json({
+    //             message: isDraft ? 'Brouillon sauvegardé.' : 'Quiz sauvegardé automatiquement.',
+    //             timestamp: new Date().toISOString(),
+    //             contentHash: require('crypto').createHash('md5').update(content).digest('hex')
+    //         });
+
+    //     } catch (error) {
+    //         // Critical error logging with content preservation
+    //         if (req.logger && req.body) {
+    //             req.logger.error('Critical auto-save error - preserving content for recovery', {
+    //                 quizId: req.body.quizId,
+    //                 title: req.body.title,
+    //                 content: req.body.content || '', // Preserve attempted content
+    //                 error: error.message,
+    //                 stack: error.stack,
+    //                 operation: 'quiz_autosave_critical_error',
+    //                 errorTimestamp: new Date().toISOString()
+    //             });
+    //         }
+    //         return next(error);
+    //     }
+    // };    
 
 }
 
