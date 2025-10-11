@@ -8,7 +8,7 @@ import webSocketService, {
 } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
 import { ENV_VARIABLES } from 'src/constants';
-import { StudentType, Answer } from '../../../Types/StudentType';
+import { Student, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 
 import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2';
@@ -36,13 +36,13 @@ import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
 import './manageRoom.css';
 
-const isStudentConnected = (student: StudentType) => student.isConnected !== false;
+const isStudentConnected = (student: Student) => student.isConnected !== false;
 
 const ManageRoomV2: React.FC = () => {
     const navigate = useNavigate();
     const { quizId = '' } = useParams<{ quizId: string }>();
     const [socket, setSocket] = useState<Socket | null>(null);
-    const [students, setStudents] = useState<StudentType[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [quizMode, setQuizMode] = useState<'teacher' | 'student'>('teacher');
@@ -50,7 +50,7 @@ const ManageRoomV2: React.FC = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState('');
-    const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const [newlyConnectedUser, setNewlyConnectedUser] = useState<Student | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -200,7 +200,7 @@ const ManageRoomV2: React.FC = () => {
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
             // Clear all students when teacher closes the room
-            setStudents(new Array<StudentType>());
+            setStudents(new Array<Student>());
         }
     };
 
@@ -219,7 +219,7 @@ const ManageRoomV2: React.FC = () => {
             console.error('ManageRoomV2: WebSocket connection error:', error);
         });
 
-        socket.on('user-joined', (student: StudentType) => {
+        socket.on('user-joined', (student: Student) => {
             // Mark new student as connected
             const newStudent = { ...student, isConnected: true };
             setStudents((prev) => [...prev, newStudent]);

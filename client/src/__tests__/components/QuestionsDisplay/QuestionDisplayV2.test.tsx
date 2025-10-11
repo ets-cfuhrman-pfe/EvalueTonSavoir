@@ -4,7 +4,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2';
 import { parse, Question } from 'gift-pegjs';
-import { StudentType } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 
 describe('QuestionDisplayV2 Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
@@ -25,22 +25,10 @@ describe('QuestionDisplayV2 Component', () => {
     (sampleTrueFalseQuestion as any).id = 1;
     (sampleMultipleChoiceQuestion as any).id = 2;
 
-    const mockStudents: StudentType[] = [
-        {
-            id: 'student1',
-            name: 'John Doe',
-            answers: [{ idQuestion: 1, answer: [true], isCorrect: true }]
-        },
-        {
-            id: 'student2',
-            name: 'Jane Smith',
-            answers: [{ idQuestion: 1, answer: [false], isCorrect: false }]
-        },
-        {
-            id: 'student3',
-            name: 'Bob Johnson',
-            answers: [{ idQuestion: 1, answer: [true], isCorrect: true }]
-        }
+    const mockStudents: Student[] = [
+        new Student('John Doe', 'student1', 'TestRoom', [new Answer([true], true, 1)]),
+        new Student('Jane Smith', 'student2', 'TestRoom', [new Answer([false], false, 1)]),
+        new Student('Bob Johnson', 'student3', 'TestRoom', [new Answer([true], true, 1)]),
     ];
 
     const sampleProps = {
@@ -48,7 +36,7 @@ describe('QuestionDisplayV2 Component', () => {
         showAnswer: false,
         answer: undefined as any,
         disabled: false,
-        students: [] as StudentType[],
+        students: [] as Student[],
         showStatistics: false
     };
 
@@ -155,17 +143,9 @@ describe('QuestionDisplayV2 Component', () => {
         });
 
         it('shows statistics for multiple choice when enabled', () => {
-            const mcStudents: StudentType[] = [
-                {
-                    id: 'student1',
-                    name: 'John Doe',
-                    answers: [{ idQuestion: 2, answer: ['Choice 1'], isCorrect: true }]
-                },
-                {
-                    id: 'student2',
-                    name: 'Jane Smith',
-                    answers: [{ idQuestion: 2, answer: ['Choice 2'], isCorrect: false }]
-                }
+            const mcStudents: Student[] = [
+                new Student('John Doe', 'student1', 'TestRoom', [new Answer(['Choice 1'], true, 2)]),
+                new Student('Jane Smith', 'student2', 'TestRoom', [new Answer(['Choice 2'], false, 2)]),
             ];
 
             renderComponent(sampleMultipleChoiceQuestion, {

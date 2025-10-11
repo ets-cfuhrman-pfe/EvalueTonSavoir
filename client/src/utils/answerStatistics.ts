@@ -1,4 +1,4 @@
-import { StudentType } from '../Types/StudentType';
+import { Student } from '../Types/StudentType';
 
 type AnswerOption = string | number | boolean;
 
@@ -16,7 +16,7 @@ export interface AnswerStatistics {
  * @returns Object containing count and percentage for each answer option
  */
 export const calculateAnswerStatistics = (
-    students: StudentType[],
+    students: Student[],
     questionId: number
 ): AnswerStatistics => {
     const statistics: AnswerStatistics = {};
@@ -100,7 +100,7 @@ export const getAnswerCount = (
  * @returns Total number of students who provided an answer for this question
  */
 export const getTotalStudentsWhoAnswered = (
-    students: StudentType[],
+    students: Student[],
     questionId: number
 ): number => {
     return students.filter(student =>

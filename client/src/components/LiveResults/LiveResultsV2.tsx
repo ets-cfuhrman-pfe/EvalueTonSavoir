@@ -9,7 +9,7 @@ import {
     Card,
     CardContent,
 } from '@mui/material';
-import { StudentType } from '../../Types/StudentType';
+import { Student } from '../../Types/StudentType';
 import LiveResultsTableV2 from './LiveResultsTable/LiveResultsTableV2';
 
 interface LiveResultsProps {
@@ -17,7 +17,7 @@ interface LiveResultsProps {
     questions: QuestionType[];
     showSelectedQuestion: (index: number) => void;
     quizMode: 'teacher' | 'student';
-    students: StudentType[];
+    students: Student[];
     quizTitle?: string;
     selectedQuestionIndex?: number;
 }

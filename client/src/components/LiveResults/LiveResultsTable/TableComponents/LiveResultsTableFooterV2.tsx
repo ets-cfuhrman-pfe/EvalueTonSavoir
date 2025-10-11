@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import { StudentType } from "../../../../Types/StudentType";
+import { Student } from "../../../../Types/StudentType";
 
 interface LiveResultsTableFooterProps {
-    students: StudentType[];
+    students: Student[];
     maxQuestions: number;
-    getStudentGrade: (student: StudentType) => number;
+    getStudentGrade: (student: Student) => number;
 }
 
 const LiveResultsTableFooterV2: React.FC<LiveResultsTableFooterProps> = ({

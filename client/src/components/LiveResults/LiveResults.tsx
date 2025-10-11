@@ -8,7 +8,7 @@ import {
     FormGroup,
     Switch,
 } from '@mui/material';
-import { StudentType } from '../../Types/StudentType';
+import { Student } from '../../Types/StudentType';
 
 import LiveResultsTable from './LiveResultsTable/LiveResultsTable';
 
@@ -17,7 +17,7 @@ interface LiveResultsProps {
     questions: QuestionType[];
     showSelectedQuestion: (index: number) => void;
     quizMode: 'teacher' | 'student';
-    students: StudentType[]
+    students: Student[]
 }
 
 

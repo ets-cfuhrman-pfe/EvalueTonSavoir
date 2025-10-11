@@ -2,14 +2,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 import { FormattedTextTemplate } from '../../../GiftTemplate/templates/TextTypeTemplate';
 import React from "react";
-import { StudentType } from "../../../../Types/StudentType";
+import { Student } from "../../../../Types/StudentType";
 
 interface LiveResultsTableBodyProps {
     maxQuestions: number;
-    students: StudentType[];
+    students: Student[];
     showUsernames: boolean;
     showCorrectAnswers: boolean;
-    getStudentGrade: (student: StudentType) => number;
+    getStudentGrade: (student: Student) => number;
 }
 
 const LiveResultsTableBodyV2: React.FC<LiveResultsTableBodyProps> = ({

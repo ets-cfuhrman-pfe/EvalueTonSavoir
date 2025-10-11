@@ -5,7 +5,7 @@ import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
-import { StudentType } from 'src/Types/StudentType';
+import { Student } from 'src/Types/StudentType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
 interface PropsV2 {
@@ -15,7 +15,7 @@ interface PropsV2 {
     passedAnswer?: AnswerType;
     buttonText?: string;
     disabled?: boolean;
-    students?: StudentType[];
+    students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
 }

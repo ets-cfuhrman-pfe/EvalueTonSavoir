@@ -6,7 +6,7 @@ import MultipleChoiceQuestionDisplayV2 from './MultipleChoiceQuestionDisplay/Mul
 import NumericalQuestionDisplayV2 from './NumericalQuestionDisplay/NumericalQuestionDisplayV2';
 import ShortAnswerQuestionDisplayV2 from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplayV2';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
-import { StudentType } from 'src/Types/StudentType';
+import { Student } from 'src/Types/StudentType';
 
 interface QuestionV2Props {
     question: Question;
@@ -15,7 +15,7 @@ interface QuestionV2Props {
     answer?: AnswerType;
     buttonText?: string;
     disabled?: boolean;
-    students?: StudentType[];
+    students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
 }

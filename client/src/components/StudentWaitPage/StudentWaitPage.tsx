@@ -1,13 +1,13 @@
 import React from 'react';
 import { Box, Button, Chip } from '@mui/material';
-import { StudentType } from '../../Types/StudentType';
+import { Student } from '../../Types/StudentType';
 import { PlayArrow } from '@mui/icons-material';
 import LaunchQuizDialog from '../LaunchQuizDialog/LaunchQuizDialog';
 import { useState } from 'react';
 import './studentWaitPage.css';
 
 interface Props {
-    students: StudentType[];
+    students: Student[];
     launchQuiz: () => void;
     setQuizMode: (_mode: 'student' | 'teacher') => void;
 }

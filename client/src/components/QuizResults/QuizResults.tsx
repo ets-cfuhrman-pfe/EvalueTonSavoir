@@ -1,15 +1,15 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { StudentType } from '../../Types/StudentType';
+import { Student } from '../../Types/StudentType';
 import { QuestionType } from '../../Types/QuestionType';
 
 interface QuizResultsProps {
-    students: StudentType[];
+    students: Student[];
     questions: QuestionType[];
     quizTitle?: string;
     isStudentView?: boolean;
-    currentStudent?: StudentType;
+    currentStudent?: Student;
     isOpen?: boolean;
     onClose?: () => void;
 }
@@ -23,7 +23,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
     isOpen = false,
     onClose
 }) => {
-    const getStudentGrade = (student: StudentType): { percentage: number; correct: number; total: number } => {
+    const getStudentGrade = (student: Student): { percentage: number; correct: number; total: number } => {
         if (student.answers.length === 0) {
             return { percentage: 0, correct: 0, total: questions.length };
         }
