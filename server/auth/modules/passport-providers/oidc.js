@@ -4,6 +4,7 @@ var { hasNestedValue } = require('../../../utils');
 const { MISSING_OIDC_PARAMETER } = require('../../../constants/errorCodes.js');
 const AppError = require('../../../middleware/AppError.js');
 const expressListEndpoints = require('express-list-endpoints');
+const logger = require('../../../config/logger');
 
 class PassportOpenIDConnect {
     constructor(passportjs, auth_name) {
@@ -16,7 +17,13 @@ class PassportOpenIDConnect {
             const config = await fetch(provider.OIDC_CONFIG_URL)
             return await config.json()
         } catch (error) {
-            console.error(`Error: ${error} `);
+            logger.error('Failed to fetch OIDC configuration', {
+                providerName: name,
+                configUrl: provider.OIDC_CONFIG_URL,
+                error: error.message,
+                stack: error.stack,
+                module: 'passport-oidc'
+            });
             throw new AppError(MISSING_OIDC_PARAMETER(name));
         }
     }
@@ -50,8 +57,12 @@ class PassportOpenIDConnect {
         },
             // patch pour la librairie permet d'obtenir les groupes, PR en cours mais "morte" : https://github.com/jaredhanson/passport-openidconnect/pull/101
             async function (req, issuer, profile, times, tok, done) {
-                console.log(`oidc.js: register: issuer: ${JSON.stringify(issuer)}`);
-                console.log(`oidc.js: register: profile: ${JSON.stringify(profile)}`);
+                logger.debug('OIDC authentication callback received', {
+                    issuer: JSON.stringify(issuer),
+                    profile: JSON.stringify(profile),
+                    module: 'passport-oidc',
+                    providerName: name
+                });
                 try {
                     const received_user = {
                         auth_id: profile.id,
@@ -63,40 +74,81 @@ class PassportOpenIDConnect {
                     if (hasNestedValue(profile, provider.OIDC_ROLE_TEACHER_VALUE)) received_user.roles.push('teacher')
                     if (hasNestedValue(profile, provider.OIDC_ROLE_STUDENT_VALUE)) received_user.roles.push('student')
 
-                    console.log(`oidc.js: register: received_user: ${JSON.stringify(received_user)}`);
+                    logger.debug('OIDC user data processed', {
+                        receivedUser: JSON.stringify(received_user),
+                        module: 'passport-oidc',
+                        providerName: name
+                    });
                     const user_association = await authUserAssoc.find_user_association(self.auth_name, received_user.auth_id);
-                    console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
+                    logger.debug('OIDC user association lookup result', {
+                        userAssociation: JSON.stringify(user_association),
+                        authName: self.auth_name,
+                        authId: received_user.auth_id,
+                        module: 'passport-oidc'
+                    });
 
                     let user_account
                     if (user_association) {
-                        console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
+                        logger.debug('OIDC existing user association found', {
+                            userAssociation: JSON.stringify(user_association),
+                            module: 'passport-oidc'
+                        });
                         user_account = await userModel.getById(user_association.user_id)
-                        console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
+                        logger.debug('OIDC user account retrieved from association', {
+                            userAccount: JSON.stringify(user_account),
+                            module: 'passport-oidc'
+                        });
                     }
                     else {
-                        console.log(`oidc.js: register: user_association: ${JSON.stringify(user_association)}`);
+                        logger.debug('OIDC no existing user association, creating new or linking', {
+                            userAssociation: JSON.stringify(user_association),
+                            module: 'passport-oidc'
+                        });
                         let user_id = await userModel.getId(received_user.email)
-                        console.log(`oidc.js: register: user_id: ${JSON.stringify(user_id)}`);
+                        logger.debug('OIDC user ID lookup by email', {
+                            userId: JSON.stringify(user_id),
+                            email: received_user.email,
+                            module: 'passport-oidc'
+                        });
                         if (user_id) {
                             user_account = await userModel.getById(user_id);
-                            console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
+                            logger.debug('OIDC existing user account found by email', {
+                                userAccount: JSON.stringify(user_account),
+                                module: 'passport-oidc'
+                            });
                         } else {
                             received_user.password = userModel.generatePassword()
                             user_account = await self.passportjs.register(received_user)
-                            console.log(`oidc.js: register: user_account: ${JSON.stringify(user_account)}`);
+                            logger.debug('OIDC new user account created', {
+                                userAccount: JSON.stringify(user_account),
+                                module: 'passport-oidc'
+                            });
                         }
-                        console.log(`oidc.js: register: authUserAssoc.ling.`);
+                        logger.debug('OIDC linking user association', {
+                            authName: self.auth_name,
+                            authId: received_user.auth_id,
+                            userId: user_account._id,
+                            module: 'passport-oidc'
+                        });
                         await authUserAssoc.link(self.auth_name, received_user.auth_id, user_account._id)
                     }
 
                     user_account.name = received_user.name
                     user_account.roles = received_user.roles
-                    console.log(`oidc.js: register: calling userModel.editUser: ${JSON.stringify(user_account)}`);
+                    logger.debug('OIDC updating user account with new data', {
+                        userAccount: JSON.stringify(user_account),
+                        module: 'passport-oidc'
+                    });
                     await userModel.editUser(user_account);
 
                     return done(null, user_account);
                 } catch (error) {
-                    console.error(`Error: ${error} `);
+                    logger.error('OIDC authentication callback error', {
+                        error: error.message,
+                        stack: error.stack,
+                        module: 'passport-oidc',
+                        providerName: name
+                    });
                 }
             }));
 
@@ -114,12 +166,19 @@ class PassportOpenIDConnect {
                 if (req.user) {
                     self.passportjs.authenticate(req.user, req, res)
                 } else {
-                    res.status(401).json({ error: "L'authentification a échoué" });
+                    res.status(401).json({ error: "Authentication failed" });
                 }
             }
         );
-        console.info(`Ajout de la connexion : ${name}(OIDC)`);
-        console.log(expressListEndpoints(app));
+        logger.info(`OIDC provider registered: ${name}`, {
+            providerName: name,
+            authType: 'OIDC',
+            module: 'passport-oidc'
+        });
+        logger.debug('Express endpoints registered', {
+            endpoints: expressListEndpoints(app),
+            module: 'passport-oidc'
+        });
     }
 }
 
