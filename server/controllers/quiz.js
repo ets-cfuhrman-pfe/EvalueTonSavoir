@@ -55,21 +55,23 @@ class QuizController {
     
             // Log successful quiz creation with content backup
             if (req.logDbOperation) {
+                const contentString = Array.isArray(content) ? content.join('\n\n') : content;
                 req.logDbOperation('insert', 'quizzes', createTime, true, {
                     quizId: result,
                     title,
                     folderId,
-                    contentLength: content.length,
-                    contentHash: require('crypto').createHash('md5').update(content).digest('hex')
+                    contentLength: contentString.length,
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex')
                 });
             }
             
             if (req.logAction) {
+                const contentString = Array.isArray(content) ? content.join('\n\n') : content;
                 req.logAction('quiz_created', {
                     quizId: result,
                     title,
                     folderId,
-                    contentLength: content.length,
+                    contentLength: contentString.length,
                     createTime: `${createTime}ms`,
                     totalTime: `${totalTime}ms`
                 });
@@ -77,12 +79,13 @@ class QuizController {
 
             // Create backup of newly created quiz
             if (req.logger) {
+                const contentString = Array.isArray(content) ? content.join('\n\n') : content;
                 req.logger.info('Quiz created - content backup', {
                     quizId: result,
                     title,
                     folderId,
-                    content: content, // Full GIFT text for recovery
-                    contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+                    content: contentString, // Full GIFT text for recovery
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex'),
                     creationTimestamp: new Date().toISOString(),
                     operation: 'quiz_creation_backup'
                 });
@@ -273,28 +276,40 @@ class QuizController {
 
             // Log quiz save attempt with  content for recovery
             if (req.logger) {
+                // Handle both string and array formats for newContent
+                const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
+                const originalContentString = Array.isArray(originalContent?.content) 
+                    ? originalContent.content.join('\n\n') 
+                    : (originalContent?.content || '');
+                
                 req.logger.info('Quiz save attempt initiated', {
                     quizId,
                     originalTitle: originalContent?.title || 'unknown',
                     newTitle,
-                    originalContentLength: originalContent?.content?.length || 0,
-                    newContentLength: newContent.length,
-                    contentPreview: newContent.substring(0, 100) + (newContent.length > 100 ? '...' : ''),
+                    originalContentLength: originalContentString.length,
+                    newContentLength: contentString.length,
+                    contentPreview: contentString.substring(0, 100) + (contentString.length > 100 ? '...' : ''),
                     operation: 'quiz_update_attempt'
                 });
             }
 
             // Create backup log entry with  content
             if (req.logger) {
+                // Handle both string and array formats for content
+                const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
+                const originalContentString = Array.isArray(originalContent?.content) 
+                    ? originalContent.content.join('\n\n') 
+                    : (originalContent?.content || '');
+                
                 req.logger.info('Quiz content backup before update', {
                     quizId,
                     backupType: 'pre_update',
                     timestamp: new Date().toISOString(),
                     originalTitle: originalContent?.title || 'unknown',
-                    originalContent: originalContent?.content || '',
+                    originalContent: originalContentString,
                     newTitle,
-                    newContent: newContent, // Full GIFT text for recovery
-                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex'),
+                    newContent: contentString, // Full GIFT text for recovery
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex'),
                     operation: 'quiz_content_backup'
                 });
             }
@@ -316,10 +331,11 @@ class QuizController {
                 }
                 
                 if (req.logAction) {
+                    const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
                     req.logAction('quiz_update_failed', {
                         quizId,
                         newTitle,
-                        contentLength: newContent.length,
+                        contentLength: contentString.length,
                         updateTime: `${updateTime}ms`,
                         reason: 'database_operation_failed'
                     });
@@ -329,35 +345,46 @@ class QuizController {
 
             // Log successful update with verification
             if (req.logDbOperation) {
+                const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
+                const originalContentString = Array.isArray(originalContent?.content) 
+                    ? originalContent.content.join('\n\n') 
+                    : (originalContent?.content || '');
+                
                 req.logDbOperation('update', 'quizzes', updateTime, true, {
                     quizId,
                     titleChanged: originalContent?.title !== newTitle,
-                    contentChanged: originalContent?.content !== newContent,
+                    contentChanged: originalContentString !== contentString,
                     newTitle,
-                    newContentLength: newContent.length,
-                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex')
+                    newContentLength: contentString.length,
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex')
                 });
             }
             
             if (req.logAction) {
+                const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
+                const originalContentString = Array.isArray(originalContent?.content) 
+                    ? originalContent.content.join('\n\n') 
+                    : (originalContent?.content || '');
+                
                 req.logAction('quiz_updated_successfully', {
                     quizId,
                     oldTitle: originalContent?.title || 'unknown',
                     newTitle,
-                    oldContentLength: originalContent?.content?.length || 0,
-                    newContentLength: newContent.length,
+                    oldContentLength: originalContentString.length,
+                    newContentLength: contentString.length,
                     updateTime: `${updateTime}ms`
                 });
             }
 
             // Create post-update verification log
             if (req.logger) {
+                const contentString = Array.isArray(newContent) ? newContent.join('\n\n') : newContent;
                 req.logger.info('Quiz update completed successfully', {
                     quizId,
                     newTitle,
-                    newContent: newContent, // Full GIFT text saved
+                    newContent: contentString, // Full GIFT text saved
                     updateTime: `${updateTime}ms`,
-                    contentHash: require('crypto').createHash('md5').update(newContent).digest('hex'),
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex'),
                     operation: 'quiz_update_success',
                     verificationTimestamp: new Date().toISOString()
                 });
