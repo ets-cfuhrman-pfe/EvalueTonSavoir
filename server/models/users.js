@@ -23,35 +23,86 @@ class Users {
   }
 
   async register(userInfos) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
-
-    const userCollection = conn.collection("users");
-
-    const existingUser = await userCollection.findOne({ email: userInfos.email });
-
-    if (existingUser) {
-      throw new AppError(USER_ALREADY_EXISTS);
-    }
-
-    let newUser = {
-      name: userInfos.name ?? userInfos.email,
+    const startTime = Date.now();
+    logger.debug('User registration initiated', {
       email: userInfos.email,
-      password: await this.hashPassword(userInfos.password),
-      created_at: new Date(),
-      roles: userInfos.roles
-    };
+      hasName: !!userInfos.name,
+      hasRoles: !!userInfos.roles,
+      module: 'users-model'
+    });
 
-    let created_user = await userCollection.insertOne(newUser);
-    let user = await this.getById(created_user.insertedId)
+    try {
+      await this.db.connect();
+      const conn = this.db.getConnection();
+      const userCollection = conn.collection("users");
 
-    const folderTitle = "Dossier par Défaut";
-    
-    const userId = newUser._id ? newUser._id.toString() : 'x';
-    await this.folders.create(folderTitle, userId);
+      const checkStartTime = Date.now();
+      const existingUser = await userCollection.findOne({ email: userInfos.email });
+      const checkTime = Date.now() - checkStartTime;
 
-    // TODO: verif if inserted properly...
-    return user;
+      if (existingUser) {
+        logger.warn('User registration failed: user already exists', {
+          email: userInfos.email,
+          checkTime: `${checkTime}ms`,
+          module: 'users-model'
+        });
+        throw new AppError(USER_ALREADY_EXISTS);
+      }
+
+      logger.debug('User existence check passed', {
+        email: userInfos.email,
+        checkTime: `${checkTime}ms`,
+        module: 'users-model'
+      });
+
+      const hashStartTime = Date.now();
+      const hashedPassword = await this.hashPassword(userInfos.password);
+      const hashTime = Date.now() - hashStartTime;
+
+      let newUser = {
+        name: userInfos.name ?? userInfos.email,
+        email: userInfos.email,
+        password: hashedPassword,
+        created_at: new Date(),
+        roles: userInfos.roles
+      };
+
+      const insertStartTime = Date.now();
+      let created_user = await userCollection.insertOne(newUser);
+      const insertTime = Date.now() - insertStartTime;
+
+      let user = await this.getById(created_user.insertedId);
+      const folderTitle = "Dossier par Défaut";
+      
+      const userId = created_user.insertedId.toString();
+      
+      const folderStartTime = Date.now();
+      await this.folders.create(folderTitle, userId);
+      const folderTime = Date.now() - folderStartTime;
+      const totalTime = Date.now() - startTime;
+
+      logger.info('User registration completed successfully', {
+        userId: created_user.insertedId,
+        email: userInfos.email,
+        totalTime: `${totalTime}ms`,
+        checkTime: `${checkTime}ms`,
+        hashTime: `${hashTime}ms`,
+        insertTime: `${insertTime}ms`,
+        folderTime: `${folderTime}ms`,
+        module: 'users-model'
+      });
+
+      return user;
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+      logger.error('User registration failed', {
+        email: userInfos.email,
+        error: error.message,
+        totalTime: `${totalTime}ms`,
+        module: 'users-model'
+      });
+      throw error;
+    }
   }
 
   async login(email, password) {
@@ -101,34 +152,125 @@ class Users {
   }
 
   async changePassword(email, newPassword) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const startTime = Date.now();
+    logger.debug('Password change initiated', {
+      email: email,
+      module: 'users-model'
+    });
 
-    const userCollection = conn.collection("users");
+    try {
+      await this.db.connect();
+      const conn = this.db.getConnection();
+      const userCollection = conn.collection("users");
 
-    const hashedPassword = await this.hashPassword(newPassword);
+      const hashStartTime = Date.now();
+      const hashedPassword = await this.hashPassword(newPassword);
+      const hashTime = Date.now() - hashStartTime;
 
-    const result = await userCollection.updateOne(
-      { email },
-      { $set: { password: hashedPassword } }
-    );
+      const updateStartTime = Date.now();
+      const result = await userCollection.updateOne(
+        { email },
+        { $set: { password: hashedPassword, updated_at: new Date() } }
+      );
+      const updateTime = Date.now() - updateStartTime;
+      const totalTime = Date.now() - startTime;
 
-    if (result.modifiedCount != 1) return null;
+      if (result.modifiedCount != 1) {
+        logger.warn('Password change failed: no user modified', {
+          email: email,
+          matchedCount: result.matchedCount,
+          modifiedCount: result.modifiedCount,
+          totalTime: `${totalTime}ms`,
+          module: 'users-model'
+        });
+        return null;
+      }
 
-    return newPassword;
+      logger.info('Password change completed successfully', {
+        email: email,
+        totalTime: `${totalTime}ms`,
+        hashTime: `${hashTime}ms`,
+        updateTime: `${updateTime}ms`,
+        module: 'users-model'
+      });
+
+      return newPassword;
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+      logger.error('Password change failed', {
+        email: email,
+        error: error.message,
+        totalTime: `${totalTime}ms`,
+        module: 'users-model'
+      });
+      throw error;
+    }
   }
 
   async delete(email) {
-    await this.db.connect();
-    const conn = this.db.getConnection();
+    const startTime = Date.now();
+    logger.warn('User deletion initiated', {
+      email: email,
+      module: 'users-model'
+    });
 
-    const userCollection = conn.collection("users");
+    try {
+      await this.db.connect();
+      const conn = this.db.getConnection();
+      const userCollection = conn.collection("users");
 
-    const result = await userCollection.deleteOne({ email });
+      // Get user details before deletion for audit trail
+      const getUserStartTime = Date.now();
+      const user = await userCollection.findOne({ email: email });
+      const getUserTime = Date.now() - getUserStartTime;
 
-    if (result.deletedCount != 1) return false;
+      if (!user) {
+        logger.warn('User deletion failed: user not found', {
+          email: email,
+          getUserTime: `${getUserTime}ms`,
+          totalTime: `${Date.now() - startTime}ms`,
+          module: 'users-model'
+        });
+        return false;
+      }
 
-    return true;
+      const deleteStartTime = Date.now();
+      const result = await userCollection.deleteOne({ email });
+      const deleteTime = Date.now() - deleteStartTime;
+      const totalTime = Date.now() - startTime;
+
+      if (result.deletedCount != 1) {
+        logger.error('User deletion failed: no user deleted', {
+          email: email,
+          userId: user._id,
+          deletedCount: result.deletedCount,
+          totalTime: `${totalTime}ms`,
+          module: 'users-model'
+        });
+        return false;
+      }
+
+      logger.warn('User deletion completed successfully', {
+        deletedUserId: user._id,
+        deletedEmail: email,
+        userCreatedAt: user.created_at,
+        totalTime: `${totalTime}ms`,
+        getUserTime: `${getUserTime}ms`,
+        deleteTime: `${deleteTime}ms`,
+        module: 'users-model'
+      });
+
+      return true;
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+      logger.error('User deletion error', {
+        email: email,
+        error: error.message,
+        totalTime: `${totalTime}ms`,
+        module: 'users-model'
+      });
+      throw error;
+    }
   }
 
   async getId(email) {
