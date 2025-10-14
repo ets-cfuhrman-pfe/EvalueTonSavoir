@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -27,6 +27,16 @@ jest.mock('../../../../components/Editor/EditorV2', () => ({
         value={initialValue}
         onChange={(e) => onEditorChange(e.target.value)}
       />
+    </div>
+  ),
+}));
+
+jest.mock('../../../../components/AutoSaveIndicator/AutoSaveIndicator', () => ({
+  __esModule: true,
+  default: ({ status, lastSaved }: any) => (
+    <div data-testid="auto-save-indicator">
+      Status: {status}
+      {lastSaved && ` - Last saved: ${lastSaved.toISOString()}`}
     </div>
   ),
 }));
@@ -95,6 +105,61 @@ Object.defineProperty(window, 'scrollY', {
   value: 0,
 });
 
+// Constants
+const DEBOUNCE_MS = 2000;
+const SCROLL_Y_VALUE = 400;
+const DRAFT_TIMESTAMP_OFFSET = 5000;
+const WAIT_TIMEOUT = 3000;
+
+const EDITOR_TITLE = 'Éditeur de quiz';
+const PREVIEW_TITLE = 'Prévisualisation';
+const LOADING_TEXT = 'Chargement du quiz...';
+const QUIZ_TITLE_LABEL = 'Titre du quiz';
+const FOLDER_LABEL = 'Dossier';
+const SAVE_BUTTON_TEXT = /enregistrer$/i;
+const SAVE_EXIT_BUTTON_TEXT = /enregistrer et quitter/i;
+const TITLE_ERROR_MESSAGE = 'Veuillez saisir un titre pour le quiz';
+const FOLDER_ERROR_MESSAGE = 'Veuillez choisir un dossier';
+const SAVE_ERROR_MESSAGE = 'Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.';
+const ALERT_ERROR_MESSAGE = 'Une erreur est survenue';
+const DRAFT_DETECTED_TITLE = 'Brouillon détecté';
+const DRAFT_DETECTED_MESSAGE = /Un brouillon non sauvegardé a été trouvé/;
+const RESTORE_DRAFT_BUTTON = 'Restaurer le brouillon';
+const IGNORE_DRAFT_BUTTON = 'Ignorer le brouillon';
+const SCROLL_TO_TOP_TITLE = 'Scroll to top';
+const MARKDOWN_LINK_TEXT = /\[markdown\]/;
+const TEST_FOLDER_NAME = 'Test Folder';
+
+const EDITOR_V2_TEST_ID = 'editor-v2';
+const GIFT_CHEAT_SHEET_TEST_ID = 'gift-cheat-sheet';
+const GIFT_PREVIEW_TEST_ID = 'gift-preview';
+const EDITOR_TEXTAREA_TEST_ID = 'editor-textarea';
+const AUTO_SAVE_INDICATOR_TEST_ID = 'auto-save-indicator';
+const IMAGE_GALLERY_MODAL_TEST_ID = 'image-gallery-modal';
+const VALIDATED_TEXT_FIELD_TITLE = 'validated-text-field-quiz.title';
+
+const QUIZ_DRAFT_KEY_NEW = 'quiz-draft-new';
+const QUIZ_TITLE_JSON = '"quizTitle":"Test Quiz Title"';
+const CONTENT_JSON = '"content":"Test question content"';
+const CONTENT_CHANGE_JSON = '"content":"Change 3"';
+
+// Mock localStorage for auto-save tests
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+  };
+})();
+
 const mockNavigate = jest.fn();
 const mockUseParams = jest.fn();
 const mockApiService = ApiService as jest.Mocked<typeof ApiService>;
@@ -113,13 +178,9 @@ beforeEach(() => {
   (require('react-router-dom').useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
 
-  // Mock localStorage
+  // Mock localStorage with the shared mock
   Object.defineProperty(window, 'localStorage', {
-    value: {
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      clear: jest.fn(),
-    },
+    value: mockLocalStorage,
     writable: true,
   });
 
@@ -147,11 +208,11 @@ describe('EditorQuizV2 Component', () => {
 
       renderComponent();
 
-      expect(screen.getByText('Éditeur de quiz')).toBeInTheDocument();
-      expect(screen.getByText('Prévisualisation')).toBeInTheDocument();
-      expect(screen.getByTestId('editor-v2')).toBeInTheDocument();
-      expect(screen.getByTestId('gift-cheat-sheet')).toBeInTheDocument();
-      expect(screen.getByTestId('gift-preview')).toBeInTheDocument();
+      expect(screen.getByText(EDITOR_TITLE)).toBeInTheDocument();
+      expect(screen.getByText(PREVIEW_TITLE)).toBeInTheDocument();
+      expect(screen.getByTestId(EDITOR_V2_TEST_ID)).toBeInTheDocument();
+      expect(screen.getByTestId(GIFT_CHEAT_SHEET_TEST_ID)).toBeInTheDocument();
+      expect(screen.getByTestId(GIFT_PREVIEW_TEST_ID)).toBeInTheDocument();
     });
 
     test('shows loading state for existing quiz', () => {
@@ -161,13 +222,13 @@ describe('EditorQuizV2 Component', () => {
 
       renderComponent(['/teacher/editor-quiz/existing-quiz-id']);
 
-      expect(screen.getByText('Chargement du quiz...')).toBeInTheDocument();
+      expect(screen.getByText(LOADING_TEXT)).toBeInTheDocument();
     });
 
     test('renders quiz configuration form', async () => {
       (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
       const mockFolders: FolderType[] = [
-        { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
+        { _id: 'folder1', userId: 'user1', title: TEST_FOLDER_NAME, created_at: '2023-01-01' },
       ];
       mockApiService.getUserFolders.mockResolvedValue(mockFolders);
 
@@ -179,13 +240,13 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Check the basic components are there
-      expect(screen.getByText('Éditeur de quiz')).toBeInTheDocument();
+      expect(screen.getByText(EDITOR_TITLE)).toBeInTheDocument();
       
       // Check for the form elements with more specific queries
-      const titleLabel = screen.getByLabelText('Titre du quiz');
+      const titleLabel = screen.getByLabelText(QUIZ_TITLE_LABEL);
       expect(titleLabel).toBeInTheDocument();
       
-      const folderLabel = screen.getByLabelText('Dossier');
+      const folderLabel = screen.getByLabelText(FOLDER_LABEL);
       expect(folderLabel).toBeInTheDocument();
     });
   });
@@ -196,7 +257,7 @@ describe('EditorQuizV2 Component', () => {
 
       renderComponent();
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'New Quiz Title' } });
 
       expect(titleInput).toHaveValue('New Quiz Title');
@@ -231,7 +292,7 @@ describe('EditorQuizV2 Component', () => {
 
       renderComponent();
 
-      const editorTextarea = screen.getByTestId('editor-textarea');
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
       fireEvent.change(editorTextarea, { target: { value: 'Question 1?\n\nQuestion 2?' } });
 
       await waitFor(() => {
@@ -245,7 +306,7 @@ describe('EditorQuizV2 Component', () => {
     test('fetches user folders on mount', async () => {
       (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
       const mockFolders: FolderType[] = [
-        { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
+        { _id: 'folder1', userId: 'user1', title: TEST_FOLDER_NAME, created_at: '2023-01-01' },
       ];
       mockApiService.getUserFolders.mockResolvedValue(mockFolders);
 
@@ -292,15 +353,15 @@ describe('EditorQuizV2 Component', () => {
       // wait for the API call to be made
       await waitFor(() => {
         expect(mockApiService.getQuiz).toHaveBeenCalledWith('nonexistent');
-      }, { timeout: 3000 });
+      }, { timeout: WAIT_TIMEOUT });
 
       // check for the alert and navigation
       await waitFor(() => {
         expect(alertMock).toHaveBeenCalledWith(
-          expect.stringContaining('Une erreur est survenue')
+          expect.stringContaining(ALERT_ERROR_MESSAGE)
         );
         expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
-      }, { timeout: 3000 });
+      }, { timeout: WAIT_TIMEOUT });
 
       alertMock.mockRestore();
     });
@@ -315,21 +376,21 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'New Quiz' } });
 
       // Wait for folders to load and select to be available
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
       
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
@@ -362,11 +423,11 @@ describe('EditorQuizV2 Component', () => {
         expect(screen.getByDisplayValue('Existing Quiz')).toBeInTheDocument();
       });
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'Updated Quiz' } });
 
       
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
@@ -391,20 +452,20 @@ describe('EditorQuizV2 Component', () => {
 
       // Select folder but leave title empty
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Veuillez saisir un titre pour le quiz')).toBeInTheDocument();
-      }, { timeout: 3000 });
+        expect(screen.getByText(TITLE_ERROR_MESSAGE)).toBeInTheDocument();
+      }, { timeout: WAIT_TIMEOUT });
     });
 
     test('shows error when saving without folder', async () => {
@@ -413,15 +474,15 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill title but leave folder empty
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Veuillez choisir un dossier')).toBeInTheDocument();
-      }, { timeout: 3000 });
+        expect(screen.getByText(FOLDER_ERROR_MESSAGE)).toBeInTheDocument();
+      }, { timeout: WAIT_TIMEOUT });
     });
   });
 
@@ -432,11 +493,11 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Simulate scroll by setting scrollY and triggering scroll event
-      Object.defineProperty(window, 'scrollY', { value: 400 });
+      Object.defineProperty(window, 'scrollY', { value: SCROLL_Y_VALUE });
       window.dispatchEvent(new Event('scroll'));
 
       // Wait for the button to appear
-      const scrollButton = await screen.findByTitle('Scroll to top');
+      const scrollButton = await screen.findByTitle(SCROLL_TO_TOP_TITLE);
       fireEvent.click(scrollButton);
 
       expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
@@ -447,11 +508,11 @@ describe('EditorQuizV2 Component', () => {
 
       renderComponent();
 
-      const galleryButton = screen.getByTestId('image-gallery-modal');
+      const galleryButton = screen.getByTestId(IMAGE_GALLERY_MODAL_TEST_ID);
       fireEvent.click(galleryButton);
 
       // Click on the generated image link
-      const imageLinkButton = await screen.findByText(/\[markdown\]/);
+      const imageLinkButton = await screen.findByText(MARKDOWN_LINK_TEXT);
       fireEvent.click(imageLinkButton);
 
       expect(navigator.clipboard.writeText).toHaveBeenCalled();
@@ -467,21 +528,21 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
       // Wait for folders to load and select to be available
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
       // Click save and exit
-      const saveExitButton = screen.getByRole('button', { name: /enregistrer et quitter/i });
+      const saveExitButton = screen.getByRole('button', { name: SAVE_EXIT_BUTTON_TEXT });
       fireEvent.click(saveExitButton);
 
       await waitFor(() => {
@@ -507,10 +568,10 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const select = screen.getByRole('combobox', { name: 'Dossier' });
+      const select = screen.getByRole('combobox', { name: FOLDER_LABEL });
       fireEvent.mouseDown(select);
       
       // Wait for the option to be available
@@ -519,11 +580,354 @@ describe('EditorQuizV2 Component', () => {
         fireEvent.click(option);
       });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')).toBeInTheDocument();
+        expect(screen.getByText(SAVE_ERROR_MESSAGE)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Auto-Save Functionality', () => {
+    // Enable fake timers for auto-save tests
+    beforeEach(() => {
+      jest.useFakeTimers();
+      mockLocalStorage.clear();
+    });
+
+    afterEach(() => {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    });
+
+    test('should show auto-save indicator in header', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByTestId(AUTO_SAVE_INDICATOR_TEST_ID)).toBeInTheDocument();
+      });
+    });
+
+    test('should auto-save quiz content after debounce period', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Fill in some content
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
+      fireEvent.change(titleInput, { target: { value: 'Test Quiz Title' } });
+
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
+      fireEvent.change(editorTextarea, { target: { value: 'Test question content' } });
+
+      // Advance time to trigger auto-save
+      act(() => {
+        jest.advanceTimersByTime(DEBOUNCE_MS);
+      });
+
+      // Check that localStorage was called
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        QUIZ_DRAFT_KEY_NEW,
+        expect.stringContaining(QUIZ_TITLE_JSON)
+      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        QUIZ_DRAFT_KEY_NEW,
+        expect.stringContaining(CONTENT_JSON)
+      );
+    });
+
+    test('should update auto-save status during save process', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Fill in content
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
+      fireEvent.change(editorTextarea, { target: { value: 'Test content' } });
+
+      // Check initial status
+      let indicator = screen.getByTestId(AUTO_SAVE_INDICATOR_TEST_ID);
+      expect(indicator).toHaveTextContent('Status: idle');
+
+      // Advance time to trigger save
+      act(() => {
+        jest.advanceTimersByTime(DEBOUNCE_MS);
+      });
+
+      // Should show saved status
+      indicator = screen.getByTestId(AUTO_SAVE_INDICATOR_TEST_ID);
+      expect(indicator).toHaveTextContent('Status: saved');
+    });
+
+    test('should debounce multiple rapid changes', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
+
+      // Make multiple rapid changes
+      fireEvent.change(editorTextarea, { target: { value: 'Change 1' } });
+      fireEvent.change(editorTextarea, { target: { value: 'Change 2' } });
+      fireEvent.change(editorTextarea, { target: { value: 'Change 3' } });
+
+      // Advance time
+      act(() => {
+        jest.advanceTimersByTime(DEBOUNCE_MS);
+      });
+
+      // Should only save once with the latest content
+      expect(mockLocalStorage.setItem).toHaveBeenCalledTimes(1);
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        QUIZ_DRAFT_KEY_NEW,
+        expect.stringContaining(CONTENT_CHANGE_JSON)
+      );
+    });
+
+    test('should clear draft after successful manual save', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      const mockFolders: FolderType[] = [
+        { _id: 'folder1', userId: 'user1', title: TEST_FOLDER_NAME, created_at: '2023-01-01' },
+      ];
+      mockApiService.getUserFolders.mockResolvedValue(mockFolders);
+      mockApiService.createQuiz.mockResolvedValue({ success: true } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Fill form
+      const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
+      fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
+
+      // Wait for folders to be loaded before opening dropdown
+      await waitFor(() => {
+        const folderSelect = screen.getByRole('combobox', { name: FOLDER_LABEL });
+        expect(folderSelect).toBeInTheDocument();
+      });
+
+      const folderSelect = screen.getByRole('combobox', { name: FOLDER_LABEL });
+      fireEvent.mouseDown(folderSelect);
+      
+      await waitFor(() => {
+        const option = screen.getByText(TEST_FOLDER_NAME);
+        fireEvent.click(option);
+      });
+
+      // Trigger auto-save first
+      act(() => {
+        jest.advanceTimersByTime(DEBOUNCE_MS);
+      });
+
+      expect(mockLocalStorage.setItem).toHaveBeenCalled();
+
+      // Manual save
+      const saveButton = screen.getByRole('button', { name: SAVE_BUTTON_TEXT });
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockApiService.createQuiz).toHaveBeenCalled();
+      });
+
+      // Draft should be cleared
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(QUIZ_DRAFT_KEY_NEW);
+    });
+
+    test('should handle localStorage errors gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      mockLocalStorage.setItem.mockImplementation(() => {
+        throw new Error('Storage quota exceeded');
+      });
+
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Fill in content
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
+      fireEvent.change(editorTextarea, { target: { value: 'Test content' } });
+
+      // Advance time to trigger save
+      act(() => {
+        jest.advanceTimersByTime(DEBOUNCE_MS);
+      });
+
+      // Should log error but not crash
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to save draft:', expect.any(Error));
+
+      // Auto-save indicator should show error
+      const indicator = screen.getByTestId(AUTO_SAVE_INDICATOR_TEST_ID);
+      expect(indicator).toHaveTextContent('Status: error');
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Draft Restoration', () => {
+    beforeEach(() => {
+      mockLocalStorage.clear();
+    });
+
+    test('should show draft restoration dialog when draft exists', async () => {
+      const existingDraft = {
+        quizTitle: 'Draft Quiz',
+        selectedFolder: 'folder1',
+        content: 'Draft content',
+        timestamp: Date.now() - DRAFT_TIMESTAMP_OFFSET
+      };
+
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(existingDraft));
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(DRAFT_DETECTED_TITLE)).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(DRAFT_DETECTED_MESSAGE)).toBeInTheDocument();
+      expect(screen.getByText(RESTORE_DRAFT_BUTTON)).toBeInTheDocument();
+      expect(screen.getByText(IGNORE_DRAFT_BUTTON)).toBeInTheDocument();
+    });
+
+    test('should restore draft when user clicks restore button', async () => {
+      const existingDraft = {
+        quizTitle: 'Draft Quiz Title',
+        selectedFolder: 'folder1',
+        content: 'Draft quiz content',
+        timestamp: Date.now() - DRAFT_TIMESTAMP_OFFSET
+      };
+
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(existingDraft));
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(DRAFT_DETECTED_TITLE)).toBeInTheDocument();
+      });
+
+      // Click restore button
+      const restoreButton = screen.getByText(RESTORE_DRAFT_BUTTON);
+      fireEvent.click(restoreButton);
+
+      // Wait for dialog to close
+      await waitFor(() => {
+        expect(screen.queryByText(DRAFT_DETECTED_TITLE)).not.toBeInTheDocument();
+      }, { timeout: WAIT_TIMEOUT });
+
+      // Check that form fields are populated
+      await waitFor(() => {
+        const titleInput = screen.getByTestId(VALIDATED_TEXT_FIELD_TITLE);
+        expect(titleInput).toHaveValue('Draft Quiz Title');
+      });
+
+      const editorTextarea = screen.getByTestId(EDITOR_TEXTAREA_TEST_ID);
+      expect(editorTextarea).toHaveValue('Draft quiz content');
+    });
+
+    test('should discard draft when user clicks ignore button', async () => {
+      const existingDraft = {
+        quizTitle: 'Draft Quiz',
+        selectedFolder: 'folder1',
+        content: 'Draft content',
+        timestamp: Date.now() - DRAFT_TIMESTAMP_OFFSET
+      };
+
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(existingDraft));
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(DRAFT_DETECTED_TITLE)).toBeInTheDocument();
+      });
+
+      // Click ignore button
+      const ignoreButton = screen.getByText(IGNORE_DRAFT_BUTTON);
+      fireEvent.click(ignoreButton);
+
+      // Check that draft is cleared
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(QUIZ_DRAFT_KEY_NEW);
+
+      // Dialog should be closed
+      await waitFor(() => {
+        expect(screen.queryByText(DRAFT_DETECTED_TITLE)).not.toBeInTheDocument();
+      });
+    });
+
+    test('should handle corrupted draft data gracefully', async () => {
+      mockLocalStorage.getItem.mockReturnValue('invalid-json-data');
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Should not show draft dialog for corrupted data
+      expect(screen.queryByText('Brouillon détecté')).not.toBeInTheDocument();
+    });
+
+    test('should not show draft dialog for existing quiz until quiz loads', async () => {
+      const existingDraft = {
+        quizTitle: 'Draft Quiz',
+        selectedFolder: 'folder1',
+        content: 'Draft content',
+        timestamp: Date.now() - DRAFT_TIMESTAMP_OFFSET
+      };
+
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(existingDraft));
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'quiz123' });
+
+      const mockQuiz: QuizType = {
+        _id: 'quiz123',
+        folderId: 'folder1',
+        folderName: 'Test Folder',
+        userId: 'user1',
+        title: 'Existing Quiz',
+        content: ['Existing content'],
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      mockApiService.getQuiz.mockResolvedValue(mockQuiz);
+
+      renderComponent(['/teacher/editor-quiz/quiz123']);
+
+      // Should not show dialog immediately
+      expect(screen.queryByText(DRAFT_DETECTED_TITLE)).not.toBeInTheDocument();
+
+      // Wait for quiz to load
+      await waitFor(() => {
+        expect(mockApiService.getQuiz).toHaveBeenCalledWith('quiz123');
+      });
+
+      // Now should show draft dialog
+      await waitFor(() => {
+        expect(screen.getByText(DRAFT_DETECTED_TITLE)).toBeInTheDocument();
       });
     });
   });
