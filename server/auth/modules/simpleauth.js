@@ -5,6 +5,7 @@ const model = require('../../models/users.js');
 const AppError = require('../../middleware/AppError.js');
 const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR } = require('../../constants/errorCodes');
 const { name } = require('../../models/authProvider.js');
+const logger = require('../../config/logger');
 
 class SimpleAuth {
     constructor(authmanager, settings) {
@@ -20,13 +21,20 @@ class SimpleAuth {
             expressapp.post(`${this.endpoint}/reset-password`, (req, res, next) => this.resetPassword(this, req, res, next));
             expressapp.post(`${this.endpoint}/change-password`, jwt.authenticate, (req, res, next) => this.changePassword(this, req, res, next));
         } catch (error) {
-            console.error(`La connexion ${name} de type ${this.providers.type} n'as pu être chargé.`);
-            console.error(`Error: ${error} `);
+            logger.error(`La connexion ${name} de type ${this.providers.type} n'as pu être chargé.`, {
+                module: 'simpleauth',
+                authType: this.providers.type,
+                error: error.message,
+                stack: error.stack
+            });
         }
     }
 
     async register(self, req, res) {
-        console.log(`simpleauth.js.register: ${JSON.stringify(req.body)}`);
+        logger.debug('Simple auth registration attempt', {
+            body: JSON.stringify(req.body),
+            module: 'simpleauth'
+        });
         try {
             let userInfos = {
                 name: req.body.name,
@@ -49,7 +57,11 @@ class SimpleAuth {
     }
 
     async authenticate(self, req, res, next) {
-        console.log(`authenticate: ${JSON.stringify(req.body)}`);
+        logger.debug('Simple auth authentication attempt', {
+            email: req.body.email,
+            hasPassword: !!req.body.password,
+            module: 'simpleauth'
+        });
         try {
             const { email, password } = req.body;
     
@@ -60,12 +72,17 @@ class SimpleAuth {
             }
             
             await self.authmanager.loginSimple(email, password, req, res, next);
-            // return res.status(200).json({ message: 'Logged in' });
         } catch (error) {
             const statusCode = error.statusCode || 500;
             const message = error.message || "An internal server error occurred";
     
-            console.error(error);
+            logger.error('Simple auth authentication failed', {
+                email: req.body.email,
+                error: error.message,
+                statusCode: statusCode,
+                stack: error.stack,
+                module: 'simpleauth'
+            });
             return res.status(statusCode).json({ message });
         }
     }
