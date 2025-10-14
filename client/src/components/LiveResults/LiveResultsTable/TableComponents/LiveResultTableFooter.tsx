@@ -1,11 +1,11 @@
 import { TableCell, TableFooter, TableRow } from "@mui/material";
 import React, { useMemo } from "react";
-import { StudentType } from "src/Types/StudentType";
+import { Student } from "src/Types/StudentType";
 
 interface LiveResultsFooterProps {
-    students: StudentType[];
+    students: Student[];
     maxQuestions: number;
-    getStudentGrade: (student: StudentType) => number;
+    getStudentGrade: (student: Student) => number;
 }
 
 const LiveResultsTableFooter: React.FC<LiveResultsFooterProps> = ({

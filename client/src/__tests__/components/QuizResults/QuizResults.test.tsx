@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuizResults from 'src/components/QuizResults/QuizResults';
-import { StudentType } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 import { QuestionType } from 'src/Types/QuestionType';
 
 // Mock data
@@ -12,24 +12,16 @@ const mockQuestions: QuestionType[] = [
     { question: { text: 'Question 3', type: 'short_answer' } as any },
 ];
 
-const mockStudents: StudentType[] = [
-    {
-        id: '1',
-        name: 'Alice',
-        answers: [
-            { answer: 'A' as any, isCorrect: true, idQuestion: 1 },
-            { answer: 'B' as any, isCorrect: false, idQuestion: 2 },
-            { answer: 'C' as any, isCorrect: true, idQuestion: 3 },
-        ],
-    },
-    {
-        id: '2',
-        name: 'Bob',
-        answers: [
-            { answer: 'A' as any, isCorrect: false, idQuestion: 1 },
-            { answer: 'B' as any, isCorrect: true, idQuestion: 2 },
-        ],
-    },
+const mockStudents: Student[] = [
+    new Student('Alice', '1', 'TestRoom', [
+        new Answer(['A'], true, 1),
+        new Answer(['B'], false, 2),
+        new Answer(['C'], true, 3),
+    ]),
+    new Student('Bob', '2', 'TestRoom', [
+        new Answer(['A'], false, 1),
+        new Answer(['B'], true, 2),
+    ]),
 ];
 
 describe('QuizResults Component', () => {
@@ -91,15 +83,11 @@ describe('QuizResults Component', () => {
     });
 
     it('renders in student view with current student', () => {
-        const currentStudent: StudentType = {
-            id: '1',
-            name: 'Alice',
-            answers: [
-                { answer: 'A' as any, isCorrect: true, idQuestion: 1 },
-                { answer: 'B' as any, isCorrect: false, idQuestion: 2 },
-                { answer: 'C' as any, isCorrect: true, idQuestion: 3 },
-            ],
-        };
+        const currentStudent: Student = new Student('Alice', '1', 'TestRoom', [
+            new Answer(['A'], true, 1),
+            new Answer(['B'], false, 2),
+            new Answer(['C'], true, 3),
+        ]);
 
         render(
             <QuizResults
@@ -118,11 +106,7 @@ describe('QuizResults Component', () => {
     });
 
     it('handles student with no answers', () => {
-        const studentWithNoAnswers: StudentType = {
-            id: '3',
-            name: 'Charlie',
-            answers: [],
-        };
+        const studentWithNoAnswers: Student = new Student('Charlie', '3', 'TestRoom');
 
         render(
             <QuizResults
@@ -138,15 +122,11 @@ describe('QuizResults Component', () => {
     });
 
     it('calculates grade correctly with duplicate question answers', () => {
-        const studentWithDuplicates: StudentType = {
-            id: '4',
-            name: 'Dave',
-            answers: [
-                { answer: 'A' as any, isCorrect: true, idQuestion: 1 },
-                { answer: 'A' as any, isCorrect: false, idQuestion: 1 },
-                { answer: 'B' as any, isCorrect: true, idQuestion: 2 },
-            ],
-        };
+        const studentWithDuplicates: Student = new Student('Dave', '4', 'TestRoom', [
+            new Answer(['A'], true, 1),
+            new Answer(['A'], false, 1),
+            new Answer(['B'], true, 2),
+        ]);
 
         render(
             <QuizResults

@@ -3,14 +3,14 @@ import { TableBody, TableCell, TableRow } from "@mui/material";
 import { faCheck, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 import { FormattedTextTemplate } from '../../../GiftTemplate/templates/TextTypeTemplate';
 import React from "react";
-import { StudentType } from "src/Types/StudentType";
+import { Student } from "src/Types/StudentType";
 
 interface LiveResultsFooterProps {
     maxQuestions: number;
-    students: StudentType[];
+    students: Student[];
     showUsernames: boolean;
     showCorrectAnswers: boolean;
-    getStudentGrade: (student: StudentType) => number;
+    getStudentGrade: (student: Student) => number;
 
 }
 
