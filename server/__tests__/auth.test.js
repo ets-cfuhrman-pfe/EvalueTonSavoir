@@ -24,6 +24,9 @@ jest.mock('../config/db', () => {
   };
 });
 
+// Set up environment variables for JWT
+process.env.JWT_SECRET = 'test-jwt-secret-for-testing';
+
 // Add a cleanup for this test file only
 afterAll(async () => {
   // Clean up any remaining resources
@@ -328,7 +331,7 @@ describe("Auth Logger Coverage", () => {
       };
       
       // Create AuthManager instance which should trigger logger calls
-      const _authManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
+      const _unusedAuthManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
       
       expect(logger.debug).toHaveBeenCalledWith(
         'AuthManager constructor initialized',
