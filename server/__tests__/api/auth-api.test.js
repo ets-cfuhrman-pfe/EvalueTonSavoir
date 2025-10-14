@@ -259,5 +259,69 @@ describe("Auth API Integration Tests", () => {
         })
       );
     });
+
+    // Validation middleware logger coverage tests
+    describe("Validation Middleware Logger Coverage", () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+      });
+
+      it("should log warning when validation method not found", () => {
+        const { createValidationMiddleware } = require("../../middleware/validation");
+        
+        const fieldConfig = {
+          testField: {
+            validator: 'nonExistentValidator',
+            required: false,
+            label: 'Test Field'
+          }
+        };
+
+        const middleware = createValidationMiddleware(fieldConfig);
+        const req = { body: { testField: 'some value' } };
+        const res = {};
+        const next = jest.fn();
+
+        middleware(req, res, next);
+
+        expect(logger.warn).toHaveBeenCalledWith(
+          'Validation method nonExistentValidator not found',
+          expect.objectContaining({
+            field: 'testField',
+            validator: 'nonExistentValidator',
+            availableValidators: expect.any(Array)
+          })
+        );
+      });
+
+      it("should handle validation without logging when validator exists", () => {
+        // Mock ValidationUtils to have a valid method
+        jest.doMock("../../utils/validationUtils", () => ({
+          testValidator: () => ({ isValid: true, errors: [] })
+        }), { virtual: true });
+
+        jest.resetModules();
+        const { createValidationMiddleware } = require("../../middleware/validation");
+        
+        const fieldConfig = {
+          testField: {
+            validator: 'testValidator',
+            required: false,
+            label: 'Test Field'
+          }
+        };
+
+        const middleware = createValidationMiddleware(fieldConfig);
+        const req = { body: { testField: 'some value' } };
+        const res = {};
+        const next = jest.fn();
+
+        middleware(req, res, next);
+
+        // Should not log warning for valid validator
+        expect(logger.warn).not.toHaveBeenCalled();
+        expect(next).toHaveBeenCalled();
+      });
+    });
   });
 });
