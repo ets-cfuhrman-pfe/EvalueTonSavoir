@@ -34,6 +34,19 @@ afterAll(async () => {
 const AuthConfig = require("../config/auth.js");
 const AuthManager = require("../auth/auth-manager.js");
 
+// Mock fetch for OIDC configuration
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({
+      issuer: 'https://mock-issuer.com',
+      authorization_endpoint: 'https://mock-issuer.com/oauth2/authorize',
+      token_endpoint: 'https://mock-issuer.com/oauth2/token',
+      userinfo_endpoint: 'https://mock-issuer.com/oauth2/userinfo',
+      jwks_uri: 'https://mock-issuer.com/oauth2/jwks'
+    })
+  })
+);
+
 // Mock logger for testing
 jest.mock('../config/logger', () => ({
   debug: jest.fn(),
