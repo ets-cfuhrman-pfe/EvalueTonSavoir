@@ -28,6 +28,25 @@ describe("websocket server", () => {
     server = httpServer.listen(BACKEND_PORT, () => done());
   });
 
+  beforeEach(() => {
+    // Clear all rooms before each test to ensure clean state
+    const rooms = ioServer.sockets.adapter.rooms;
+    for (const [roomName, room] of rooms) {
+      if (!roomName.startsWith('/')) {
+        // Disconnect all sockets in the room
+        const sockets = room.sockets || room;
+        if (typeof sockets === 'object') {
+          for (const socketId of Object.keys(sockets)) {
+            const socket = ioServer.sockets.sockets.get(socketId);
+            if (socket) {
+              socket.leave(roomName);
+            }
+          }
+        }
+      }
+    }
+  });
+
   afterAll(() => {
     ioServer.close();
     server.close();
