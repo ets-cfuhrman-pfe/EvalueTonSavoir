@@ -8,7 +8,7 @@ import webSocketService from 'src/services/WebsocketService';
 import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
-import { StudentType } from 'src/Types/StudentType';
+import { Student, Answer } from 'src/Types/StudentType';
 
 
 const questionDisplayV2MockProps: any[] = [];
@@ -396,7 +396,7 @@ describe('ManageRoomV2 Component', () => {
       )?.[1];
 
       if (userJoinedCallback) {
-        userJoinedCallback({ id: 'student1', name: 'John Doe', answers: [] });
+        userJoinedCallback(new Student('John Doe', 'student1', 'TestRoom'));
       }
 
       jest.runAllTimers();
@@ -713,8 +713,8 @@ describe('ManageRoomV2 Component', () => {
       )?.[1];
 
       if (userJoinedCallback) {
-        userJoinedCallback({ id: 'student1', name: 'John Doe', answers: [] });
-        userJoinedCallback({ id: 'student2', name: 'Jane Smith', answers: [] });
+        userJoinedCallback({ id: 'student1', name: 'John Doe', room: 'TestRoom', answers: [], isConnected: true });
+        userJoinedCallback({ id: 'student2', name: 'Jane Smith', room: 'TestRoom', answers: [], isConnected: true });
       }
 
       // Simulate answer submissions
@@ -773,9 +773,9 @@ describe('ManageRoomV2 Component', () => {
       )?.[1];
 
       if (userJoinedCallback) {
-        userJoinedCallback({ id: 'student1', name: 'John', answers: [{ idQuestion: 2, answer: ['A'], isCorrect: true }] });
-        userJoinedCallback({ id: 'student2', name: 'Jane', answers: [{ idQuestion: 2, answer: ['B'], isCorrect: false }] });
-        userJoinedCallback({ id: 'student3', name: 'Bob', answers: [] }); // No answer yet
+        userJoinedCallback({ id: 'student1', name: 'John', room: 'TestRoom', answers: [{ idQuestion: 2, answer: ['A'], isCorrect: true }], isConnected: true });
+        userJoinedCallback({ id: 'student2', name: 'Jane', room: 'TestRoom', answers: [{ idQuestion: 2, answer: ['B'], isCorrect: false }], isConnected: true });
+        userJoinedCallback({ id: 'student3', name: 'Bob', room: 'TestRoom', answers: [], isConnected: true }); // No answer yet
       }
 
       await act(async () => {
@@ -838,27 +838,11 @@ describe('ManageRoomV2 Component', () => {
   });
 
   describe('Answer Statistics Features', () => {
-    const mockStudents: StudentType[] = [
-      {
-        id: 'student1',
-        name: 'John Doe',
-        answers: [{ idQuestion: 1, answer: ['Choice A'], isCorrect: true }]
-      },
-      {
-        id: 'student2', 
-        name: 'Jane Smith',
-        answers: [{ idQuestion: 1, answer: ['Choice B'], isCorrect: false }]
-      },
-      {
-        id: 'student3',
-        name: 'Bob Johnson',
-        answers: [{ idQuestion: 1, answer: ['Choice A'], isCorrect: true }]
-      },
-      {
-        id: 'student4',
-        name: 'Alice Brown',
-        answers: [] // No answer
-      }
+    const mockStudents: Student[] = [
+      new Student('John Doe', 'student1', 'TestRoom', [new Answer(['Choice A'], true, 1)]),
+      new Student('Jane Smith', 'student2', 'TestRoom', [new Answer(['Choice B'], false, 1)]),
+      new Student('Bob Johnson', 'student3', 'TestRoom', [new Answer(['Choice A'], true, 1)]),
+      new Student('Alice Brown', 'student4', 'TestRoom') // No answer
     ];
 
     beforeEach(() => {
@@ -926,9 +910,9 @@ describe('ManageRoomV2 Component', () => {
     });
 
     test('should handle students with no answers', () => {
-      const studentsNoAnswers: StudentType[] = [
-        { id: 'student1', name: 'John', answers: [] },
-        { id: 'student2', name: 'Jane', answers: [] }
+      const studentsNoAnswers: Student[] = [
+        new Student('John', 'student1', 'TestRoom'),
+        new Student('Jane', 'student2', 'TestRoom')
       ];
       
       (calculateAnswerStatistics as jest.Mock).mockReturnValue({});

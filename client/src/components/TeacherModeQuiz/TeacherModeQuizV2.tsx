@@ -7,7 +7,7 @@ import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
 import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import QuizResults from '../QuizResults/QuizResults';
-import { StudentType } from '../../Types/StudentType';
+import { Student, Answer } from '../../Types/StudentType';
 import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
 
 interface TeacherModeQuizV2Props {
@@ -89,15 +89,16 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             return null;
         }
 
-        const currentStudent: StudentType = {
-            id: 'current-student',
-            name: studentName,
-            answers: answers.map((answer, index) => ({
-                idQuestion: index + 1,
-                answer: answer?.answer,
-                isCorrect: answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false
-            }))
-        };
+        const currentStudent: Student = new Student(
+            studentName,
+            'current-student',
+            'current-room',
+            answers.map((answer, index) => new Answer(
+                answer?.answer,
+                answer?.answer ? checkIfIsCorrect(answer.answer, index + 1, questions) : false,
+                index + 1
+            ))
+        );
 
         return (
             <QuizResults

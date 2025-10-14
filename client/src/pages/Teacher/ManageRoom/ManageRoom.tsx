@@ -11,7 +11,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import './manageRoom.css';
 import QRCodeIcon from '@mui/icons-material/QrCode';
 import { ENV_VARIABLES } from 'src/constants';
-import { StudentType, Answer } from '../../../Types/StudentType';
+import { Student, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 import { Refresh, Error } from '@mui/icons-material';
 import StudentWaitPage from 'src/components/StudentWaitPage/StudentWaitPage';
@@ -34,7 +34,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 const ManageRoom: React.FC = () => {
     const navigate = useNavigate();
     const [socket, setSocket] = useState<Socket | null>(null);
-    const [students, setStudents] = useState<StudentType[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const { quizId = '', roomName = '' } = useParams<{ quizId: string; roomName: string }>();
     const [quizQuestions, setQuizQuestions] = useState<QuestionType[] | undefined>();
     const [quiz, setQuiz] = useState<QuizType | null>(null);
@@ -43,7 +43,7 @@ const ManageRoom: React.FC = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionType | undefined>(undefined);
     const [quizStarted, setQuizStarted] = useState<boolean>(false);
     const [formattedRoomName, setFormattedRoomName] = useState('');
-    const [newlyConnectedUser, setNewlyConnectedUser] = useState<StudentType | null>(null);
+    const [newlyConnectedUser, setNewlyConnectedUser] = useState<Student | null>(null);
     const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${roomName}`;
     const [showQrModal, setShowQrModal] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -157,7 +157,7 @@ const ManageRoom: React.FC = () => {
             setSocket(null);
             setQuizQuestions(undefined);
             setCurrentQuestion(undefined);
-            setStudents(new Array<StudentType>());
+            setStudents(new Array<Student>());
         }
     };
 
@@ -190,7 +190,7 @@ const ManageRoom: React.FC = () => {
             console.log(`Room created: ${createdRoomName}`);
         });
 
-        socket.on('user-joined', (student: StudentType) => {
+        socket.on('user-joined', (student: Student) => {
             setNewlyConnectedUser(student);
         });
 

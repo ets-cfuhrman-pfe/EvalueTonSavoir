@@ -60,7 +60,9 @@ const setupWebsocket = (io) => {
           const newStudent = {
             id: socket.id,
             name: username,
+            room: roomToCheck,
             answers: [],
+            isConnected: true,
           };
           socket.join(roomToCheck);
           socket.to(roomToCheck).emit("user-joined", newStudent);

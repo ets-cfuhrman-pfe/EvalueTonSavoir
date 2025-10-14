@@ -1,13 +1,13 @@
 import React from 'react';
 import { Paper, Table, TableContainer } from '@mui/material';
-import { StudentType } from '../../../Types/StudentType';
+import { Student } from '../../../Types/StudentType';
 import { QuestionType } from '../../../Types/QuestionType';
 import LiveResultsTableHeaderV2 from './TableComponents/LiveResultsTableHeaderV2';
 import LiveResultsTableBodyV2 from './TableComponents/LiveResultsTableBodyV2';
 import LiveResultsTableFooterV2 from './TableComponents/LiveResultsTableFooterV2';
 
 interface LiveResultsTableProps {
-    students: StudentType[];
+    students: Student[];
     questions: QuestionType[];
     showCorrectAnswers: boolean;
     showSelectedQuestion: (index: number) => void;
@@ -26,7 +26,7 @@ const LiveResultsTableV2: React.FC<LiveResultsTableProps> = ({
 
     const maxQuestions = questions.length;
 
-    const getStudentGrade = (student: StudentType): number => {
+    const getStudentGrade = (student: Student): number => {
         if (student.answers.length === 0) {
             return 0;
         }
