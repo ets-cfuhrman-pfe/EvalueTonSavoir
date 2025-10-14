@@ -1,6 +1,7 @@
 const ValidationUtils = require('../utils/validationUtils');
 const AppError = require('./AppError');
 const { VALIDATION_ERROR } = require('../constants/errorCodes');
+const logger = require('../config/logger');
 
 /**
  * Generic validation middleware factory
@@ -44,7 +45,11 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
                         errors.push(...result.errors);
                     }
                 } else {
-                    console.warn(`Validation method ${config.validator} not found`);
+                    logger.warn(`Validation method ${config.validator} not found`, {
+                        field: fieldName,
+                        validator: config.validator,
+                        availableValidators: Object.keys(ValidationUtils)
+                    });
                 }
             }
         }
