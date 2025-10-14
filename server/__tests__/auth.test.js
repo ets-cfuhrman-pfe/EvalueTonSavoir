@@ -210,6 +210,9 @@ describe(
         
         // Reset all mocks between tests
         jest.clearAllMocks();
+        
+        // Reset database mock state
+        jest.restoreAllMocks();
     });
 
     it("should load valid modules", async () => {
@@ -325,7 +328,7 @@ describe("Auth Logger Coverage", () => {
       };
       
       // Create AuthManager instance which should trigger logger calls
-      new AuthManager(mockExpressApp, mockConfig, mockUserModel);
+      const _authManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
       
       expect(logger.debug).toHaveBeenCalledWith(
         'AuthManager constructor initialized',
