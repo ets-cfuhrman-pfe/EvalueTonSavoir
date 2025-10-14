@@ -1,0 +1,82 @@
+// auto-save-indicator.scss
+@use '../variables' as vars;
+
+.auto-save-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  height: 28px;
+  
+  // Custom spin animation for saving state
+  .auto-save-indicator__icon {
+    font-size: 16px;
+    
+    &--spinning {
+      animation: auto-save-spin 1s linear infinite;
+    }
+  }
+  
+  // MUI Chip customization to match project theme
+  &.MuiChip-root {
+    font-size: 0.75rem;
+    height: 28px;
+    font-weight: 500;
+    border-radius: vars.$border-radius-sm;
+    
+    // Success state (saved)
+    &.MuiChip-colorSuccess {
+      color: vars.$success;
+      border-color: rgba(vars.$success, 0.5);
+      background-color: rgba(vars.$success, 0.08);
+      
+      .MuiChip-icon {
+        color: vars.$success;
+      }
+    }
+    
+    // Info state (saving)
+    &.MuiChip-colorInfo {
+      color: vars.$info;
+      border-color: rgba(vars.$info, 0.5);
+      background-color: rgba(vars.$info, 0.08);
+      
+      .MuiChip-icon {
+        color: vars.$info;
+      }
+    }
+    
+    // Error state
+    &.MuiChip-colorError {
+      color: vars.$danger;
+      border-color: rgba(vars.$danger, 0.5);
+      background-color: rgba(vars.$danger, 0.08);
+      
+      .MuiChip-icon {
+        color: vars.$danger;
+      }
+    }
+  }
+}
+
+// Keyframe animation for spinning icon
+@keyframes auto-save-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .auto-save-indicator {
+    font-size: 0.7rem;
+    height: 24px;
+    
+    .auto-save-indicator__icon {
+      font-size: 14px;
+    }
+  }
+}
