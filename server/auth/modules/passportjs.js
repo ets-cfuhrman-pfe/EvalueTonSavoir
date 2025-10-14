@@ -1,5 +1,6 @@
 const passport = require('passport')
 const authprovider = require('../../models/authProvider')
+const logger = require('../../config/logger')
 
 class PassportJs{
     constructor(authmanager,settings){
@@ -10,7 +11,10 @@ class PassportJs{
     }
 
     async registerAuth(expressapp, userModel){
-        console.log(`PassportJs: registerAuth: userModel: ${JSON.stringify(userModel)}`);
+        logger.debug('PassportJs registerAuth initialized', {
+            userModel: JSON.stringify(userModel),
+            module: 'passportjs'
+        });
         expressapp.use(passport.initialize());
         expressapp.use(passport.session());
         
@@ -26,8 +30,13 @@ class PassportJs{
                         this.registeredProviders[provider.type].register(expressapp,passport,this.endpoint,name,provider,userModel)
                         authprovider.create(auth_id)
                     } catch(error){
-                        console.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`);
-                        console.error(`Error: ${error} `);
+                        logger.error(`La connexion ${name} de type ${provider.type} n'as pu être chargé.`, {
+                            connectionName: name,
+                            providerType: provider.type,
+                            error: error.message,
+                            stack: error.stack,
+                            module: 'passportjs'
+                        });
                     }
                 }
             }
@@ -48,15 +57,28 @@ class PassportJs{
             if(require('fs').existsSync(providerPath)){
                 const Provider = require(providerPath);
                 this.registeredProviders[providerType]= new Provider(this,auth_id)
-                console.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`)
+                logger.info(`Le type de connexion '${providerType}' a été ajouté dans passportjs.`, {
+                    providerType: providerType,
+                    authId: auth_id,
+                    module: 'passportjs'
+                })
             } else {
-                console.error(`Provider file not found: ${providerPath}`);
-                console.error(`Available provider types should have corresponding files in auth/modules/passport-providers/`);
+                logger.error(`Provider file not found: ${providerPath}`, {
+                    providerType: providerType,
+                    providerPath: providerPath,
+                    message: 'Available provider types should have corresponding files in auth/modules/passport-providers/',
+                    module: 'passportjs'
+                });
                 return; // Return early instead of throwing to prevent cascading errors
             }
         } catch(error){
-            console.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`);
-            console.error(`Error: ${error} `);
+            logger.error(`Le type de connexion '${providerType}' n'as pas pu être chargé dans passportjs.`, {
+                providerType: providerType,
+                authId: auth_id,
+                error: error.message,
+                stack: error.stack,
+                module: 'passportjs'
+            });
         }
     }
 
