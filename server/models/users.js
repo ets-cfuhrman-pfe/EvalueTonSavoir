@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const AppError = require("../middleware/AppError.js");
 const { USER_ALREADY_EXISTS } = require("../constants/errorCodes");
+const logger = require("../config/logger");
 
 class Users {
   
@@ -54,7 +55,10 @@ class Users {
   }
 
   async login(email, password) {
-    console.log(`models/users: login: email: ${email}, password: ${password}`);
+    logger.debug('User login attempt', {
+      email: email,
+      hasPassword: !!password
+    });
     try {
       await this.db.connect();
       const conn = this.db.getConnection();
@@ -75,10 +79,17 @@ class Users {
         error.statusCode = 401; 
         throw error;
       }
-      console.log(`models/users: login: FOUND user: ${JSON.stringify(user)}`);
+      logger.info('User login successful', {
+        userId: user._id,
+        email: user.email
+      });
       return user;
     } catch (error) {
-      console.error(error);
+      logger.error('User login failed', {
+        email: email,
+        error: error.message,
+        stack: error.stack
+      });
       throw error; 
     }
   }
