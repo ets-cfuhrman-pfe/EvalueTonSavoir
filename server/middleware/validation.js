@@ -55,9 +55,48 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
         }
         
         if (errors.length > 0) {
+            // Log validation failures with detailed context
+            logger.warn('Validation failed', {
+                errors: errors,
+                fieldConfig: Object.keys(fieldConfig),
+                receivedFields: Object.keys(req.body),
+                url: req.originalUrl,
+                method: req.method,
+                userId: req.user?.userId || null,
+                userAgent: req.get('User-Agent'),
+                ip: req.ip,
+                requestId: req.requestId,
+                module: 'validation-middleware'
+            });
+
+            // Log security event for suspicious validation patterns
+            if (errors.length > 5 || errors.some(err => 
+                err.toLowerCase().includes('script') || 
+                err.toLowerCase().includes('injection') ||
+                err.toLowerCase().includes('xss')
+            )) {
+                logger.logSecurityEvent('suspicious_validation_failure', 'warn', {
+                    errorCount: errors.length,
+                    errors: errors,
+                    url: req.originalUrl,
+                    userId: req.user?.userId || null,
+                    ip: req.ip
+                });
+            }
+
             const error = new AppError(VALIDATION_ERROR(`Données invalides: ${errors.join(', ')}`));
             return next(error);
         }
+
+        // Log successful validation for audit purposes (debug level)
+        logger.debug('Validation passed', {
+            validatedFields: Object.keys(fieldConfig),
+            url: req.originalUrl,
+            method: req.method,
+            userId: req.user?.userId || null,
+            requestId: req.requestId,
+            module: 'validation-middleware'
+        });
         
         next();
     };
