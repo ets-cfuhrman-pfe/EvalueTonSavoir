@@ -459,6 +459,29 @@ describe("Quizzes API Integration Tests", () => {
       expect(response.body.message).toBe("Une erreur s'est produite lors de la suppression du quiz.");
     });
 
+    it("should fail when content.content is an array instead of string", async () => {
+      const quizId = "quiz123";
+      
+      // Mock quiz content with content as an array 
+      const mockContentWithArrayContent = {
+        _id: quizId,
+        title: "Test Quiz",
+        content: ["Question 1?", "Question 2?"], 
+        userId: "user123",
+        folderId: "folder123"
+      };
+      
+      mockQuizModel.getOwner.mockResolvedValue("user123");
+      mockQuizModel.getContent.mockResolvedValue(mockContentWithArrayContent);
+      mockQuizModel.delete.mockResolvedValue(true);
+
+      
+      await request(app)
+        .delete(`/api/quiz/delete/${quizId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500); 
+    });
+
     it("should return 401 when not authenticated", async () => {
       const response = await request(app)
         .delete("/api/quiz/delete/quiz123")
