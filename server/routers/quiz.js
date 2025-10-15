@@ -4,9 +4,13 @@ const quizzes = require('../app.js').quizzes;
 const jwt = require('../middleware/jwtToken.js');
 const { validateQuizCreation, validateQuizUpdate } = require('../middleware/validation.js');
 const asyncHandler = require('./routerUtils.js');
+const logger = require('../config/logger');
 
 if (!quizzes) {
-  console.error("quizzes is not defined");
+  logger.error("quizzes is not defined", {
+    module: 'router/quiz',
+    error: 'Quiz module not properly initialized'
+  });
 }
 
 router.post("/create", jwt.authenticate, validateQuizCreation, asyncHandler(quizzes.create));

@@ -3,10 +3,17 @@ const bcrypt = require('bcrypt');
 const Quizzes = require('../models/quiz');
 const Folders = require('../models/folders');
 const { ObjectId } = require('mongodb');
+const logger = require('../config/logger');
 
 jest.mock('bcrypt');
 jest.mock('../middleware/AppError');
 jest.mock('../models/folders');
+jest.mock('../config/logger', () => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn()
+}));
 
 describe('Users', () => {
     let users;
@@ -54,32 +61,138 @@ describe('Users', () => {
         expect(result.insertedId).toBeDefined(); // Ensure result has insertedId
     });
 
-    // it('should update the user password', async () => {
-    //     db.collection().updateOne.mockResolvedValue({ modifiedCount: 1 });
-    //     bcrypt.hash.mockResolvedValue('hashedPassword');
 
-    //     const email = 'test@example.com';
-    //     const newPassword = 'newPassword123';
-    //     const result = await users.updatePassword(email, newPassword);
 
-    //     expect(db.connect).toHaveBeenCalled();
-    //     expect(db.collection().updateOne).toHaveBeenCalledWith(
-    //         { email },
-    //         { $set: { password: 'hashedPassword' } }
-    //     );
-    //     expect(result).toEqual(newPassword);
-    // });
+    // Logger coverage tests
+    describe('Logger Coverage', () => {
+        beforeEach(() => {
+            // Clear logger mocks before each test
+            jest.clearAllMocks();
+        });
 
-    // it('should delete a user', async () => {
-    //     db.collection().deleteOne.mockResolvedValue({ deletedCount: 1 });
+        it('should test complete login flow with successful authentication', async () => {
+            const mockUser = {
+                _id: 'user123',
+                email: 'test@example.com',
+                password: 'hashedPassword'
+            };
 
-    //     const email = 'test@example.com';
-    //     const result = await users.delete(email);
+            // Setup mocks for successful login
+            db.connect.mockResolvedValue();
+            db.getConnection.mockReturnValue({
+                collection: jest.fn().mockReturnValue({
+                    findOne: jest.fn().mockResolvedValue(mockUser)
+                })
+            });
+            
+            // Mock bcrypt.compare for password verification
+            bcrypt.compare = jest.fn().mockResolvedValue(true);
+            users.verify = jest.fn().mockResolvedValue(true);
 
-    //     expect(db.connect).toHaveBeenCalled();
-    //     expect(db.collection().deleteOne).toHaveBeenCalledWith({ email });
-    //     expect(result).toBe(true);
-    // });
+            const result = await users.login('test@example.com', 'password123');
 
-    // Add more tests as needed
+            // Verify debug log for login attempt
+            expect(logger.debug).toHaveBeenCalledWith(
+                'User login attempt',
+                expect.objectContaining({
+                    email: 'test@example.com',
+                    hasPassword: true
+                })
+            );
+
+            // Verify info log for successful login
+            expect(logger.info).toHaveBeenCalledWith(
+                'User login successful',
+                expect.objectContaining({
+                    userId: 'user123',
+                    email: 'test@example.com'
+                })
+            );
+
+            expect(result).toEqual(mockUser);
+        });
+
+        it('should test login flow with user not found error', async () => {
+            // Setup mocks for user not found
+            db.connect.mockResolvedValue();
+            db.getConnection.mockReturnValue({
+                collection: jest.fn().mockReturnValue({
+                    findOne: jest.fn().mockResolvedValue(null)
+                })
+            });
+
+            await expect(users.login('nonexistent@example.com', 'password123'))
+                .rejects.toThrow('User not found');
+
+            expect(logger.debug).toHaveBeenCalledWith(
+                'User login attempt',
+                expect.objectContaining({
+                    email: 'nonexistent@example.com',
+                    hasPassword: true
+                })
+            );
+
+            expect(logger.error).toHaveBeenCalledWith(
+                'User login failed',
+                expect.objectContaining({
+                    email: 'nonexistent@example.com',
+                    error: 'User not found'
+                })
+            );
+        });
+
+        it('should test login flow with password mismatch error', async () => {
+            const mockUser = {
+                _id: 'user123',
+                email: 'test@example.com',
+                password: 'hashedPassword'
+            };
+
+            // Setup mocks for password mismatch
+            db.connect.mockResolvedValue();
+            db.getConnection.mockReturnValue({
+                collection: jest.fn().mockReturnValue({
+                    findOne: jest.fn().mockResolvedValue(mockUser)
+                })
+            });
+            
+            users.verify = jest.fn().mockResolvedValue(false);
+
+            await expect(users.login('test@example.com', 'wrongpassword'))
+                .rejects.toThrow('Password does not match');
+
+            expect(logger.debug).toHaveBeenCalledWith(
+                'User login attempt',
+                expect.objectContaining({
+                    email: 'test@example.com',
+                    hasPassword: true
+                })
+            );
+
+            expect(logger.error).toHaveBeenCalledWith(
+                'User login failed',
+                expect.objectContaining({
+                    email: 'test@example.com',
+                    error: 'Password does not match'
+                })
+            );
+        });
+
+        it('should test utility methods for coverage', async () => {
+            // Test password hashing
+            const hashedPassword = await users.hashPassword('test123');
+            expect(hashedPassword).toBeDefined();
+            
+            // Test password generation
+            const password = users.generatePassword();
+            expect(password).toBeDefined();
+            expect(typeof password).toBe('string');
+            expect(password.length).toBeGreaterThan(0);
+            
+            // Test password verification
+            bcrypt.compare = jest.fn().mockResolvedValue(true);
+            const isValid = await users.verify('test123', hashedPassword);
+            expect(isValid).toBe(true);
+        });
+    });
 });

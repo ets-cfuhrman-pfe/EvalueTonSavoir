@@ -3,6 +3,27 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
+// Import the mocked logger
+const logger = require("../../config/logger");
+
 // Import the actual components
 const FoldersController = require("../../controllers/folders");
 const jwtMiddleware = require("../../middleware/jwtToken");
@@ -29,6 +50,20 @@ const createTestApp = () => {
     const app = express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
+
+    // Mock logging middleware
+    app.use((req, res, next) => {
+        req.logAction = (action, details) => {
+            if (req.user) {
+                logger.logUserAction(req.user.userId, req.user.email, action, details);
+            } else {
+                logger.warn(`Action attempted without authentication: ${action}`, details);
+            }
+        };
+        req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
+        req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
+        next();
+    });
 
     // Create controller instance with mock model
     const foldersController = new FoldersController(mockFoldersModel);
@@ -128,6 +163,26 @@ describe("Folders API Integration Tests", () => {
             expect(mockFoldersModel.create).toHaveBeenCalledWith(
                 "Test Folder",
                 "user123"
+            );
+
+            // Verify logging
+            expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+                'insert',
+                'folders',
+                expect.any(Number),
+                true,
+                { folderId: 'folder123', title: 'Test Folder' }
+            );
+
+            expect(logger.logUserAction).toHaveBeenCalledWith(
+                'user123',
+                'test@example.com',
+                'folder_created',
+                expect.objectContaining({
+                    folderId: 'folder123',
+                    title: 'Test Folder',
+                    dbOperationTime: expect.stringMatching(/^\d+ms$/)
+                })
             );
         });
 
@@ -255,6 +310,25 @@ describe("Folders API Integration Tests", () => {
             });
 
             expect(mockFoldersModel.getUserFolders).toHaveBeenCalledWith("user123");
+
+            // Verify logging
+            expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+                'select',
+                'folders',
+                expect.any(Number),
+                true,
+                { folderCount: 2 }
+            );
+
+            expect(logger.logUserAction).toHaveBeenCalledWith(
+                'user123',
+                'test@example.com',
+                'folders_retrieved',
+                expect.objectContaining({
+                    folderCount: 2,
+                    dbOperationTime: expect.stringMatching(/^\d+ms$/)
+                })
+            );
         });
 
         it("should return 404 when no folders found", async () => {
@@ -300,6 +374,26 @@ describe("Folders API Integration Tests", () => {
 
             expect(mockFoldersModel.getOwner).toHaveBeenCalledWith(folderId);
             expect(mockFoldersModel.getContent).toHaveBeenCalledWith(folderId);
+
+            // Verify logging
+            expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+                'select',
+                'folders',
+                expect.any(Number),
+                true,
+                { folderId: 'folder123', contentCount: 2 }
+            );
+
+            expect(logger.logUserAction).toHaveBeenCalledWith(
+                'user123',
+                'test@example.com',
+                'folder_content_accessed',
+                expect.objectContaining({
+                    folderId: 'folder123',
+                    contentCount: 2,
+                    dbOperationTime: expect.stringMatching(/^\d+ms$/)
+                })
+            );
         });
 
         it("should return 404 when user is not the owner", async () => {
@@ -313,6 +407,17 @@ describe("Folders API Integration Tests", () => {
 
             expect(response.body.message).toBe(
                 "Aucun dossier portant cet identifiant n'a été trouvé."
+            );
+
+            // Verify security logging
+            expect(logger.logSecurityEvent).toHaveBeenCalledWith(
+                'unauthorized_folder_access',
+                'warn',
+                expect.objectContaining({
+                    folderId: 'folder123',
+                    attemptedBy: 'user123',
+                    actualOwner: 'otherUser'
+                })
             );
         });
 

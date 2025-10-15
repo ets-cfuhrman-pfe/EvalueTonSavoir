@@ -10,6 +10,30 @@ jest.mock("../../config/email.js", () => ({
   quizShare: jest.fn(),
 }));
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
+// Import the mocked logger
+const logger = require("../../config/logger");
+
+// Import request ID middleware
+const { requestIdMiddleware } = require("../../config/httpLogger");
+
 // Import the actual components
 const QuizController = require("../../controllers/quiz");
 const jwtMiddleware = require("../../middleware/jwtToken");
@@ -40,6 +64,23 @@ const createTestApp = () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Add request ID middleware
+  app.use(requestIdMiddleware);
+
+  // Mock logging middleware
+  app.use((req, res, next) => {
+    req.logAction = (action, details) => {
+      if (req.user) {
+        logger.logUserAction(req.user.userId, req.user.email, action, details);
+      } else {
+        logger.warn(`Action attempted without authentication: ${action}`, details);
+      }
+    };
+    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
+    req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
+    next();
+  });
 
   // Create controller instance with mock models
   const quizController = new QuizController(mockQuizModel, mockFoldersModel);
@@ -147,6 +188,35 @@ describe("Quizzes API Integration Tests", () => {
         "Quiz content",
         "folder123",
         "user123"
+      );
+
+      // Verify logging
+      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+        'insert',
+        'quizzes',
+        expect.any(Number),
+        true,
+        expect.objectContaining({
+          quizId: 'quiz123',
+          title: 'Test Quiz',
+          folderId: 'folder123',
+          contentLength: 12, // "Quiz content".length
+          contentHash: expect.any(String)
+        })
+      );
+
+      expect(logger.logUserAction).toHaveBeenCalledWith(
+        'user123',
+        'test@example.com',
+        'quiz_created',
+        expect.objectContaining({
+          quizId: 'quiz123',
+          title: 'Test Quiz',
+          folderId: 'folder123',
+          contentLength: 12,
+          createTime: expect.stringMatching(/^\d+ms$/),
+          totalTime: expect.stringMatching(/^\d+ms$/)
+        })
       );
     });
 
@@ -540,7 +610,7 @@ describe("Quizzes API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        message: "Utilisateur déplacé avec succès.",
+        message: "Quiz déplacé avec succès.",
       });
 
       expect(mockQuizModel.getOwner).toHaveBeenCalledWith(quizId);

@@ -1,6 +1,7 @@
 const ValidationUtils = require('../utils/validationUtils');
 const AppError = require('./AppError');
 const { VALIDATION_ERROR } = require('../constants/errorCodes');
+const logger = require('../config/logger');
 
 /**
  * Generic validation middleware factory
@@ -44,15 +45,58 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
                         errors.push(...result.errors);
                     }
                 } else {
-                    console.warn(`Validation method ${config.validator} not found`);
+                    logger.warn(`Validation method ${config.validator} not found`, {
+                        field: fieldName,
+                        validator: config.validator,
+                        availableValidators: Object.keys(ValidationUtils)
+                    });
                 }
             }
         }
         
         if (errors.length > 0) {
+            // Log validation failures with detailed context
+            logger.warn('Validation failed', {
+                errors: errors,
+                fieldConfig: Object.keys(fieldConfig),
+                receivedFields: Object.keys(req.body),
+                url: req.originalUrl,
+                method: req.method,
+                userId: req.user?.userId || null,
+                userAgent: req.get('User-Agent'),
+                ip: req.ip,
+                requestId: req.requestId,
+                module: 'validation-middleware'
+            });
+
+            // Log security event for suspicious validation patterns
+            if (errors.length > 5 || errors.some(err => 
+                String(err).toLowerCase().includes('script') || 
+                String(err).toLowerCase().includes('injection') ||
+                String(err).toLowerCase().includes('xss')
+            )) {
+                logger.logSecurityEvent('suspicious_validation_failure', 'warn', {
+                    errorCount: errors.length,
+                    errors: errors,
+                    url: req.originalUrl,
+                    userId: req.user?.userId || null,
+                    ip: req.ip
+                });
+            }
+
             const error = new AppError(VALIDATION_ERROR(`Données invalides: ${errors.join(', ')}`));
             return next(error);
         }
+
+        // Log successful validation for audit purposes (debug level)
+        logger.debug('Validation passed', {
+            validatedFields: Object.keys(fieldConfig),
+            url: req.originalUrl,
+            method: req.method,
+            userId: req.user?.userId || null,
+            requestId: req.requestId,
+            module: 'validation-middleware'
+        });
         
         next();
     };

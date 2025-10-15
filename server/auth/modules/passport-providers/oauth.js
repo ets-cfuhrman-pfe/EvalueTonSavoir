@@ -1,6 +1,7 @@
 var OAuth2Strategy = require('passport-oauth2')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var { hasNestedValue } = require('../../../utils')
+const logger = require('../../../config/logger')
 
 class PassportOAuth {
     constructor(passportjs, auth_name) {
@@ -68,7 +69,12 @@ class PassportOAuth {
 
                     return done(null, user_account);
                 } catch (error) {
-                    console.error(`Erreur dans la strategie OAuth2 '${name}' : ${error}`);
+                    logger.error(`Erreur dans la strategie OAuth2 '${name}'`, {
+                        providerName: name,
+                        error: error.message,
+                        stack: error.stack,
+                        module: 'passport-oauth'
+                    });
                     return done(error);
                 }
             }));
@@ -91,7 +97,11 @@ class PassportOAuth {
                 }
             }
         );
-        console.info(`Ajout de la connexion : ${name}(OAuth)`)
+        logger.info(`Ajout de la connexion : ${name}(OAuth)`, {
+            providerName: name,
+            authType: 'OAuth',
+            module: 'passport-oauth'
+        })
     }
 }
 

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const logger = require('./logger');
 // set pathAuthConfig to './auth_config-development.json' if NODE_ENV is set to development
 const pathAuthConfig = process.env.NODE_ENV === 'development' ? './auth_config-development.json' : './auth_config.json';
 
@@ -13,11 +14,20 @@ class AuthConfig {
   // Méthode pour lire le fichier de configuration JSON
   loadConfig() {
     try {
-      console.info(`Chargement du fichier de configuration: ${configPath}`);
+      logger.info(`Chargement du fichier de configuration: ${configPath}`, {
+        configPath: configPath,
+        environment: process.env.NODE_ENV,
+        module: 'auth-config'
+      });
       const configData = fs.readFileSync(configPath, 'utf-8');
       this.config = JSON.parse(configData);
     } catch (error) {
-      console.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mis de fichier de configuration.");
+      logger.error("Erreur lors de la lecture du fichier de configuration. Ne pas se fier si vous n'avez pas mis de fichier de configuration.", {
+        configPath: configPath,
+        error: error.message,
+        stack: error.stack,
+        module: 'auth-config'
+      });
       this.config = {};
       throw error;
     }
@@ -131,7 +141,10 @@ class AuthConfig {
       if (missingFieldsReport.length > 0) {
         throw new Error(`Configuration invalide pour les providers suivants : ${JSON.stringify(missingFieldsReport, null, 2)}`);
       } else {
-        console.log("Configuration auth_config.json: Tous les providers ont les variables nécessaires.")
+        logger.info("Configuration auth_config.json: Tous les providers ont les variables nécessaires.", {
+          module: 'auth-config',
+          validation: 'success'
+        })
         return { success: "Tous les providers ont les variables nécessaires." };
       }
     } else {
@@ -141,8 +154,18 @@ class AuthConfig {
 
   // Méthode pour retourner la configuration des fournisseurs PassportJS pour le frontend
   getActiveAuth() {
-    console.log(`getActiveAuth: this.config: ${JSON.stringify(this.config)}`);
-    console.log(`getActiveAuth: this.config.auth: ${JSON.stringify(this.config.auth)}`);
+    // Log only non-sensitive metadata: provider names and types
+    const providerSummary = (this.config && this.config.auth && this.config.auth.passportjs)
+      ? this.config.auth.passportjs.map(provider => {
+          const providerName = Object.keys(provider)[0];
+          const providerConfig = provider[providerName];
+          return { provider: providerName, type: providerConfig.type };
+        })
+      : [];
+    logger.debug('Getting active auth configuration', {
+      providers: providerSummary,
+      module: 'auth-config'
+    });
     if (this.config && this.config.auth) {
       const passportConfig = {};
 

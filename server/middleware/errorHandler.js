@@ -1,24 +1,58 @@
 const AppError = require("./AppError");
-const fs = require('fs');
+const logger = require('../config/logger');
 
 const errorHandler = (error, req, res, _next) => {
     res.setHeader('Cache-Control', 'no-store');
 
+    // Add user context to error logging if available
+    const userContext = {
+      userId: req.user?.userId || null,
+      userEmail: req.user?.email || null,
+      requestId: req.requestId || null,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      method: req.method,
+      url: req.originalUrl
+    };
+
     if (error instanceof AppError) {
+      // Log operational errors as warnings with context
+      logger.warn('Application Error', {
+        message: error.message,
+        statusCode: error.statusCode,
+        isOperational: error.isOperational,
+        ...userContext
+      });
+
       return res.status(error.statusCode).json({
         message: error.message,
         code: error.statusCode
       });
     }
 
-    logError(error.stack);
-    return res.status(505).send("Oups! We screwed up big time. 	┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻");
-  };
+    // Log unexpected errors with full stack trace
+    logger.error('Unexpected Server Error', {
+      message: error.message,
+      stack: error.stack,
+      ...userContext
+    });
 
-  const logError = (error) => {
-    const time = new Date();
-    var log_file = fs.createWriteStream(__dirname + '/../debug.log', {flags : 'a'});
-    log_file.write(time + '\n' + error + '\n\n');
-}
+    // Log security event for potential attacks
+    if (error.message && (
+      error.message.toLowerCase().includes('sql') ||
+      error.message.toLowerCase().includes('injection') ||
+      error.message.toLowerCase().includes('xss')
+    )) {
+      logger.logSecurityEvent('potential_attack_detected', 'error', {
+        errorMessage: error.message,
+        ...userContext
+      });
+    }
+
+    return res.status(500).json({
+      message: "Une erreur interne s'est produite.",
+      code: 500
+    });
+  };
 
 module.exports = errorHandler;

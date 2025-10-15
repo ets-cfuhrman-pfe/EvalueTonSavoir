@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 const { generateUniqueTitle } = require('./utils');
+const logger = require('../config/logger');
 
 class Quiz {
 
@@ -9,31 +10,76 @@ class Quiz {
     }
 
     async create(title, content, folderId, userId) {
-        // console.log(`quizzes: create title: ${title}, folderId: ${folderId}, userId: ${userId}`);
-        await this.db.connect()
-        const conn = this.db.getConnection();
-
-        const quizCollection = conn.collection('files');
-
-        const existingQuiz = await quizCollection.findOne({ title: title, folderId: folderId, userId: userId })
-
-        if (existingQuiz) {
-            throw new Error(`Quiz already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
-        }
-
-        const newQuiz = {
+        const startTime = Date.now();
+        logger.debug('Quiz creation initiated', {
+            title: title,
             folderId: folderId,
             userId: userId,
-            title: title,
-            content: content,
-            created_at: new Date(),
-            updated_at: new Date()
+            contentLength: content.length,
+            module: 'quiz-model'
+        });
+
+        try {
+            await this.db.connect();
+            const conn = this.db.getConnection();
+            const quizCollection = conn.collection('files');
+
+            const checkStartTime = Date.now();
+            const existingQuiz = await quizCollection.findOne({ title: title, folderId: folderId, userId: userId });
+            const checkTime = Date.now() - checkStartTime;
+
+            if (existingQuiz) {
+                logger.warn('Quiz creation failed: quiz already exists', {
+                    title: title,
+                    folderId: folderId,
+                    userId: userId,
+                    existingQuizId: existingQuiz._id,
+                    checkTime: `${checkTime}ms`,
+                    module: 'quiz-model'
+                });
+                throw new Error(`Quiz already exists with title: ${title}, folderId: ${folderId}, userId: ${userId}`);
+            }
+
+            const newQuiz = {
+                folderId: folderId,
+                userId: userId,
+                title: title,
+                content: content,
+                created_at: new Date(),
+                updated_at: new Date()
+            };
+
+            const insertStartTime = Date.now();
+            const result = await quizCollection.insertOne(newQuiz);
+            const insertTime = Date.now() - insertStartTime;
+            const totalTime = Date.now() - startTime;
+
+            logger.info('Quiz creation completed successfully', {
+                quizId: result.insertedId,
+                title: title,
+                folderId: folderId,
+                userId: userId,
+                contentLength: content.length,
+                contentHash: require('crypto').createHash('md5').update(Array.isArray(content) ? content.join('\n\n') : String(content)).digest('hex'),
+                totalTime: `${totalTime}ms`,
+                checkTime: `${checkTime}ms`,
+                insertTime: `${insertTime}ms`,
+                module: 'quiz-model'
+            });
+
+            return result.insertedId;
+        } catch (error) {
+            const totalTime = Date.now() - startTime;
+            logger.error('Quiz creation failed', {
+                title: title,
+                folderId: folderId,
+                userId: userId,
+                error: error.message,
+                totalTime: `${totalTime}ms`,
+                module: 'quiz-model'
+            });
+            throw error;
         }
-
-        const result = await quizCollection.insertOne(newQuiz);
-        // console.log("quizzes: create insertOne result", result);
-
-        return result.insertedId;
     }
 
     async getOwner(quizId) {

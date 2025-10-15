@@ -15,12 +15,42 @@ class ImagesController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
+            const startTime = Date.now();
             const id = await this.images.upload(file, req.user.userId);
+            const uploadTime = Date.now() - startTime;
+    
+            // Log successful image upload
+            if (req.logDbOperation) {
+                req.logDbOperation('insert', 'images', uploadTime, true, {
+                    imageId: id,
+                    fileName: file.originalname,
+                    fileSize: file.size,
+                    mimeType: file.mimetype
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('image_uploaded', {
+                    imageId: id,
+                    fileName: file.originalname,
+                    fileSize: `${(file.size / 1024).toFixed(2)}KB`,
+                    mimeType: file.mimetype,
+                    uploadTime: `${uploadTime}ms`
+                });
+            }
     
             return res.status(200).json({
                 id: id
             });
         } catch (error) {
+            // Log upload failure
+            if (req.logAction && req.file) {
+                req.logAction('image_upload_failed', {
+                    fileName: req.file.originalname,
+                    fileSize: req.file.size,
+                    error: error.message
+                });
+            }
             return next(error);
         }
     };
@@ -33,10 +63,38 @@ class ImagesController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
+            const startTime = Date.now();
             const image = await this.images.get(id);
+            const retrievalTime = Date.now() - startTime;
     
             if (!image) {
+                // Log image not found
+                if (req.logDbOperation) {
+                    req.logDbOperation('select', 'images', retrievalTime, false, {
+                        imageId: id,
+                        reason: 'image_not_found'
+                    });
+                }
                 throw new AppError(IMAGE_NOT_FOUND);
+            }
+    
+            // Log successful image retrieval
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'images', retrievalTime, true, {
+                    imageId: id,
+                    fileSize: image.file_content?.length || 0,
+                    mimeType: image.mime_type
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('image_accessed', {
+                    imageId: id,
+                    fileName: image.file_name,
+                    fileSize: `${((image.file_content?.length || 0) / 1024).toFixed(2)}KB`,
+                    mimeType: image.mime_type,
+                    retrievalTime: `${retrievalTime}ms`
+                });
             }
     
             // Set Headers for display in browser
@@ -93,7 +151,37 @@ class ImagesController {
             if (!uid || !imgId) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
+            
+            // Security check - log if user trying to delete someone else's image
+            if (req.user && req.user.userId !== uid) {
+                if (req.logSecurity) {
+                    req.logSecurity('unauthorized_image_delete_attempt', 'warn', {
+                        attemptedBy: req.user.userId,
+                        targetUserId: uid,
+                        imageId: imgId
+                    });
+                }
+            }
+            
+            const startTime = Date.now();
             const images = await this.images.delete(uid, imgId);
+            const deleteTime = Date.now() - startTime;
+            
+            // Log successful image deletion
+            if (req.logDbOperation) {
+                req.logDbOperation('delete', 'images', deleteTime, true, {
+                    imageId: imgId,
+                    targetUserId: uid
+                });
+            }
+            
+            if (req.logAction) {
+                req.logAction('image_deleted', {
+                    imageId: imgId,
+                    targetUserId: uid,
+                    deleteTime: `${deleteTime}ms`
+                });
+            }
             
             res.setHeader('Content-Type', 'application/json');
             return res.status(200).json(images);

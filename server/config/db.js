@@ -14,9 +14,10 @@ class DBConnection {
     // Connect to the database, but don't reconnect if already connected
     async connect() {
         if (this.connection) {
-            console.log('Using existing MongoDB connection');
             return this.connection;
         }
+
+        const logger = require('./logger');
 
         try {
             // If client was previously closed but we're trying to reconnect
@@ -28,12 +29,24 @@ class DBConnection {
                 this.client = new MongoClient(this.mongoURI);
             }
             
+            const startTime = Date.now();
             await this.client.connect();
+            const connectionTime = Date.now() - startTime;
+            
             this.connection = this.client.db(this.databaseName);
-            console.log('MongoDB connected');
+            
+            logger.info('MongoDB connected successfully', {
+                database: this.databaseName,
+                connectionTime: `${connectionTime}ms`
+            });
+            
             return this.connection;
         } catch (error) {
-            console.error('MongoDB connection error:', error);
+            logger.error('MongoDB connection failed', {
+                error: error.message,
+                stack: error.stack,
+                database: this.databaseName
+            });
             throw new Error('Failed to connect to MongoDB');
         }
     }
@@ -49,10 +62,11 @@ class DBConnection {
     // Close the MongoDB connection gracefully
     async closeConnection() {
         if (this.client) {
+            const logger = require('./logger');
             await this.client.close();
             this.connection = null;
             this.client = null;
-            console.log('MongoDB connection closed');
+            logger.info('MongoDB connection closed gracefully');
         }
     }
 }

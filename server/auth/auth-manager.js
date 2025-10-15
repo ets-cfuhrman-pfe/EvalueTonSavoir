@@ -4,11 +4,14 @@ const jwt = require('../middleware/jwtToken.js');
 const emailer = require('../config/email.js');
 const { MISSING_REQUIRED_PARAMETER } = require('../constants/errorCodes.js');
 const AppError = require('../middleware/AppError.js');
+const logger = require('../config/logger');
 
 class AuthManager{
     constructor(expressapp,configs=null,userModel){
-        console.log(`AuthManager: constructor: configs: ${JSON.stringify(configs)}`);
-        console.log(`AuthManager: constructor: userModel: ${JSON.stringify(userModel)}`);
+        logger.debug('AuthManager constructor initialized', {
+            configs: JSON.stringify(configs),
+            userModel: JSON.stringify(userModel)
+        });
         this.modules = []
         this.app = expressapp
 
@@ -16,7 +19,9 @@ class AuthManager{
         this.addModules()
         this.simpleregister = userModel;
         this.registerAuths()
-        console.log(`AuthManager: constructor: this.configs: ${JSON.stringify(this.configs)}`);
+        logger.debug('AuthManager constructor completed', {
+            configs: JSON.stringify(this.configs)
+        });
     }
 
     getUserModel(){
@@ -35,20 +40,29 @@ class AuthManager{
         if(fs.existsSync(modulePath)){
             const Module = require(modulePath);
             this.modules.push(new Module(this,this.configs.auth[name]));
-            console.info(`Module d'authentification '${name}' ajouté`)
+            logger.info(`Module d'authentification '${name}' ajouté`, {
+                moduleName: name,
+                modulePath: modulePath
+            })
         } else{
-            console.error(`Le module d'authentification ${name} n'as pas été chargé car il est introuvable`);
+            logger.error(`Le module d'authentification ${name} n'as pas été chargé car il est introuvable`, {
+                moduleName: name,
+                modulePath: modulePath
+            });
         }
     }
 
     async registerAuths(){
-        console.log(``);
+        logger.debug('Starting auth modules registration');
         for(const module of this.modules){
             try{
                 module.registerAuth(this.app, this.simpleregister);
             } catch(error){
-                console.error(`L'enregistrement du module ${module} a échoué.`);
-                console.error(`Error: ${error} `);
+                logger.error(`L'enregistrement du module ${module} a échoué.`, {
+                    module: module,
+                    error: error.message,
+                    stack: error.stack
+                });
             }
         }
     }
@@ -57,24 +71,45 @@ class AuthManager{
     async login(userInfo,req,res,next){ //passport and simpleauth use next
         const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
         res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
-        console.info(`L'utilisateur '${userInfo.name}' vient de se connecter`)
+        logger.info(`L'utilisateur '${userInfo.name}' vient de se connecter`, {
+            userId: userInfo._id,
+            userEmail: userInfo.email,
+            userName: userInfo.name,
+            roles: userInfo.roles
+        })
     }
 
     // eslint-disable-next-line no-unused-vars
     async loginSimple(email,pswd,req,res,next){ //passport and simpleauth use next
-        console.log(`auth-manager: loginSimple: email: ${email}, pswd: ${pswd}`);
+        logger.debug('Starting simple login process', {
+            email: email,
+            passwordProvided: !!pswd
+        });
         const userInfo = await this.simpleregister.login(email, pswd);
-        console.log(`auth-manager: loginSimple: userInfo: ${JSON.stringify(userInfo)}`);
+        logger.debug('User authentication successful', {
+            userId: userInfo._id,
+            userEmail: userInfo.email
+        });
         userInfo.roles = ['teacher']; // hard coded role
         const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
-        console.log(`auth-manager: loginSimple: tokenToSave: ${tokenToSave}`);
-        //res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.email}`);
+        logger.debug('JWT token created successfully', {
+            userId: userInfo._id,
+            userEmail: userInfo.email
+        });
         res.status(200).json({token: tokenToSave});
-        console.info(`L'utilisateur '${userInfo.email}' vient de se connecter`)
+        logger.info(`L'utilisateur '${userInfo.email}' vient de se connecter`, {
+            userId: userInfo._id,
+            userEmail: userInfo.email,
+            roles: userInfo.roles
+        })
     }
 
     async register(userInfos, sendEmail=false){
-        console.log(userInfos);
+        logger.debug('Starting user registration process', {
+            email: userInfos.email,
+            hasPassword: !!userInfos.password,
+            sendEmail: sendEmail
+        });
         if (!userInfos.email || !userInfos.password) {
             throw new AppError(MISSING_REQUIRED_PARAMETER);
         }

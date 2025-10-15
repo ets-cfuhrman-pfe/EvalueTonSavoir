@@ -4,6 +4,27 @@ const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 
+// Mock logger
+jest.mock("../../config/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+}));
+
+// Import the mocked logger
+const logger = require("../../config/logger");
+
 // Import the actual components
 const ImagesController = require("../../controllers/images");
 const jwtMiddleware = require("../../middleware/jwtToken");
@@ -24,6 +45,20 @@ const createTestApp = () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Mock logging middleware
+  app.use((req, res, next) => {
+    req.logAction = (action, details) => {
+      if (req.user) {
+        logger.logUserAction(req.user.userId, req.user.email, action, details);
+      } else {
+        logger.warn(`Action attempted without authentication: ${action}`, details);
+      }
+    };
+    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
+    req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
+    next();
+  });
 
   // Create controller instance with mock model
   const imagesController = new ImagesController(mockImagesModel);
@@ -117,6 +152,33 @@ describe("Images API Integration Tests", () => {
         }),
         "user123"
       );
+
+      // Verify logging
+      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+        'insert',
+        'images',
+        expect.any(Number),
+        true,
+        expect.objectContaining({
+          imageId: 'image123',
+          fileName: 'test-image.jpg',
+          fileSize: expect.any(Number),
+          mimeType: 'image/jpeg'
+        })
+      );
+
+      expect(logger.logUserAction).toHaveBeenCalledWith(
+        'user123',
+        'test@example.com',
+        'image_uploaded',
+        expect.objectContaining({
+          imageId: 'image123',
+          fileName: 'test-image.jpg',
+          fileSize: '0.01KB',
+          mimeType: 'image/jpeg',
+          uploadTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should return 401 when not authenticated", async () => {
@@ -159,9 +221,9 @@ describe("Images API Integration Tests", () => {
         .post("/api/image/upload")
         .set("Authorization", `Bearer ${authToken}`)
         .attach('image', mockFile.buffer, 'test-image.jpg')
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -186,6 +248,30 @@ describe("Images API Integration Tests", () => {
       expect(response.body).toEqual(Buffer.from("fake-image-data"));
 
       expect(mockImagesModel.get).toHaveBeenCalledWith("image123");
+
+      // Verify logging
+      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+        'select',
+        'images',
+        expect.any(Number),
+        true,
+        expect.objectContaining({
+          imageId: 'image123',
+          fileSize: 15, // "fake-image-data".length
+          mimeType: 'image/jpeg'
+        })
+      );
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Action attempted without authentication: image_accessed',
+        expect.objectContaining({
+          imageId: 'image123',
+          fileName: 'test-image.jpg',
+          fileSize: '0.01KB', // formatted size
+          mimeType: 'image/jpeg',
+          retrievalTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should return 400 when id is missing", async () => {
@@ -209,9 +295,9 @@ describe("Images API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/image/get/image123")
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -265,9 +351,9 @@ describe("Images API Integration Tests", () => {
 
       const response = await request(app)
         .get("/api/image/getImages")
-        .expect(505);
+        .expect(500);
       
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -333,9 +419,9 @@ describe("Images API Integration Tests", () => {
       const response = await request(app)
         .get("/api/image/getUserImages?uid=user123")
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(505);
+        .expect(500);
 
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -354,6 +440,29 @@ describe("Images API Integration Tests", () => {
       expect(response.body).toEqual(mockResult);
 
       expect(mockImagesModel.delete).toHaveBeenCalledWith("user123", "image456");
+
+      // Verify logging
+      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+        'delete',
+        'images',
+        expect.any(Number),
+        true,
+        expect.objectContaining({
+          imageId: 'image456',
+          targetUserId: 'user123'
+        })
+      );
+
+      expect(logger.logUserAction).toHaveBeenCalledWith(
+        'user123',
+        'test@example.com',
+        'image_deleted',
+        expect.objectContaining({
+          imageId: 'image456',
+          targetUserId: 'user123',
+          deleteTime: expect.stringMatching(/^\d+ms$/)
+        })
+      );
     });
 
     it("should return 401 when not authenticated", async () => {
@@ -388,9 +497,9 @@ describe("Images API Integration Tests", () => {
       const response = await request(app)
         .delete("/api/image/delete?uid=user123&imgId=image456")
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(505);
+        .expect(500);
       
-      expect(response.statusCode).toBe(505);
+      expect(response.statusCode).toBe(500);
     });
   });
 });

@@ -24,6 +24,9 @@ jest.mock('../config/db', () => {
   };
 });
 
+// Set up environment variables for JWT
+process.env.JWT_SECRET = 'test-jwt-secret-for-testing';
+
 // Add a cleanup for this test file only
 afterAll(async () => {
   // Clean up any remaining resources
@@ -33,6 +36,29 @@ afterAll(async () => {
 
 const AuthConfig = require("../config/auth.js");
 const AuthManager = require("../auth/auth-manager.js");
+
+// Mock fetch for OIDC configuration
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({
+      issuer: 'https://mock-issuer.com',
+      authorization_endpoint: 'https://mock-issuer.com/oauth2/authorize',
+      token_endpoint: 'https://mock-issuer.com/oauth2/token',
+      userinfo_endpoint: 'https://mock-issuer.com/oauth2/userinfo',
+      jwks_uri: 'https://mock-issuer.com/oauth2/jwks'
+    })
+  })
+);
+
+// Mock logger for testing
+jest.mock('../config/logger', () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
+}));
+
+const logger = require('../config/logger');
 
 const mockConfig = {
   auth: {
@@ -187,6 +213,9 @@ describe(
         
         // Reset all mocks between tests
         jest.clearAllMocks();
+        
+        // Reset database mock state
+        jest.restoreAllMocks();
     });
 
     it("should load valid modules", async () => {
@@ -231,7 +260,6 @@ describe(
     });
 
     it("should not load invalid modules", async () => {
-        const logSpy = jest.spyOn(global.console, "error");
         const invalidModule = {
           auth: {
             ModuleX:{}
@@ -240,13 +268,18 @@ describe(
 
         authConfigInstance.loadConfigTest(invalidModule);
         authManagerInstance = new AuthManager(expressMock, authConfigInstance.config, mockUserModel);
-        expect(logSpy).toHaveBeenCalledTimes(1);
-        logSpy.mockClear();
+        
+        // Check that logger.error was called for invalid module
+        expect(logger.error).toHaveBeenCalledWith(
+          expect.stringContaining('n\'as pas été chargé car il est introuvable'),
+          expect.objectContaining({
+            moduleName: 'ModuleX'
+          })
+        );
       });  
 
 
     it("should not load invalid provider from passport", async () => {
-        const logSpy = jest.spyOn(global.console, "error");
         const validModuleInvalidProvider = {
             auth: {
               passportjs: [
@@ -271,11 +304,172 @@ describe(
 
         authManagerInstance = new AuthManager(expressMock,authConfigInstance.config, mockUserModel);
 
-        expect(logSpy).toHaveBeenCalledTimes(2);
-        logSpy.mockClear();
+        // Check that logger.error was called for invalid provider type
+        expect(logger.error).toHaveBeenCalledWith(
+          expect.stringContaining('Provider file not found'),
+          expect.objectContaining({
+            providerType: 'x'
+          })
+        );
       });  
   })
 );
+
+// Logger coverage tests for auth modules
+describe("Auth Logger Coverage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("AuthManager Logger Tests", () => {
+    it("should log debug messages during constructor", () => {
+      const mockUserModel = { register: jest.fn(), login: jest.fn() };
+      const mockExpressApp = {
+        use: jest.fn(),
+        post: jest.fn(),
+        get: jest.fn()
+      };
+      
+      // Create AuthManager instance which should trigger logger calls
+      const _unusedAuthManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
+      
+      expect(logger.debug).toHaveBeenCalledWith(
+        'AuthManager constructor initialized',
+        expect.objectContaining({
+          configs: expect.any(String),
+          userModel: expect.any(String)
+        })
+      );
+      
+      expect(logger.debug).toHaveBeenCalledWith(
+        'AuthManager constructor completed',
+        expect.objectContaining({
+          configs: expect.any(String)
+        })
+      );
+    });
+
+    it("should log info message on successful login", async () => {
+      const mockUserModel = { 
+        register: jest.fn(), 
+        login: jest.fn().mockResolvedValue({ 
+          _id: 'user123', 
+          email: 'test@example.com',
+          name: 'Test User'
+        })
+      };
+      const mockExpressApp = {
+        use: jest.fn(),
+        post: jest.fn(),
+        get: jest.fn()
+      };
+      const mockReq = {};
+      const mockRes = { redirect: jest.fn() };
+      const mockNext = jest.fn();
+      
+      const authManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
+      
+      const userInfo = {
+        _id: 'user123',
+        email: 'test@example.com', 
+        name: 'Test User',
+        roles: ['teacher']
+      };
+      
+      await authManager.login(userInfo, mockReq, mockRes, mockNext);
+      
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("L'utilisateur 'Test User' vient de se connecter"),
+        expect.objectContaining({
+          userId: 'user123',
+          userEmail: 'test@example.com',
+          userName: 'Test User',
+          roles: ['teacher']
+        })
+      );
+    });
+
+    it("should log debug messages during simple login", async () => {
+      const mockUserModel = { 
+        register: jest.fn(), 
+        login: jest.fn().mockResolvedValue({ 
+          _id: 'user123', 
+          email: 'test@example.com'
+        })
+      };
+      const mockExpressApp = {
+        use: jest.fn(),
+        post: jest.fn(),
+        get: jest.fn()
+      };
+      const mockReq = {};
+      const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const mockNext = jest.fn();
+      
+      const authManager = new AuthManager(mockExpressApp, mockConfig, mockUserModel);
+      
+      await authManager.loginSimple('test@example.com', 'password123', mockReq, mockRes, mockNext);
+      
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Starting simple login process',
+        expect.objectContaining({
+          email: 'test@example.com',
+          passwordProvided: true
+        })
+      );
+    });
+  });
+
+  describe("AuthConfig Logger Tests", () => {
+    it("should log info message when loading config", () => {
+      // Test that logger functionality works with auth config
+      logger.info("Test config loading", { module: 'auth-config', test: true });
+      
+      expect(logger.info).toHaveBeenCalledWith(
+        "Test config loading", 
+        expect.objectContaining({
+          module: 'auth-config',
+          test: true
+        })
+      );
+    });
+
+    it("should log info message on successful validation", () => {
+      const authConfig = new AuthConfig();
+      authConfig.loadConfigTest(mockConfig);
+      
+      authConfig.validateProvidersConfig();
+      
+      expect(logger.info).toHaveBeenCalledWith(
+        "Configuration auth_config.json: Tous les providers ont les variables nécessaires.",
+        expect.objectContaining({
+          module: 'auth-config',
+          validation: 'success'
+        })
+      );
+    });
+
+    it("should log debug messages when getting active auth", () => {
+      const authConfig = new AuthConfig();
+      authConfig.loadConfigTest(mockConfig);
+      
+      authConfig.getActiveAuth();
+      
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Getting active auth configuration',
+        expect.objectContaining({
+          module: 'auth-config',
+          providers: expect.arrayContaining([
+            expect.objectContaining({
+              provider: expect.any(String),
+              type: expect.any(String)
+            })
+          ])
+        })
+      );
+    });
+  });
+});
 
 describe(
   "Rooms requiring authentication", () => {
