@@ -71,9 +71,9 @@ const createValidationMiddleware = (fieldConfig, allowPartial = false) => {
 
             // Log security event for suspicious validation patterns
             if (errors.length > 5 || errors.some(err => 
-                err.toLowerCase().includes('script') || 
-                err.toLowerCase().includes('injection') ||
-                err.toLowerCase().includes('xss')
+                String(err).toLowerCase().includes('script') || 
+                String(err).toLowerCase().includes('injection') ||
+                String(err).toLowerCase().includes('xss')
             )) {
                 logger.logSecurityEvent('suspicious_validation_failure', 'warn', {
                     errorCount: errors.length,
