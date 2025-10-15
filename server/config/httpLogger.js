@@ -17,8 +17,13 @@ morgan.token('request-id', (req) => {
 
 // Custom token for response time in a more readable format
 morgan.token('response-time-ms', (req, res) => {
-  const responseTime = morgan['response-time'](req, res);
-  return responseTime ? `${responseTime}ms` : '-';
+  if (!req._startAt || !res._startAt) {
+    return '-';
+  }
+  // Calculate diff in milliseconds
+  const diff = (res._startAt[0] - req._startAt[0]) * 1e3 +
+               (res._startAt[1] - req._startAt[1]) / 1e6;
+  return `${diff.toFixed(3)}ms`;
 });
 
 // Development format - more detailed and colored
