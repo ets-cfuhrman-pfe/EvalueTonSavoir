@@ -87,6 +87,12 @@ const createTransports = () => {
 
   // File transports for production
   if (process.env.NODE_ENV === 'production') {
+    // Ensure logs directory exists
+    const fs = require('fs');
+    const logDir = path.join(__dirname, '../logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir);
+    }
     // General log file
     transports.push(
       new winston.transports.File({
