@@ -459,10 +459,10 @@ describe("Quizzes API Integration Tests", () => {
       expect(response.body.message).toBe("Une erreur s'est produite lors de la suppression du quiz.");
     });
 
-    it("should fail when content.content is an array instead of string", async () => {
+    it("should handle content.content as an array correctly", async () => {
       const quizId = "quiz123";
       
-      // Mock quiz content with content as an array 
+      // Mock quiz content with content as an array (should now work correctly)
       const mockContentWithArrayContent = {
         _id: quizId,
         title: "Test Quiz",
@@ -475,11 +475,18 @@ describe("Quizzes API Integration Tests", () => {
       mockQuizModel.getContent.mockResolvedValue(mockContentWithArrayContent);
       mockQuizModel.delete.mockResolvedValue(true);
 
-      
-      await request(app)
+      const response = await request(app)
         .delete(`/api/quiz/delete/${quizId}`)
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(500); 
+        .expect(200); // Should now succeed with the fix
+
+      expect(response.body).toEqual({
+        message: "Quiz supprimé avec succès.",
+      });
+
+      expect(mockQuizModel.getOwner).toHaveBeenCalledWith(quizId);
+      expect(mockQuizModel.getContent).toHaveBeenCalledWith(quizId);
+      expect(mockQuizModel.delete).toHaveBeenCalledWith(quizId);
     });
 
     it("should return 401 when not authenticated", async () => {
