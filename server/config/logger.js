@@ -34,6 +34,35 @@ const customFormat = winston.format.combine(
   })
 );
 
+// Console format for readable output
+const consoleFormat = winston.format.combine(
+  winston.format.timestamp({
+    format: 'YYYY-MM-DD HH:mm:ss.SSS A'
+  }),
+  winston.format.colorize({ all: true }),
+  winston.format.printf((info) => {
+    const { timestamp, level, message, userId, userEmail, requestId, ...meta } = info;
+    
+    let logMessage = `[${timestamp}] ${level}:\t${message}`;
+    
+    // Add user context if available
+    if (userId || userEmail || requestId) {
+      const context = [];
+      if (userId) context.push(`userId: ${userId}`);
+      if (userEmail) context.push(`email: ${userEmail}`);
+      if (requestId) context.push(`reqId: ${requestId}`);
+      logMessage += ` (${context.join(', ')})`;
+    }
+    
+    // Add metadata if present
+    if (Object.keys(meta).length > 0) {
+      logMessage += ` ${JSON.stringify(meta)}`;
+    }
+    
+    return logMessage;
+  })
+);
+
 // Create different transports based on environment
 const createTransports = () => {
   const transports = [];
@@ -41,10 +70,7 @@ const createTransports = () => {
   // Console transport (always active)
   transports.push(
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize({ all: true }),
-        winston.format.simple()
-      )
+      format: consoleFormat
     })
   );
 
