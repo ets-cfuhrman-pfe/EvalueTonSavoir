@@ -60,7 +60,7 @@ class Quiz {
                 folderId: folderId,
                 userId: userId,
                 contentLength: content.length,
-                contentHash: require('crypto').createHash('md5').update(content).digest('hex'),
+                contentHash: require('crypto').createHash('md5').update(Array.isArray(content) ? content.join('\n\n') : String(content)).digest('hex'),
                 totalTime: `${totalTime}ms`,
                 checkTime: `${checkTime}ms`,
                 insertTime: `${insertTime}ms`,
