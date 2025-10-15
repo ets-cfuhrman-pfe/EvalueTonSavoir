@@ -36,14 +36,25 @@ const customFormat = winston.format.combine(
 
 // Console format for readable output
 const consoleFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS A'
-  }),
+  winston.format.timestamp(),
   winston.format.colorize({ all: true }),
   winston.format.printf((info) => {
     const { timestamp, level, message, userId, userEmail, requestId, ...meta } = info;
     
-    let logMessage = `[${timestamp}] ${level}:\t${message}`;
+    // Create custom timestamp with timezone abbreviation
+    const date = new Date(timestamp);
+    const timeStr = date.toLocaleString('en-CA', {
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZoneName: 'short'
+    }).replace(/,/g, '');
+    
+    let logMessage = `[${timeStr}] ${level}:\t${message}`;
     
     // Add user context if available
     if (userId || userEmail || requestId) {
