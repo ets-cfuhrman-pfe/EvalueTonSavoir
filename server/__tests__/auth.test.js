@@ -458,9 +458,13 @@ describe("Auth Logger Coverage", () => {
       expect(logger.debug).toHaveBeenCalledWith(
         'Getting active auth configuration',
         expect.objectContaining({
-          config: expect.any(String),
-          auth: expect.any(String),
-          module: 'auth-config'
+          module: 'auth-config',
+          providers: expect.arrayContaining([
+            expect.objectContaining({
+              provider: expect.any(String),
+              type: expect.any(String)
+            })
+          ])
         })
       );
     });

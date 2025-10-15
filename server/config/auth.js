@@ -154,9 +154,16 @@ class AuthConfig {
 
   // Méthode pour retourner la configuration des fournisseurs PassportJS pour le frontend
   getActiveAuth() {
+    // Log only non-sensitive metadata: provider names and types
+    const providerSummary = (this.config && this.config.auth && this.config.auth.passportjs)
+      ? this.config.auth.passportjs.map(provider => {
+          const providerName = Object.keys(provider)[0];
+          const providerConfig = provider[providerName];
+          return { provider: providerName, type: providerConfig.type };
+        })
+      : [];
     logger.debug('Getting active auth configuration', {
-      config: JSON.stringify(this.config),
-      auth: JSON.stringify(this.config?.auth),
+      providers: providerSummary,
       module: 'auth-config'
     });
     if (this.config && this.config.auth) {
