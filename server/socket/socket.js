@@ -57,7 +57,7 @@ const setupWebsocket = (io) => {
         logger.debug("Room exists", { roomName: roomToCheck });
         const clientsInRoom = io.sockets.adapter.rooms.get(roomToCheck).size;
 
-        if (clientsInRoom <= MAX_USERS_PER_ROOM) {
+        if (clientsInRoom < MAX_USERS_PER_ROOM) {
           logger.debug("Room not full", { roomName: roomToCheck, clientsInRoom, maxUsers: MAX_USERS_PER_ROOM });
           const newStudent = {
             id: socket.id,
