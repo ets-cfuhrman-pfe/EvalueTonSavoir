@@ -80,7 +80,12 @@ class QuizController {
             // Create backup of newly created quiz
             if (req.logger) {
                 const contentString = Array.isArray(content) ? content.join('\n\n') : content;
-                req.logger.info('Quiz created - content backup', {
+                req.logger.info('Quiz created', {
+                    quizId: result,
+                    title,
+                    folderId
+                });
+                req.logger.debug('Quiz created - content backup', {
                     quizId: result,
                     title,
                     folderId,
