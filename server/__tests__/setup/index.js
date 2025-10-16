@@ -8,6 +8,7 @@ const {
   TEST_DATA,
   COMMON_MESSAGES,
   QUIZ_MESSAGES,
+  ROOM_MESSAGES,
   AppError,
   QUIZ_ALREADY_EXISTS,
   MISSING_REQUIRED_PARAMETER,
@@ -18,6 +19,9 @@ const {
   DELETE_QUIZ_ERROR,
   UPDATE_QUIZ_ERROR,
   MOVING_QUIZ_ERROR,
+  GETTING_ROOM_ERROR,
+  ROOM_NOT_FOUND,
+  DELETE_ROOM_ERROR,
   validationConstants,
 } = require('./constants');
 
@@ -54,6 +58,7 @@ module.exports = {
   TEST_DATA,
   COMMON_MESSAGES,
   QUIZ_MESSAGES,
+  ROOM_MESSAGES,
   AppError,
   QUIZ_ALREADY_EXISTS,
   MISSING_REQUIRED_PARAMETER,
@@ -64,6 +69,9 @@ module.exports = {
   DELETE_QUIZ_ERROR,
   UPDATE_QUIZ_ERROR,
   MOVING_QUIZ_ERROR,
+  GETTING_ROOM_ERROR,
+  ROOM_NOT_FOUND,
+  DELETE_ROOM_ERROR,
   validationConstants,
 
   // Mock factories
