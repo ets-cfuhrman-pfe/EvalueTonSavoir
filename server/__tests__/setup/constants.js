@@ -72,8 +72,8 @@ const TEST_DATA = {
       content: 'A'.repeat(validationConstants.quiz.content.maxLength),
     },
     OVERSIZED_TITLE: {
-      title: 'A'.repeat(validationConstants.quiz.title.maxLength + 1),
-      content: 'Content',
+      title:  'Content',
+      content:'A'.repeat(validationConstants.quiz.title.maxLength + 1),
     },
     OVERSIZED_CONTENT: {
       title: 'Title',
