@@ -15,60 +15,6 @@ const HTTP_STATUS = {
   SERVICE_UNAVAILABLE: 503,
 };
 
-
-// VALIDATION CONSTRAINTS 
-const CONSTRAINTS = {
-  QUIZ: {
-    TITLE: {
-      MIN: validationConstants.quiz.title.minLength,
-      MAX: validationConstants.quiz.title.maxLength,
-    },
-    CONTENT: {
-      MIN: validationConstants.quiz.content.minLength,
-      MAX: validationConstants.quiz.content.maxLength,
-    },
-  },
-  FOLDER: {
-    TITLE: {
-      MIN: validationConstants.folder.title.minLength,
-      MAX: validationConstants.folder.title.maxLength,
-    },
-  },
-  ROOM: {
-    TITLE: {
-      MIN: validationConstants.room.name.minLength,
-      MAX: validationConstants.room.name.maxLength,
-    },
-    MAX_PARTICIPANTS: {
-      MIN: validationConstants.room.maxParticipants.min,
-      MAX: validationConstants.room.maxParticipants.max,
-    },
-    PASSWORD: {
-      MIN: validationConstants.room.password.minLength,
-      MAX: validationConstants.room.password.maxLength,
-    },
-  },
-  USER: {
-    EMAIL: {
-      MIN: validationConstants.user.email.minLength,
-      MAX: validationConstants.user.email.maxLength,
-    },
-    PASSWORD: {
-      MIN: validationConstants.user.password.minLength,
-      MAX: validationConstants.user.password.maxLength,
-    },
-    USERNAME: {
-      MIN: validationConstants.user.username.minLength,
-      MAX: validationConstants.user.username.maxLength,
-    },
-  },
-  IMAGE: {
-    MAX_SIZE: 5242880, 
-    ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  },
-};
-
-
 // TEST IDs - Standard identifiers for mock entities
 const TEST_IDS = {
   QUIZ: 'quiz123',
@@ -118,20 +64,20 @@ const TEST_DATA = {
       content: 'C',
     },
     MAX_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.QUIZ.TITLE.MAX),
+      title: 'A'.repeat(validationConstants.quiz.title.maxLength),
       content: 'Content',
     },
     MAX_CONTENT: {
       title: 'Title',
-      content: 'A'.repeat(CONSTRAINTS.QUIZ.CONTENT.MAX),
+      content: 'A'.repeat(validationConstants.quiz.content.maxLength),
     },
     OVERSIZED_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.QUIZ.TITLE.MAX + 1),
+      title: 'A'.repeat(validationConstants.quiz.title.maxLength + 1),
       content: 'Content',
     },
     OVERSIZED_CONTENT: {
       title: 'Title',
-      content: 'A'.repeat(CONSTRAINTS.QUIZ.CONTENT.MAX + 1),
+      content: 'A'.repeat(validationConstants.quiz.content.maxLength + 1),
     },
   },
   FOLDER: {
@@ -142,10 +88,10 @@ const TEST_DATA = {
       title: 'F',
     },
     MAX_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.FOLDER.TITLE.MAX),
+      title: 'A'.repeat(validationConstants.folder.title.maxLength),
     },
     OVERSIZED_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.FOLDER.TITLE.MAX + 1),
+      title: 'A'.repeat(validationConstants.folder.title.maxLength + 1),
     },
   },
   ROOM: {
@@ -156,14 +102,14 @@ const TEST_DATA = {
       title: 'R',
     },
     MAX_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.ROOM.TITLE.MAX),
+      title: 'A'.repeat(validationConstants.room.name.maxLength),
     },
     OVERSIZED_TITLE: {
-      title: 'A'.repeat(CONSTRAINTS.ROOM.TITLE.MAX + 1),
+      title: 'A'.repeat(validationConstants.room.name.maxLength + 1),
     },
     MAX_PARTICIPANTS: {
-      min: CONSTRAINTS.ROOM.MAX_PARTICIPANTS.MIN,
-      max: CONSTRAINTS.ROOM.MAX_PARTICIPANTS.MAX,
+      min: validationConstants.room.maxParticipants.min,
+      max: validationConstants.room.maxParticipants.max,
     },
   },
   USER: {
@@ -185,13 +131,82 @@ const TEST_DATA = {
       size: 102400,
       type: 'image/jpeg',
     },
+    
+    MAX_SIZE: 5242880, 
+    ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
 };
 
+// COMMON VALIDATION MESSAGES 
+const COMMON_MESSAGES = {
+  VALIDATION: {
+    REQUIRED_FIELD: (field) => `${field} requis`,
+    FIELD_TOO_LONG: (field, min, max) => `${field} doit contenir entre ${min} et ${max} caractères`,
+    INVALID_FORMAT: (field) => `Format ${field} invalide`,
+  },
+  AUTH: {
+    ACCESS_DENIED: "Accès refusé. Aucun jeton fourni.",
+    INVALID_TOKEN: "Jeton invalide.",
+  },
+  GENERIC: {
+    OPERATION_SUCCESS: (operation) => `${operation} avec succès.`,
+    OPERATION_FAILED: (operation) => `Échec de ${operation}.`,
+  }
+};
+
+// ERROR CONSTANTS
+const AppError = require('../../middleware/AppError');
+const {
+  QUIZ_ALREADY_EXISTS,
+  MISSING_REQUIRED_PARAMETER,
+  NOT_IMPLEMENTED,
+  QUIZ_NOT_FOUND,
+  FOLDER_NOT_FOUND,
+  GETTING_QUIZ_ERROR,
+  DELETE_QUIZ_ERROR,
+  UPDATE_QUIZ_ERROR,
+  MOVING_QUIZ_ERROR,
+} = require('../../constants/errorCodes');
+
+// QUIZ-SPECIFIC MESSAGES
+const QUIZ_MESSAGES = {
+  SUCCESS: {
+    CREATED: "Quiz créé avec succès.",
+    DELETED: "Quiz supprimé avec succès.",
+    UPDATED: "Quiz mis à jours avec succès.", 
+    MOVED: "Quiz déplacé avec succès.",
+    SHARED: "Quiz  partagé avec succès.", 
+    RECEIVED_SHARE: "Quiz partagé reçu.",
+  },
+  VALIDATION: {
+    TITLE_REQUIRED: "Titre requis",
+    CONTENT_REQUIRED: "Contenu requis",
+    TITLE_LENGTH: validationConstants.quiz.title.errorMessage,
+    CONTENT_LENGTH: validationConstants.quiz.content.errorMessage,
+  },
+  ERRORS: {
+    ALREADY_EXISTS: "Le quiz existe déjà.",
+    NOT_FOUND: "Quiz non trouvé.",
+  }
+};
+
+
+
 module.exports = {
   HTTP_STATUS,
-  CONSTRAINTS,
   TEST_IDS,
   TEST_USERS,
   TEST_DATA,
+  COMMON_MESSAGES,
+  QUIZ_MESSAGES,
+  AppError,
+  QUIZ_ALREADY_EXISTS,
+  MISSING_REQUIRED_PARAMETER,
+  NOT_IMPLEMENTED,
+  QUIZ_NOT_FOUND,
+  FOLDER_NOT_FOUND,
+  GETTING_QUIZ_ERROR,
+  DELETE_QUIZ_ERROR,
+  UPDATE_QUIZ_ERROR,
+  MOVING_QUIZ_ERROR,
 };
