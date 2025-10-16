@@ -132,12 +132,16 @@ const DashboardV2: React.FC = () => {
         try {
             const confirmed = window.confirm('Voulez-vous vraiment supprimer ce quiz?');
             if (confirmed) {
-                await ApiService.deleteQuiz(quiz._id);
+                const result = await ApiService.deleteQuiz(quiz._id);
+                if (result !== true) {
+                    throw new Error(result as string);
+                }
                 const updatedQuizzes = quizzes.filter((q) => q._id !== quiz._id);
                 setQuizzes(updatedQuizzes);
             }
         } catch (error) {
             console.error('Error removing quiz:', error);
+            window.alert('Erreur lors de la suppression du quiz: ' + (error instanceof Error ? error.message : String(error)));
         }
     };
 
