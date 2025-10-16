@@ -134,6 +134,11 @@ const validationConfigs = {
         content: { validator: 'validateQuizContent', required: true, label: 'Contenu' }
     },
     
+    quizUpdate: {
+        newTitle: { validator: 'validateQuizTitle', required: true, label: 'Titre' },
+        newContent: { validator: 'validateQuizContent', required: true, label: 'Contenu' }
+    },
+    
     folderCreation: {
         title: { validator: 'validateFolderTitle', required: true, label: 'Titre' }
     },
@@ -163,7 +168,7 @@ const validateUserLogin = createValidationMiddleware(validationConfigs.userLogin
 const validateEmailOnly = createValidationMiddleware(validationConfigs.emailOnly);
 const validatePasswordChange = createValidationMiddleware(validationConfigs.passwordChange);
 const validateQuizCreation = createValidationMiddleware(validationConfigs.quizCreation);
-const validateQuizUpdate = createValidationMiddleware(validationConfigs.quizCreation, true); // Allow partial
+const validateQuizUpdate = createValidationMiddleware(validationConfigs.quizUpdate, true); // Allow partial
 const validateFolderCreation = createValidationMiddleware(validationConfigs.folderCreation);
 const validateFolderRename = createValidationMiddleware(validationConfigs.folderRename);
 const validateFolderCopy = createValidationMiddleware(validationConfigs.folderCopy);
