@@ -141,7 +141,7 @@ const DashboardV2: React.FC = () => {
             }
         } catch (error) {
             console.error('Error removing quiz:', error);
-            window.alert('Erreur lors de la suppression du quiz: ' + error);
+            window.alert('Erreur lors de la suppression du quiz: ' + (error instanceof Error ? error.message : String(error)));
         }
     };
 
