@@ -1,79 +1,47 @@
 const request = require("supertest");
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bodyParser = require("body-parser");
-
-// Mock logger
-jest.mock("../../config/logger", () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  child: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-  logUserAction: jest.fn(),
-  logApiRequest: jest.fn(),
-  logSecurityEvent: jest.fn(),
-  logDatabaseOperation: jest.fn(),
-}));
-
-// Import the mocked logger
-const logger = require("../../config/logger");
-
-// Import request ID middleware
-const { requestIdMiddleware } = require("../../config/httpLogger");
+const {
+  HTTP_STATUS,
+  TEST_IDS,
+  TEST_USERS,
+  TEST_DATA,
+  COMMON_MESSAGES,
+  ROOM_MESSAGES,
+  createMockLogger,
+  createBaseApp,
+  generateAuthToken,
+  createMockRoomModel,
+  assertSuccess,
+  assertAuthError,
+  assertOwnershipError,
+  assertConflictError,
+  assertValidationError,
+  assertLogDatabaseOperation,
+  assertLogUserAction,
+  createTestUser,
+  validationConstants,
+  GETTING_ROOM_ERROR,
+  ROOM_NOT_FOUND,
+  DELETE_ROOM_ERROR,
+} = require("../setup");
 
 // Import the actual components
 const RoomsController = require("../../controllers/room");
 const jwtMiddleware = require("../../middleware/jwtToken");
 const errorHandler = require("../../middleware/errorHandler");
+const { requestIdMiddleware } = require("../../config/httpLogger");
 const {
   validateRoomCreation,
   validateRoomRename,
 } = require("../../middleware/validation");
 const asyncHandler = require("../../routers/routerUtils");
 
-// Mock the database model
-const mockRoomsModel = {
-  create: jest.fn(),
-  getUserRooms: jest.fn(),
-  getContent: jest.fn(),
-  getOwner: jest.fn(),
-  delete: jest.fn(),
-  rename: jest.fn(),
-  getRoomById: jest.fn(),
-  roomExists: jest.fn(),
-};
-
-// Create test app with manual routing 
-const createTestApp = () => {
-  const app = express();
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-
-  // Add request ID middleware
-  app.use(requestIdMiddleware);
-
-  // Mock logging middleware
-  app.use((req, res, next) => {
-    req.logAction = (action, details) => {
-      if (req.user) {
-        logger.logUserAction(req.user.userId, req.user.email, action, details);
-      } else {
-        logger.warn(`Action attempted without authentication: ${action}`, details);
-      }
-    };
-    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
-    req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
-    next();
-  });
+// Create test app with manual routing
+const createTestApp = (mockLogger) => {
+  const app = createBaseApp(requestIdMiddleware, mockLogger);
+  const mockRoomModel = createMockRoomModel();
 
   // Create controller instance with mock model
-  const roomsController = new RoomsController(mockRoomsModel);
+  const roomsController = new RoomsController(mockRoomModel);
 
   // Define routes with validation middleware
   app.post(
@@ -117,71 +85,66 @@ const createTestApp = () => {
   // Add error handler
   app.use(errorHandler);
 
-  return app;
+  return { app, mockRoomModel };
 };
 
 describe("Rooms API Integration Tests", () => {
   let app;
+  let mockLogger;
+  let mockRoomModel;
   let authToken;
-  const testUser = {
-    email: "test@example.com",
-    userId: "user123",
-    roles: ["user"],
-  };
+
+  const testUser = createTestUser();
 
   beforeAll(() => {
     // Set up JWT secret for testing
     process.env.JWT_SECRET = "test-secret-key";
 
     // Create auth token for testing
-    authToken = jwt.sign(testUser, process.env.JWT_SECRET);
+    authToken = generateAuthToken(testUser);
   });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    app = createTestApp();
+    mockLogger = createMockLogger();
+    const testSetup = createTestApp(mockLogger);
+    app = testSetup.app;
+    mockRoomModel = testSetup.mockRoomModel;
   });
   describe("POST /api/room/create", () => {
     it("should create a room successfully", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM });
 
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ title: "Test Room" })
-        .expect(201);
+        .send({ title: TEST_DATA.ROOM.VALID.title });
 
-      expect(response.body).toEqual({
-        message: "Salle créée avec succès.",
-        roomId: "room123",
-      });
+      assertSuccess(response, HTTP_STATUS.CREATED, ROOM_MESSAGES.SUCCESS.CREATED);
 
-      expect(mockRoomsModel.roomExists).toHaveBeenCalledWith(
-        "TEST ROOM",
-        "user123"
+      expect(response.body.roomId).toBe(TEST_IDS.ROOM);
+
+      expect(mockRoomModel.roomExists).toHaveBeenCalledWith(
+        TEST_DATA.ROOM.VALID.title.toUpperCase(),
+        testUser.userId
       );
-      expect(mockRoomsModel.create).toHaveBeenCalledWith(
-        "TEST ROOM",
-        "user123"
+      expect(mockRoomModel.create).toHaveBeenCalledWith(
+        TEST_DATA.ROOM.VALID.title.toUpperCase(),
+        testUser.userId
       );
 
       // Verify logging
-      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
-        'insert',
-        'rooms',
-        expect.any(Number),
-        true,
-        { roomId: 'room123', roomTitle: 'TEST ROOM' }
-      );
+      assertLogDatabaseOperation(mockLogger, 'insert', 'rooms');
 
-      expect(logger.logUserAction).toHaveBeenCalledWith(
-        'user123',
-        'test@example.com',
+      assertLogUserAction(
+        mockLogger,
+        testUser.userId,
+        testUser.email,
         'room_created',
         expect.objectContaining({
-          roomId: 'room123',
-          roomTitle: 'TEST ROOM',
+          roomId: TEST_IDS.ROOM,
+          roomTitle: TEST_DATA.ROOM.VALID.title.toUpperCase(),
           createTime: expect.stringMatching(/^\d+ms$/),
           totalTime: expect.stringMatching(/^\d+ms$/)
         })
@@ -191,32 +154,29 @@ describe("Rooms API Integration Tests", () => {
     it("should return 401 when no auth token provided", async () => {
       const response = await request(app)
         .post("/api/room/create")
-        .send({ title: "Test Room" })
-        .expect(401);
+        .send({ title: TEST_DATA.ROOM.VALID.title });
 
-      expect(response.body.message).toBe("Accès refusé. Aucun jeton fourni.");
+      assertAuthError(response);
     });
 
     it("should return 401 with invalid token", async () => {
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", "Bearer invalid-token")
-        .send({ title: "Test Room" })
-        .expect(401);
+        .send({ title: "Test Room" });
 
-      expect(response.body.message).toBe("Accès refusé. Jeton invalide.");
+      assertAuthError(response, true);
     });
 
     it("should return 409 when room already exists", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(true);
+      mockRoomModel.roomExists.mockResolvedValue(true);
 
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ title: "Existing Room" })
-        .expect(409);
+        .send({ title: TEST_DATA.ROOM.VALID.title });
 
-      expect(response.body.message).toBe("Une salle avec ce nom existe déjà");
+      assertConflictError(response, "salle");
     });
 
     // Input validation tests
@@ -224,10 +184,9 @@ describe("Rooms API Integration Tests", () => {
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({})
-        .expect(400);
+        .send({});
 
-      expect(response.body.message).toContain("Données invalides");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.TITLE_REQUIRED);
     });
 
     it("should return 400 for empty title", async () => {
@@ -237,7 +196,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "" })
         .expect(400);
 
-      expect(response.body.message).toContain("Données invalides");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.INVALID_DATA);
     });
 
     it("should return 400 for title with only spaces", async () => {
@@ -247,11 +206,11 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "   " })
         .expect(400);
 
-      expect(response.body.message).toContain("Données invalides");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.INVALID_DATA);
     });
 
     it("should return 400 for title that is too long", async () => {
-      const longTitle = "A".repeat(26); // Room validation: max length is 25
+      const longTitle = "A".repeat(validationConstants.room.name.maxLength + 1);
 
       const response = await request(app)
         .post("/api/room/create")
@@ -259,7 +218,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: longTitle })
         .expect(400);
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should return 400 for title with invalid characters", async () => {
@@ -269,12 +228,12 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: 'Room<script>alert("xss")</script>' })
         .expect(400);
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should accept title with accented characters", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room124" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM_NEW });
 
       const response = await request(app)
         .post("/api/room/create")
@@ -282,12 +241,12 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "Salle de Français" })
         .expect(201);
 
-      expect(response.body.message).toBe("Salle créée avec succès.");
+      expect(response.body.message).toBe(ROOM_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should accept title with various accents", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room125" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM_NEW });
 
       const response = await request(app)
         .post("/api/room/create")
@@ -295,7 +254,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "Gérard Pâtisserie" })
         .expect(201);
 
-      expect(response.body.message).toBe("Salle créée avec succès.");
+      expect(response.body.message).toBe(ROOM_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should reject SQL injection attempts", async () => {
@@ -305,7 +264,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "'; DROP TABLE rooms; --" })
         .expect(400);
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should reject XSS attempts", async () => {
@@ -315,53 +274,51 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: '<script>alert("xss")</script>' })
         .expect(400);
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      expect(response.body.message).toContain(ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should accept valid title with mixed characters", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM });
 
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ title: "Valid Room Name 123" })
+        .send({ title: TEST_DATA.ROOM.VALID.title })
         .expect(201);
 
-      expect(response.body.roomId).toBe("room123");
+      expect(response.body.roomId).toBe(TEST_IDS.ROOM);
     });
 
     it("should handle minimum valid title length", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM });
 
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ title: "A" }) // Minimum length
+        .send({ title: TEST_DATA.ROOM.MINIMAL.title })
         .expect(201);
 
-      expect(response.body.roomId).toBe("room123");
+      expect(response.body.roomId).toBe(TEST_IDS.ROOM);
     });
 
     it("should handle maximum valid title length", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
-
-      const maxValidTitle = "A".repeat(25); // Room validation: max is 25
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM });
 
       const response = await request(app)
         .post("/api/room/create")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ title: maxValidTitle })
+        .send({ title: TEST_DATA.ROOM.MAX_TITLE.title })
         .expect(201);
 
-      expect(response.body.roomId).toBe("room123");
+      expect(response.body.roomId).toBe(TEST_IDS.ROOM);
     });
 
     it("should handle title with numbers and special allowed characters", async () => {
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockResolvedValue({ insertedId: TEST_IDS.ROOM });
 
       const response = await request(app)
         .post("/api/room/create")
@@ -369,16 +326,16 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: "Room-123_Test Space" })
         .expect(201);
 
-      expect(response.body.roomId).toBe("room123");
+      expect(response.body.roomId).toBe(TEST_IDS.ROOM);
     });
   });
   describe("GET /api/room/getUserRooms", () => {
     it("should return user rooms successfully", async () => {
       const mockRooms = [
-        { _id: "room1", title: "Room 1", userId: "user123" },
-        { _id: "room2", title: "Room 2", userId: "user123" },
+        { _id: TEST_IDS.ROOM, title: TEST_DATA.ROOM.VALID.title, userId: TEST_USERS.DEFAULT.userId },
+        { _id: TEST_IDS.ROOM_NEW, title: `${TEST_DATA.ROOM.VALID.title} 2`, userId: TEST_USERS.DEFAULT.userId },
       ];
-      mockRoomsModel.getUserRooms.mockResolvedValue(mockRooms);
+      mockRoomModel.getUserRooms.mockResolvedValue(mockRooms);
 
       const response = await request(app)
         .get("/api/room/getUserRooms")
@@ -389,20 +346,15 @@ describe("Rooms API Integration Tests", () => {
         data: mockRooms,
       });
 
-      expect(mockRoomsModel.getUserRooms).toHaveBeenCalledWith("user123");
+      expect(mockRoomModel.getUserRooms).toHaveBeenCalledWith(TEST_USERS.DEFAULT.userId);
 
       // Verify logging
-      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
-        'select',
-        'rooms',
-        expect.any(Number),
-        true,
-        { roomCount: 2 }
-      );
+      assertLogDatabaseOperation(mockLogger, 'select', 'rooms');
 
-      expect(logger.logUserAction).toHaveBeenCalledWith(
-        'user123',
-        'test@example.com',
+      assertLogUserAction(
+        mockLogger,
+        TEST_USERS.DEFAULT.userId,
+        TEST_USERS.DEFAULT.email,
         'user_rooms_retrieved',
         expect.objectContaining({
           roomCount: 2,
@@ -412,36 +364,32 @@ describe("Rooms API Integration Tests", () => {
     });
 
     it("should return 404 when no rooms found", async () => {
-      mockRoomsModel.getUserRooms.mockResolvedValue(null);
+      mockRoomModel.getUserRooms.mockResolvedValue(null);
 
       const response = await request(app)
         .get("/api/room/getUserRooms")
-        .set("Authorization", `Bearer ${authToken}`)
-        .expect(404);
+        .set("Authorization", `Bearer ${authToken}`);
 
-      expect(response.body.message).toBe(
-        "Aucune salle trouvée avec cet identifiant."
-      );
+      assertOwnershipError(response, "salle");
     });
 
     it("should return 401 when not authenticated", async () => {
       const response = await request(app)
-        .get("/api/room/getUserRooms")
-        .expect(401);
+        .get("/api/room/getUserRooms");
 
-      expect(response.body.message).toBe("Accès refusé. Aucun jeton fourni.");
+      assertAuthError(response);
     });
   });
 
   describe("GET /api/room/getRoomContent/:roomId", () => {
     it("should return room content successfully", async () => {
-      const roomId = "room123";
+      const roomId = TEST_IDS.ROOM;
       const mockContent = {
         _id: roomId,
-        title: "Test Room",
+        title: TEST_DATA.ROOM.VALID.title,
         content: "Room content",
       };
-      mockRoomsModel.getContent.mockResolvedValue(mockContent);
+      mockRoomModel.getContent.mockResolvedValue(mockContent);
 
       const response = await request(app)
         .get(`/api/room/getRoomContent/${roomId}`)
@@ -452,12 +400,12 @@ describe("Rooms API Integration Tests", () => {
         data: mockContent,
       });
 
-      expect(mockRoomsModel.getContent).toHaveBeenCalledWith(roomId);
+      expect(mockRoomModel.getContent).toHaveBeenCalledWith(roomId);
     });
 
     it("should return 500 when content not found", async () => {
-      const roomId = "room123";
-      mockRoomsModel.getContent.mockResolvedValue(null);
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getContent.mockResolvedValue(null);
 
       const response = await request(app)
         .get(`/api/room/getRoomContent/${roomId}`)
@@ -465,15 +413,15 @@ describe("Rooms API Integration Tests", () => {
         .expect(500);
 
       expect(response.body.message).toBe(
-        "Une erreur s'est produite lors de la récupération de la salle."
+        GETTING_ROOM_ERROR.message
       );
     });
   });
   describe("DELETE /api/room/delete/:roomId", () => {
     it("should delete room successfully", async () => {
-      const roomId = "room123";
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.delete.mockResolvedValue(true);
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.delete.mockResolvedValue(true);
 
       const response = await request(app)
         .delete(`/api/room/delete/${roomId}`)
@@ -481,16 +429,16 @@ describe("Rooms API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        message: "Salle supprimé avec succès.",
+        message: ROOM_MESSAGES.SUCCESS.DELETED,
       });
 
-      expect(mockRoomsModel.getOwner).toHaveBeenCalledWith(roomId);
-      expect(mockRoomsModel.delete).toHaveBeenCalledWith(roomId);
+      expect(mockRoomModel.getOwner).toHaveBeenCalledWith(roomId);
+      expect(mockRoomModel.delete).toHaveBeenCalledWith(roomId);
     });
 
     it("should return 404 when user is not the owner", async () => {
-      const roomId = "room123";
-      mockRoomsModel.getOwner.mockResolvedValue("otherUser");
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
 
       const response = await request(app)
         .delete(`/api/room/delete/${roomId}`)
@@ -498,14 +446,14 @@ describe("Rooms API Integration Tests", () => {
         .expect(404);
 
       expect(response.body.message).toBe(
-        "Aucune salle trouvée avec cet identifiant."
+        ROOM_NOT_FOUND.message
       );
     });
 
     it("should return 500 when delete fails", async () => {
-      const roomId = "room123";
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.delete.mockResolvedValue(false);
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.delete.mockResolvedValue(false);
 
       const response = await request(app)
         .delete(`/api/room/delete/${roomId}`)
@@ -513,18 +461,18 @@ describe("Rooms API Integration Tests", () => {
         .expect(500);
 
       expect(response.body.message).toBe(
-        "Une erreur s'est produite lors de la suppression de la salle."
+        DELETE_ROOM_ERROR.message
       );
     });
   });
 
   describe("PUT /api/room/rename", () => {
     it("should rename room successfully", async () => {
-      const roomId = "room123";
-      const newTitle = "New Room Title";
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.rename.mockResolvedValue(true);
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.rename.mockResolvedValue(true);
 
       const response = await request(app)
         .put("/api/room/rename")
@@ -533,26 +481,26 @@ describe("Rooms API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        message: "Salle mis à jour avec succès.",
+        message: ROOM_MESSAGES.SUCCESS.UPDATED,
       });
 
-      expect(mockRoomsModel.getOwner).toHaveBeenCalledWith(roomId);
-      expect(mockRoomsModel.roomExists).toHaveBeenCalledWith(
+      expect(mockRoomModel.getOwner).toHaveBeenCalledWith(roomId);
+      expect(mockRoomModel.roomExists).toHaveBeenCalledWith(
         newTitle,
-        "user123"
+        TEST_USERS.DEFAULT.userId
       );
-      expect(mockRoomsModel.rename).toHaveBeenCalledWith(
+      expect(mockRoomModel.rename).toHaveBeenCalledWith(
         roomId,
-        "user123",
+        TEST_USERS.DEFAULT.userId,
         newTitle
       );
     });
 
     it("should return 409 when new title already exists", async () => {
-      const roomId = "room123";
-      const newTitle = "Existing Title";
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.roomExists.mockResolvedValue(true);
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(true);
 
       const response = await request(app)
         .put("/api/room/rename")
@@ -560,7 +508,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ roomId, newTitle })
         .expect(409);
 
-      expect(response.body.message).toBe("Une salle avec ce nom existe déjà");
+      expect(response.body.message).toBe(ROOM_MESSAGES.VALIDATION.ALREADY_EXISTS);
     });
 
     // Input validation tests
@@ -568,77 +516,72 @@ describe("Rooms API Integration Tests", () => {
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ newTitle: "New Title" })
-        .expect(400);
+        .send({ newTitle: TEST_DATA.ROOM.VALID.title });
 
-      expect(response.body.message).toBe("Données invalides: ID de la salle requis");
+      assertValidationError(response, "ID de la salle requis");
     });
 
     it("should return 400 for empty newTitle", async () => {
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: "" })
-        .expect(400);
+        .send({ roomId: TEST_IDS.ROOM, newTitle: "" });
 
-      expect(response.body.message).toBe("Données invalides: Nouveau titre requis");
+      assertValidationError(response, "Nouveau titre requis");
     });
 
     it("should return 400 for newTitle with only spaces", async () => {
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: "   " })
-        .expect(400);
+        .send({ roomId: TEST_IDS.ROOM, newTitle: "   " });
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should return 400 for newTitle that is too long", async () => {
-      const longTitle = "A".repeat(26); // Room validation: max length is 25
+      const longTitle = "A".repeat(validationConstants.room.name.maxLength + 1);
 
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: longTitle })
-        .expect(400);
+        .send({ roomId: TEST_IDS.ROOM, newTitle: longTitle });
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should return 400 for newTitle with invalid characters", async () => {
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: "Room<script>" })
-        .expect(400);
+        .send({ roomId: TEST_IDS.ROOM, newTitle: "Room<script>" });
 
-      expect(response.body.message).toContain("Le nom de la salle ne peut contenir que des lettres, chiffres, tirets, underscores et espaces");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.TITLE_LENGTH);
     });
 
     it("should accept valid newTitle", async () => {
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.rename.mockResolvedValue(true);
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.rename.mockResolvedValue(true);
 
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: "Valid New Name" })
+        .send({ roomId: TEST_IDS.ROOM, newTitle: TEST_DATA.ROOM.VALID.title })
         .expect(200);
 
       expect(response.body.message).toContain("mis à jour avec succès");
     });
 
     it("should accept newTitle with accented characters", async () => {
-      mockRoomsModel.getOwner.mockResolvedValue("user123");
-      mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.rename.mockResolvedValue(true);
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.rename.mockResolvedValue(true);
 
       const response = await request(app)
         .put("/api/room/rename")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ roomId: "room123", newTitle: "Salle de Français" })
+        .send({ roomId: TEST_IDS.ROOM, newTitle: "Salle de Français" })
         .expect(200);
 
       expect(response.body.message).toContain("mis à jour avec succès");
@@ -646,9 +589,9 @@ describe("Rooms API Integration Tests", () => {
   });
   describe("GET /api/room/getRoomTitle/:roomId", () => {
     it("should return room title successfully", async () => {
-      const roomId = "room123";
-      const mockRoom = { _id: roomId, title: "Test Room Title" };
-      mockRoomsModel.getRoomById.mockResolvedValue(mockRoom);
+      const roomId = TEST_IDS.ROOM;
+      const mockRoom = { _id: roomId, title: TEST_DATA.ROOM.VALID.title };
+      mockRoomModel.getRoomById.mockResolvedValue(mockRoom);
 
       const response = await request(app)
         .get(`/api/room/getRoomTitle/${roomId}`)
@@ -656,15 +599,15 @@ describe("Rooms API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        title: "Test Room Title",
+        title: TEST_DATA.ROOM.VALID.title,
       });
 
-      expect(mockRoomsModel.getRoomById).toHaveBeenCalledWith(roomId);
+      expect(mockRoomModel.getRoomById).toHaveBeenCalledWith(roomId);
     });
 
     it("should return 404 when room not found", async () => {
-      const roomId = "room123";
-      mockRoomsModel.getRoomById.mockResolvedValue(new Error("Room not found"));
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getRoomById.mockResolvedValue(new Error("Room not found"));
 
       const response = await request(app)
         .get(`/api/room/getRoomTitle/${roomId}`)
@@ -672,19 +615,19 @@ describe("Rooms API Integration Tests", () => {
         .expect(404);
 
       expect(response.body.message).toBe(
-        "Aucune salle trouvée avec cet identifiant."
+        ROOM_NOT_FOUND.message
       );
     });
   });
 
   describe("GET /api/room/getRoomTitleByUserId/:userId", () => {
     it("should return room titles by user id successfully", async () => {
-      const userId = "user123";
+      const userId = TEST_USERS.DEFAULT.userId;
       const mockRooms = [
-        { _id: "room1", title: "Room 1", userId },
-        { _id: "room2", title: "Room 2", userId },
+        { _id: TEST_IDS.ROOM, title: TEST_DATA.ROOM.VALID.title, userId },
+        { _id: TEST_IDS.ROOM_NEW, title: `${TEST_DATA.ROOM.VALID.title} 2`, userId },
       ];
-      mockRoomsModel.getUserRooms.mockResolvedValue(mockRooms);
+      mockRoomModel.getUserRooms.mockResolvedValue(mockRooms);
 
       const response = await request(app)
         .get(`/api/room/getRoomTitleByUserId/${userId}`)
@@ -692,15 +635,15 @@ describe("Rooms API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        titles: ["Room 1", "Room 2"],
+        titles: [TEST_DATA.ROOM.VALID.title, `${TEST_DATA.ROOM.VALID.title} 2`],
       });
 
-      expect(mockRoomsModel.getUserRooms).toHaveBeenCalledWith(userId);
+      expect(mockRoomModel.getUserRooms).toHaveBeenCalledWith(userId);
     });
 
     it("should return 404 when no rooms found", async () => {
-      const userId = "user123";
-      mockRoomsModel.getUserRooms.mockResolvedValue(null);
+      const userId = TEST_USERS.DEFAULT.userId;
+      mockRoomModel.getUserRooms.mockResolvedValue(null);
 
       const response = await request(app)
         .get(`/api/room/getRoomTitleByUserId/${userId}`)
@@ -708,13 +651,13 @@ describe("Rooms API Integration Tests", () => {
         .expect(404);
 
       expect(response.body.message).toBe(
-        "Aucune salle trouvée avec cet identifiant."
+        ROOM_NOT_FOUND.message
       );
     });
 
     it("should return 404 when empty rooms array", async () => {
-      const userId = "user123";
-      mockRoomsModel.getUserRooms.mockResolvedValue([]);
+      const userId = TEST_USERS.DEFAULT.userId;
+      mockRoomModel.getUserRooms.mockResolvedValue([]);
 
       const response = await request(app)
         .get(`/api/room/getRoomTitleByUserId/${userId}`)
@@ -722,7 +665,7 @@ describe("Rooms API Integration Tests", () => {
         .expect(404);
 
       expect(response.body.message).toBe(
-        "Aucune salle trouvée avec cet identifiant."
+        ROOM_NOT_FOUND.message
       );
     });
   });
