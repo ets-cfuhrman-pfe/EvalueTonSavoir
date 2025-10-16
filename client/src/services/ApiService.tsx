@@ -706,7 +706,7 @@ public async login(email: string, password: string): Promise<any> {
             const result: AxiosResponse = await axios.delete(url, { headers: headers });
 
             if (result.status !== 200) {
-                throw new Error(`La supression du quiz a échoué. Status: ${result.status}`);
+                throw new Error(`La suppression du quiz a échoué. Status: ${result.status}`);
             }
 
             return true;
@@ -715,9 +715,7 @@ public async login(email: string, password: string): Promise<any> {
             console.log("Error details: ", error);
 
             if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                const data = err.response?.data as { error: string } | undefined;
-                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+                return error.message || 'Erreur serveur inconnue lors de la requête.';
             }
 
             return `Une erreur inattendue s'est produite.`
