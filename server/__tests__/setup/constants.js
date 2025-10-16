@@ -166,6 +166,9 @@ const {
   DELETE_QUIZ_ERROR,
   UPDATE_QUIZ_ERROR,
   MOVING_QUIZ_ERROR,
+  GETTING_ROOM_ERROR,
+  ROOM_NOT_FOUND,
+  DELETE_ROOM_ERROR,
 } = require('../../constants/errorCodes');
 
 // QUIZ-SPECIFIC MESSAGES
@@ -190,6 +193,25 @@ const QUIZ_MESSAGES = {
   }
 };
 
+// ROOM-SPECIFIC MESSAGES
+const ROOM_MESSAGES = {
+  SUCCESS: {
+    CREATED: "Salle créée avec succès.",
+    DELETED: "Salle supprimé avec succès.",
+    UPDATED: "Salle mis à jour avec succès.",
+  },
+  VALIDATION: {
+    TITLE_REQUIRED: "Titre requis",
+    TITLE_LENGTH: validationConstants.room.name.errorMessage,
+    ALREADY_EXISTS: "Une salle avec ce nom existe déjà",
+    INVALID_DATA: "Données invalides",
+  },
+  ERRORS: {
+    NOT_FOUND: "Salle non trouvée.",
+    CONTENT_NOT_FOUND: "Impossible de charger le contenu de la salle.",
+  }
+};
+
 
 
 module.exports = {
@@ -199,6 +221,7 @@ module.exports = {
   TEST_DATA,
   COMMON_MESSAGES,
   QUIZ_MESSAGES,
+  ROOM_MESSAGES,
   AppError,
   QUIZ_ALREADY_EXISTS,
   MISSING_REQUIRED_PARAMETER,
@@ -209,4 +232,8 @@ module.exports = {
   DELETE_QUIZ_ERROR,
   UPDATE_QUIZ_ERROR,
   MOVING_QUIZ_ERROR,
+  GETTING_ROOM_ERROR,
+  ROOM_NOT_FOUND,
+  DELETE_ROOM_ERROR,
+  validationConstants,
 };
