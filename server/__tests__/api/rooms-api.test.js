@@ -1,12 +1,26 @@
 const request = require("supertest");
+
+// Mock the logger module
+const mockLogger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+};
+
+jest.mock('../../config/logger', () => mockLogger);
+
 const {
   HTTP_STATUS,
   TEST_IDS,
   TEST_USERS,
   TEST_DATA,
-  COMMON_MESSAGES,
   ROOM_MESSAGES,
-  createMockLogger,
   createBaseApp,
   generateAuthToken,
   createMockRoomModel,
@@ -22,11 +36,14 @@ const {
   GETTING_ROOM_ERROR,
   ROOM_NOT_FOUND,
   DELETE_ROOM_ERROR,
+  UPDATE_ROOM_ERROR,
+  COMMON_MESSAGES,
 } = require("../setup");
 
 // Import the actual components
 const RoomsController = require("../../controllers/room");
 const jwtMiddleware = require("../../middleware/jwtToken");
+
 const errorHandler = require("../../middleware/errorHandler");
 const { requestIdMiddleware } = require("../../config/httpLogger");
 const {
@@ -36,7 +53,7 @@ const {
 const asyncHandler = require("../../routers/routerUtils");
 
 // Create test app with manual routing
-const createTestApp = (mockLogger) => {
+const createTestApp = () => {
   const app = createBaseApp(requestIdMiddleware, mockLogger);
   const mockRoomModel = createMockRoomModel();
 
@@ -90,7 +107,6 @@ const createTestApp = (mockLogger) => {
 
 describe("Rooms API Integration Tests", () => {
   let app;
-  let mockLogger;
   let mockRoomModel;
   let authToken;
 
@@ -106,8 +122,7 @@ describe("Rooms API Integration Tests", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLogger = createMockLogger();
-    const testSetup = createTestApp(mockLogger);
+    const testSetup = createTestApp();
     app = testSetup.app;
     mockRoomModel = testSetup.mockRoomModel;
   });
@@ -177,6 +192,49 @@ describe("Rooms API Integration Tests", () => {
         .send({ title: TEST_DATA.ROOM.VALID.title });
 
       assertConflictError(response, "salle");
+    });
+
+    it("should return 500 when roomExists check fails", async () => {
+      mockRoomModel.roomExists.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: TEST_DATA.ROOM.VALID.title })
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database error',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
+    it("should return 500 when create fails", async () => {
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.create.mockRejectedValue(new Error("Create failed"));
+
+      const response = await request(app)
+        .post("/api/room/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ title: TEST_DATA.ROOM.VALID.title })
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Create failed',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
     });
 
     // Input validation tests
@@ -373,6 +431,26 @@ describe("Rooms API Integration Tests", () => {
       assertOwnershipError(response, "salle");
     });
 
+    it("should return 500 when database error occurs", async () => {
+      mockRoomModel.getUserRooms.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .get("/api/room/getUserRooms")
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database error',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
     it("should return 401 when not authenticated", async () => {
       const response = await request(app)
         .get("/api/room/getUserRooms");
@@ -387,7 +465,7 @@ describe("Rooms API Integration Tests", () => {
       const mockContent = {
         _id: roomId,
         title: TEST_DATA.ROOM.VALID.title,
-        content: "Room content",
+        content: TEST_DATA.ROOM.VALID.content,
       };
       mockRoomModel.getContent.mockResolvedValue(mockContent);
 
@@ -403,6 +481,14 @@ describe("Rooms API Integration Tests", () => {
       expect(mockRoomModel.getContent).toHaveBeenCalledWith(roomId);
     });
 
+    it("should return 401 when not authenticated", async () => {
+      const response = await request(app)
+        .get(`/api/room/getRoomContent/${TEST_IDS.ROOM}`)
+        .expect(401);
+
+      assertAuthError(response);
+    });
+
     it("should return 500 when content not found", async () => {
       const roomId = TEST_IDS.ROOM;
       mockRoomModel.getContent.mockResolvedValue(null);
@@ -414,6 +500,38 @@ describe("Rooms API Integration Tests", () => {
 
       expect(response.body.message).toBe(
         GETTING_ROOM_ERROR.message
+      );
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Application Error',
+        expect.objectContaining({
+          message: GETTING_ROOM_ERROR.message,
+          statusCode: 500,
+          isOperational: true,
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
+    it("should return 500 when database error occurs", async () => {
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getContent.mockRejectedValue(new Error("Database connection failed"));
+
+      const response = await request(app)
+        .get(`/api/room/getRoomContent/${roomId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database connection failed',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
       );
     });
   });
@@ -436,6 +554,23 @@ describe("Rooms API Integration Tests", () => {
       expect(mockRoomModel.delete).toHaveBeenCalledWith(roomId);
     });
 
+    it("should return 401 when not authenticated", async () => {
+      const response = await request(app)
+        .delete(`/api/room/delete/${TEST_IDS.ROOM}`)
+        .expect(401);
+
+      assertAuthError(response);
+    });
+
+    it("should return 401 with invalid token", async () => {
+      const response = await request(app)
+        .delete(`/api/room/delete/${TEST_IDS.ROOM}`)
+        .set("Authorization", "Bearer invalid-token")
+        .expect(401);
+
+      assertAuthError(response, true);
+    });
+
     it("should return 404 when user is not the owner", async () => {
       const roomId = TEST_IDS.ROOM;
       mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
@@ -447,6 +582,27 @@ describe("Rooms API Integration Tests", () => {
 
       expect(response.body.message).toBe(
         ROOM_NOT_FOUND.message
+      );
+    });
+
+    it("should return 500 when getOwner fails", async () => {
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getOwner.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .delete(`/api/room/delete/${roomId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database error',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
       );
     });
 
@@ -462,6 +618,39 @@ describe("Rooms API Integration Tests", () => {
 
       expect(response.body.message).toBe(
         DELETE_ROOM_ERROR.message
+      );
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Application Error',
+        expect.objectContaining({
+          message: DELETE_ROOM_ERROR.message,
+          statusCode: 500,
+          isOperational: true,
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
+    it("should return 500 when delete throws error", async () => {
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.delete.mockRejectedValue(new Error("Delete failed"));
+
+      const response = await request(app)
+        .delete(`/api/room/delete/${roomId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Delete failed',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
       );
     });
   });
@@ -496,6 +685,25 @@ describe("Rooms API Integration Tests", () => {
       );
     });
 
+    it("should return 401 when not authenticated", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .send({ roomId: TEST_IDS.ROOM, newTitle: TEST_DATA.ROOM.VALID.title })
+        .expect(401);
+
+      assertAuthError(response);
+    });
+
+    it("should return 401 with invalid token", async () => {
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", "Bearer invalid-token")
+        .send({ roomId: TEST_IDS.ROOM, newTitle: TEST_DATA.ROOM.VALID.title })
+        .expect(401);
+
+      assertAuthError(response, true);
+    });
+
     it("should return 409 when new title already exists", async () => {
       const roomId = TEST_IDS.ROOM;
       const newTitle = TEST_DATA.ROOM.VALID.title;
@@ -511,6 +719,105 @@ describe("Rooms API Integration Tests", () => {
       expect(response.body.message).toBe(ROOM_MESSAGES.VALIDATION.ALREADY_EXISTS);
     });
 
+    it("should return 404 when user is not the owner", async () => {
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId, newTitle })
+        .expect(404);
+
+      expect(response.body.message).toBe(
+        ROOM_NOT_FOUND.message
+      );
+    });
+
+    it("should return 500 when getOwner fails", async () => {
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId, newTitle })
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+    });
+
+    it("should return 500 when roomExists fails", async () => {
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId, newTitle })
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+    });
+
+    it("should return 500 when rename fails", async () => {
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.rename.mockResolvedValue(false);
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId, newTitle })
+        .expect(500);
+
+      expect(response.body.message).toBe(
+        UPDATE_ROOM_ERROR.message
+      );
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Application Error',
+        expect.objectContaining({
+          message: UPDATE_ROOM_ERROR.message,
+          statusCode: 500,
+          isOperational: true,
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
+    it("should return 500 when rename throws error", async () => {
+      const roomId = TEST_IDS.ROOM;
+      const newTitle = TEST_DATA.ROOM.VALID.title;
+      mockRoomModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockRoomModel.roomExists.mockResolvedValue(false);
+      mockRoomModel.rename.mockRejectedValue(new Error("Rename failed"));
+
+      const response = await request(app)
+        .put("/api/room/rename")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ roomId, newTitle })
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Rename failed',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
+      );
+    });
+
     // Input validation tests
     it("should return 400 when roomId is missing", async () => {
       const response = await request(app)
@@ -518,7 +825,7 @@ describe("Rooms API Integration Tests", () => {
         .set("Authorization", `Bearer ${authToken}`)
         .send({ newTitle: TEST_DATA.ROOM.VALID.title });
 
-      assertValidationError(response, "ID de la salle requis");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.ID_REQUIRED);
     });
 
     it("should return 400 for empty newTitle", async () => {
@@ -527,7 +834,7 @@ describe("Rooms API Integration Tests", () => {
         .set("Authorization", `Bearer ${authToken}`)
         .send({ roomId: TEST_IDS.ROOM, newTitle: "" });
 
-      assertValidationError(response, "Nouveau titre requis");
+      assertValidationError(response, ROOM_MESSAGES.VALIDATION.NEW_TITLE_REQUIRED);
     });
 
     it("should return 400 for newTitle with only spaces", async () => {
@@ -570,7 +877,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ roomId: TEST_IDS.ROOM, newTitle: TEST_DATA.ROOM.VALID.title })
         .expect(200);
 
-      expect(response.body.message).toContain("mis à jour avec succès");
+      expect(response.body.message).toContain(COMMON_MESSAGES.VALIDATION.SUCCESSFUL_UPDATE);
     });
 
     it("should accept newTitle with accented characters", async () => {
@@ -584,7 +891,7 @@ describe("Rooms API Integration Tests", () => {
         .send({ roomId: TEST_IDS.ROOM, newTitle: "Salle de Français" })
         .expect(200);
 
-      expect(response.body.message).toContain("mis à jour avec succès");
+      expect(response.body.message).toContain(COMMON_MESSAGES.VALIDATION.SUCCESSFUL_UPDATE);
     });
   });
   describe("GET /api/room/getRoomTitle/:roomId", () => {
@@ -605,6 +912,14 @@ describe("Rooms API Integration Tests", () => {
       expect(mockRoomModel.getRoomById).toHaveBeenCalledWith(roomId);
     });
 
+    it("should return 401 when not authenticated", async () => {
+      const response = await request(app)
+        .get(`/api/room/getRoomTitle/${TEST_IDS.ROOM}`)
+        .expect(401);
+
+      assertAuthError(response);
+    });
+
     it("should return 404 when room not found", async () => {
       const roomId = TEST_IDS.ROOM;
       mockRoomModel.getRoomById.mockResolvedValue(new Error("Room not found"));
@@ -616,6 +931,27 @@ describe("Rooms API Integration Tests", () => {
 
       expect(response.body.message).toBe(
         ROOM_NOT_FOUND.message
+      );
+    });
+
+    it("should return 500 when database error occurs", async () => {
+      const roomId = TEST_IDS.ROOM;
+      mockRoomModel.getRoomById.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .get(`/api/room/getRoomTitle/${roomId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database error',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
       );
     });
   });
@@ -639,6 +975,14 @@ describe("Rooms API Integration Tests", () => {
       });
 
       expect(mockRoomModel.getUserRooms).toHaveBeenCalledWith(userId);
+    });
+
+    it("should return 401 when not authenticated", async () => {
+      const response = await request(app)
+        .get(`/api/room/getRoomTitleByUserId/${TEST_USERS.DEFAULT.userId}`)
+        .expect(401);
+
+      assertAuthError(response);
     });
 
     it("should return 404 when no rooms found", async () => {
@@ -666,6 +1010,27 @@ describe("Rooms API Integration Tests", () => {
 
       expect(response.body.message).toBe(
         ROOM_NOT_FOUND.message
+      );
+    });
+
+    it("should return 500 when database error occurs", async () => {
+      const userId = TEST_USERS.DEFAULT.userId;
+      mockRoomModel.getUserRooms.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .get(`/api/room/getRoomTitleByUserId/${userId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(500);
+
+      expect(response.body.message).toBeDefined();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Unexpected Server Error',
+        expect.objectContaining({
+          message: 'Database error',
+          userId: TEST_USERS.DEFAULT.userId,
+          userEmail: TEST_USERS.DEFAULT.email
+        })
       );
     });
   });
