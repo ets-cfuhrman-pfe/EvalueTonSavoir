@@ -504,6 +504,25 @@ describe("Quizzes API Integration Tests", () => {
       assertConflictError(response, "quiz");
     });
 
+    it("should return 500 when creating multiple quizzes with same name causes database error", async () => {
+      mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+      mockQuizModel.create.mockRejectedValue(
+        new Error("Duplicate key constraint violation")
+      );
+
+      const response = await request(app)
+        .post("/api/quiz/create")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          title: TEST_DATA.QUIZ.VALID.title,
+          content: TEST_DATA.QUIZ.VALID.content,
+          folderId: TEST_IDS.FOLDER,
+        });
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_ERROR);
+      expect(response.body.message).toBeDefined();
+    });
+
     describe("GET /api/quiz/get/:quizId", () => {
       it("should return quiz content successfully", async () => {
         const quizId = TEST_IDS.QUIZ;
