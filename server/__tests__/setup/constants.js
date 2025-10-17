@@ -80,6 +80,26 @@ const TEST_DATA = {
       title: 'Title',
       content: 'A'.repeat(validationConstants.quiz.content.maxLength + 1),
     },
+    ARRAY_CONTENT: {
+      title: 'Array Quiz',
+      content: ['Question 1?', 'Question 2?', 'Question 3?'],
+    },
+    EXISTING: {
+      title: 'Existing Quiz',
+      content: 'Existing quiz content',
+    },
+    CONCURRENT: {
+      title: 'Concurrent Quiz',
+      content: 'Concurrent quiz content',
+    },
+    NEW_CONTENT: {
+      title: 'Updated Quiz',
+      content: 'New content',
+    },
+    INVALID_CONTENT: {
+      title: 'Invalid Quiz',
+      content: 'not an array',
+    },
   },
   FOLDER: {
     VALID: {
