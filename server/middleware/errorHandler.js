@@ -1,7 +1,7 @@
 const AppError = require("./AppError");
 const logger = require('../config/logger');
 
-const errorHandler = (loggerInstance = logger) => (error, req, res, _next) => {
+const errorHandler = (error, req, res, _next) => {
     res.setHeader('Cache-Control', 'no-store');
 
     // Add user context to error logging if available
@@ -17,7 +17,7 @@ const errorHandler = (loggerInstance = logger) => (error, req, res, _next) => {
 
     if (error instanceof AppError) {
       // Log operational errors as warnings with context
-      loggerInstance.warn('Application Error', {
+      logger.warn('Application Error', {
         message: error.message,
         statusCode: error.statusCode,
         isOperational: error.isOperational,
@@ -31,7 +31,7 @@ const errorHandler = (loggerInstance = logger) => (error, req, res, _next) => {
     }
 
     // Log unexpected errors with full stack trace
-    loggerInstance.error('Unexpected Server Error', {
+    logger.error('Unexpected Server Error', {
       message: error.message,
       stack: error.stack,
       ...userContext
@@ -43,7 +43,7 @@ const errorHandler = (loggerInstance = logger) => (error, req, res, _next) => {
       error.message.toLowerCase().includes('injection') ||
       error.message.toLowerCase().includes('xss')
     )) {
-      loggerInstance.logSecurityEvent('potential_attack_detected', 'error', {
+      logger.logSecurityEvent('potential_attack_detected', 'error', {
         errorMessage: error.message,
         ...userContext
       });
