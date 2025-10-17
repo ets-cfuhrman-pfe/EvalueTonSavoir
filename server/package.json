@@ -52,7 +52,10 @@
       "./jest.setup.js"
     ],
     "testMatch": [
-      "**/__tests__/**/*.js"
+      "**/__tests__/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": [
+      "node_modules"
     ],
     "modulePathIgnorePatterns": [
       "node_modules"
