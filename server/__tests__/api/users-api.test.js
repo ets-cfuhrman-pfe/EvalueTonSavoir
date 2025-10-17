@@ -1,12 +1,39 @@
 const request = require("supertest");
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bodyParser = require("body-parser");
+
+// Mock the logger module
+const mockLogger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  child: jest.fn(),
+  logUserAction: jest.fn(),
+  logApiRequest: jest.fn(),
+  logSecurityEvent: jest.fn(),
+  logDatabaseOperation: jest.fn(),
+};
+
+jest.mock('../../config/logger', () => mockLogger);
+
+const {
+  HTTP_STATUS,
+  TEST_IDS,
+  TEST_USERS,
+  TEST_DATA,
+  USER_MESSAGES,
+  createBaseApp,
+  generateAuthToken,
+  createMockUserModel,
+  createTestUser,
+  validationConstants,
+  COMMON_MESSAGES,
+} = require("../setup");
 
 // Import the actual components
 const UsersController = require("../../controllers/users");
 const jwtMiddleware = require("../../middleware/jwtToken");
 const errorHandler = require("../../middleware/errorHandler");
+const { requestIdMiddleware } = require("../../config/httpLogger");
 const {
   validateUserRegistration,
   validateUserLogin,
@@ -15,70 +42,10 @@ const {
 } = require("../../middleware/validation");
 const asyncHandler = require("../../routers/routerUtils");
 
-// Import validation constants
-const validationConstants = require("../../shared/validationConstants.json");
-
-// Mock the database model
-const mockUsersModel = {
-  register: jest.fn(),
-  login: jest.fn(),
-  resetPassword: jest.fn(),
-  changePassword: jest.fn(),
-  delete: jest.fn(),
-};
-
-// Mock emailer
-jest.mock("../../config/email.js", () => ({
-  registerConfirmation: jest.fn(),
-  newPasswordConfirmation: jest.fn(),
-}));
-
-// Mock logger
-jest.mock("../../config/logger", () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  child: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-  logUserAction: jest.fn(),
-  logApiRequest: jest.fn(),
-  logSecurityEvent: jest.fn(),
-  logDatabaseOperation: jest.fn(),
-}));
-
-// Import the mocked logger
-const logger = require("../../config/logger");
-
-// Import request ID middleware
-const { requestIdMiddleware } = require("../../config/httpLogger");
-
 // Create test app with manual routing
 const createTestApp = () => {
-  const app = express();
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-
-  // Add request ID middleware
-  app.use(requestIdMiddleware);
-
-  // Mock logging middleware
-  app.use((req, res, next) => {
-    req.logAction = (action, details) => {
-      if (req.user) {
-        logger.logUserAction(req.user.userId, req.user.email, action, details);
-      } else {
-        logger.warn(`Action attempted without authentication: ${action}`, details);
-      }
-    };
-    req.logSecurity = (event, level, details) => logger.logSecurityEvent(event, level, details);
-    req.logDbOperation = (operation, collection, duration, success, details) => logger.logDatabaseOperation(operation, collection, duration, success, details);
-    next();
-  });
+  const app = createBaseApp(requestIdMiddleware, mockLogger);
+  const mockUsersModel = createMockUserModel();
 
   // Create controller instance with mock model
   const usersController = new UsersController(mockUsersModel);
@@ -115,29 +82,29 @@ const createTestApp = () => {
   // Add error handler
   app.use(errorHandler);
 
-  return app;
+  return { app, mockUsersModel };
 };
 
 describe("Users API Integration Tests", () => {
   let app;
+  let mockUsersModel;
   let authToken;
-  const testUser = {
-    email: "test@example.com",
-    userId: "user123",
-    roles: ["user"],
-  };
+
+  const testUser = createTestUser();
 
   beforeAll(() => {
     // Set up JWT secret for testing
     process.env.JWT_SECRET = "test-secret-key";
 
     // Create auth token for testing
-    authToken = jwt.sign(testUser, process.env.JWT_SECRET);
+    authToken = generateAuthToken(testUser);
   });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    app = createTestApp();
+    const testSetup = createTestApp();
+    app = testSetup.app;
+    mockUsersModel = testSetup.mockUsersModel;
   });
 
   describe("POST /api/user/register", () => {
@@ -147,131 +114,131 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123",
-          username: "newuser"
+          email: TEST_DATA.USER.VALID.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toEqual({
-        message: "Utilisateur créé avec succès.",
+        message: USER_MESSAGES.SUCCESS.CREATED,
       });
 
       expect(mockUsersModel.register).toHaveBeenCalledWith(
-        "newuser@example.com",
-        "ValidPass123"
+        TEST_DATA.USER.VALID.email,
+        TEST_DATA.USER.VALID.password
       );
 
       // Verify logging
-      expect(logger.logDatabaseOperation).toHaveBeenCalledWith(
+      expect(mockLogger.logDatabaseOperation).toHaveBeenCalledWith(
         'insert',
         'users',
         expect.any(Number),
         true,
-        { email: 'newuser@example.com' }
+        { email: TEST_DATA.USER.VALID.email }
       );
 
-      expect(logger.warn).toHaveBeenCalledWith(
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         'Action attempted without authentication: user_register',
         expect.objectContaining({
-          email: 'newuser@example.com',
+          email: TEST_DATA.USER.VALID.email,
           registrationMethod: 'email',
           dbOperationTime: expect.stringMatching(/^\d+ms$/)
         })
       );
     });
 
-    it("should return 400 when email is missing", async () => {
+    it("should return BAD_REQUEST when email is missing", async () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          password: "ValidPass123",
-          username: "newuser"
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Email requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_REQUIRED);
     });
 
 
-    it("should return 400 when username is missing", async () => {
+    it("should return BAD_REQUEST when username is missing", async () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123"
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Nom d'utilisateur requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_REQUIRED);
     });
 
-    it("should return 400 for invalid email format", async () => {
+    it("should return BAD_REQUEST for invalid email format", async () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "invalid-email",
-          password: "ValidPass123",
-          username: "newuser"
+          email: TEST_DATA.USER.INVALID.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
 
-    it("should return 400 for username too short", async () => {
+    it("should return BAD_REQUEST for username too short", async () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123",
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
           username: "a"
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_INVALID);
     });
 
-    it("should return 400 for username with invalid characters", async () => {
+    it("should return BAD_REQUEST for username with invalid characters", async () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123",
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
           username: "user@name"
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_INVALID);
     });
 
-    it("should return 400 for email too long", async () => {
-      const longEmail = "a".repeat(62) + "@example.com"; // 64 chars total
+    it("should return BAD_REQUEST for email too long", async () => {
+      const longEmail = "a".repeat(validationConstants.user.email.maxLength + 1) + "@example.com";
       const response = await request(app)
         .post("/api/user/register")
         .send({
           email: longEmail,
-          password: "ValidPass123",
-          username: "newuser"
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
-    it("should return 400 for username too long", async () => {
+    it("should return BAD_REQUEST for username too long", async () => {
       const longUsername = "a".repeat(validationConstants.user.username.maxLength + 1);
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123",
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
           username: longUsername
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_INVALID);
     });
 
     it("should accept valid registration data", async () => {
@@ -280,13 +247,13 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "valid@example.com",
-          password: "ValidPass123",
-          username: "validuser"
+          email: TEST_DATA.USER.VALID.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_DATA.USER.VALID_USERNAME.username
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should accept usernames with commas and spaces", async () => {
@@ -295,13 +262,13 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "newuser@example.com",
-          password: "ValidPass123",
-          username: "Test, Use Name"
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_DATA.USER.VALID_USERNAME.username + ", AnotherName"
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should accept usernames with accented characters", async () => {
@@ -311,12 +278,12 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/register")
         .send({
           email: "gerard@example.com",
-          password: "ValidPass123",
+          password: TEST_DATA.USER.VALID.password,
           username: "Gérard"
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should accept usernames with various accents", async () => {
@@ -326,12 +293,12 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/register")
         .send({
           email: "francois@example.com",
-          password: "ValidPass123",
+          password: TEST_DATA.USER.VALID.password,
           username: "François Müller Châteauneuf"
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should handle minimum valid lengths", async () => {
@@ -340,13 +307,13 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/register")
         .send({
-          email: "ab@c.de", // minimum email
-          password: "Valid123", // minimum password with uppercase, lowercase, number
-          username: "ab" // minimum username
+          email: "a".repeat(validationConstants.user.email.minLength) + "@b.com",
+          password: "A".repeat(validationConstants.user.password.minLength - 2) + "1a",
+          username: "a".repeat(validationConstants.user.username.minLength)
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
     });
 
     it("should handle maximum valid lengths", async () => {
@@ -363,64 +330,184 @@ describe("Users API Integration Tests", () => {
           password: maxPassword,
           username: maxUsername
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe("Utilisateur créé avec succès.");
+      expect(response.body.message).toBe(USER_MESSAGES.SUCCESS.CREATED);
+    });
+
+    it("should return CONFLICT when user already exists", async () => {
+      const AppError = require("../../middleware/AppError");
+      const { USER_ALREADY_EXISTS } = require("../../constants/errorCodes");
+      
+      mockUsersModel.register.mockRejectedValue(new AppError(USER_ALREADY_EXISTS));
+
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: TEST_DATA.USER.VALID.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: "existinguser"
+        })
+        .expect(HTTP_STATUS.CONFLICT);
+
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.ALREADY_EXISTS);
+    });
+
+    it("should return INTERNAL_ERROR when database connection fails during registration", async () => {
+      mockUsersModel.register.mockRejectedValue(new Error("Database connection failed"));
+
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: TEST_DATA.USER.VALID.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
+        })
+        .expect(HTTP_STATUS.INTERNAL_ERROR);
+
+      expect(response.body.message).toBe("Une erreur interne s'est produite.");
+    });
+
+    it("should prevent SQL injection in email field", async () => {
+      const sqlInjectionEmail = "test@example.com'; DROP TABLE users; --";
+      
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: sqlInjectionEmail,
+          password: TEST_DATA.USER.VALID.password,
+          username: TEST_USERS.DEFAULT.userId
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
+    });
+
+    it("should prevent XSS in username field", async () => {
+      const xssUsername = "<script>alert('xss')</script>";
+      
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: xssUsername
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_INVALID);
+    });
+
+    it("should prevent SQL injection in username field", async () => {
+      const sqlInjectionUsername = "user'; SELECT * FROM users; --";
+      
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password,
+          username: sqlInjectionUsername
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.USERNAME_INVALID);
+    });
+
+    it("should handle empty string inputs", async () => {
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: "",
+          password: "",
+          username: ""
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      expect(response.body.message).toBe("Données invalides: Email requis, Nom d'utilisateur requis");
+    });
+
+    it("should handle whitespace-only inputs", async () => {
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: "   ",
+          password: "   ",
+          username: "   "
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide, Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces");
+    });
+
+    it("should handle extremely long inputs", async () => {
+      const extremelyLongInput = "a".repeat(10000);
+      
+      const response = await request(app)
+        .post("/api/user/register")
+        .send({
+          email: extremelyLongInput + "@example.com",
+          password: TEST_DATA.USER.VALID.password,
+          username: extremelyLongInput
+        })
+        .expect(HTTP_STATUS.BAD_REQUEST);
+
+      // Should fail validation due to length limits
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
     });
   });
 
   describe("POST /api/user/login", () => {
     it("should login user successfully", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
+      const mockUser = { _id: TEST_IDS.USER, email: TEST_USERS.DEFAULT.email };
       mockUsersModel.login.mockResolvedValue(mockUser);
 
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          email: "test@example.com",
-          password: "ValidPass123"
+          email: TEST_DATA.USER.VALID_LOGIN.email,
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toHaveProperty("token");
       expect(mockUsersModel.login).toHaveBeenCalledWith(
-        "test@example.com",
-        "ValidPass123"
+        TEST_DATA.USER.VALID_LOGIN.email,
+        TEST_DATA.USER.VALID_LOGIN.password
       );
     });
 
-    it("should return 400 when email is missing", async () => {
+    it("should return BAD_REQUEST when email is missing", async () => {
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          password: "ValidPass123"
+          password: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Email requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_REQUIRED);
     });
 
-    it("should return 400 when password is missing", async () => {
+    it("should return BAD_REQUEST when password is missing", async () => {
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          email: "test@example.com"
+          email: TEST_USERS.DEFAULT.email
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Mot de passe requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.PASSWORD_REQUIRED);
     });
 
-    it("should return 400 for invalid email format", async () => {
+    it("should return BAD_REQUEST for invalid email format", async () => {
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          email: "invalid-email",
-          password: "ValidPass123"
+          email: TEST_DATA.USER.INVALID.email,
+          password: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
     it("should return 401 for invalid credentials", async () => {
@@ -429,25 +516,25 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          email: "test@example.com",
+          email: TEST_USERS.DEFAULT.email,
           password: "wrongpassword"
         })
-        .expect(401);
+        .expect(HTTP_STATUS.UNAUTHORIZED);
 
-      expect(response.body.message).toBe("L'email et le mot de passe ne correspondent pas.");
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.INVALID_CREDENTIALS);
     });
 
     it("should accept valid login credentials", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
+      const mockUser = { _id: TEST_IDS.USER, email: TEST_USERS.DEFAULT.email };
       mockUsersModel.login.mockResolvedValue(mockUser);
 
       const response = await request(app)
         .post("/api/user/login")
         .send({
-          email: "test@example.com",
-          password: "ValidPass123"
+          email: TEST_DATA.USER.VALID_LOGIN.email,
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toHaveProperty("token");
     });
@@ -460,54 +547,67 @@ describe("Users API Integration Tests", () => {
       const response = await request(app)
         .post("/api/user/reset-password")
         .send({
-          email: "test@example.com"
+          email: TEST_USERS.DEFAULT.email
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toEqual({
-        message: "Nouveau mot de passe envoyé par courriel.",
+        message: USER_MESSAGES.SUCCESS.PASSWORD_RESET,
       });
 
-      expect(mockUsersModel.resetPassword).toHaveBeenCalledWith("test@example.com");
+      expect(mockUsersModel.resetPassword).toHaveBeenCalledWith(TEST_USERS.DEFAULT.email);
     });
 
-    it("should return 400 when email is missing", async () => {
+    it("should return BAD_REQUEST when email is missing", async () => {
       const response = await request(app)
         .post("/api/user/reset-password")
         .send({})
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Email requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_REQUIRED);
     });
 
-    it("should return 400 for invalid email format", async () => {
+    it("should return BAD_REQUEST for invalid email format", async () => {
       const response = await request(app)
         .post("/api/user/reset-password")
         .send({
-          email: "invalid-email"
+          email: TEST_DATA.USER.INVALID.email
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
-    it("should return 500 when password reset fails", async () => {
+    it("should return 404 when user does not exist", async () => {
       mockUsersModel.resetPassword.mockResolvedValue(null);
 
       const response = await request(app)
         .post("/api/user/reset-password")
         .send({
-          email: "test@example.com"
+          email: "nonexistent@example.com"
         })
-        .expect(500);
+        .expect(HTTP_STATUS.INTERNAL_ERROR); 
 
-      expect(response.body.message).toBe("Une erreur s'est produite lors de la création d'un nouveau mot de passe.");
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.PASSWORD_RESET_FAILED);
+    });
+
+    it("should return INTERNAL_ERROR when password reset fails", async () => {
+      mockUsersModel.resetPassword.mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/user/reset-password")
+        .send({
+          email: TEST_USERS.DEFAULT.email
+        })
+        .expect(HTTP_STATUS.INTERNAL_ERROR);
+
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.PASSWORD_RESET_FAILED);
     });
   });
 
   describe("POST /api/user/change-password", () => {
     it("should change password successfully", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
+      const mockUser = { _id: TEST_IDS.USER, email: TEST_USERS.DEFAULT.email };
       mockUsersModel.login.mockResolvedValue(mockUser);
       mockUsersModel.changePassword.mockResolvedValue(true);
 
@@ -515,84 +615,84 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          oldPassword: "OldPass123",
-          newPassword: "NewPass123"
+          email: TEST_USERS.DEFAULT.email,
+          oldPassword: TEST_DATA.USER.VALID_LOGIN.password,
+          newPassword: TEST_DATA.USER.VALID.password
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toEqual({
-        message: "Mot de passe changé avec succès.",
+        message: USER_MESSAGES.SUCCESS.PASSWORD_CHANGED,
       });
 
-      expect(mockUsersModel.login).toHaveBeenCalledWith("test@example.com", "OldPass123");
-      expect(mockUsersModel.changePassword).toHaveBeenCalledWith("test@example.com", "NewPass123");
+      expect(mockUsersModel.login).toHaveBeenCalledWith(TEST_USERS.DEFAULT.email, TEST_DATA.USER.VALID_LOGIN.password);
+      expect(mockUsersModel.changePassword).toHaveBeenCalledWith(TEST_USERS.DEFAULT.email, TEST_DATA.USER.VALID.password);
     });
 
     it("should return 401 when not authenticated", async () => {
       const response = await request(app)
         .post("/api/user/change-password")
         .send({
-          email: "test@example.com",
+          email: TEST_USERS.DEFAULT.email,
           oldPassword: "OldPass123",
           newPassword: "NewPass123"
         })
-        .expect(401);
+        .expect(HTTP_STATUS.UNAUTHORIZED);
 
-      expect(response.body.message).toBe("Accès refusé. Aucun jeton fourni.");
+      expect(response.body.message).toBe(COMMON_MESSAGES.AUTH.ACCESS_DENIED);
     });
 
-    it("should return 400 when email is missing", async () => {
+    it("should return BAD_REQUEST when email is missing", async () => {
       const response = await request(app)
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          oldPassword: "OldPass123",
-          newPassword: "NewPass123"
+          oldPassword: TEST_DATA.USER.VALID_LOGIN.password,
+          newPassword: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Email requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_REQUIRED);
     });
 
-    it("should return 400 when oldPassword is missing", async () => {
+    it("should return BAD_REQUEST when oldPassword is missing", async () => {
       const response = await request(app)
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          newPassword: "NewPass123"
+          email: TEST_USERS.DEFAULT.email,
+          newPassword: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Ancien mot de passe requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.OLD_PASSWORD_REQUIRED);
     });
 
-    it("should return 400 when newPassword is missing", async () => {
+    it("should return BAD_REQUEST when newPassword is missing", async () => {
       const response = await request(app)
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          oldPassword: "OldPass123"
+          email: TEST_USERS.DEFAULT.email,
+          oldPassword: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Nouveau mot de passe requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.NEW_PASSWORD_REQUIRED);
     });
 
-    it("should return 400 for invalid email format", async () => {
+    it("should return BAD_REQUEST for invalid email format", async () => {
       const response = await request(app)
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "invalid-email",
-          oldPassword: "OldPass123",
-          newPassword: "NewPass123"
+          email: TEST_DATA.USER.INVALID.email,
+          oldPassword: TEST_DATA.USER.VALID_LOGIN.password,
+          newPassword: TEST_DATA.USER.VALID.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
     it("should return 401 for incorrect old password", async () => {
@@ -602,37 +702,19 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          oldPassword: "WrongOldPass",
-          newPassword: "NewPass123"
+          email: TEST_USERS.DEFAULT.email,
+          oldPassword: "wrongpassword",
+          newPassword: TEST_DATA.USER.VALID.password
         })
-        .expect(401);
+        .expect(HTTP_STATUS.UNAUTHORIZED);
 
-      expect(response.body.message).toBe("L'email et le mot de passe ne correspondent pas.");
-    });
-
-    it("should return 500 when password change fails", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
-      mockUsersModel.login.mockResolvedValue(mockUser);
-      mockUsersModel.changePassword.mockResolvedValue(null);
-
-      const response = await request(app)
-        .post("/api/user/change-password")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({
-          email: "test@example.com",
-          oldPassword: "OldPass123",
-          newPassword: "NewPass123"
-        })
-        .expect(500);
-
-      expect(response.body.message).toBe("Une erreur s'est produite lors de la mise à jours du mot de passe.");
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.INVALID_CREDENTIALS);
     });
   });
 
   describe("POST /api/user/delete-user", () => {
     it("should delete user successfully", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
+      const mockUser = { _id: TEST_IDS.USER, email: TEST_USERS.DEFAULT.email };
       mockUsersModel.login.mockResolvedValue(mockUser);
       mockUsersModel.delete.mockResolvedValue(true);
 
@@ -640,66 +722,66 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          password: "ValidPass123"
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(200);
+        .expect(HTTP_STATUS.OK);
 
       expect(response.body).toEqual({
-        message: "Utilisateur supprimé avec succès",
+        message: USER_MESSAGES.SUCCESS.DELETED,
       });
 
-      expect(mockUsersModel.login).toHaveBeenCalledWith("test@example.com", "ValidPass123");
-      expect(mockUsersModel.delete).toHaveBeenCalledWith("test@example.com");
+      expect(mockUsersModel.login).toHaveBeenCalledWith(TEST_USERS.DEFAULT.email, TEST_DATA.USER.VALID_LOGIN.password);
+      expect(mockUsersModel.delete).toHaveBeenCalledWith(TEST_USERS.DEFAULT.email);
     });
 
     it("should return 401 when not authenticated", async () => {
       const response = await request(app)
         .post("/api/user/delete-user")
         .send({
-          email: "test@example.com",
-          password: "ValidPass123"
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID.password
         })
-        .expect(401);
+        .expect(HTTP_STATUS.UNAUTHORIZED);
 
-      expect(response.body.message).toBe("Accès refusé. Aucun jeton fourni.");
+      expect(response.body.message).toBe(COMMON_MESSAGES.AUTH.ACCESS_DENIED);
     });
 
-    it("should return 400 when email is missing", async () => {
+    it("should return BAD_REQUEST when email is missing", async () => {
       const response = await request(app)
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          password: "ValidPass123"
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Email requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_REQUIRED);
     });
 
-    it("should return 400 when password is missing", async () => {
+    it("should return BAD_REQUEST when password is missing", async () => {
       const response = await request(app)
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com"
+          email: TEST_USERS.DEFAULT.email
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: Mot de passe requis");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.PASSWORD_REQUIRED);
     });
 
-    it("should return 400 for invalid email format", async () => {
+    it("should return BAD_REQUEST for invalid email format", async () => {
       const response = await request(app)
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "invalid-email",
-          password: "ValidPass123"
+          email: TEST_DATA.USER.INVALID.email,
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(400);
+        .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body.message).toBe("Données invalides: L'adresse email doit être valide");
+      expect(response.body.message).toBe(USER_MESSAGES.VALIDATION.EMAIL_INVALID);
     });
 
     it("should return 401 for incorrect credentials", async () => {
@@ -709,16 +791,16 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          password: "WrongPass123"
+          email: TEST_USERS.DEFAULT.email,
+          password: "wrongpassword"
         })
-        .expect(401);
+        .expect(HTTP_STATUS.UNAUTHORIZED);
 
-      expect(response.body.message).toBe("L'email et le mot de passe ne correspondent pas.");
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.INVALID_CREDENTIALS);
     });
 
-    it("should return 500 when user deletion fails", async () => {
-      const mockUser = { _id: "user123", email: "test@example.com" };
+    it("should return INTERNAL_ERROR when user deletion fails", async () => {
+      const mockUser = { _id: TEST_IDS.USER, email: TEST_USERS.DEFAULT.email };
       mockUsersModel.login.mockResolvedValue(mockUser);
       mockUsersModel.delete.mockResolvedValue(null);
 
@@ -726,12 +808,12 @@ describe("Users API Integration Tests", () => {
         .post("/api/user/delete-user")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          email: "test@example.com",
-          password: "ValidPass123"
+          email: TEST_USERS.DEFAULT.email,
+          password: TEST_DATA.USER.VALID_LOGIN.password
         })
-        .expect(500);
+        .expect(HTTP_STATUS.INTERNAL_ERROR);
 
-      expect(response.body.message).toBe("Une erreur s'est produite lors de suppression de l'utilisateur.");
+      expect(response.body.message).toBe(USER_MESSAGES.ERRORS.USER_DELETION_FAILED);
     });
   });
 });
