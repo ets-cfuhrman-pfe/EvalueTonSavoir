@@ -227,8 +227,8 @@ describe("Quizzes API Integration Tests", () => {
         .post("/api/quiz/create")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          title: "Existing Quiz",
-          content: TEST_DATA.QUIZ.VALID.content,
+          title: TEST_DATA.QUIZ.EXISTING.title,
+          content: TEST_DATA.QUIZ.EXISTING.content,
           folderId: TEST_IDS.FOLDER,
         });
 
@@ -395,8 +395,8 @@ describe("Quizzes API Integration Tests", () => {
         .post("/api/quiz/create")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          title: "Concurrent Quiz",
-          content: TEST_DATA.QUIZ.VALID.content,
+          title: TEST_DATA.QUIZ.CONCURRENT.title,
+          content: TEST_DATA.QUIZ.CONCURRENT.content,
           folderId: TEST_IDS.FOLDER,
         });
 
@@ -404,8 +404,8 @@ describe("Quizzes API Integration Tests", () => {
         .post("/api/quiz/create")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
-          title: "Concurrent Quiz",
-          content: TEST_DATA.QUIZ.VALID.content,
+          title: TEST_DATA.QUIZ.CONCURRENT.title,
+          content: TEST_DATA.QUIZ.CONCURRENT.content,
           folderId: TEST_IDS.FOLDER,
         });
 
@@ -465,7 +465,7 @@ describe("Quizzes API Integration Tests", () => {
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           title: TEST_DATA.QUIZ.VALID.title,
-          content: "not an array",
+          content: TEST_DATA.QUIZ.INVALID_CONTENT.content,
           folderId: TEST_IDS.FOLDER,
         });
 
@@ -632,31 +632,31 @@ describe("Quizzes API Integration Tests", () => {
           .set("Authorization", `Bearer ${authToken}`)
           .expect(500);
 
-      expect(response.body.message).toBe("Une erreur s'est produite lors de la suppression du quiz.");
+      expect(response.body.message).toBe(DELETE_QUIZ_ERROR.message);
     });
     it("should handle content.content as an array correctly", async () => {
-      const quizId = "quiz123";
+      const quizId = TEST_IDS.QUIZ;
       
-      // Mock quiz content with content as an array (should now work correctly)
+      // Mock quiz content with content as an array
       const mockContentWithArrayContent = {
         _id: quizId,
-        title: "Test Quiz",
-        content: ["Question 1?", "Question 2?"], 
-        userId: "user123",
-        folderId: "folder123"
+        title: TEST_DATA.QUIZ.ARRAY_CONTENT.title,
+        content: TEST_DATA.QUIZ.ARRAY_CONTENT.content, 
+        userId: TEST_USERS.DEFAULT.userId,
+        folderId: TEST_IDS.FOLDER,
       };
       
-      mockQuizModel.getOwner.mockResolvedValue("user123");
+      mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
       mockQuizModel.getContent.mockResolvedValue(mockContentWithArrayContent);
       mockQuizModel.delete.mockResolvedValue(true);
 
       const response = await request(app)
         .delete(`/api/quiz/delete/${quizId}`)
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(200); // Should now succeed with the fix
+        .expect(HTTP_STATUS.OK); 
 
       expect(response.body).toEqual({
-        message: "Quiz supprimé avec succès.",
+        message: QUIZ_MESSAGES.SUCCESS.DELETED,
       });
 
       expect(mockQuizModel.getOwner).toHaveBeenCalledWith(quizId);
@@ -706,7 +706,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
+          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: TEST_DATA.QUIZ.NEW_CONTENT.content })
           .expect(404);
 
         expect(response.body.message).toBe(
@@ -722,7 +722,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
+          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: TEST_DATA.QUIZ.NEW_CONTENT.content })
           .expect(500);
 
         expect(response.body.message).toBe(
@@ -735,7 +735,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
+        .send({ newTitle: TEST_DATA.QUIZ.VALID.title, newContent: TEST_DATA.QUIZ.NEW_CONTENT.content })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -743,7 +743,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ quizId: TEST_IDS.QUIZ, newContent: "New content" })
+        .send({ quizId: TEST_IDS.QUIZ, newContent: TEST_DATA.QUIZ.NEW_CONTENT.content })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -759,7 +759,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ quizId: TEST_IDS.QUIZ, newTitle: "", newContent: "New content" })
+        .send({ quizId: TEST_IDS.QUIZ, newTitle: "", newContent: TEST_DATA.QUIZ.NEW_CONTENT.content })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -776,7 +776,7 @@ describe("Quizzes API Integration Tests", () => {
           .send({
             quizId: TEST_IDS.QUIZ,
             newTitle: longTitle,
-            newContent: "New content",
+            newContent: TEST_DATA.QUIZ.NEW_CONTENT.content,
           })
           .expect(400);
 
