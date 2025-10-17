@@ -506,12 +506,12 @@ describe("Quizzes API Integration Tests", () => {
 
     describe("GET /api/quiz/get/:quizId", () => {
       it("should return quiz content successfully", async () => {
-        const quizId = "quiz123";
+        const quizId = TEST_IDS.QUIZ;
         const mockContent = {
           _id: quizId,
           title: "Test Quiz",
-          content: "Quiz content",
-          userId: "user123",
+          content: TEST_DATA.QUIZ.VALID.content,
+          userId: TEST_USERS.DEFAULT.userId,
         };
         mockQuizModel.getContent.mockResolvedValue(mockContent);
 
@@ -528,7 +528,7 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 500 when quiz not found", async () => {
-        const quizId = "quiz123";
+        const quizId = TEST_IDS.QUIZ;
         mockQuizModel.getContent.mockResolvedValue(null);
 
         const response = await request(app)
@@ -542,12 +542,12 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 404 when user is not the owner", async () => {
-        const quizId = "quiz123";
+        const quizId = TEST_IDS.QUIZ;
         const mockContent = {
           _id: quizId,
           title: "Test Quiz",
-          content: "Quiz content",
-          userId: "otherUser",
+          content: TEST_DATA.QUIZ.VALID.content,
+          userId: TEST_USERS.OTHER.userId,
         };
         mockQuizModel.getContent.mockResolvedValue(mockContent);
 
@@ -572,8 +572,8 @@ describe("Quizzes API Integration Tests", () => {
 
     describe("DELETE /api/quiz/delete/:quizId", () => {
       it("should delete quiz successfully", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.delete.mockResolvedValue(true);
 
         const response = await request(app)
@@ -590,8 +590,8 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 404 when user is not the owner", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("otherUser");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
 
         const response = await request(app)
           .delete(`/api/quiz/delete/${quizId}`)
@@ -604,8 +604,8 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 500 when delete fails", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.delete.mockResolvedValue(false);
 
         const response = await request(app)
@@ -629,10 +629,10 @@ describe("Quizzes API Integration Tests", () => {
 
     describe("PUT /api/quiz/update", () => {
       it("should update quiz successfully", async () => {
-        const quizId = "quiz123";
+        const quizId = TEST_IDS.QUIZ;
         const newTitle = "Updated Quiz Title";
         const newContent = "Updated quiz content";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.update.mockResolvedValue(true);
 
         const response = await request(app)
@@ -654,13 +654,13 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 404 when user is not the owner", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("otherUser");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
 
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newTitle: "New Title", newContent: "New content" })
+          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
           .expect(404);
 
         expect(response.body.message).toBe(
@@ -669,14 +669,14 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 500 when update fails", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.update.mockResolvedValue(false);
 
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newTitle: "New Title", newContent: "New content" })
+          .send({ quizId, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
           .expect(500);
 
         expect(response.body.message).toBe(
@@ -689,7 +689,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ newTitle: "New Title", newContent: "New content" })
+        .send({ newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "New content" })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -697,7 +697,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ quizId: "quiz123", newContent: "New content" })
+        .send({ quizId: TEST_IDS.QUIZ, newContent: "New content" })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -705,7 +705,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ quizId: "quiz123", newTitle: "New Title" })
+        .send({ quizId: TEST_IDS.QUIZ, newTitle: TEST_DATA.QUIZ.VALID.title })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -713,22 +713,22 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-        .send({ quizId: "quiz123", newTitle: "", newContent: "New content" })
+        .send({ quizId: TEST_IDS.QUIZ, newTitle: "", newContent: "New content" })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
     });
     
     it("should return 400 for newTitle too long", async () => {
-        const longTitle = TEST_DATA.QUIZ.OVERSIZED_TITLE.content;
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        const longTitle = TEST_DATA.QUIZ.OVERSIZED_TITLE.title;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.update.mockResolvedValue(false);
 
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
           .send({
-            quizId: "quiz123",
+            quizId: TEST_IDS.QUIZ,
             newTitle: longTitle,
             newContent: "New content",
           })
@@ -741,7 +741,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId: "quiz123", newTitle: "New Title", newContent: "" })
+          .send({ quizId: TEST_IDS.QUIZ, newTitle: TEST_DATA.QUIZ.VALID.title, newContent: "" })
           .expect(400);
 
         expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -749,14 +749,14 @@ describe("Quizzes API Integration Tests", () => {
 
       it("should return 400 for newContent too long", async () => {
         const longContent = TEST_DATA.QUIZ.OVERSIZED_CONTENT.content;
-        mockQuizModel.getOwner.mockResolvedValue("user123");
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
 
         const response = await request(app)
           .put("/api/quiz/update")
           .set("Authorization", `Bearer ${authToken}`)
           .send({
-            quizId: "quiz123",
-            newTitle: "New Title",
+            quizId: TEST_IDS.QUIZ,
+            newTitle: TEST_DATA.QUIZ.VALID.title,
             newContent: longContent,
           })
           .expect(400);
@@ -767,10 +767,10 @@ describe("Quizzes API Integration Tests", () => {
 
     describe("PUT /api/quiz/move", () => {
       it("should move quiz successfully", async () => {
-        const quizId = "quiz123";
-        const newFolderId = "newFolder123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
-        mockFoldersModel.getOwner.mockResolvedValue("user123");
+        const quizId = TEST_IDS.QUIZ;
+        const newFolderId = TEST_DATA.FOLDER.VALID.title;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+        mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.move.mockResolvedValue(true);
 
         const response = await request(app)
@@ -789,13 +789,13 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 404 when user is not the quiz owner", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("otherUser");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
 
         const response = await request(app)
           .put("/api/quiz/move")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newFolderId: "newFolder123" })
+          .send({ quizId, newFolderId: TEST_DATA.FOLDER.VALID.title })
           .expect(404);
 
         expect(response.body.message).toBe(
@@ -804,14 +804,14 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 404 when user is not the folder owner", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
-        mockFoldersModel.getOwner.mockResolvedValue("otherUser");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+        mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.OTHER.userId);
 
         const response = await request(app)
           .put("/api/quiz/move")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newFolderId: "newFolder123" })
+          .send({ quizId, newFolderId: TEST_DATA.FOLDER.VALID.title })
           .expect(404);
 
         expect(response.body.message).toBe(
@@ -820,15 +820,15 @@ describe("Quizzes API Integration Tests", () => {
       });
 
       it("should return 500 when move fails", async () => {
-        const quizId = "quiz123";
-        mockQuizModel.getOwner.mockResolvedValue("user123");
-        mockFoldersModel.getOwner.mockResolvedValue("user123");
+        const quizId = TEST_IDS.QUIZ;
+        mockQuizModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
+        mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
         mockQuizModel.move.mockResolvedValue(false);
 
         const response = await request(app)
           .put("/api/quiz/move")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId, newFolderId: "newFolder123" })
+          .send({ quizId, newFolderId: TEST_DATA.FOLDER.VALID.title })
           .expect(500);
 
         expect(response.body.message).toBe(
@@ -840,7 +840,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/move")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ newFolderId: "newFolder123" })
+          .send({ newFolderId: TEST_DATA.FOLDER.VALID.title })
           .expect(400);
 
         expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -850,7 +850,7 @@ describe("Quizzes API Integration Tests", () => {
         const response = await request(app)
           .put("/api/quiz/move")
           .set("Authorization", `Bearer ${authToken}`)
-          .send({ quizId: "quiz123" })
+          .send({ quizId: TEST_IDS.QUIZ })
           .expect(400);
 
         expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -906,7 +906,7 @@ describe("Quizzes API Integration Tests", () => {
 
     it("should share quiz successfully", async () => {
       const quizId = TEST_IDS.QUIZ;
-      const email = "recipient@example.com";
+      const email = TEST_USERS.OTHER.email;
 
       const response = await request(app)
         .put("/api/quiz/Share")
@@ -923,7 +923,7 @@ describe("Quizzes API Integration Tests", () => {
       const response = await request(app)
         .put("/api/quiz/Share")
         .set("Authorization", `Bearer ${authToken}`)
-        .send({ email: "recipient@example.com" })
+        .send({ email: TEST_USERS.OTHER.email })
         .expect(400);
 
       expect(response.body.message).toBe(MISSING_REQUIRED_PARAMETER.message);
@@ -945,8 +945,8 @@ describe("Quizzes API Integration Tests", () => {
       const quizId = TEST_IDS.QUIZ;
       const mockContent = {
         _id: quizId,
-        title: "Shared Quiz Title",
-        content: "Quiz content",
+        title: TEST_DATA.QUIZ.VALID.title,
+        content: TEST_DATA.QUIZ.VALID.content,
       };
       mockQuizModel.getContent.mockResolvedValue(mockContent);
 
@@ -956,7 +956,7 @@ describe("Quizzes API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        data: "Shared Quiz Title",
+        data: TEST_DATA.QUIZ.VALID.title,
       });
 
       expect(mockQuizModel.getContent).toHaveBeenCalledWith(quizId);
@@ -982,8 +982,8 @@ describe("Quizzes API Integration Tests", () => {
       const quizId = TEST_IDS.QUIZ;
       const folderId = TEST_IDS.FOLDER;
       const mockContent = {
-        title: "Shared Quiz",
-        content: "Shared quiz content",
+        title: TEST_DATA.QUIZ.VALID.title,
+        content: TEST_DATA.QUIZ.VALID.content,
       };
       mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
       mockQuizModel.getContent.mockResolvedValue(mockContent);
@@ -1002,8 +1002,8 @@ describe("Quizzes API Integration Tests", () => {
       expect(mockFoldersModel.getOwner).toHaveBeenCalledWith(folderId);
       expect(mockQuizModel.getContent).toHaveBeenCalledWith(quizId);
       expect(mockQuizModel.create).toHaveBeenCalledWith(
-        "Shared Quiz",
-        "Shared quiz content",
+        TEST_DATA.QUIZ.VALID.title,
+        TEST_DATA.QUIZ.VALID.content,
         folderId,
         TEST_USERS.DEFAULT.userId
       );
@@ -1043,8 +1043,8 @@ describe("Quizzes API Integration Tests", () => {
     it("should return 409 when quiz already exists in folder", async () => {
       const quizId = TEST_IDS.QUIZ;
       const mockContent = {
-        title: "Shared Quiz",
-        content: "Shared quiz content",
+        title: TEST_DATA.QUIZ.VALID.title,
+        content: TEST_DATA.QUIZ.VALID.content,
       };
       mockFoldersModel.getOwner.mockResolvedValue(TEST_USERS.DEFAULT.userId);
       mockQuizModel.getContent.mockResolvedValue(mockContent);
