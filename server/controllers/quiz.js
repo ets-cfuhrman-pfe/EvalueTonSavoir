@@ -198,11 +198,12 @@ class QuizController {
 
             // Create pre-deletion backup with content for recovery
             if (req.logger && content) {
+                const contentString = Array.isArray(content.content) ? content.content.join('\n\n') : String(content.content || '');
                 req.logger.info('Quiz deletion backup - content preserved', {
                     quizId,
                     title: content.title,
-                    content: content.content, // Full GIFT text preserved before deletion
-                    contentHash: require('crypto').createHash('md5').update(content.content || '').digest('hex'),
+                    content: contentString, // Full GIFT text preserved before deletion
+                    contentHash: require('crypto').createHash('md5').update(contentString).digest('hex'),
                     folderId: content.folderId,
                     deletionTimestamp: new Date().toISOString(),
                     operation: 'quiz_deletion_backup'
