@@ -34,6 +34,7 @@ const TEST_USERS = {
     email: 'test@example.com',
     userId: 'user123',
     roles: ['user'],
+    password: 'password123',
   },
   OWNER: {
     email: 'owner@example.com',
@@ -124,6 +125,9 @@ const TEST_DATA = {
     VALID_USERNAME: {
       username: 'testuser',
     },
+    INVALID :{
+      email: 'invalid-email',
+    }
   },
   IMAGE: {
     VALID: {
@@ -135,24 +139,6 @@ const TEST_DATA = {
     MAX_SIZE: 5242880, 
     ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
-};
-
-// COMMON VALIDATION MESSAGES 
-const COMMON_MESSAGES = {
-  VALIDATION: {
-    REQUIRED_FIELD: (field) => `${field} requis`,
-    FIELD_TOO_LONG: (field, min, max) => `${field} doit contenir entre ${min} et ${max} caractères`,
-    INVALID_FORMAT: (field) => `Format ${field} invalide`,
-    SUCCESSFUL_UPDATE: "mis à jour avec succès",
-  },
-  AUTH: {
-    ACCESS_DENIED: "Accès refusé. Aucun jeton fourni.",
-    INVALID_TOKEN: "Jeton invalide.",
-  },
-  GENERIC: {
-    OPERATION_SUCCESS: (operation) => `${operation} avec succès.`,
-    OPERATION_FAILED: (operation) => `Échec de ${operation}.`,
-  }
 };
 
 // ERROR CONSTANTS
@@ -173,6 +159,26 @@ const {
   ROOM_ALREADY_EXISTS,
   UPDATE_ROOM_ERROR,
 } = require('../../constants/errorCodes');
+
+
+// COMMON VALIDATION MESSAGES 
+const COMMON_MESSAGES = {
+  VALIDATION: {
+    REQUIRED_FIELD: (field) => `${field} requis`,
+    FIELD_TOO_LONG: (field, min, max) => `${field} doit contenir entre ${min} et ${max} caractères`,
+    INVALID_FORMAT: (field) => `Format ${field} invalide`,
+    SUCCESSFUL_UPDATE: "mis à jour avec succès",
+  },
+  AUTH: {
+    ACCESS_DENIED: "Accès refusé. Aucun jeton fourni.",
+    INVALID_TOKEN: "Jeton invalide.",
+  },
+  GENERIC: {
+    OPERATION_SUCCESS: (operation) => `${operation} avec succès.`,
+    OPERATION_FAILED: (operation) => `Échec de ${operation}.`,
+  }
+};
+
 
 // QUIZ-SPECIFIC MESSAGES
 const QUIZ_MESSAGES = {
@@ -217,6 +223,31 @@ const ROOM_MESSAGES = {
   }
 };
 
+// USER-SPECIFIC MESSAGES
+const USER_MESSAGES = {
+  SUCCESS: {
+    CREATED: "Utilisateur créé avec succès.",
+    PASSWORD_RESET: "Nouveau mot de passe envoyé par courriel.",
+    PASSWORD_CHANGED: "Mot de passe changé avec succès.",
+    DELETED: "Utilisateur supprimé avec succès",
+  },
+  VALIDATION: {
+    EMAIL_REQUIRED: "Données invalides: Email requis",
+    USERNAME_REQUIRED: "Données invalides: Nom d'utilisateur requis",
+    EMAIL_INVALID: "Données invalides: L'adresse email doit être valide",
+    USERNAME_INVALID: "Données invalides: Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des virgules et des espaces",
+    PASSWORD_REQUIRED: "Données invalides: Mot de passe requis",
+    OLD_PASSWORD_REQUIRED: "Données invalides: Ancien mot de passe requis",
+    NEW_PASSWORD_REQUIRED: "Données invalides: Nouveau mot de passe requis",
+  },
+  ERRORS: {
+    INVALID_CREDENTIALS: "L'email et le mot de passe ne correspondent pas.",
+    ALREADY_EXISTS: "L'utilisateur existe déjà.",
+    PASSWORD_RESET_FAILED: "Une erreur s'est produite lors de la création d'un nouveau mot de passe.",
+    USER_DELETION_FAILED: "Une erreur s'est produite lors de suppression de l'utilisateur.",
+  }
+};
+
 
 
 module.exports = {
@@ -227,6 +258,7 @@ module.exports = {
   COMMON_MESSAGES,
   QUIZ_MESSAGES,
   ROOM_MESSAGES,
+  USER_MESSAGES,
   AppError,
   QUIZ_ALREADY_EXISTS,
   MISSING_REQUIRED_PARAMETER,
