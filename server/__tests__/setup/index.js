@@ -22,6 +22,8 @@ const {
   GETTING_ROOM_ERROR,
   ROOM_NOT_FOUND,
   DELETE_ROOM_ERROR,
+  ROOM_ALREADY_EXISTS,
+  UPDATE_ROOM_ERROR,
   validationConstants,
 } = require('./constants');
 
@@ -72,6 +74,8 @@ module.exports = {
   GETTING_ROOM_ERROR,
   ROOM_NOT_FOUND,
   DELETE_ROOM_ERROR,
+  ROOM_ALREADY_EXISTS,
+  UPDATE_ROOM_ERROR,
   validationConstants,
 
   // Mock factories

@@ -143,6 +143,7 @@ const COMMON_MESSAGES = {
     REQUIRED_FIELD: (field) => `${field} requis`,
     FIELD_TOO_LONG: (field, min, max) => `${field} doit contenir entre ${min} et ${max} caractères`,
     INVALID_FORMAT: (field) => `Format ${field} invalide`,
+    SUCCESSFUL_UPDATE: "mis à jour avec succès",
   },
   AUTH: {
     ACCESS_DENIED: "Accès refusé. Aucun jeton fourni.",
@@ -169,6 +170,8 @@ const {
   GETTING_ROOM_ERROR,
   ROOM_NOT_FOUND,
   DELETE_ROOM_ERROR,
+  ROOM_ALREADY_EXISTS,
+  UPDATE_ROOM_ERROR,
 } = require('../../constants/errorCodes');
 
 // QUIZ-SPECIFIC MESSAGES
@@ -205,6 +208,8 @@ const ROOM_MESSAGES = {
     TITLE_LENGTH: validationConstants.room.name.errorMessage,
     ALREADY_EXISTS: "Une salle avec ce nom existe déjà",
     INVALID_DATA: "Données invalides",
+    ID_REQUIRED: "ID de la salle requis",
+    NEW_TITLE_REQUIRED: "Nouveau titre requis",
   },
   ERRORS: {
     NOT_FOUND: "Salle non trouvée.",
@@ -235,5 +240,7 @@ module.exports = {
   GETTING_ROOM_ERROR,
   ROOM_NOT_FOUND,
   DELETE_ROOM_ERROR,
+  ROOM_ALREADY_EXISTS,
+  UPDATE_ROOM_ERROR,
   validationConstants,
 };
