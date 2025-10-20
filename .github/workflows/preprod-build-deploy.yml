@@ -1,4 +1,4 @@
-name: Pre-Prod Build and Deploy
+name: Pre-Prod Build
 
 on:
   push:
@@ -118,50 +118,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy-to-preprod:
-    needs: [build-frontend, build-backend, build-router]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev-preprod'
-    steps:
-      - name: Checkout (for docker-compose file)
-        uses: actions/checkout@v4
-      
-      - name: Copy docker-compose-preprod.yaml to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "docker-compose-preprod.yaml"
-          target: "/opt/EvalueTonSavoir/"
-      
-      - name: Deploy to Pre-Prod Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            set -euo pipefail
-            cd /opt/EvalueTonSavoir
-            
-            # Login to GitHub Container Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Pull the latest preprod images
-            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-frontend:preprod-latest
-            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-backend:preprod-latest
-            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-router:preprod-latest
-            
-            # Stop current containers
-            docker compose -f docker-compose-preprod.yaml down
-            
-            # Start with new images
-            docker compose -f docker-compose-preprod.yaml up -d
-            
-            # Clean up old images
-            docker system prune -f
-            
-            # Show running containers
-            docker compose -f docker-compose-preprod.yaml ps
