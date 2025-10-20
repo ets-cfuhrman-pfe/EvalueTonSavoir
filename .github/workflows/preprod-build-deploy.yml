@@ -126,18 +126,18 @@ jobs:
       - name: Copy docker-compose-preprod.yaml to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.PREPROD_HOST }}
-          username: ${{ secrets.PREPROD_USER }}
-          key: ${{ secrets.PREPROD_SSH_KEY }}
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "docker-compose-preprod.yaml"
           target: "/opt/EvalueTonSavoir/"
       
       - name: Deploy to Pre-Prod Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.PREPROD_HOST }}
-          username: ${{ secrets.PREPROD_USER }}
-          key: ${{ secrets.PREPROD_SSH_KEY }}
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             # Navigate to the deployment directory
             cd /opt/EvalueTonSavoir
