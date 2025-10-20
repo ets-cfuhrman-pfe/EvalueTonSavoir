@@ -52,6 +52,17 @@ const authRouter = require('./routers/auth.js')
 // Setup environment
 dotenv.config();
 
+// Load auth config early for session secret
+const AuthConfig = require('./config/auth.js');
+const authConfigInstance = new AuthConfig();
+let authConfig;
+try {
+  authConfig = authConfigInstance.loadConfig();
+} catch (error) {
+  logger.warn('Failed to load auth config for session secret, using defaults', { error: error.message });
+  authConfig = {};
+}
+
 // Setup urls from configs
 const use_ports = (process.env['USE_PORTS'] || 'false').toLowerCase() == "true"
 process.env['FRONTEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['FRONTEND_PORT']}`:"")
@@ -113,7 +124,7 @@ app.use('/api/auth', authRouter);
 // Add Auths methods
 const session = require('express-session');
 app.use(session({
-  secret: process.env['SESSION_Secret'],
+  secret: authConfig.auth?.simpleauth?.SESSION_SECRET || process.env['SESSION_Secret'] || 'lookMomImQuizzing',
   resave: false,
   saveUninitialized: false,
   cookie: { secure: process.env.NODE_ENV === 'production' }
