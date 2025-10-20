@@ -1,0 +1,162 @@
+name: Pre-Prod Build and Deploy
+
+on:
+  push:
+    branches: [ dev-preprod ]
+  workflow_dispatch:
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata for Frontend
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-frontend
+          tags: |
+            type=ref,event=branch,prefix=preprod-
+            type=raw,value=preprod-latest
+      
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata for Backend
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-backend
+          tags: |
+            type=ref,event=branch,prefix=preprod-
+            type=raw,value=preprod-latest
+      
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-router:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata for Router
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-router
+          tags: |
+            type=ref,event=branch,prefix=preprod-
+            type=raw,value=preprod-latest
+      
+      - name: Build and push Router Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nginx
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-to-preprod:
+    needs: [build-frontend, build-backend, build-router]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev-preprod'
+    steps:
+      - name: Checkout (for docker-compose file)
+        uses: actions/checkout@v4
+      
+      - name: Copy docker-compose-preprod.yaml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PREPROD_HOST }}
+          username: ${{ secrets.PREPROD_USER }}
+          key: ${{ secrets.PREPROD_SSH_KEY }}
+          source: "docker-compose-preprod.yaml"
+          target: "/opt/EvalueTonSavoir/"
+      
+      - name: Deploy to Pre-Prod Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PREPROD_HOST }}
+          username: ${{ secrets.PREPROD_USER }}
+          key: ${{ secrets.PREPROD_SSH_KEY }}
+          script: |
+            # Navigate to the deployment directory
+            cd /opt/EvalueTonSavoir
+            
+            # Login to GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Pull the latest preprod images
+            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-frontend:preprod-latest
+            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-backend:preprod-latest
+            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-router:preprod-latest
+            
+            # Stop current containers
+            docker-compose -f docker-compose-preprod.yaml down
+            
+            # Start with new images
+            docker-compose -f docker-compose-preprod.yaml up -d
+            
+            # Clean up old images
+            docker system prune -f
+            
+            # Show running containers
+            docker-compose -f docker-compose-preprod.yaml ps
