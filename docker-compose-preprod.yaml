@@ -2,7 +2,7 @@ version: '3'
 
 services:
   frontend:
-    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-frontend:latest
+    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-frontend:preprod-latest
     container_name: frontend
     environment:
       # Define empty VITE_BACKEND_URL because it's production
@@ -16,7 +16,7 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-backend:latest
+    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-backend:preprod-latest
     container_name: backend
     ports:
       - "3000:3000"
@@ -42,7 +42,7 @@ services:
 
   # Ce conteneur sert de routeur pour assurer le bon fonctionnement de l'application
   nginx:
-    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-router:latest
+    image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-router:preprod-latest
     container_name: nginx
     ports: 
       - "80:80"
