@@ -24,12 +24,12 @@ export const LightboxWrapper: React.FC = () => {
 
   // Global function to open lightbox from DOM
   useEffect(() => {
-    (window as any).openLightboxFromDOM = (images: LightboxImage[], currentIndex: number) => {
+    (globalThis as any).openLightboxFromDOM = (images: LightboxImage[], currentIndex: number) => {
       setLightboxState({ images, currentIndex });
     };
 
     return () => {
-      delete (window as any).openLightboxFromDOM;
+      delete (globalThis as any).openLightboxFromDOM;
     };
   }, []);
 
@@ -99,9 +99,21 @@ export const LightboxWrapper: React.FC = () => {
         closeOnPullDown: true,
         closeOnPullUp: true,
       }}
+      // Disable swipe gestures when there's only one image
+      carousel={{
+        finite: lightboxState.images.length <= 1,
+        ...(lightboxState.images.length <= 1 && {
+          preload: 0,
+          padding: 0,
+          spacing: 0
+        })
+      }}
       render={{
         iconZoomIn: () => <ZoomIn className="lightbox-zoom-icon" />,
         iconZoomOut: () => <ZoomOut className="lightbox-zoom-icon" />,
+        // Hide navigation buttons when there's only one image
+        iconPrev: lightboxState.images.length <= 1 ? () => null : undefined,
+        iconNext: lightboxState.images.length <= 1 ? () => null : undefined,
       }}
     />
   );
