@@ -23,8 +23,8 @@ EXPOSE 80 4400
 
 # Create startup script that runs both nginx and the backend
 RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'echo "Starting nginx..."' >> /start.sh && \
-    echo 'nginx -g "daemon on;"' >> /start.sh && \
+    echo 'echo "Starting nginx in background..."' >> /start.sh && \
+    echo 'nginx -g "daemon off;" &' >> /start.sh && \
     echo 'echo "Starting backend server..."' >> /start.sh && \
     echo 'exec npm run start' >> /start.sh && \
     chmod +x /start.sh
