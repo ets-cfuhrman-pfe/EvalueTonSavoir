@@ -706,7 +706,7 @@ const ManageRoomV2: React.FC = () => {
                                 <Box>
                                     {quiz?.title && (
                                         <Typography variant="h4" component="h1" fontWeight="bold" color="primary">
-                                            {quiz.title}
+                                            {formattedRoomName} : {quiz.title}
                                         </Typography>
                                     )}
                                 </Box>

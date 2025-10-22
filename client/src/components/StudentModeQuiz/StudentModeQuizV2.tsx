@@ -18,6 +18,7 @@ interface StudentModeQuizV2Props {
     submitAnswer: (_answer: AnswerType, _idQuestion: number) => void;
     disconnectWebSocket: () => void;
     studentName?: string;
+    roomName?: string;
     quizTitle?: string;
     quizCompleted?: boolean;
 }
@@ -28,6 +29,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     submitAnswer,
     disconnectWebSocket,
     studentName,
+    roomName,
     quizTitle,
     quizCompleted = false
 }) => {
@@ -90,7 +92,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                     <div className="d-flex align-items-center justify-content-between">
                         {/* Left: Quiz title and navigation buttons */}
                         <div className="d-flex align-items-center gap-3 p-2">
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
+                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{roomName}: {quizTitle}</h6>}
                             <div className="d-flex gap-2 quiz-nav-buttons">
                                 <Button
                                     variant="outlined"

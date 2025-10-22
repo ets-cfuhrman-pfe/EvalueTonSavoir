@@ -20,6 +20,7 @@ interface TeacherModeQuizV2Props {
     quizCompleted?: boolean;
     questions?: QuestionType[];
     studentName?: string;
+    roomName?: string;
 }
 
 const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
@@ -31,7 +32,8 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     totalQuestions,
     quizCompleted = false,
     questions = [],
-    studentName
+    studentName,
+    roomName
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -120,7 +122,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                     <div className='d-flex align-items-center justify-content-between'>
                         {/* Left: Quiz title */}
                         <div className='d-flex align-items-center'>
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
+                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{roomName}: {quizTitle}</h6>}
                         </div>
                         
                         {/* Right: Disconnect button */}
