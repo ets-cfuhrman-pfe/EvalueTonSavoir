@@ -44,6 +44,7 @@ describe('TeacherModeQuizV2', () => {
                     submitAnswer={mockSubmitAnswer}
                     disconnectWebSocket={mockDisconnectWebSocket}
                     quizTitle="Sample Quiz"
+                    roomName="TESTROOM"
                     totalQuestions={2} />
             </MemoryRouter>
         );
@@ -51,7 +52,7 @@ describe('TeacherModeQuizV2', () => {
     });
 
     test('renders the initial question with V2 features', () => {
-        expect(screen.getByText('Sample Quiz')).toBeInTheDocument();
+        expect(screen.getByText('TESTROOM: Sample Quiz')).toBeInTheDocument();
         expect(screen.getByText('1/2')).toBeInTheDocument();
         expect(screen.getByText('Sample Question 1')).toBeInTheDocument();
         expect(screen.getByText('Option A')).toBeInTheDocument();

@@ -595,6 +595,47 @@ describe('ManageRoomV2 Component', () => {
     });
   });
 
+  describe('UI and Display', () => {
+    test('should display the room title and quiz title after launching', async () => {
+      renderComponent();
+
+      // Wait for the launch configuration screen
+      await waitFor(() => {
+        expect(screen.getByText('Options de lancement du quiz')).toBeInTheDocument();
+      });
+
+      // Select a room
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      // Click the launch button
+      const launchButton = screen.getAllByText('Lancer le quiz')[0];
+      fireEvent.click(launchButton);
+
+      // Simulate WebSocket connection and quiz launch
+      const connectCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'connect'
+      )?.[1];
+
+      if (connectCallback) {
+        connectCallback();
+      }
+
+      // Wait for the main quiz view to render after the 1s timeout for launch
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Check for the combined room and quiz title
+      await waitFor(() => {
+        // The mock room is "Room 1" and the mock quiz is "Test Quiz"
+        // The component formats the room name to uppercase.
+        const expectedTitle = 'ROOM 1 : Test Quiz';
+        expect(screen.getByText(expectedTitle, { exact: false })).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('Quiz Content Validation', () => {
     test('should handle empty quiz content', async () => {
       const emptyQuiz = { ...mockQuiz, content: [] };
