@@ -1,12 +1,10 @@
 const { MongoClient } = require('mongodb');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const envConfig = require('./environment');
 
 class DBConnection {
     constructor() {
-        this.mongoURI = process.env.MONGO_URI;
-        this.databaseName = process.env.MONGO_DATABASE;
+        this.mongoURI = envConfig.get('MONGO_URI');
+        this.databaseName = envConfig.get('MONGO_DATABASE');
         this.client = null;
         this.connection = null;
     }

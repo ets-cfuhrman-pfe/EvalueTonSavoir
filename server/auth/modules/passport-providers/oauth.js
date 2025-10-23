@@ -2,6 +2,7 @@ var OAuth2Strategy = require('passport-oauth2')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var { hasNestedValue } = require('../../../utils')
 const logger = require('../../../config/logger')
+const envConfig = require('../../../config/environment')
 
 class PassportOAuth {
     constructor(passportjs, auth_name) {
@@ -10,7 +11,7 @@ class PassportOAuth {
     }
 
     register(app, passport, endpoint, name, provider, userModel) {
-        const cb_url = `${process.env['OIDC_URL']}${endpoint}/${name}/callback`
+        const cb_url = `${envConfig.get('OIDC_URL') || envConfig.get('BACKEND_URL')}${endpoint}/${name}/callback`
         const self = this
         const scope = 'openid profile email offline_access' + ` ${provider.OAUTH_ADD_SCOPE}`;
 

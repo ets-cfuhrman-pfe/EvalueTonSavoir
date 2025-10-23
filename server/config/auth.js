@@ -1,8 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const logger = require('./logger');
+const envConfig = require('./environment');
+
 // set pathAuthConfig to './auth_config-development.json' if NODE_ENV is set to development
-const pathAuthConfig = process.env.NODE_ENV === 'development' ? './auth_config-development.json' : './auth_config.json';
+const pathAuthConfig = envConfig.get('isDevelopment') ? './auth_config-development.json' : './auth_config.json';
 
 const configPath = path.join(process.cwd(), pathAuthConfig);
 
@@ -16,7 +18,7 @@ class AuthConfig {
     try {
       logger.info(`Chargement du fichier de configuration: ${configPath}`, {
         configPath: configPath,
-        environment: process.env.NODE_ENV,
+        environment: envConfig.get('NODE_ENV'),
         module: 'auth-config'
       });
       const configData = fs.readFileSync(configPath, 'utf-8');
@@ -205,13 +207,7 @@ class AuthConfig {
 
   // Check if students must be authenticated to join a room
   getRoomsRequireAuth() {
-    const roomRequireAuth = process.env.AUTHENTICATED_ROOMS;
-
-    if (!roomRequireAuth || roomRequireAuth !== "true") {
-      return false;
-    }
-
-    return true;
+    return envConfig.get('AUTHENTICATED_ROOMS');
   }
 
 
