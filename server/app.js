@@ -1,7 +1,9 @@
 // Import API
 const express = require("express");
 const http = require("http");
-const dotenv = require('dotenv');
+
+// Import environment configuration (replaces dotenv)
+const envConfig = require('./config/environment');
 
 // Import Sockets
 const { setupWebsocket } = require("./socket/socket");
@@ -49,24 +51,19 @@ const imagesRouter = require('./routers/images.js')
 const AuthManager = require('./auth/auth-manager.js')
 const authRouter = require('./routers/auth.js')
 
-// Setup environment
-dotenv.config();
-
-// Setup urls from configs
-const use_ports = (process.env['USE_PORTS'] || 'false').toLowerCase() == "true"
-process.env['FRONTEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['FRONTEND_PORT']}`:"")
-process.env['BACKEND_URL'] = process.env['SITE_URL']  + (use_ports ? `:${process.env['PORT']}`:"")
-
 const errorHandler = require("./middleware/errorHandler.js");
 const logger = require('./config/logger');
 const httpLogger = require('./config/httpLogger');
 const loggingMiddleware = require('./middleware/logging');
 
+// Log environment configuration
+envConfig.logConfig();
+
 // Start app
 const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
-let isDev = process.env.NODE_ENV === 'development';
+const isDev = envConfig.get('isDevelopment');
 
 const configureServer = (httpServer, isDev) => {
   logger.info(`Configuring server with isDev: ${isDev}`);
@@ -84,7 +81,7 @@ const configureServer = (httpServer, isDev) => {
 // Start sockets (depending on the dev or prod environment)
 const server = http.createServer(app);
 
-logger.info(`Environment: ${process.env.NODE_ENV} (${isDev ? 'dev' : 'prod'})`);
+logger.info(`Environment: ${envConfig.get('NODE_ENV')} (${isDev ? 'dev' : 'prod'})`);
 
 const io = configureServer(server, isDev);
 logger.info(`Server configured with cors.origin: ${io.opts.cors.origin} and secure: ${io.opts.secure}`);
@@ -113,10 +110,10 @@ app.use('/api/auth', authRouter);
 // Add Auths methods
 const session = require('express-session');
 app.use(session({
-  secret: process.env['SESSION_Secret'],
+  secret: envConfig.get('SESSION_SECRET'),
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: { secure: envConfig.get('isProduction') }
 }));
 
 let _authManager = new AuthManager(app,null,userModel);
@@ -124,7 +121,7 @@ app.use(errorHandler);
 
 // Start server
 async function start() {
-  const port = process.env.PORT || 4400;
+  const port = envConfig.get('PORT');
 
   try {
     // Check DB connection
@@ -135,7 +132,7 @@ async function start() {
     server.listen(port, () => {
       logger.info(`Server listening on port ${port}`, {
         port,
-        environment: process.env.NODE_ENV,
+        environment: envConfig.get('NODE_ENV'),
         nodeVersion: process.version
       });
     });
