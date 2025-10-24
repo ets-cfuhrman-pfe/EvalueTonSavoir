@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}-frontend
+          images: ghcr.io/${{ github.repository }}-preprod-frontend
           tags: |
             type=ref,event=branch,prefix=preprod-
             type=raw,value=preprod-latest
@@ -67,7 +67,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}-backend
+          images: ghcr.io/${{ github.repository }}-preprod-backend
           tags: |
             type=ref,event=branch,prefix=preprod-
             type=raw,value=preprod-latest
@@ -103,7 +103,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}-router
+          images: ghcr.io/${{ github.repository }}-preprod-router
           tags: |
             type=ref,event=branch,prefix=preprod-
             type=raw,value=preprod-latest

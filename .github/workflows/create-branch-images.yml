@@ -1,12 +1,8 @@
-name: create-branch-images
+name: create-branch-images-LEGACY
+# This workflow is obsolete
+# Use preprod-build-deploy.yml instead
 on:
-  workflow_call:
-  workflow_dispatch:
-  push:
-    branches:
-      - 'dev'
-    tags:
-      - '**'
+  workflow_dispatch:  # Only allow manual trigger for emergency use
 
 jobs:
   build-frontend:
