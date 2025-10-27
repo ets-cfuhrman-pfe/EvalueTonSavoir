@@ -9,7 +9,10 @@
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "test": "jest --colors --silent",
-        "test:watch": "jest --watch"
+        "test:watch": "jest --watch",
+        "changeset": "changeset",
+        "changeset:version": "changeset version",
+        "changeset:publish": "changeset tag"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
@@ -51,6 +54,8 @@
         "@babel/preset-env": "^7.26.9",
         "@babel/preset-react": "^7.26.3",
         "@babel/preset-typescript": "^7.27.0",
+        "@changesets/changelog-github": "^0.5.1",
+        "@changesets/cli": "^2.29.7",
         "@eslint/js": "^9.24.0",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/jest-dom": "^6.6.3",
