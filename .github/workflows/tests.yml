@@ -31,20 +31,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ${{ matrix.directory }}/package-lock.json
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Process ${{ matrix.directory }}
         working-directory: ${{ matrix.directory }}
         timeout-minutes: 5
         run: |
-          echo "Installing dependencies..."
-          npm install
           echo "Running ESLint..."
           npx eslint .
           echo "Running tests..."
-          echo "::group::Installing dependencies for ${{ matrix.directory }}"
-          npm ci
-          echo "::endgroup::"
 
           echo "::group::Running ESLint"
           npx eslint . || {
