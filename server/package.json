@@ -8,10 +8,7 @@
     "start": "node app.js",
     "dev": "cross-env NODE_ENV=development nodemon app.js",
     "test": "jest",
-    "postinstall": "patch-package",
-    "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset tag"
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "",
@@ -37,8 +34,6 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.7",
     "@eslint/js": "^9.18.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.29.0",

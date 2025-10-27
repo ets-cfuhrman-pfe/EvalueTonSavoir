@@ -3,7 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": ["client", "server"],
+  "scripts": {
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
+  },
   "dependencies": {
     "axios-mock-adapter": "^2.1.0"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.7"
   }
 }
