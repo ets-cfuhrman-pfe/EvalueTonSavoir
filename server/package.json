@@ -1,5 +1,5 @@
 {
-  "name": "ets-pfe004-evaluetonsavoir-backend",
+  "name": "@evaluetonsavoir/backend",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
