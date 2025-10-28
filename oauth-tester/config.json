@@ -2,12 +2,9 @@
   "id": "test-realm",
   "realm": "EvalueTonSavoir",
   "enabled": true,
-  "loginWithEmailAllowed": true,
   "users": [
     {
       "username": "teacher",
-      "email": "teacher@example.com",
-      "emailVerified": true,
       "enabled": true,
       "credentials": [
         {
@@ -20,8 +17,6 @@
     },
     {
       "username": "student",
-      "email": "student@example.com",
-      "emailVerified": true,
       "enabled": true,
       "credentials": [
         {
