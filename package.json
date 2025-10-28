@@ -1,4 +1,17 @@
 {
+  "name": "evaluetonsavoir",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset tag"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.7"
+  },
   "dependencies": {
     "axios-mock-adapter": "^2.1.0"
   }
