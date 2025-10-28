@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main, dev-test-changeset]
+    branches: [main]
 
 permissions:
   contents: write

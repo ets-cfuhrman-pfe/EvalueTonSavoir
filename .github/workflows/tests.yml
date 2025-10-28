@@ -4,11 +4,9 @@ on:
   pull_request:
     branches:
       - main
-      - dev-test-changeset
   push:
     branches:
       - main
-      - dev-test-changeset
 
 env:
   MONGO_URI: mongodb://localhost:27017
