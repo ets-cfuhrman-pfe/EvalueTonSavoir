@@ -2,7 +2,10 @@
   "name": "evaluetonsavoir",
   "private": true,
   "version": "0.0.0",
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "changeset": "changeset",
     "changeset:version": "changeset version",
@@ -13,6 +16,7 @@
     "@changesets/cli": "^2.29.7"
   },
   "dependencies": {
-    "axios-mock-adapter": "^2.1.0"
+    "axios-mock-adapter": "^2.1.0",
+    "passport-openidconnect": "^0.1.2"
   }
 }
