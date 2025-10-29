@@ -5,12 +5,54 @@ on:
     branches: [ staging ]
   workflow_dispatch:
 
+env:
+  MONGO_URI: mongodb://localhost:27017
+  MONGO_DATABASE: evaluetonsavoir
+
 permissions:
   contents: read
   packages: write
 
 jobs:
+  lint-and-tests:
+    strategy:
+      matrix:
+        directory: [client, server]
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.directory }}/package-lock.json
+
+      - name: Install, lint, and test (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
+        run: |
+          echo "::group::Installing dependencies"
+          npm ci --ignore-scripts
+          echo "::endgroup::"
+
+          echo "::group::Running ESLint"
+          npx eslint . --max-warnings=0
+          echo "::endgroup::"
+
+          echo "::group::Running Build Step"
+          npm run build
+          echo "::endgroup::"
+
+          echo "::group::Running Tests"
+          npm test
+          echo "::endgroup::"
+
   build-frontend:
+    needs: lint-and-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,6 +90,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-backend:
+    needs: lint-and-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
