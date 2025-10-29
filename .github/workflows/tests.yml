@@ -2,11 +2,9 @@ name: Tests
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main, staging]
   push:
-    branches:
-      - main
+    branches: [main, staging]
 
 env:
   MONGO_URI: mongodb://localhost:27017
@@ -27,28 +25,23 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: ${{ matrix.directory }}/package-lock.json
 
-      - name: Process ${{ matrix.directory }}
+      - name: Install, lint, and test (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
-        timeout-minutes: 5
         run: |
-          echo "Installing dependencies..."
-          npm install
-          echo "Running ESLint..."
-          npx eslint .
-          echo "Running tests..."
-          echo "::group::Installing dependencies for ${{ matrix.directory }}"
-          npm ci
+          echo "::group::Installing dependencies"
+          npm ci --ignore-scripts
           echo "::endgroup::"
 
           echo "::group::Running ESLint"
-          npx eslint . || {
-            echo "ESLint failed with exit code $?"
-            exit 1
-          }
+          npx eslint . --max-warnings=0
+          echo "::endgroup::"
+
+          echo "::group::Running Build Step"
+          npm run build
           echo "::endgroup::"
 
           echo "::group::Running Tests"
