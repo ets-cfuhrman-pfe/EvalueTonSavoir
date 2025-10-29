@@ -48,7 +48,8 @@
         "yet-another-react-lightbox": "^3.25.0"
     },
     "overrides": {
-        "picomatch": "^4.0.3"
+        "picomatch": "^4.0.3",
+        "yaml": "^2.4.2"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.26.9",
