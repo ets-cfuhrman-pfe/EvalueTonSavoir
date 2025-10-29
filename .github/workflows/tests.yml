@@ -1,5 +1,4 @@
 name: Tests
-
 on:
   pull_request:
     branches: [main, staging]
@@ -38,6 +37,10 @@ jobs:
 
           echo "::group::Running ESLint"
           npx eslint . --max-warnings=0
+          echo "::endgroup::"
+
+          echo "::group::Running Build"
+          npm run build
           echo "::endgroup::"
 
           echo "::group::Running Tests"
