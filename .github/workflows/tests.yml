@@ -3,8 +3,6 @@ name: Tests
 on:
   pull_request:
     branches: [main, staging]
-  push:
-    branches: [main, staging]
 
 env:
   MONGO_URI: mongodb://localhost:27017
