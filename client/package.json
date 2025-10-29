@@ -47,6 +47,9 @@
         "vite-plugin-checker": "^0.9.1",
         "yet-another-react-lightbox": "^3.25.0"
     },
+    "overrides": {
+        "picomatch": "^4.0.3"
+    },
     "devDependencies": {
         "@babel/preset-env": "^7.26.9",
         "@babel/preset-react": "^7.26.3",
