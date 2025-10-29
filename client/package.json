@@ -1,7 +1,7 @@
 {
-    "name": "pfe004-evaluetonsavoir",
+    "name": "@evaluetonsavoir/frontend",
     "private": true,
-    "version": "0.0.0",
+    "version": "1.0.0",
     "type": "module",
     "scripts": {
         "dev": "cross-env MODE=development VITE_BACKEND_URL=http://localhost:4400 vite --host",
@@ -31,7 +31,7 @@
         "jest-environment-jsdom": "^29.7.0",
         "jspdf": "^3.0.1",
         "jwt-decode": "^4.0.0",
-        "katex": "^0.16.22",
+        "katex": "^0.16.25",
         "marked": "^15.0.8",
         "nanoid": "^5.1.5",
         "qrcode.react": "^4.2.0",
@@ -47,6 +47,10 @@
         "vite-plugin-checker": "^0.9.1",
         "yet-another-react-lightbox": "^3.25.0"
     },
+    "overrides": {
+        "picomatch": "^4.0.3",
+        "yaml": "^2.4.2"
+    },
     "devDependencies": {
         "@babel/preset-env": "^7.26.9",
         "@babel/preset-react": "^7.26.3",
@@ -57,7 +61,7 @@
         "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.6.1",
         "@types/jest": "^29.5.13",
-        "@types/node": "^22.14.0",
+        "@types/node": "^24.9.2",
         "@types/react": "^18.2.15",
         "@types/react-dom": "^18.2.7",
         "@types/react-latex": "^2.0.3",

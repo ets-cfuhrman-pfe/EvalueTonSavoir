@@ -161,7 +161,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
       &lt;p style="
   color: hsl(0, 0%, 0%);
 " class="present-question-stem"&gt;
-                      &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
+                      &lt;img src="https://via.placeholder.com/150" alt="Sample Image"&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
@@ -227,7 +227,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
          
   color: hsl(0, 0%, 0%);
 " for="idmocked-id"&gt;
-            &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
@@ -482,7 +482,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
          
   color: hsl(0, 0%, 0%);
 " for="idmocked-id"&gt;
-            &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
@@ -624,7 +624,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
          
   color: hsl(0, 0%, 0%);
 " for="idmocked-id"&gt;
-            &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
+            &lt;img src="https://via.placeholder.com/150" alt="Sample Image"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
   vertical-align: text-bottom;
@@ -700,7 +700,7 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
       &lt;p style="
   color: hsl(0, 0%, 0%);
 " class="present-question-stem"&gt;
-                      &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math display="block" xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span aria-hidden="true" class="katex-html"&gt;&lt;span class="base"&gt;&lt;span style="height:1.988em;vertical-align:-0.8804em;" class="strut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:1.1076em;" class="vlist"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.03588em;" class="mord mathnormal"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span style="border-bottom-width:0.04em;" class="frac-line"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.04398em;" class="mord mathnormal"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:0.8804em;" class="vlist"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+                      &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.988em;vertical-align:-0.8804em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:1.1076em;"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.04398em;"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8804em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
@@ -815,7 +815,7 @@ exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
       &lt;p style="
   color: hsl(0, 0%, 0%);
 " class="present-question-stem"&gt;
-                      &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math display="block" xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span aria-hidden="true" class="katex-html"&gt;&lt;span class="base"&gt;&lt;span style="height:1.988em;vertical-align:-0.8804em;" class="strut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:1.1076em;" class="vlist"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.03588em;" class="mord mathnormal"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span style="border-bottom-width:0.04em;" class="frac-line"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.04398em;" class="mord mathnormal"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:0.8804em;" class="vlist"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+                      &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.988em;vertical-align:-0.8804em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:1.1076em;"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mord mathnormal" style="margin-right:0.04398em;"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8804em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
