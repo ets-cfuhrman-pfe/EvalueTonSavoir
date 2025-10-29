@@ -8,7 +8,7 @@
     "start": "node app.js",
     "dev": "cross-env NODE_ENV=development nodemon app.js",
     "test": "jest",
-    "postinstall": "cd .. && patch-package --patch-dir=server/patches"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

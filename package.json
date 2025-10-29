@@ -2,7 +2,6 @@
   "name": "evaluetonsavoir",
   "private": true,
   "version": "0.0.0",
-  "workspaces": ["client", "server"],
   "scripts": {
     "changeset": "changeset",
     "changeset:version": "changeset version",
