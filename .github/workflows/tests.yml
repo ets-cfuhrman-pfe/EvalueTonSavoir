@@ -39,7 +39,7 @@ jobs:
           npx eslint . --max-warnings=0
           echo "::endgroup::"
 
-          echo "::group::Running Build"
+          echo "::group::Running Build Step"
           npm run build
           echo "::endgroup::"
 
