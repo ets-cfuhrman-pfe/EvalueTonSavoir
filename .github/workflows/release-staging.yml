@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     # Only allow running from staging branch
     if: github.ref == 'refs/heads/staging'
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,12 +44,10 @@ jobs:
         run: |
           git config user.name "${{ secrets.GH_ORG_NAME }}"
           git config user.email "${{ secrets.GH_ORG_EMAIL }}"
-
       - name: Install dependencies
         run: |
           cd ${{ github.event.inputs.package }}
           npm ci
-
       - name: Bump version to RC
         id: version
         run: |
@@ -67,22 +67,21 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
           echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
-
       - name: Commit version bump
         run: |
           git add ${{ github.event.inputs.package }}/package.json
           git add ${{ github.event.inputs.package }}/package-lock.json
           git commit -m "chore(${{ steps.version.outputs.PACKAGE }}): release ${{ steps.version.outputs.VERSION }} [skip ci]"
-
       - name: Create Git tag
         run: |
           git tag ${{ steps.version.outputs.TAG }}
-
+      - name: Set remote URL for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_ORG_PAT }}@github.com/ets-cfuhrman-pfe/EvalueTonSavoir.git
       - name: Push changes and tags
         run: |
           git push origin staging
           git push origin ${{ steps.version.outputs.TAG }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -116,4 +115,3 @@ jobs:
             **Branch:** staging
           prerelease: true
           draft: false
- 
