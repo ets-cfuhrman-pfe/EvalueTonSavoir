@@ -1,0 +1,203 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  changeset-version:
+    runs-on: ubuntu-latest
+    outputs:
+      has-changesets: ${{ steps.changesets.outputs.hasChangesets }}
+      published: ${{ steps.changesets.outputs.published }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies for client
+        run: cd client && npm ci
+
+      - name: Install dependencies for server
+        run: cd server && npm ci
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npx changeset version
+          publish: npx changeset tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-frontend:
+    needs: changeset-version
+    if: needs.changeset-version.outputs.published == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if frontend changed
+        id: frontend-changed
+        run: |
+          PREV_VERSION=$(git show HEAD~1:client/package.json | jq -r .version)
+          CURR_VERSION=$(git show HEAD:client/package.json | jq -r .version)
+          if [ "$PREV_VERSION" != "$CURR_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get frontend version
+        if: steps.frontend-changed.outputs.changed == 'true'
+        id: version
+        run: |
+          VERSION=$(node -p "require('./client/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        if: steps.frontend-changed.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.frontend-changed.outputs.changed == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Frontend
+        if: steps.frontend-changed.outputs.changed == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-frontend
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
+
+      - name: Build and push Frontend Docker image
+        if: steps.frontend-changed.outputs.changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./client/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release for Frontend
+        if: steps.frontend-changed.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: evaluetonsavoir-frontend-v${{ steps.version.outputs.version }}
+          name: EvalueTonSavoir Frontend v${{ steps.version.outputs.version }}
+          body: |
+            **Frontend Release**
+            
+            **Docker Usage:**
+            ```bash
+            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-frontend:${{ steps.version.outputs.version }}
+            ```
+          generate_release_notes: true
+
+  release-backend:
+    needs: changeset-version
+    if: needs.changeset-version.outputs.published == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if backend changed
+        id: backend-changed
+        run: |
+          PREV_VERSION=$(git show HEAD~1:server/package.json | jq -r .version)
+          CURR_VERSION=$(git show HEAD:server/package.json | jq -r .version)
+          if [ "$PREV_VERSION" != "$CURR_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get backend version
+        if: steps.backend-changed.outputs.changed == 'true'
+        id: version
+        run: |
+          VERSION=$(node -p "require('./server/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        if: steps.backend-changed.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.backend-changed.outputs.changed == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Backend
+        if: steps.backend-changed.outputs.changed == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-backend
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
+
+      - name: Build and push Backend+Router Docker image (BUNDLED)
+        if: steps.backend-changed.outputs.changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./server/Dockerfile.release
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release for Backend
+        if: steps.backend-changed.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: evaluetonsavoir-backend-v${{ steps.version.outputs.version }}
+          name: EvalueTonSavoir Backend v${{ steps.version.outputs.version }}
+          body: |
+            **Backend Release** 
+            
+            **What's included:**
+            - Backend API server (Node.js)
+            - Nginx router/proxy
+            
+            **Docker Usage:**
+            ```bash
+            docker pull ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-backend:${{ steps.version.outputs.version }}
+            ```
+            
+            **Exposed Ports:**
+            - Port 80: Nginx proxy/router
+            - Port 4400: Backend API server
+          generate_release_notes: true

@@ -1,4 +1,8 @@
 {
+  "name": "evaluetonsavoir",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": ["client", "server"],
   "dependencies": {
     "axios-mock-adapter": "^2.1.0"
   }
