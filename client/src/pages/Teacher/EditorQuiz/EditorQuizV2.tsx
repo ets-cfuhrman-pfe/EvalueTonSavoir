@@ -158,18 +158,25 @@ const EditorQuizV2: React.FC = () => {
 
             setIsSaving(true);
 
+            let result;
             if (isNewQuiz) {
-                await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz créé avec succès !',
-                    severity: 'success'
-                });
+                result = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
             } else if (quiz) {
-                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                result = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+            }
+
+            if (typeof result === 'string') {
+                // Error occurred
                 setSaveNotification({
                     open: true,
-                    message: 'Quiz mis à jour avec succès !',
+                    message: result,
+                    severity: 'error'
+                });
+            } else {
+                // Success
+                setSaveNotification({
+                    open: true,
+                    message: isNewQuiz ? 'Quiz créé avec succès !' : 'Quiz mis à jour avec succès !',
                     severity: 'success'
                 });
             }
@@ -209,25 +216,31 @@ const EditorQuizV2: React.FC = () => {
 
             setIsSaving(true);
 
+            let result;
             if (isNewQuiz) {
-                await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz créé avec succès ! Redirection en cours...',
-                    severity: 'success'
-                });
+                result = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
             } else if (quiz) {
-                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz mis à jour avec succès ! Redirection en cours...',
-                    severity: 'success'
-                });
+                result = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
             }
 
-            // Navigate after successful save
+            if (typeof result === 'string') {
+                // Error occurred
+                setSaveNotification({
+                    open: true,
+                    message: result,
+                    severity: 'error'
+                });
+            } else {
+                // Success
+                setSaveNotification({
+                    open: true,
+                    message: isNewQuiz ? 'Quiz créé avec succès ! Redirection en cours...' : 'Quiz mis à jour avec succès ! Redirection en cours...',
+                    severity: 'success'
+                });
 
-            navigate('/teacher/dashboard-v2');
+                // Navigate after successful save
+                navigate('/teacher/dashboard-v2');
+            }
         } catch (error) {
             console.error('Save error:', error);
             setSaveNotification({
