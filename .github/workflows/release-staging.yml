@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     # Only allow running from staging branch
     if: github.ref == 'refs/heads/staging'
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -73,6 +75,9 @@ jobs:
       - name: Create Git tag
         run: |
           git tag ${{ steps.version.outputs.TAG }}
+      - name: Set remote URL for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_ORG_PAT }}@github.com/ets-cfuhrman-pfe/EvalueTonSavoir.git
       - name: Push changes and tags
         run: |
           git push origin staging
