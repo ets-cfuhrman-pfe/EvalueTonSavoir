@@ -11,7 +11,7 @@ import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePrevi
 import { QuizType } from '../../../Types/QuizType';
 import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Button, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert } from '@mui/material';
+import { Button, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import ImageGalleryModalV2 from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModalV2';
 
@@ -19,6 +19,8 @@ import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
 import { ENV_VARIABLES } from 'src/constants';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
+import { useAutoSave } from '../../../hooks/useAutoSave';
+import AutoSaveIndicator from '../../../components/AutoSaveIndicator/AutoSaveIndicator';
 
 interface EditQuizParams {
     id: string;
@@ -47,6 +49,21 @@ const EditorQuizV2: React.FC = () => {
         open: false,
         message: '',
         severity: 'info'
+    });
+    const [showDraftDialog, setShowDraftDialog] = useState(false);
+    const [draftToRestore, setDraftToRestore] = useState<any>(null);
+
+    // Auto-save hook
+    const { status: autoSaveStatus, lastSaved, clearDraft, restoreDraft } = useAutoSave({
+        key: `quiz-draft-${id || 'new'}`,
+        data: {
+            quizTitle,
+            selectedFolder,
+            content: value,
+            timestamp: Date.now()
+        },
+        enabled: !isSaving, // Disable auto-save while manually saving
+        debounceMs: 2000 // Auto-save 2 seconds after last change
     });
 
     const scrollToTop = () => {
@@ -84,6 +101,30 @@ const EditorQuizV2: React.FC = () => {
 
         fetchData();
     }, []);
+
+    // Check for draft on mount (only for new quizzes or after quiz data is loaded)
+    useEffect(() => {
+        const checkForDraft = () => {
+            const draft = restoreDraft();
+            
+            // Only show draft dialog if:
+            // 1. A draft exists
+            // 2. The draft has actual content
+            // 3. For new quizzes OR for existing quizzes after they've loaded
+            if (draft && (draft.content.trim() || draft.quizTitle.trim())) {
+                if (isNewQuiz || (!isLoading && quiz)) {
+                    setDraftToRestore(draft);
+                    setShowDraftDialog(true);
+                }
+            }
+        };
+
+        // For new quizzes, check immediately
+        // For existing quizzes, wait until quiz data is loaded
+        if (isNewQuiz || (!isLoading && quiz)) {
+            checkForDraft();
+        }
+    }, [isNewQuiz, isLoading, quiz]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -135,6 +176,27 @@ const EditorQuizV2: React.FC = () => {
         setFilteredValue(linesArray);
     }
 
+    const handleRestoreDraft = () => {
+        if (draftToRestore) {
+            setQuizTitle(draftToRestore.quizTitle);
+            setSelectedFolder(draftToRestore.selectedFolder);
+            setValue(draftToRestore.content);
+            handleUpdatePreview(draftToRestore.content);
+            setShowDraftDialog(false);
+            setSaveNotification({
+                open: true,
+                message: 'Brouillon restauré avec succès',
+                severity: 'success'
+            });
+        }
+    };
+
+    const handleDiscardDraft = () => {
+        clearDraft();
+        setShowDraftDialog(false);
+        setDraftToRestore(null);
+    };
+
     const handleQuizSave = async () => {
         try {
             // check if everything is there
@@ -160,6 +222,7 @@ const EditorQuizV2: React.FC = () => {
 
             if (isNewQuiz) {
                 await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                clearDraft(); // Clear draft after successful save
                 setSaveNotification({
                     open: true,
                     message: 'Quiz créé avec succès !',
@@ -167,6 +230,7 @@ const EditorQuizV2: React.FC = () => {
                 });
             } else if (quiz) {
                 await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                clearDraft(); // Clear draft after successful save
                 setSaveNotification({
                     open: true,
                     message: 'Quiz mis à jour avec succès !',
@@ -211,6 +275,7 @@ const EditorQuizV2: React.FC = () => {
 
             if (isNewQuiz) {
                 await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                clearDraft(); // Clear draft after successful save
                 setSaveNotification({
                     open: true,
                     message: 'Quiz créé avec succès ! Redirection en cours...',
@@ -218,6 +283,7 @@ const EditorQuizV2: React.FC = () => {
                 });
             } else if (quiz) {
                 await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                clearDraft(); // Clear draft after successful save
                 setSaveNotification({
                     open: true,
                     message: 'Quiz mis à jour avec succès ! Redirection en cours...',
@@ -276,6 +342,7 @@ const EditorQuizV2: React.FC = () => {
                         <div className="d-flex justify-content-between align-items-center px-4">
                             <div className="d-flex align-items-center gap-3">
                                 <h1 className="h3 mb-0 text-dark fw-bold">Éditeur de quiz</h1>
+                                <AutoSaveIndicator status={autoSaveStatus} lastSaved={lastSaved} />
                             </div>
 
                             <div className="d-flex align-items-center gap-3">
@@ -470,6 +537,39 @@ const EditorQuizV2: React.FC = () => {
                         {saveNotification.message}
                     </Alert>
                 </Snackbar>
+
+                {/* Draft Restoration Dialog */}
+                <Dialog
+                    open={showDraftDialog}
+                    onClose={handleDiscardDraft}
+                    aria-labelledby="draft-dialog-title"
+                    aria-describedby="draft-dialog-description"
+                >
+                    <DialogTitle id="draft-dialog-title">
+                        Brouillon détecté
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="draft-dialog-description">
+                            Un brouillon non sauvegardé a été trouvé pour ce quiz.
+                            {draftToRestore && (
+                                <span>
+                                    <br /><br />
+                                    <strong>Dernière modification:</strong> {new Date(draftToRestore.timestamp).toLocaleString('fr-CA')}
+                                </span>
+                            )}
+                            <br /><br />
+                            Voulez-vous restaurer ce brouillon ou commencer avec une version vide ?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleDiscardDraft} color="error">
+                            Ignorer le brouillon
+                        </Button>
+                        <Button onClick={handleRestoreDraft} variant="contained" color="primary" autoFocus>
+                            Restaurer le brouillon
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         </div>
     );
