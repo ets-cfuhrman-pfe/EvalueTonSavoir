@@ -21,7 +21,7 @@ describe('ReturnButton', () => {
     test('shows confirmation modal when askConfirm is true', () => {
         render(<ReturnButton askConfirm={true} />);
         fireEvent.click(screen.getByText('Retour'));
-        const confirmButton = screen.getByTestId('modal-confirm-button');
+        const confirmButton = screen.getByTestId('confirm-btn');
         expect(confirmButton).toBeInTheDocument();
     });
 
