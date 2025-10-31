@@ -63,10 +63,12 @@ jobs:
           
           VERSION=$(node -p "require('./package.json').version")
           TAG="${PACKAGE}-v${VERSION}"
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
           echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
+          echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
       - name: Commit version bump
         run: |
           git add ${{ github.event.inputs.package }}/package.json
@@ -98,7 +100,7 @@ jobs:
           context: ./${{ github.event.inputs.package }}
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}
+          tags: ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -111,7 +113,7 @@ jobs:
             Release Candidate for ${{ steps.version.outputs.PACKAGE }}
             
             **Version:** ${{ steps.version.outputs.VERSION }}
-            **Docker Image:** `ghcr.io/${{ github.repository }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}`
+            **Docker Image:** `ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}`
             **Branch:** staging
           prerelease: true
           draft: false
