@@ -97,7 +97,7 @@ jobs:
       - name: Build & push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ github.event.inputs.package }}
+          context: .
           push: true
           platforms: linux/amd64
           tags: ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}
