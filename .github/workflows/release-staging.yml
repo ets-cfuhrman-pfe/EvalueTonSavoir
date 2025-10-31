@@ -97,7 +97,10 @@ jobs:
       - name: Build & push Docker image
         uses: docker/build-push-action@v6
         with:
+          # Use repo root as context so Dockerfile can COPY both client/ and server/shared
           context: .
+          # Specify the Dockerfile depending on selected package
+          file: ${{ github.event.inputs.package == 'client' && 'client/Dockerfile' || 'server/Dockerfile' }}
           push: true
           platforms: linux/amd64
           tags: ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}
