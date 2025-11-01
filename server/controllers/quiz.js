@@ -97,7 +97,8 @@ class QuizController {
             }
     
             return res.status(200).json({
-                message: 'Quiz créé avec succès.'
+                message: 'Quiz créé avec succès.',
+                quizId: result
             });
     
         } catch (error) {

@@ -619,10 +619,10 @@ public async login(email: string, password: string): Promise<any> {
     // Quiz Routes
 
     /**
-     * @returns true if successful 
+     * @returns quizId if successful 
      * @returns A error string if unsuccessful,
      */
-    public async createQuiz(title: string, content: string[], folderId: string): Promise<ApiResponse> {
+    public async createQuiz(title: string, content: string[], folderId: string): Promise<string> {
         try {
 
             if (!title || !content || !folderId) {
@@ -639,7 +639,7 @@ public async login(email: string, password: string): Promise<any> {
                 throw new Error(`La création du quiz a échoué. Status: ${result.status}`);
             }
 
-            return true;
+            return result.data.quizId;
 
         } catch (error) {
             console.log("Error details: ", error);

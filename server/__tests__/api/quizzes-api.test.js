@@ -180,6 +180,7 @@ describe("Quizzes API Integration Tests", () => {
 
       expect(response.body).toEqual({
         message: "Quiz créé avec succès.",
+        quizId: "quiz123",
       });
 
       expect(mockFoldersModel.getOwner).toHaveBeenCalledWith("folder123");
@@ -350,6 +351,7 @@ describe("Quizzes API Integration Tests", () => {
         .expect(200);
 
       expect(response.body.message).toBe("Quiz créé avec succès.");
+      expect(response.body.quizId).toBe("quiz123");
     });
   });
 

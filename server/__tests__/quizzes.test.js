@@ -213,6 +213,87 @@ describe('Quizzes', () => {
             );
             expect(result).toBe(false);
         });
+
+        it('should persist updated content and allow retrieval of the saved data', async () => {
+            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+            const originalTitle = 'Original Quiz';
+            const originalContent = 'Original quiz content';
+            const newTitle = 'Updated Quiz Title';
+            const newContent = 'This is the updated quiz content with new questions.';
+
+            // Mock the original quiz data for getContent
+            const originalQuiz = {
+                _id: ObjectId.createFromHexString(quizId),
+                title: originalTitle,
+                content: originalContent,
+                folderId: 'folder123',
+                userId: 'user123',
+                created_at: new Date('2023-01-01'),
+                updated_at: new Date('2023-01-01')
+            };
+
+            // Mock the updated quiz data that would be returned after update
+            const updatedQuiz = {
+                ...originalQuiz,
+                title: newTitle,
+                content: newContent,
+                updated_at: expect.any(Date) // Will be set by the update operation
+            };
+
+            // Mock updateOne to succeed
+            collection.updateOne.mockResolvedValue({modifiedCount: 1});
+
+            // Mock findOne to return updated data when getContent is called
+            collection.findOne.mockResolvedValue(updatedQuiz);
+
+            // Perform the update
+            const updateResult = await quizzes.update(quizId, newTitle, newContent);
+            expect(updateResult).toBe(true);
+
+            // Verify the update operation was called correctly
+            expect(collection.updateOne).toHaveBeenCalledWith(
+                { _id: ObjectId.createFromHexString(quizId) },
+                { $set: { title: newTitle, content: newContent, updated_at: expect.any(Date) } }
+            );
+
+            // Now verify that the content can be retrieved with the updated data
+            const retrievedContent = await quizzes.getContent(quizId);
+
+            // Verify that getContent returns the updated quiz data
+            expect(retrievedContent).toEqual({
+                _id: ObjectId.createFromHexString(quizId),
+                title: newTitle,
+                content: newContent,
+                folderId: 'folder123',
+                userId: 'user123',
+                created_at: new Date('2023-01-01'),
+                updated_at: expect.any(Date)
+            });
+
+            // Specifically verify the content was updated
+            expect(retrievedContent.title).toBe(newTitle);
+            expect(retrievedContent.content).toBe(newContent);
+            expect(retrievedContent.updated_at).toBeDefined();
+        });
+
+        it('should return false if the quiz does not exist', async () => {
+            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
+            const newTitle = 'Updated Quiz';
+            const newContent = 'This is an updated quiz.';
+
+            // Mock the database response
+            collection.updateOne.mockResolvedValue({modifiedCount: 0});
+
+            const result = await quizzes.update(quizId, newTitle, newContent);
+
+            expect(db.connect).toHaveBeenCalled();
+            expect(db.getConnection).toHaveBeenCalled();
+            expect(collection.updateOne).toHaveBeenCalledWith(
+                { _id: ObjectId.createFromHexString(quizId) },
+                { $set: { title: newTitle, content: newContent, updated_at: expect.any(Date) } }
+            );
+            expect(result).toBe(false);
+        });
     });
 
     // move
