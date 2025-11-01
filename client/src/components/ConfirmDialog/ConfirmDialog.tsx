@@ -34,7 +34,7 @@ const ConfirmDialog: React.FC<Props> = ({
     buttonOrderType = 'normal'
 }) => {
     return (
-        <Dialog open={open} onClose={onCancel}>
+        <Dialog open={open} onClose={onCancel} data-testid="confirm-dialog">
             <DialogTitle sx={{ fontWeight: 'bold', fontSize: 24 }}>{title}</DialogTitle>
             <DialogContentText sx={{ padding: '0 1.5rem 0.5rem 1.5rem' }}>
                 {message}
@@ -53,19 +53,19 @@ const ConfirmDialog: React.FC<Props> = ({
             )}
             <DialogActions>
                 {buttonOrderType === 'normal' && (
-                    <Button variant="outlined" onClick={onCancel}>
+                    <Button variant="outlined" onClick={onCancel} data-testid="cancel-btn">
                         Annuler
                     </Button>
                 )}
                 <Button
                     variant={buttonOrderType === 'normal' ? 'contained' : 'outlined'}
                     onClick={onConfirm}
-                    data-testid="modal-confirm-button"
+                    data-testid="confirm-btn"
                 >
                     Confirmer
                 </Button>
                 {buttonOrderType === 'warning' && (
-                    <Button variant="contained" onClick={onCancel}>
+                    <Button variant="contained" onClick={onCancel} data-testid="cancel-btn">
                         Annuler
                     </Button>
                 )}

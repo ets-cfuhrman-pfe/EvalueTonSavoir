@@ -186,7 +186,7 @@ describe('TeacherModeQuizV2', () => {
         });
         
         // Confirm the disconnect action
-        const confirmButton = screen.getByTestId('modal-confirm-button');
+        const confirmButton = screen.getByTestId('confirm-btn');
         act(() => {
             fireEvent.click(confirmButton);
         });
