@@ -6,8 +6,9 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "start": "node app.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js",
-    "test": "jest",
+    "dev": "cross-env NODE_ENV=development MONGO_URI=mongodb://localhost:27017 MONGO_DATABASE=evaluetonsavoir JWT_SECRET=dev-jwt-secret SESSION_SECRET=dev-session-secret USE_PORTS=true SITE_URL=http://localhost nodemon app.js",
+    "dev:full": "cross-env NODE_ENV=development MONGO_URI=mongodb://localhost:27017 MONGO_DATABASE=evaluetonsavoir JWT_SECRET=dev-jwt-secret SESSION_SECRET=dev-session-secret EMAIL_SERVICE=gmail SENDER_EMAIL=test@example.com EMAIL_PSW=test USE_PORTS=true SITE_URL=http://localhost AUTHENTICATED_ROOMS=false nodemon app.js",
+    "test": "cross-env NODE_ENV=test jest",
     "postinstall": "patch-package"
   },
   "keywords": [],
