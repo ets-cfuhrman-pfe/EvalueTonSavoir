@@ -60,6 +60,13 @@ jobs:
           PROD_TAG="${PACKAGE}-v${PROD_VERSION}"
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           
+          # Map package to Docker image name
+          if [ "$PACKAGE" = "client" ]; then
+            PACKAGE_NAME="frontend"
+          else
+            PACKAGE_NAME="backend"
+          fi
+          
           # Verify the RC tag exists
           if ! git rev-parse "$RC_TAG" >/dev/null 2>&1; then
             echo "Error: RC tag '$RC_TAG' does not exist"
@@ -71,6 +78,7 @@ jobs:
           echo "RC_TAG=${RC_TAG}" >> $GITHUB_OUTPUT
           echo "PROD_TAG=${PROD_TAG}" >> $GITHUB_OUTPUT
           echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
           echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
       
       - name: Install dependencies
@@ -111,9 +119,8 @@ jobs:
       
       - name: Pull RC image and re-tag for production
         run: |
-          PACKAGE_NAME="${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}"
-          RC_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${PACKAGE_NAME}:${{ steps.version.outputs.RC_VERSION }}"
-          PROD_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${PACKAGE_NAME}:${{ steps.version.outputs.PROD_VERSION }}"
+          RC_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.RC_VERSION }}"
+          PROD_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.PROD_VERSION }}"
           
           # Pull the RC image
           docker pull $RC_IMAGE
@@ -134,7 +141,7 @@ jobs:
             
             **Version:** ${{ steps.version.outputs.PROD_VERSION }}
             **Promoted from:** ${{ steps.version.outputs.RC_VERSION }}
-            **Docker Image:** `ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.PROD_VERSION }}`
+            **Docker Image:** `ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.PROD_VERSION }}`
             **Branch:** main
             
             This release was promoted from RC tag `${{ steps.version.outputs.RC_TAG }}`.
