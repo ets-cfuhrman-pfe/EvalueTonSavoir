@@ -1,0 +1,149 @@
+name: Promote Staging to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Which package to promote'
+        required: true
+        default: client
+        type: choice
+        options:
+          - client
+          - server
+      rc_version:
+        description: 'RC version to promote (e.g., 0.0.6-rc.0)'
+        required: true
+        type: string
+
+jobs:
+  promote-rc:
+    runs-on: ubuntu-latest
+    # Only allow running from main branch
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_ORG_PAT }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure Git
+        run: |
+          git config user.name "${{ secrets.GH_ORG_NAME }}"
+          git config user.email "${{ secrets.GH_ORG_EMAIL }}"
+      
+      - name: Validate RC version and calculate production version
+        id: version
+        run: |
+          PACKAGE="${{ github.event.inputs.package }}"
+          RC_VERSION="${{ github.event.inputs.rc_version }}"
+          
+          # Validate RC version format
+          if [[ ! "$RC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+            echo "Error: Invalid RC version format. Expected format: X.Y.Z-rc.N"
+            exit 1
+          fi
+          
+          # Strip -rc.X suffix to get production version
+          PROD_VERSION="${RC_VERSION%-rc.*}"
+          
+          RC_TAG="${PACKAGE}-v${RC_VERSION}"
+          PROD_TAG="${PACKAGE}-v${PROD_VERSION}"
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          # Map package to Docker image name
+          if [ "$PACKAGE" = "client" ]; then
+            PACKAGE_NAME="frontend"
+          else
+            PACKAGE_NAME="backend"
+          fi
+          
+          # Verify the RC tag exists
+          if ! git rev-parse "$RC_TAG" >/dev/null 2>&1; then
+            echo "Error: RC tag '$RC_TAG' does not exist"
+            exit 1
+          fi
+          
+          echo "RC_VERSION=${RC_VERSION}" >> $GITHUB_OUTPUT
+          echo "PROD_VERSION=${PROD_VERSION}" >> $GITHUB_OUTPUT
+          echo "RC_TAG=${RC_TAG}" >> $GITHUB_OUTPUT
+          echo "PROD_TAG=${PROD_TAG}" >> $GITHUB_OUTPUT
+          echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
+      
+      - name: Install dependencies
+        run: |
+          cd ${{ github.event.inputs.package }}
+          npm ci
+      
+      - name: Update package.json to production version
+        run: |
+          cd ${{ github.event.inputs.package }}
+          npm version ${{ steps.version.outputs.PROD_VERSION }} --git-tag-version=false
+      
+      - name: Commit version bump
+        run: |
+          git add ${{ github.event.inputs.package }}/package.json
+          git add ${{ github.event.inputs.package }}/package-lock.json
+          git commit -m "chore(${{ steps.version.outputs.PACKAGE }}): release ${{ steps.version.outputs.PROD_VERSION }} [skip ci]"
+      
+      - name: Create Git tag
+        run: |
+          git tag ${{ steps.version.outputs.PROD_TAG }}
+      
+      - name: Set remote URL for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_ORG_PAT }}@github.com/ets-cfuhrman-pfe/EvalueTonSavoir.git
+      
+      - name: Push changes and tags
+        run: |
+          git push origin main
+          git push origin ${{ steps.version.outputs.PROD_TAG }}
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GH_ORG_NAME }}
+          password: ${{ secrets.GH_ORG_PAT }}
+      
+      - name: Pull RC image and re-tag for production
+        run: |
+          RC_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.RC_VERSION }}"
+          PROD_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.PROD_VERSION }}"
+          
+          # Pull the RC image
+          docker pull $RC_IMAGE
+          
+          # Tag it with production version
+          docker tag $RC_IMAGE $PROD_IMAGE
+          
+          # Push production tag
+          docker push $PROD_IMAGE
+      
+      - name: Create GitHub Release (Production)
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.PROD_TAG }}
+          name: "${{ steps.version.outputs.PACKAGE }} ${{ steps.version.outputs.PROD_VERSION }}"
+          body: |
+            Production release for ${{ steps.version.outputs.PACKAGE }}
+            
+            **Version:** ${{ steps.version.outputs.PROD_VERSION }}
+            **Promoted from:** ${{ steps.version.outputs.RC_VERSION }}
+            **Docker Image:** `ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.PROD_VERSION }}`
+            **Branch:** main
+            
+            This release was promoted from RC tag `${{ steps.version.outputs.RC_TAG }}`.
+          prerelease: false
+          draft: false
