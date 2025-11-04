@@ -121,15 +121,18 @@ jobs:
         run: |
           RC_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.RC_VERSION }}"
           PROD_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:${{ steps.version.outputs.PROD_VERSION }}"
+          PROD_LATEST_IMAGE="ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE_NAME }}:prod-latest"
           
           # Pull the RC image
           docker pull $RC_IMAGE
           
-          # Tag it with production version
+          # Tag it with production version and prod-latest
           docker tag $RC_IMAGE $PROD_IMAGE
+          docker tag $RC_IMAGE $PROD_LATEST_IMAGE
           
-          # Push production tag
+          # Push production tag and prod-latest tag
           docker push $PROD_IMAGE
+          docker push $PROD_LATEST_IMAGE
       
       - name: Create GitHub Release (Production)
         uses: softprops/action-gh-release@v1
