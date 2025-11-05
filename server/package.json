@@ -1,10 +1,10 @@
 {
   "name": "ets-pfe004-evaluetonsavoir-backend",
-  "version": "1.0.0",
+  "version": "2.0.2-rc.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "echo 'Placeholder build script (does nothing for now)'",
     "start": "node app.js",
     "dev": "cross-env NODE_ENV=development nodemon app.js",
     "test": "jest",
