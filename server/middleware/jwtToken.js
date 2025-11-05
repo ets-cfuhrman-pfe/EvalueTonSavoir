@@ -1,15 +1,13 @@
 const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
 const AppError = require('./AppError.js');
 const { UNAUTHORIZED_NO_TOKEN_GIVEN, UNAUTHORIZED_INVALID_TOKEN } = require('../constants/errorCodes');
 const logger = require('../config/logger');
-
-dotenv.config();
+const envConfig = require('../config/environment');
 
 class Token {
 
     create(email, userId, roles) {
-        const token = jwt.sign({ email, userId, roles }, process.env.JWT_SECRET);
+        const token = jwt.sign({ email, userId, roles }, envConfig.get('JWT_SECRET'));
         
         logger.debug('JWT token created', {
             userId: userId,
@@ -39,7 +37,7 @@ class Token {
                 return next(new AppError(UNAUTHORIZED_NO_TOKEN_GIVEN));
             }
 
-            jwt.verify(token, process.env.JWT_SECRET, (error, payload) => {
+            jwt.verify(token, envConfig.get('JWT_SECRET'), (error, payload) => {
                 if (error) {
                     logger.logSecurityEvent('authentication_invalid_token', 'warn', {
                         url: req.originalUrl,

@@ -1,24 +1,37 @@
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
 const logger = require('./logger');
-
-dotenv.config();
+const envConfig = require('./environment');
 
 class Emailer {
 
     constructor() {
-        this.senderEmail = process.env.SENDER_EMAIL;
-        this.psw = process.env.EMAIL_PSW;
-        this.transporter = nodemailer.createTransport({
-            service: process.env.EMAIL_SERVICE,
-            auth: {
-                user: this.senderEmail,
-                pass: this.psw
-            }
-        });
+        this.senderEmail = envConfig.get('SENDER_EMAIL');
+        this.psw = envConfig.get('EMAIL_PSW');
+        
+        // Only create transporter if email is configured
+        if (this.senderEmail && this.psw) {
+            this.transporter = nodemailer.createTransporter({
+                service: envConfig.get('EMAIL_SERVICE'),
+                auth: {
+                    user: this.senderEmail,
+                    pass: this.psw
+                }
+            });
+        } else {
+            logger.warn('Email service not configured - email features will be disabled');
+            this.transporter = null;
+        }
     }
 
     registerConfirmation(email) {
+        if (!this.transporter) {
+            logger.warn('Email service not configured - skipping registration confirmation', {
+                recipient: email,
+                emailType: 'registration_confirmation'
+            });
+            return;
+        }
+
         const startTime = Date.now();
         logger.debug('Sending registration confirmation email', {
             recipient: email,
@@ -55,6 +68,14 @@ class Emailer {
     }
 
     newPasswordConfirmation(email, newPassword) {
+        if (!this.transporter) {
+            logger.warn('Email service not configured - skipping password reset email', {
+                recipient: email,
+                emailType: 'password_reset'
+            });
+            return;
+        }
+
         const startTime = Date.now();
         logger.debug('Sending password reset email', {
             recipient: email,
@@ -92,6 +113,14 @@ class Emailer {
     }
 
     quizShare(email, link) {
+        if (!this.transporter) {
+            logger.warn('Email service not configured - skipping quiz share email', {
+                recipient: email,
+                emailType: 'quiz_share'
+            });
+            return;
+        }
+
         this.transporter.sendMail({
             from: this.senderEmail,
             to: email,
