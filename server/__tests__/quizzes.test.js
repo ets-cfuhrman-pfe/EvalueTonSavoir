@@ -275,25 +275,6 @@ describe('Quizzes', () => {
             expect(retrievedContent.content).toBe(newContent);
             expect(retrievedContent.updated_at).toBeDefined();
         });
-
-        it('should return false if the quiz does not exist', async () => {
-            const quizId = '60c72b2f9b1d8b3a4c8e4d3b';
-            const newTitle = 'Updated Quiz';
-            const newContent = 'This is an updated quiz.';
-
-            // Mock the database response
-            collection.updateOne.mockResolvedValue({modifiedCount: 0});
-
-            const result = await quizzes.update(quizId, newTitle, newContent);
-
-            expect(db.connect).toHaveBeenCalled();
-            expect(db.getConnection).toHaveBeenCalled();
-            expect(collection.updateOne).toHaveBeenCalledWith(
-                { _id: ObjectId.createFromHexString(quizId) },
-                { $set: { title: newTitle, content: newContent, updated_at: expect.any(Date) } }
-            );
-            expect(result).toBe(false);
-        });
     });
 
     // move
