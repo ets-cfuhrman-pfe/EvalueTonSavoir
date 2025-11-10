@@ -46,7 +46,7 @@ const ReturnButtonV2: React.FC<ReturnButtonV2Props> = ({
             if (hasUnsavedChanges()) {
                 setShowUnsavedDialog(true);
             } else {
-                setShowConfirmDialog(true);
+                handleOnReturn();
             }
         } else if (askConfirm) {
             // Legacy behavior
