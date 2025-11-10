@@ -10,9 +10,20 @@ interface ReturnButtonV2Props {
     onReturn?: () => void;
     askConfirm?: boolean;
     message?: string;
-    // New props for quiz editor functionality
+    /**
+     * Function to check if there are unsaved changes.
+     * When provided and returns true, shows the UnsavedChangesDialog.
+     */
     hasUnsavedChanges?: () => boolean;
+    /**
+     * Callback when the user chooses to save and quit in the UnsavedChangesDialog.
+     * Should handle saving any unsaved changes before quitting.
+     */
     onSaveAndQuit?: () => void;
+    /**
+     * Callback when the user chooses to quit without saving in the UnsavedChangesDialog.
+     * Should handle quitting/discarding changes.
+     */
     onDontSaveAndQuit?: () => void;
 }
 
