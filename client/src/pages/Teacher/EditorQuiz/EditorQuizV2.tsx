@@ -202,38 +202,56 @@ const EditorQuizV2: React.FC = () => {
 
             setIsSaving(true);
 
-            let result;
             if (isNewQuiz) {
                 const quizId = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
-                // Successfully created quiz, now switch to edit mode
-                const createdQuiz = await ApiService.getQuiz(quizId);
-                if (createdQuiz && typeof createdQuiz !== 'string') {
-                    setQuiz(createdQuiz);
-                    setIsNewQuiz(false);
-                    // Update URL without causing a page reload
-                    navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                if (typeof quizId === 'string' && quizId.includes(' ')) {
+                    // Error occurred 
                     setSaveNotification({
                         open: true,
-                        message: 'Quiz créé avec succès !',
-                        severity: 'success'
+                        message: quizId,
+                        severity: 'error'
                     });
                 } else {
-                    throw new Error('Failed to fetch created quiz');
+                    // Successfully created quiz, now switch to edit mode
+                    const createdQuiz = await ApiService.getQuiz(quizId);
+                    if (createdQuiz && typeof createdQuiz !== 'string') {
+                        setQuiz(createdQuiz);
+                        setIsNewQuiz(false);
+                        // Update URL without causing a page reload
+                        navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                        setSaveNotification({
+                            open: true,
+                            message: 'Quiz créé avec succès !',
+                            severity: 'success'
+                        });
+                    } else {
+                        throw new Error('Failed to fetch created quiz');
+                    }
                 }
             } else if (quiz) {
-                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-                setSaveNotification({
-                    open: true,
-                    message: isNewQuiz ? 'Quiz créé avec succès !' : 'Quiz mis à jour avec succès !',
-                    severity: 'success'
-                });
-                
-                // Update initial state to reflect saved changes
-                setInitialQuizState({
-                    title: quizTitle,
-                    content: value,
-                    folderId: selectedFolder,
-                });
+                const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                if (typeof updateResult === 'string' && updateResult.includes(' ')) {
+                    // Error occurred - string contains spaces, so it's an error message
+                    setSaveNotification({
+                        open: true,
+                        message: updateResult,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz mis à jour avec succès !',
+                        severity: 'success'
+                    });
+                    
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
+                }
             }
 
         } catch (error) {
@@ -271,37 +289,60 @@ const EditorQuizV2: React.FC = () => {
 
             setIsSaving(true);
 
-            let result;
             if (isNewQuiz) {
-                result = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                const quizId = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                if (typeof quizId === 'string' && quizId.includes(' ')) {
+                    // Error occurred
+                    setSaveNotification({
+                        open: true,
+                        message: quizId,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz créé avec succès ! Redirection en cours...',
+                        severity: 'success'
+                    });
+
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
+
+                    // Navigate after successful save
+                    navigate('/teacher/dashboard-v2');
+                }
             } else if (quiz) {
-                result = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-            }
+                const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                if (typeof updateResult === 'string' && (updateResult.includes('erreur') || updateResult.includes('error') || updateResult.includes('Erreur') || updateResult.includes('Error'))) {
+                    // Error occurred
+                    setSaveNotification({
+                        open: true,
+                        message: updateResult,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz mis à jour avec succès ! Redirection en cours...',
+                        severity: 'success'
+                    });
 
-            if (typeof result === 'string') {
-                // Error occurred
-                setSaveNotification({
-                    open: true,
-                    message: result,
-                    severity: 'error'
-                });
-            } else {
-                // Success
-                setSaveNotification({
-                    open: true,
-                    message: isNewQuiz ? 'Quiz créé avec succès ! Redirection en cours...' : 'Quiz mis à jour avec succès ! Redirection en cours...',
-                    severity: 'success'
-                });
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
 
-                // Update initial state to reflect saved changes
-                setInitialQuizState({
-                    title: quizTitle,
-                    content: value,
-                    folderId: selectedFolder,
-                });
-
-                // Navigate after successful save
-                navigate('/teacher/dashboard-v2');
+                    // Navigate after successful save
+                    navigate('/teacher/dashboard-v2');
+                }
             }
         } catch (error) {
             console.error('Save error:', error);
