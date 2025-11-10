@@ -30,10 +30,11 @@ describe('ReturnButtonV2', () => {
       expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
     });
 
-    test('shows ConfirmDialog when there are no unsaved changes', () => {
+    test('does not show any dialog when there are no unsaved changes', () => {
       const hasUnsavedChanges = () => false;
       const onSaveAndQuit = jest.fn();
       const onDontSaveAndQuit = jest.fn();
+      const onReturn = jest.fn();
 
       render(
         <MemoryRouter>
@@ -41,6 +42,7 @@ describe('ReturnButtonV2', () => {
             hasUnsavedChanges={hasUnsavedChanges}
             onSaveAndQuit={onSaveAndQuit}
             onDontSaveAndQuit={onDontSaveAndQuit}
+            onReturn={onReturn}
           />
         </MemoryRouter>
       );
@@ -48,7 +50,8 @@ describe('ReturnButtonV2', () => {
       const returnButton = screen.getByRole('button', { name: /retour/i });
       fireEvent.click(returnButton);
 
-      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
+      expect(onReturn).toHaveBeenCalled();
+      expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
       expect(screen.queryByTestId('unsaved-changes-dialog')).not.toBeInTheDocument();
     });
 
