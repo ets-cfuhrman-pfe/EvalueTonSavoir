@@ -318,7 +318,7 @@ const EditorQuizV2: React.FC = () => {
                 }
             } else if (quiz) {
                 const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-                if (typeof updateResult === 'string' && (updateResult.includes('erreur') || updateResult.includes('error') || updateResult.includes('Erreur') || updateResult.includes('Error'))) {
+                if (typeof updateResult === 'string' && updateResult.includes(' ')) {
                     // Error occurred
                     setSaveNotification({
                         open: true,
