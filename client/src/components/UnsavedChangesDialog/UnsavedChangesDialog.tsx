@@ -8,10 +8,25 @@ import {
     Button,
 } from '@mui/material';
 
+/**
+ * Props for the UnsavedChangesDialog component.
+ */
 interface UnsavedChangesDialogProps {
+    /**
+     * Controls whether the dialog is open.
+     */
     open: boolean;
+    /**
+     * Callback when user chooses to save changes and quit.
+     */
     onSave: () => void;
+    /**
+     * Callback when user chooses to discard changes and quit.
+     */
     onDontSave: () => void;
+    /**
+     * Callback when user cancels the action.
+     */
     onCancel: () => void;
 }
 
