@@ -1,5 +1,5 @@
 // EditorQuizV2.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -59,7 +59,7 @@ const EditorQuizV2: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const checkForUnsavedChanges = () => {
+    const checkForUnsavedChanges = useCallback(() => {
         if (!initialQuizState) return false;
 
         const currentState = {
@@ -73,11 +73,11 @@ const EditorQuizV2: React.FC = () => {
             currentState.content !== initialQuizState.content ||
             currentState.folderId !== initialQuizState.folderId
         );
-    };
+    }, [quizTitle, value, selectedFolder, initialQuizState]);
 
-    const updateUnsavedChangesState = () => {
+    const updateUnsavedChangesState = useCallback(() => {
         setHasUnsavedChanges(checkForUnsavedChanges());
-    };
+    }, [checkForUnsavedChanges]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -163,7 +163,7 @@ const EditorQuizV2: React.FC = () => {
     // Track changes to determine if there are unsaved changes
     useEffect(() => {
         updateUnsavedChangesState();
-    }, [quizTitle, value, selectedFolder, initialQuizState]);
+    }, [updateUnsavedChangesState]);
 
     function handleUpdatePreview(value: string) {
         setValue(value);
