@@ -31,7 +31,7 @@ const EditorQuizV2: React.FC = () => {
     const [selectedFolder, setSelectedFolder] = useState<string>('');
     const [filteredValue, setFilteredValue] = useState<string[]>([]);
     const [value, setValue] = useState('');
-    const [isNewQuiz] = useState(!id || id === 'new');
+    const [isNewQuiz, setIsNewQuiz] = useState(!id || id === 'new');
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [isLoading, setIsLoading] = useState(id !== 'new' && !!id);
     const navigate = useNavigate();
@@ -204,20 +204,24 @@ const EditorQuizV2: React.FC = () => {
 
             let result;
             if (isNewQuiz) {
-                result = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                const quizId = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                // Successfully created quiz, now switch to edit mode
+                const createdQuiz = await ApiService.getQuiz(quizId);
+                if (createdQuiz && typeof createdQuiz !== 'string') {
+                    setQuiz(createdQuiz);
+                    setIsNewQuiz(false);
+                    // Update URL without causing a page reload
+                    navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz créé avec succès !',
+                        severity: 'success'
+                    });
+                } else {
+                    throw new Error('Failed to fetch created quiz');
+                }
             } else if (quiz) {
-                result = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-            }
-
-            if (typeof result === 'string') {
-                // Error occurred
-                setSaveNotification({
-                    open: true,
-                    message: result,
-                    severity: 'error'
-                });
-            } else {
-                // Success
+                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
                 setSaveNotification({
                     open: true,
                     message: isNewQuiz ? 'Quiz créé avec succès !' : 'Quiz mis à jour avec succès !',
