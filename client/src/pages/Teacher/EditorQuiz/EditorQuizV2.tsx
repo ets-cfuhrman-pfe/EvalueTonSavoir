@@ -1,5 +1,5 @@
 // EditorQuizV2.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -7,12 +7,12 @@ import { FolderType } from '../../../Types/FolderType';
 import EditorV2 from 'src/components/Editor/EditorV2';
 import GiftCheatSheetV2 from 'src/components/GIFTCheatSheet/GiftCheatSheetV2';
 import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePreviewV2';
+import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 
 import { QuizType } from '../../../Types/QuizType';
 import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Button, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert } from '@mui/material';
-import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import ImageGalleryModalV2 from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModalV2';
 
 import ApiService from '../../../services/ApiService';
@@ -39,6 +39,12 @@ const EditorQuizV2: React.FC = () => {
     const [imageLinks, setImageLinks] = useState<string[]>([]);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [initialQuizState, setInitialQuizState] = useState<{
+        title: string;
+        content: string;
+        folderId: string;
+    } | null>(null);
     const [saveNotification, setSaveNotification] = useState<{
         open: boolean;
         message: string;
@@ -52,6 +58,26 @@ const EditorQuizV2: React.FC = () => {
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    const checkForUnsavedChanges = useCallback(() => {
+        if (!initialQuizState) return false;
+
+        const currentState = {
+            title: quizTitle,
+            content: value,
+            folderId: selectedFolder,
+        };
+
+        return (
+            currentState.title !== initialQuizState.title ||
+            currentState.content !== initialQuizState.content ||
+            currentState.folderId !== initialQuizState.folderId
+        );
+    }, [quizTitle, value, selectedFolder, initialQuizState]);
+
+    const updateUnsavedChangesState = useCallback(() => {
+        setHasUnsavedChanges(checkForUnsavedChanges());
+    }, [checkForUnsavedChanges]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -89,7 +115,12 @@ const EditorQuizV2: React.FC = () => {
         const fetchData = async () => {
             try {
                 if (!id || id === 'new') {
-                    // Already handled in initial state
+                    // For new quiz, set initial state
+                    setInitialQuizState({
+                        title: '',
+                        content: '',
+                        folderId: '',
+                    });
                     return;
                 }
 
@@ -109,6 +140,14 @@ const EditorQuizV2: React.FC = () => {
                 setSelectedFolder(folderId);
                 setFilteredValue(content);
                 setValue(quiz.content.join('\n\n'));
+                
+                // Set initial state for existing quiz
+                setInitialQuizState({
+                    title,
+                    content: quiz.content.join('\n\n'),
+                    folderId,
+                });
+                
                 setIsLoading(false);
 
             } catch (error) {
@@ -120,6 +159,11 @@ const EditorQuizV2: React.FC = () => {
 
         fetchData();
     }, [id, navigate]);
+
+    // Track changes to determine if there are unsaved changes
+    useEffect(() => {
+        updateUnsavedChangesState();
+    }, [updateUnsavedChangesState]);
 
     function handleUpdatePreview(value: string) {
         setValue(value);
@@ -160,28 +204,54 @@ const EditorQuizV2: React.FC = () => {
 
             if (isNewQuiz) {
                 const quizId = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
-                // Successfully created quiz, now switch to edit mode
-                const createdQuiz = await ApiService.getQuiz(quizId);
-                if (createdQuiz && typeof createdQuiz !== 'string') {
-                    setQuiz(createdQuiz);
-                    setIsNewQuiz(false);
-                    // Update URL without causing a page reload
-                    navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                if (typeof quizId === 'string' && quizId.includes(' ')) {
+                    // Error occurred 
                     setSaveNotification({
                         open: true,
-                        message: 'Quiz créé avec succès !',
-                        severity: 'success'
+                        message: quizId,
+                        severity: 'error'
                     });
                 } else {
-                    throw new Error('Failed to fetch created quiz');
+                    // Successfully created quiz, now switch to edit mode
+                    const createdQuiz = await ApiService.getQuiz(quizId);
+                    if (createdQuiz && typeof createdQuiz !== 'string') {
+                        setQuiz(createdQuiz);
+                        setIsNewQuiz(false);
+                        // Update URL without causing a page reload
+                        navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                        setSaveNotification({
+                            open: true,
+                            message: 'Quiz créé avec succès !',
+                            severity: 'success'
+                        });
+                    } else {
+                        throw new Error('Failed to fetch created quiz');
+                    }
                 }
             } else if (quiz) {
-                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz mis à jour avec succès !',
-                    severity: 'success'
-                });
+                const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                if (typeof updateResult === 'string' && updateResult.includes(' ')) {
+                    // Error occurred - string contains spaces, so it's an error message
+                    setSaveNotification({
+                        open: true,
+                        message: updateResult,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz mis à jour avec succès !',
+                        severity: 'success'
+                    });
+                    
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
+                }
             }
 
         } catch (error) {
@@ -220,24 +290,60 @@ const EditorQuizV2: React.FC = () => {
             setIsSaving(true);
 
             if (isNewQuiz) {
-                await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz créé avec succès ! Redirection en cours...',
-                    severity: 'success'
-                });
+                const quizId = await ApiService.createQuiz(quizTitle, filteredValue, selectedFolder);
+                if (typeof quizId === 'string' && quizId.includes(' ')) {
+                    // Error occurred
+                    setSaveNotification({
+                        open: true,
+                        message: quizId,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz créé avec succès ! Redirection en cours...',
+                        severity: 'success'
+                    });
+
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
+
+                    // Navigate after successful save
+                    navigate('/teacher/dashboard-v2');
+                }
             } else if (quiz) {
-                await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
-                setSaveNotification({
-                    open: true,
-                    message: 'Quiz mis à jour avec succès ! Redirection en cours...',
-                    severity: 'success'
-                });
+                const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
+                if (typeof updateResult === 'string' && updateResult.includes(' ')) {
+                    // Error occurred
+                    setSaveNotification({
+                        open: true,
+                        message: updateResult,
+                        severity: 'error'
+                    });
+                } else {
+                    // Success
+                    setSaveNotification({
+                        open: true,
+                        message: 'Quiz mis à jour avec succès ! Redirection en cours...',
+                        severity: 'success'
+                    });
+
+                    // Update initial state to reflect saved changes
+                    setInitialQuizState({
+                        title: quizTitle,
+                        content: value,
+                        folderId: selectedFolder,
+                    });
+
+                    // Navigate after successful save
+                    navigate('/teacher/dashboard-v2');
+                }
             }
-
-            // Navigate after successful save
-
-            navigate('/teacher/dashboard-v2');
         } catch (error) {
             console.error('Save error:', error);
             setSaveNotification({
@@ -309,9 +415,10 @@ const EditorQuizV2: React.FC = () => {
                                     {isSaving ? 'Enregistrement...' : 'Enregistrer et quitter'}
                                 </Button>
 
-                                  <ReturnButtonV2
-                                    askConfirm
-                                    message={`Êtes-vous sûr de vouloir quitter l'éditeur sans sauvegarder le questionnaire?`}
+                                <ReturnButtonV2
+                                    hasUnsavedChanges={() => hasUnsavedChanges}
+                                    onSaveAndQuit={handleQuizSaveAndExit}
+                                    onDontSaveAndQuit={() => navigate('/teacher/dashboard-v2')}
                                 />
                             </div>
                         </div>
