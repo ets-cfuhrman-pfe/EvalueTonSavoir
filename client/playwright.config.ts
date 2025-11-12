@@ -22,23 +22,17 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:80',
-
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    
     /* Take screenshot on failure */
     screenshot: 'only-on-failure',
-    
     /* Record videos on failure */
     video: 'off',
-    
     /* Slow down actions for visual debugging (remove for CI) */
     //launchOptions: { slowMo: 500 },
-    
     /* Increase timeout for integration tests */
     actionTimeout: 15000,
     navigationTimeout: 30000,
-    
     /* Extra HTTP headers */
     extraHTTPHeaders: {
       'Accept': 'application/json, text/html',
@@ -47,7 +41,6 @@ export default defineConfig({
 
   /* Global test timeout for integration tests */
   timeout: 60000,
-  
   /* Expect timeout for assertions */
   expect: {
     timeout: 10000,
@@ -79,15 +72,5 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 14'] },
     },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ], 
 });
