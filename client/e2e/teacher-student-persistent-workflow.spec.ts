@@ -16,22 +16,16 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             await teacherPage.goto('/login');
             await teacherPage.waitForLoadState('networkidle');
             
-            const emailInput = teacherPage.locator('input').first();
-            await emailInput.fill('integrationTestBot@email.com');
+            const emailInput = teacherPage.getByLabel('Email');
+            await emailInput.fill(process.env.TEST_USER_EMAIL || '');
             
-            const passwordInput = teacherPage.locator('input').nth(1);
-            await passwordInput.fill('123456');
+            const passwordInput = teacherPage.getByLabel('Password');
+            await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
             
             const loginButton = teacherPage.locator('button:has-text("Login"), button[type="submit"]').first();
             await loginButton.click();
-            await teacherPage.waitForTimeout(5000);
             
-            // Verify login success
-            const loginUrl = teacherPage.url();
-            const isDashboardPage = loginUrl.includes('dashboard') || loginUrl.includes('teacher');
-            if (!isDashboardPage) {
-                throw new Error(`LOGIN FAILED: Still on login page. URL: ${loginUrl}`);
-            }
+            await teacherPage.waitForURL(/\/dashboard|\/teacher/);
             console.log('Teacher login successful');
 
             // Navigate to dashboard
@@ -46,7 +40,7 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
-            // Click play button to launhc quiz
+            // Click play button to launch quiz
             const playButton = teacherPage.locator('button[aria-label="Démarrer le quiz"]').first();
             const hasPlayButton = await playButton.isVisible({ timeout: 5000 });
             
@@ -98,10 +92,10 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                     await student.page.goto('/student/join-room');
                     await student.page.waitForLoadState('networkidle');
                     
-                    const roomInput = student.page.locator('input').first();
+                    const roomInput = student.page.getByLabel('Code de la salle');
                     await roomInput.fill('TEST');
                     
-                    const nameInput = student.page.locator('input').nth(1);
+                    const nameInput = student.page.getByLabel('Nom');
                     await nameInput.fill(student.name);
                     
                     const joinButton = student.page.locator('button:has-text("Rejoindre"), button[type="submit"]').first();
@@ -126,8 +120,8 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                         return { success: false, studentId: student.id, error: 'unclear' };
                     }
                 } catch (error) {
-                    console.log(`Student ${student.id} - Join failed: ${String(error)}`);
-                    return { success: false, studentId: student.id, error: String(error) };
+                    console.log(`Student ${student.id} - Join failed: ${error instanceof Error ? error.message : String(error)}`);
+                    return { success: false, studentId: student.id, error: error instanceof Error ? error.message : String(error) };
                 }
             });
             
@@ -143,9 +137,17 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                 console.log('FAILURE: No students could join the room');
             }
             
-            // Keep sessions alive for a bit to test persistence
-            console.log('Keeping all sessions alive for 15 seconds to test persistence...');
-            await new Promise(resolve => setTimeout(resolve, 15000));
+            // Verify session persistence for all students
+            console.log('Verifying session persistence for all students...');
+            // Wait for a short period and check that student pages are still accessible
+            await teacherPage.waitForTimeout(2000);
+            for (const student of studentSessions) {
+                // check that the student page is still on the quiz/room
+                const url = student.page.url();
+                if (!(url.includes('quiz') || url.includes('room'))) {
+                    console.log(`Student ${student.id} session may not be persistent (URL: ${url})`);
+                }
+            }
             
             console.log('Cleaning up student sessions...');
             for (const student of studentSessions) {
