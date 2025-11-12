@@ -144,5 +144,5 @@ jobs:
         if: always()
         run: |
           # Clean up temporary test files and images only
-          rm -rf /tmp/e2e-client-${{ github.run_id }}
+          sudo rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
