@@ -29,19 +29,14 @@ jobs:
           pwd
           echo "=== Docker Information ==="
           docker --version
-          docker-compose --version 2>/dev/null || echo "docker-compose not installed yet"
-      
-      - name: Install docker-compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+          docker compose version
       
       - name: Start preprod environment
         run: |
           cd ${{ env.PREPROD_PATH }}
-          docker-compose down
-          docker-compose pull
-          docker-compose up -d --wait
+          docker compose down
+          docker compose pull
+          docker compose up -d --wait
         
       - name: Copy test files to runner workspace
         run: |
@@ -83,7 +78,7 @@ jobs:
           fi
           
           echo "Services status check:"
-          docker-compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
           
           # Additional wait to ensure all services are fully initialized
           sleep 15
@@ -120,7 +115,7 @@ jobs:
         if: failure()
         run: |
           echo "=== Docker containers status ==="
-          docker-compose -f /opt/EvalueTonSavoir/docker-compose.yaml ps
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
           echo "=== Backend logs ==="
           docker logs backend --tail 50
           echo "=== Frontend logs ==="
@@ -142,7 +137,7 @@ jobs:
         if: always()
         run: |
           cd ${{ env.PREPROD_PATH }}
-          docker-compose down
+          docker compose down
           # Clean up temporary test files and images
           rm -rf /tmp/e2e-client-${{ github.run_id }}
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
