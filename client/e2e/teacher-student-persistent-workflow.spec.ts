@@ -92,10 +92,10 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                     await student.page.goto('/student/join-room');
                     await student.page.waitForLoadState('networkidle');
                     
-                    const roomInput = student.page.getByLabel('Code de la salle');
+                    const roomInput = student.page.getByPlaceholder('Nom de la salle');
                     await roomInput.fill('TEST');
                     
-                    const nameInput = student.page.getByLabel('Nom');
+                    const nameInput = student.page.getByPlaceholder('Nom d\'utilisateur');
                     await nameInput.fill(student.name);
                     
                     const joinButton = student.page.locator('button:has-text("Rejoindre"), button[type="submit"]').first();
