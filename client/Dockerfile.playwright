@@ -1,5 +1,5 @@
 # Use the official Playwright Docker image
-FROM mcr.microsoft.com/playwright:v1.48.0-focal
+FROM mcr.microsoft.com/playwright:v1.56.1-focal
 
 WORKDIR /app/client
 
