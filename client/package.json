@@ -9,7 +9,10 @@
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "test": "jest --colors --silent",
-        "test:watch": "jest --watch"
+        "test:watch": "jest --watch",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:debug": "playwright test --debug"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
@@ -64,6 +67,7 @@
         "@typescript-eslint/eslint-plugin": "^8.29.1",
         "@typescript-eslint/parser": "^8.29.1",
         "@vitejs/plugin-react-swc": "^3.8.1",
+        "@playwright/test": "^1.48.0",
         "cross-env": "^7.0.3",
         "eslint": "^9.29.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
