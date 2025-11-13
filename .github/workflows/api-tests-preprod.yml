@@ -59,6 +59,11 @@ jobs:
           
           echo "Services ready for API tests"
       
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
       - name: Install server dependencies
         run: |
           cd server
