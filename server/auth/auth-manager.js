@@ -10,7 +10,7 @@ class AuthManager{
     constructor(expressapp,configs=null,userModel){
         logger.debug('AuthManager constructor initialized', {
             configs: JSON.stringify(configs),
-            userModel: JSON.stringify(userModel)
+            userModel: 'userModel object'
         });
         this.modules = []
         this.app = expressapp

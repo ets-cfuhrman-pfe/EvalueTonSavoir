@@ -43,6 +43,6 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Running Tests"
-          npm test
+          if [ "${{ matrix.directory }}" == "server" ]; then npm run test:unit; else npm test; fi
           echo "::endgroup::"
 

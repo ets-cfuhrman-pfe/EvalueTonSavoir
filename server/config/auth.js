@@ -29,6 +29,10 @@ class AuthConfig {
         module: 'auth-config'
       });
       this.config = {};
+      // Throw error in test environment to ensure test failures are visible
+      if (process.env.NODE_ENV === 'test') {
+        throw new Error(`Test configuration loading failed: ${error.message}`);
+      }
       throw error;
     }
     return this.config

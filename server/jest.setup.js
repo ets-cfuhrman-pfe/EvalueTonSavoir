@@ -1,7 +1,9 @@
 // This file sets up Jest's environment before tests run
 
-// Tell Jest to use our mock for the database
-jest.mock('./config/db');
+require('dotenv').config();
+
+// Removed global db mock to allow integration tests to use real db
+// jest.mock('./config/db');
 
 // After all tests complete
 afterAll(async () => {
