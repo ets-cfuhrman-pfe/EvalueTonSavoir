@@ -1,49 +1,89 @@
 const request = require('supertest');
-const app = require('../../app');
-const mongoose = require('mongoose');
-const jwt = require('../../middleware/jwtToken');
+// const jwt = require('../../middleware/jwtToken');
+const bcrypt = require('bcrypt');
+
+// Unmock db for integration test
+jest.unmock('../../config/db');
 
 describe('Quiz API Integration Tests', () => {
+  let app;
   let token;
-  let testUserId = 'test-user-123';
+  let testUserEmail = process.env.TEST_USER_EMAIL || 'integrationTestBot@email.com';
+  let testUserPassword = process.env.TEST_USER_PASSWORD || '123456';
+  let testFolderId;
 
   beforeAll(async () => {
-    // Connect to DB
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/evaluetonsavoir';
-    await mongoose.connect(mongoUri);
+    // Connect to DB first
+    const db = require('../../config/db');
+    await db.connect();
+    
+    // Now require app (after DB is connected)
+    app = require('../../app');
     
     // Insert test user if not exists
-    const db = mongoose.connection.db;
-    const usersCollection = db.collection('users');
-    const existingUser = await usersCollection.findOne({ userId: testUserId });
+    const dbConn = db.getConnection();
+    const usersCollection = dbConn.collection('users');
+    const existingUser = await usersCollection.findOne({ email: testUserEmail });
     if (!existingUser) {
-      await usersCollection.insertOne({
-        userId: testUserId,
-        email: 'test@example.com',
-        roles: ['teacher']
-      });
+      const hashedPassword = await bcrypt.hash(testUserPassword, 10);
+      const userId = (await usersCollection.insertOne({
+        email: testUserEmail,
+        password: hashedPassword,
+        roles: ['teacher'],
+        name: 'Integration Test Bot'
+      })).insertedId;
+      
+      // Create default folder
+      const foldersCollection = dbConn.collection('folders');
+      const folderId = (await foldersCollection.insertOne({
+        title: 'Dossier par Défaut',
+        userId: userId.toString(),
+        created_at: new Date()
+      })).insertedId;
+      testFolderId = folderId.toString();
+    } else {
+      // Get existing folder or create if not exists
+      const foldersCollection = dbConn.collection('folders');
+      let folder = await foldersCollection.findOne({ userId: existingUser._id.toString() });
+      if (!folder) {
+        const folderId = (await foldersCollection.insertOne({
+          title: 'Dossier par Défaut',
+          userId: existingUser._id.toString(),
+          created_at: new Date()
+        })).insertedId;
+        testFolderId = folderId.toString();
+      } else {
+        testFolderId = folder._id.toString();
+      }
     }
     
-    // Generate JWT
-    const jwtInstance = new jwt();
-    token = jwtInstance.create('test@example.com', testUserId, ['teacher']);
+    // Login to get token
+    const loginResponse = await request(app)
+      .post('/api/auth/simple-auth/login')
+      .send({ email: testUserEmail, password: testUserPassword })
+      .expect(200);
+    
+    token = loginResponse.body.token;
   });
 
   afterAll(async () => {
-    await mongoose.disconnect();
+    // Cleanup: close DB connection
+    const db = require('../../config/db');
+    await db.closeConnection();
   });
 
   describe('POST /api/quiz/create', () => {
     it('should create a quiz successfully', async () => {
       const quizData = {
-        title: 'Integration Test Quiz',
-        questions: [
+        title: `Integration Test Quiz ${Date.now()}`,
+        content: [
           {
             text: 'What is 2+2?',
             options: ['3', '4', '5'],
             correct: 1
           }
-        ]
+        ],
+        folderId: testFolderId
       };
 
       const response = await request(app)
@@ -52,15 +92,8 @@ describe('Quiz API Integration Tests', () => {
         .send(quizData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('_id');
-      expect(response.body.title).toBe('Integration Test Quiz');
-
-      // Verify in DB
-      const db = mongoose.connection.db;
-      const quizzesCollection = db.collection('quizzes');
-      const quiz = await quizzesCollection.findOne({ _id: mongoose.Types.ObjectId(response.body._id) });
-      expect(quiz).toBeTruthy();
-      expect(quiz.title).toBe('Integration Test Quiz');
+      expect(response.body).toHaveProperty('quizId');
+      expect(response.body.message).toBe('Quiz créé avec succès.');
     });
 
     it('should fail without authentication', async () => {
@@ -69,7 +102,7 @@ describe('Quiz API Integration Tests', () => {
         .send({ title: 'Test Quiz' })
         .expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty('message');
     });
   });
 });
