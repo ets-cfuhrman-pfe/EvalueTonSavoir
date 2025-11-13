@@ -7,7 +7,10 @@
     "build": "echo 'Placeholder build script (does nothing for now)'",
     "start": "node app.js",
     "dev": "cross-env NODE_ENV=development nodemon app.js",
-    "test": "jest",
+    "test": "jest --forceExit",
+    "test:api": "jest --testPathPattern=\"api|integration\"",
+    "test:unit": "jest --testPathPattern=api",
+    "test:integration": "jest --testPathPattern=integration",
     "postinstall": "patch-package"
   },
   "keywords": [],
