@@ -10,6 +10,12 @@ test.describe('Teacher Create Quiz Workflow', () => {
         const teacherContext = await browser.newContext();
         const teacherPage = await teacherContext.newPage();
 
+        // Handle all confirmation dialogs by accepting them
+        teacherPage.on('dialog', async dialog => {
+            console.log('Dialog detected:', dialog.message());
+            await dialog.accept();
+        });
+
         try {
             console.log('STEP 1: Teacher logging in...');
 
@@ -33,6 +39,28 @@ test.describe('Teacher Create Quiz Workflow', () => {
             await teacherPage.goto('/teacher/dashboard-v2');
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
+
+            // Cleanup any residual quiz from previous test runs
+            console.log('Checking for residual quiz from previous runs...');
+            const residualQuiz = teacherPage.locator('.quiz').filter({ hasText: 'Test Quiz E2E' }).first();
+            const isResidualQuizVisible = await residualQuiz.isVisible({ timeout: 5000 });
+            if (isResidualQuizVisible) {
+                console.log('Found residual quiz, deleting it...');
+                
+                // Click the menu button
+                const menuButton = residualQuiz.locator('button[aria-label="Plus d\'actions"]').first();
+                await menuButton.click();
+                
+                // Click the delete menu item
+                const deleteMenuItem = teacherPage.locator('li').filter({ hasText: 'Supprimer' }).first();
+                await deleteMenuItem.click();
+                
+                // Wait for deletion
+                await teacherPage.waitForTimeout(2000);
+                console.log('Residual quiz deleted');
+            } else {
+                console.log('No residual quiz found');
+            }
 
             console.log('STEP 2: Creating new quiz...');
 
@@ -130,15 +158,9 @@ test.describe('Teacher Create Quiz Workflow', () => {
             // Cleanup: Delete the created quiz
             console.log('Cleaning up: Deleting the created quiz...');
             
-            // Handle confirmation dialog
-            teacherPage.on('dialog', async dialog => {
-                console.log('Dialog detected:', dialog.message());
-                await dialog.accept(); // Accept the delete confirmation
-            });
-            
             // Find the quiz item and click the menu button
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'Test Quiz E2E' }).first();
-            const menuButton = quizItem.locator('button[aria-label*="Plus d\'actions"], button:has([data-testid*="more"])').first();
+            const menuButton = quizItem.locator('button[aria-label="Plus d\'actions"]').first();
             await menuButton.click();
             
             // Click the delete menu item
