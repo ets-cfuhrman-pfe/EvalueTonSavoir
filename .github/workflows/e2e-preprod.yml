@@ -95,15 +95,15 @@ jobs:
           echo "Ensuring test user exists..."
           
           # Try to login with the test user to check if it exists
-          LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/login \
+          LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}")
           
-          if echo "$LOGIN_RESPONSE" | grep -q "error"; then
+          if echo "$LOGIN_RESPONSE" | grep -q "error\|User not found"; then
             echo "Test user does not exist or login failed. Creating test user..."
             
-            # Create the test user
-            CREATE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/register \
+            # Create the test user via simple auth register
+            CREATE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
               -H "Content-Type: application/json" \
               -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}")
             
