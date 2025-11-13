@@ -5,6 +5,12 @@ const bcrypt = require('bcrypt');
 // Unmock db for integration test
 jest.unmock('../../config/db');
 
+// Mock auth-manager to avoid config file requirement
+jest.mock('../../auth/auth-manager', () => {
+  return jest.fn().mockImplementation(() => ({
+  }));
+});
+
 jest.setTimeout(30000); // Timeout for slow connections
 
 describe('Quiz API Integration Tests', () => {
@@ -14,7 +20,7 @@ describe('Quiz API Integration Tests', () => {
   let testUserPassword = process.env.TEST_USER_PASSWORD || '123456';
   let testFolderId;
 
-  beforeAll(async () => {
+  beforeAll(async () => { 
     // Connect to DB first
     const db = require('../../config/db');
     await db.connect();
