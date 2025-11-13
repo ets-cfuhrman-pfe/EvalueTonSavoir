@@ -1,15 +1,8 @@
 const request = require('supertest');
-// const jwt = require('../../middleware/jwtToken');
 const bcrypt = require('bcrypt');
 
 // Unmock db for integration test
 jest.unmock('../../config/db');
-
-// Mock auth-manager to avoid config file requirement
-jest.mock('../../auth/auth-manager', () => {
-  return jest.fn().mockImplementation(() => ({
-  }));
-});
 
 jest.setTimeout(30000); // Timeout for slow connections
 

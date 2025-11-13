@@ -69,6 +69,11 @@ jobs:
           cd server
           npm install
       
+      - name: Create test auth config
+        run: |
+          cd server
+          echo '{"auth": {"simpleauth": {"enabled": true}}}' > auth_config.json
+      
       - name: Run API integration tests
         run: |
           cd server
