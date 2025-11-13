@@ -100,7 +100,7 @@ test.describe('Teacher Create Quiz Workflow', () => {
 
 ::Question 2:: What's the capital of France? {=Paris}`;
             await giftEditor.fill(initialGift);
-            console.log('Added initial GIFT content');
+            await teacherPage.keyboard.press('Tab'); // Trigger validation
 
             // Click "Enregistrer" to save
             const saveButton = teacherPage.locator('button:has-text("Enregistrer")').first();
@@ -120,6 +120,7 @@ test.describe('Teacher Create Quiz Workflow', () => {
 
 ::Question 3:: What is 5*5? {=25}`;
             await giftEditor.fill(initialGift + additionalGift);
+            await teacherPage.keyboard.press('Tab'); // Trigger validation
             console.log('Added more GIFT content');
 
             // Click "Enregistrer" again

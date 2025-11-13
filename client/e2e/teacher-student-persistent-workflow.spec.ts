@@ -33,10 +33,10 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
             
-            // Verify dashboard loads
-            const hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 5000 });
+            // Verify dashboard loads and TESTQUIZ exists (created by setup check)
+            const hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 10000 });
             if (!hasTESTQUIZ) {
-                throw new Error('TESTQUIZ NOT FOUND on dashboard');
+                throw new Error('TESTQUIZ NOT FOUND on dashboard - setup check failed');
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
