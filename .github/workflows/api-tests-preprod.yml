@@ -74,7 +74,8 @@ jobs:
           cd server
           npm run test:api
         env:
-          MONGO_URI: ${{ secrets.MONGO_URI_PREPROD }}
+          MONGO_URI: mongodb://localhost:27017/evaluetonsavoir
+          MONGO_DATABASE: evaluetonsavoir
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: test
       
