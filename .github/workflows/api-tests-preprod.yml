@@ -82,6 +82,7 @@ jobs:
           MONGO_URI: mongodb://localhost:27017/evaluetonsavoir
           MONGO_DATABASE: evaluetonsavoir
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SESSION_Secret: ${{ secrets.SESSION_SECRET }}
           NODE_ENV: test
       
       - name: Show API test logs on failure
