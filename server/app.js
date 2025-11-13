@@ -161,4 +161,10 @@ process.on('SIGINT', async () => {
   }
 });
 
-start();
+// Export the app for testing
+module.exports = app;
+
+// Start server only if not in test
+if (require.main === module) {
+  start();
+}

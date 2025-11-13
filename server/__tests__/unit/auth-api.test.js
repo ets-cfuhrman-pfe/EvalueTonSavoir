@@ -21,12 +21,12 @@ jest.mock("../../config/logger", () => ({
 }));
 
 // Import the mocked logger
-const logger = require("../../config/logger");
+const logger = require("../../config/logger.js");
 
 // Import the actual components
-const authController = require("../../controllers/auth");
-const errorHandler = require("../../middleware/errorHandler");
-const asyncHandler = require("../../routers/routerUtils");
+const authController = require("../../controllers/auth.js");
+const errorHandler = require("../../middleware/errorHandler.js");
+const asyncHandler = require("../../routers/routerUtils.js");
 
 // Mock the AuthConfig
 jest.mock("../../config/auth.js", () => {
@@ -267,7 +267,7 @@ describe("Auth API Integration Tests", () => {
       });
 
       it("should log warning when validation method not found", () => {
-        const { createValidationMiddleware } = require("../../middleware/validation");
+        const { createValidationMiddleware } = require("../../middleware/validation.js");
         
         const fieldConfig = {
           testField: {
@@ -301,7 +301,7 @@ describe("Auth API Integration Tests", () => {
         }), { virtual: true });
 
         jest.resetModules();
-        const { createValidationMiddleware } = require("../../middleware/validation");
+        const { createValidationMiddleware } = require("../../middleware/validation.js");
         
         const fieldConfig = {
           testField: {
