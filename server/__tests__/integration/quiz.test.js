@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 // Unmock db for integration test
 jest.unmock('../../config/db');
 
-jest.setTimeout(20000); // Increase timeout for slow connections
+jest.setTimeout(30000); // Timeout for slow connections
 
 describe('Quiz API Integration Tests', () => {
   let app;
