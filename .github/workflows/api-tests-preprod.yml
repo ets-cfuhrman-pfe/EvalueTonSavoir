@@ -1,0 +1,82 @@
+name: API Integration Tests on Preprod
+on:
+  pull_request:
+    branches: [ staging ]
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    name: Run API Integration Tests Against Preprod
+    runs-on: [self-hosted, preprod]
+    
+    env:
+      PREPROD_PATH: ${{ vars.PREPROD_PATH || '/opt/EvalueTonSavoir' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Verify runner environment
+        run: |
+          echo "=== Runner Information ==="
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner Architecture: $RUNNER_ARCH"
+          echo "Runner Name: $RUNNER_NAME"
+          echo "Runner Workspace: $RUNNER_WORKSPACE"
+          echo "=== System Information ==="
+          uname -a
+          whoami
+          pwd
+      
+      - name: Verify preprod environment is running
+        run: |
+          echo "Checking if preprod services are running..."
+          
+          if ! docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps | grep -q "Up"; then
+            echo "Preprod services are not running. Starting them..."
+            cd ${{ env.PREPROD_PATH }} && docker compose up -d
+            sleep 30
+          fi
+          
+          echo "Preprod services are running:"
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+      
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to start..."
+          
+          # Wait for MongoDB
+          if ! timeout 60 bash -c 'until docker exec mongo mongosh --eval "db.runCommand({ping: 1})" > /dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 3; done'; then
+            echo "MongoDB failed to start"
+            exit 1
+          fi
+          
+          # Wait for backend
+          if ! timeout 60 bash -c 'until nc -z localhost 3000; do echo "Waiting for backend..."; sleep 3; done'; then
+            echo "Backend failed to start"
+            exit 1
+          fi
+          
+          echo "Services ready for API tests"
+      
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm install
+      
+      - name: Run API integration tests
+        run: |
+          cd server
+          npm run test:api
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI_PREPROD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: test
+      
+      - name: Show API test logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend logs ==="
+          docker logs backend --tail 50
+          echo "=== MongoDB logs ==="
+          docker logs mongo --tail 20
