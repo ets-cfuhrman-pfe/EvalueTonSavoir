@@ -19,7 +19,7 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             const emailInput = teacherPage.getByLabel('Email');
             await emailInput.fill(process.env.TEST_USER_EMAIL || '');
             
-            const passwordInput = teacherPage.getByLabel('Password');
+            const passwordInput = teacherPage.locator('input[type="password"]');
             await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
             
             const loginButton = teacherPage.locator('button:has-text("Login"), button[type="submit"]').first();
