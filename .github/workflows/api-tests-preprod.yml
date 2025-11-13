@@ -28,14 +28,21 @@ jobs:
           whoami
           pwd
       
+      - name: Validate PREPROD_PATH
+        run: |
+          if [ ! -d "$PREPROD_PATH" ]; then
+            echo "Error: PREPROD_PATH directory '$PREPROD_PATH' does not exist."
+            echo "Please set the PREPROD_PATH variable in repository variables or ensure the default directory exists."
+            exit 1
+          fi
+      
       - name: Verify preprod environment is running
         run: |
           echo "Checking if preprod services are running..."
           
           if ! docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps | grep -q "Up"; then
-            echo "Preprod services are not running. Starting them..."
-            cd ${{ env.PREPROD_PATH }} && docker compose up -d
-            sleep 30
+            echo "ERROR: Preprod services are not running. Please start them before running this workflow."
+            exit 1
           fi
           
           echo "Preprod services are running:"
@@ -89,6 +96,6 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend logs ==="
-          docker logs backend --tail 50
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml logs --tail=50 backend
           echo "=== MongoDB logs ==="
-          docker logs mongo --tail 20
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml logs --tail=20 mongo

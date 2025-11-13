@@ -9,13 +9,19 @@ jest.setTimeout(30000); // Timeout for slow connections
 describe('Quiz API Integration Tests', () => {
   let app;
   let token;
-  let testUserEmail = process.env.TEST_USER_EMAIL || 'integrationTestBot@email.com';
-  let testUserPassword = process.env.TEST_USER_PASSWORD || '123456';
+  let testUserEmail = process.env.TEST_USER_EMAIL;
+  let testUserPassword = process.env.TEST_USER_PASSWORD;
   let testFolderId;
+  let testUserId;
+  let db;
+
+  if (!testUserEmail || !testUserPassword) {
+    throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables must be set for integration tests');
+  }
 
   beforeAll(async () => { 
     // Connect to DB first
-    const db = require('../../config/db');
+    db = require('../../config/db');
     await db.connect();
     
     // Now require app (after DB is connected)
@@ -33,23 +39,25 @@ describe('Quiz API Integration Tests', () => {
         roles: ['teacher'],
         name: 'Integration Test Bot'
       })).insertedId;
+      testUserId = userId.toString();
       
       // Create default folder
       const foldersCollection = dbConn.collection('folders');
       const folderId = (await foldersCollection.insertOne({
         title: 'Dossier par Défaut',
-        userId: userId.toString(),
+        userId: testUserId,
         created_at: new Date()
       })).insertedId;
       testFolderId = folderId.toString();
     } else {
+      testUserId = existingUser._id.toString();
       // Get existing folder or create if not exists
       const foldersCollection = dbConn.collection('folders');
-      let folder = await foldersCollection.findOne({ userId: existingUser._id.toString() });
+      let folder = await foldersCollection.findOne({ userId: testUserId });
       if (!folder) {
         const folderId = (await foldersCollection.insertOne({
           title: 'Dossier par Défaut',
-          userId: existingUser._id.toString(),
+          userId: testUserId,
           created_at: new Date()
         })).insertedId;
         testFolderId = folderId.toString();
@@ -68,8 +76,18 @@ describe('Quiz API Integration Tests', () => {
   });
 
   afterAll(async () => {
+    // Cleanup test data
+    const dbConn = db.getConnection();
+    const quizzesCollection = dbConn.collection('quizzes');
+    await quizzesCollection.deleteMany({ folderId: testFolderId });
+    
+    const foldersCollection = dbConn.collection('folders');
+    await foldersCollection.deleteMany({ userId: testUserId });
+    
+    const usersCollection = dbConn.collection('users');
+    await usersCollection.deleteOne({ email: testUserEmail });
+    
     // Cleanup: close DB connection
-    const db = require('../../config/db');
     await db.closeConnection();
   });
 
