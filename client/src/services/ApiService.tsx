@@ -1264,7 +1264,37 @@ public async login(email: string, password: string): Promise<any> {
         }
     }	
 
-   
+    // Admin Routes
+
+    /**
+     * @returns Array of users if successful
+     * @throws Error if unsuccessful
+     */
+    public async getAllUsers(): Promise<any[]> {
+        try {
+            const url: string = this.constructRequestUrl(`/user/get-all-users`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`Failed to get users. Status: ${result.status}`);
+            }
+
+            return result.data.users || [];
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                throw new Error(data?.error || 'Erreur serveur inconnue lors de la requête.');
+            }
+
+            throw new Error(`Une erreur inattendue s'est produite.`);
+        }
+    }
 
 }
 
