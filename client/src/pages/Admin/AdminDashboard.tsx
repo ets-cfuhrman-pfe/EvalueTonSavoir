@@ -32,10 +32,10 @@ const AdminDashboard: React.FC = () => {
     if (loading) {
         return (
             <div className="container mt-4">
-                <h1>Admin Dashboard</h1>
+                <h1>Tableau d'administration</h1>
                 <div className="d-flex justify-content-center">
                     <div className="spinner-border" aria-hidden="true">
-                        <span className="visually-hidden">Loading...</span>
+                        <span className="visually-hidden">Chargement...</span>
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@ const AdminDashboard: React.FC = () => {
     if (error) {
         return (
             <div className="container mt-4">
-                <h1>Admin Dashboard</h1>
+                <h1>Tableau d'administration</h1>
                 <div className="alert alert-danger" role="alert">
                     {error}
                 </div>
@@ -55,23 +55,23 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Admin Dashboard</h1>
+            <h1>Tableau d'administration</h1>
             <div className="card">
                 <div className="card-header">
-                    <h5 className="card-title mb-0">All Users ({users.length})</h5>
+                    <h5 className="card-title mb-0">Tous les utilisateurs ({users.length})</h5>
                 </div>
                 <div className="card-body">
                     {users.length === 0 ? (
-                        <p className="text-muted">No users found.</p>
+                        <p className="text-muted">Aucun utilisateur trouvé.</p>
                     ) : (
                         <div className="table-responsive">
                             <table className="table table-striped table-hover">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Roles</th>
-                                        <th>Created At</th>
+                                        <th>Nom</th>
+                                        <th>Courriel</th>
+                                        <th>Rôles</th>
+                                        <th>Créé le</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -88,16 +88,16 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td>{user.email}</td>
                                             <td>
-                                                {user.roles.map((role) => (
+                                                   {(user.roles || []).map((role) => (
                                                     <span key={role} className="badge bg-secondary me-1">
                                                         {role}
                                                     </span>
                                                 ))}
                                             </td>
-                                            <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                                            <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-CA') : '—'}</td>
                                             <td>
                                                 <button className="btn btn-sm btn-outline-primary">
-                                                    View Details
+                                                    Voir les détails
                                                 </button>
                                             </td>
                                         </tr>
