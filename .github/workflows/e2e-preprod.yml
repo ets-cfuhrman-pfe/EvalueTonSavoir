@@ -1,7 +1,7 @@
 name: E2E Tests on Preprod
 on:
   pull_request:
-    branches: [ main]
+    branches: [ main, staging ]
   workflow_dispatch:
 
 jobs:
