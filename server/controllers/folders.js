@@ -64,7 +64,16 @@ class FoldersController {
     getUserFolders = async (req, res, next) => {
         try {
             const startTime = Date.now();
-            const folders = await this.folders.getUserFolders(req.user.userId);
+
+            // Allow admin to fetch folders for other users by passing ?uid=<userId>
+            // Only allow if requester has admin role
+            let targetUserId = req.user.userId;
+            const uidFromQuery = req.query?.uid;
+            if (uidFromQuery && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                targetUserId = uidFromQuery;
+            }
+
+            const folders = await this.folders.getUserFolders(targetUserId);
             const dbOperationTime = Date.now() - startTime;
     
             if (!folders) {
@@ -108,11 +117,13 @@ class FoldersController {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
-            // Is this folder mine
+            // Is this folder mine (unless admin requests it)
             const startTime = Date.now();
             const owner = await this.folders.getOwner(folderId);
-            
+
             if (owner != req.user.userId) {
+                // Allow admin to view folder content for others
+                if (!req.user || !Array.isArray(req.user.roles) || !req.user.roles.includes('admin')) {
                 // Log unauthorized folder access attempt
                 if (req.logSecurity) {
                     req.logSecurity('unauthorized_folder_access', 'warn', {
@@ -122,6 +133,7 @@ class FoldersController {
                     });
                 }
                 throw new AppError(FOLDER_NOT_FOUND);
+            }
             }
     
             const content = await this.folders.getContent(folderId);
