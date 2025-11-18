@@ -2,7 +2,7 @@ const emailer = require('../config/email.js');
 const jwt = require('../middleware/jwtToken.js');
 
 const AppError = require('../middleware/AppError.js');
-const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR, DELETE_USER_ERROR } = require('../constants/errorCodes');
+const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR, DELETE_USER_ERROR, UNAUTHORIZED_ACCESS_DENIED } = require('../constants/errorCodes');
 
 // controllers must use arrow functions to bind 'this' to the class instance in order to access class properties as callbacks in Express
 class UsersController {
@@ -108,7 +108,7 @@ class UsersController {
                 });
             }
 
-            const token = jwt.create(user.email, user._id);
+            const token = jwt.create(user.email, user._id, user.roles);
             const totalTime = Date.now() - startTime;
 
             // Log successful login
@@ -410,6 +410,47 @@ class UsersController {
                     requestedBy: req.user?.userId,
                     error: error.message,
                     errorCode: error.statusCode
+                });
+            }
+            return next(error);
+        }
+    }
+
+    getAllUsers = async (req, res, next) => {
+        try {
+            // Check if user has admin role
+            if (!req.user || !req.user.roles || !req.user.roles.includes('admin')) {
+                throw new AppError(UNAUTHORIZED_ACCESS_DENIED);
+            }
+
+            const startTime = Date.now();
+            const users = await this.users.getAllUsers();
+            const dbOperationTime = Date.now() - startTime;
+
+            // Log database operation
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'users', dbOperationTime, true);
+            }
+
+            // Log admin action
+            if (req.logAction) {
+                req.logAction('admin_get_all_users', {
+                    requestedBy: req.user.userId,
+                    userCount: users.length,
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
+            }
+
+            return res.status(200).json({
+                users: users
+            });
+
+        } catch (error) {
+            // Log admin action failure
+            if (req.logSecurity) {
+                req.logSecurity('admin_get_all_users_error', 'error', {
+                    requestedBy: req.user?.userId,
+                    error: error.message
                 });
             }
             return next(error);
