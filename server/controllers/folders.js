@@ -94,10 +94,21 @@ class FoldersController {
             }
             
             if (req.logAction) {
+                // Regular user folder retrieval
                 req.logAction('folders_retrieved', {
                     folderCount: folders.length,
                     dbOperationTime: `${dbOperationTime}ms`
                 });
+
+                // If an admin fetched folders for another user, log admin audit event
+                if (uidFromQuery && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                    req.logAction('admin_get_user_folders', {
+                        requestedBy: req.user.userId,
+                        targetUserId: targetUserId,
+                        folderCount: folders.length,
+                        dbOperationTime: `${dbOperationTime}ms`
+                    });
+                }
             }
     
             return res.status(200).json({
@@ -158,11 +169,23 @@ class FoldersController {
             }
             
             if (req.logAction) {
+                // Regular user folder content access
                 req.logAction('folder_content_accessed', {
                     folderId,
                     contentCount: content.length,
                     dbOperationTime: `${dbOperationTime}ms`
                 });
+
+                // If an admin accessed another user's folder content, log admin audit event
+                if (owner && owner !== req.user.userId && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                    req.logAction('admin_get_user_folder_content', {
+                        requestedBy: req.user.userId,
+                        folderId,
+                        targetUserId: owner,
+                        contentCount: content.length,
+                        dbOperationTime: `${dbOperationTime}ms`
+                    });
+                }
             }
     
             return res.status(200).json({
