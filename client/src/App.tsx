@@ -23,8 +23,10 @@ import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
 
+// Pages admin
+import AdminDashboard from './pages/Admin/AdminDashboard';
+
 // Components
-import InterfaceToggle from './components/InterfaceToggle/InterfaceToggle';
 
 // Header/Footer import
 import Header from './components/Header/Header';
@@ -76,10 +78,13 @@ const App: React.FC = () => {
 
     return (
         <>
-            <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
-            {shouldShowInterfaceToggle() && (
-                <InterfaceToggle currentVersion={getCurrentVersion()} />
-            )}
+            <Header 
+                isLoggedIn={isAuthenticated} 
+                isTeacherAuthenticated={isTeacherAuthenticated} 
+                handleLogout={handleLogout}
+                showInterfaceToggle={shouldShowInterfaceToggle()}
+                currentVersion={getCurrentVersion()}
+            />
             <div className="content">
                 <div className="app">
                     <main>
@@ -115,6 +120,12 @@ const App: React.FC = () => {
                         <Route
                             path="/teacher/manage-room-v2/:quizId"
                             element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
+                        />
+
+                        {/* Pages admin */}
+                        <Route
+                            path="/admin/dashboard"
+                            element={isTeacherAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
