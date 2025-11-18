@@ -100,13 +100,6 @@ class UsersController {
                 throw new AppError(LOGIN_CREDENTIALS_ERROR);
             }
 
-            // Log successful database operation
-            if (req.logDbOperation) {
-                req.logDbOperation('select', 'users', dbOperationTime, true, {
-                    userId: user._id,
-                    email: user.email
-                });
-            }
 
             const token = jwt.create(user.email, user._id, user.roles);
             const totalTime = Date.now() - startTime;
@@ -425,6 +418,11 @@ class UsersController {
 
             const startTime = Date.now();
             const users = await this.users.getAllUsers();
+
+            const usersWithCreatedAt = users.map(u => ({
+                ...u,
+                createdAt: u.created_at || u.createdAt || null
+            }));
             const dbOperationTime = Date.now() - startTime;
 
             // Log database operation
@@ -442,7 +440,7 @@ class UsersController {
             }
 
             return res.status(200).json({
-                users: users
+                users: usersWithCreatedAt
             });
 
         } catch (error) {
