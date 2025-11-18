@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ApiService from '../../services/ApiService';
 
 interface User {
@@ -13,6 +14,7 @@ const AdminDashboard: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -81,7 +83,7 @@ const AdminDashboard: React.FC = () => {
                                             <td>
                                                 <button 
                                                     className="btn btn-link p-0 text-decoration-none"
-                                                    onClick={() => {/* TODO: Navigate to user details */}}
+                                                    onClick={() => navigate(`/admin/user/${user._id}`, { state: { user } })}
                                                 >
                                                     {user.name}
                                                 </button>
@@ -96,7 +98,10 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-CA') : '—'}</td>
                                             <td>
-                                                <button className="btn btn-sm btn-outline-primary">
+                                                <button 
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    onClick={() => navigate(`/admin/user/${user._id}`, { state: { user } })}
+                                                >
                                                     Voir les détails
                                                 </button>
                                             </td>
