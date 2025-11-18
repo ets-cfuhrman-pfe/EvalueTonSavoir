@@ -56,7 +56,7 @@ const AdminDashboard: React.FC = () => {
     }
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4 admin-dashboard">
             <h1>Tableau d'administration</h1>
             <div className="card">
                 <div className="card-header">
