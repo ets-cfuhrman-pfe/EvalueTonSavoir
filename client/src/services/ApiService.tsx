@@ -447,6 +447,36 @@ public async login(email: string, password: string): Promise<any> {
     }
 
     /**
+     * Admin: get folders for a specified user (requires admin privileges). Uses query param `uid`.
+     */
+    public async getUserFoldersByUserId(userId: string): Promise<FolderType[] | string> {
+        try {
+            const url: string = this.constructRequestUrl(`/folder/getUserFolders`);
+            const headers = this.constructRequestHeaders();
+
+            const params = { uid: userId } as any;
+            const result: AxiosResponse = await axios.get(url, { headers: headers, params });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention des dossiers utilisateur a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.data.map((folder: FolderType) => ({ _id: folder._id, title: folder.title }));
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`
+        }
+    }
+
+    /**
      * @returns quiz array if successful 
      * @returns A error string if unsuccessful,
      */
@@ -468,6 +498,44 @@ public async login(email: string, password: string): Promise<any> {
 
             return result.data.data.map((quiz: QuizType) => ({ _id: quiz._id, title: quiz.title, content: quiz.content }));
 
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`
+        }
+    }
+
+    /**
+     * Admin: get quizzes for a specified user by enumerating folders and their content.
+     */
+    public async getQuizzesByUserId(userId: string): Promise<QuizType[] | string> {
+        try {
+            if (!userId) {
+                throw new Error(`L'ID utilisateur est requis.`);
+            }
+
+            const folders = await this.getUserFoldersByUserId(userId);
+
+            if (!Array.isArray(folders)) {
+                return 'Impossible d\'obtenir les dossiers pour cet utilisateur.';
+            }
+
+            const quizzes: QuizType[] = [];
+
+            for (const folder of folders) {
+                const folderContent = await this.getFolderContent(folder._id);
+                if (Array.isArray(folderContent)) {
+                    quizzes.push(...folderContent);
+                }
+            }
+
+            return quizzes;
         } catch (error) {
             console.log("Error details: ", error);
 
@@ -1203,6 +1271,42 @@ public async login(email: string, password: string): Promise<any> {
                 const data = err.response?.data as { error: string } | undefined;
                 const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
                 throw new Error(`L'enregistrement a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
+    /**
+     * Admin: get images for a specified user (requires admin privileges). Uses ?uid= on the endpoint.
+     */
+    public async getUserImagesByUserId(userId: string, page = 1, limit = 50): Promise<ImagesResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/getUserImages`);
+            const headers = this.constructRequestHeaders();
+            let params : ImagesParams = { page: page, limit: limit };
+
+            if (userId && userId.length > 0) {
+                (params as any).uid = userId;
+            }
+
+            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'affichage des images de l'utilisateur a échoué. Status: ${result.status}`);
+            }
+            const images = result.data;
+
+            return images;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'affichage des images a échoué. Status: ${msg}`);
             }
 
             throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
