@@ -16,5 +16,6 @@ router.post("/login", validateUserLogin, asyncHandler(users.login));
 router.post("/reset-password", validateEmailOnly, asyncHandler(users.resetPassword));
 router.post("/change-password", jwt.authenticate, validatePasswordChange, asyncHandler(users.changePassword));
 router.post("/delete-user", jwt.authenticate, validateUserLogin, asyncHandler(users.delete));
+router.get("/get-all-users", jwt.authenticate, asyncHandler(users.getAllUsers));
 
 module.exports = router;
