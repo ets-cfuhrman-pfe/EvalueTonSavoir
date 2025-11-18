@@ -12,6 +12,11 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Avatar } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 const AdminUserDetails: React.FC = () => {
     const params = useParams();
@@ -25,6 +30,9 @@ const AdminUserDetails: React.FC = () => {
     const [rooms, setRooms] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [openImageModal, setOpenImageModal] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+    const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -89,8 +97,8 @@ const AdminUserDetails: React.FC = () => {
             </div>
             <div className="card">
                 <div className="card-body">
-                    <div className="d-flex align-items-center mb-3">
-                        <Avatar className="me-3">{user?.name?.charAt(0) || 'U'}</Avatar>
+                    <div className="d-flex align-items-center mb-3 admin-user-header">
+                        <Avatar className="me-3 admin-avatar">{user?.name?.charAt(0) || 'U'}</Avatar>
                         <div>
                             <h4 className="mb-0">{user?.name || 'Utilisateur'}</h4>
                             <p className="mb-0 text-muted">{user?.email}</p>
@@ -140,20 +148,57 @@ const AdminUserDetails: React.FC = () => {
                             <Typography>Images ({images.length})</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {images.length === 0 ? (
+                                {images.length === 0 ? (
                                 <Typography className="text-muted">Aucune image trouvée.</Typography>
-                            ) : (
-                                <div className="d-flex gap-3 flex-wrap">
+                                ) : (
+                                    <div className="admin-images-grid">
                                     {images.map((img: any) => (
-                                        <div key={img.id} className="border rounded p-1" style={{ width: 120 }}>
-                                            <img src={`${ENV_VARIABLES.VITE_BACKEND_URL}/api/image/get/${img.id}`} alt={img.file_name || "image"} className="img-fluid" />
-                                            <div className="small text-muted text-truncate">{img.file_name}</div>
+                                        <div key={img.id} className="admin-image-card admin-image-card--icon">
+                                            <img
+                                                src={`${ENV_VARIABLES.VITE_BACKEND_URL}/api/image/get/${img.id}`}
+                                                alt={img.file_name || "image"}
+                                                className="img-fluid admin-image-clickable"
+                                                title={img.file_name || "image"}
+                                                loading="lazy"
+                                                onClick={() => {
+                                                    setSelectedImageUrl(`${ENV_VARIABLES.VITE_BACKEND_URL}/api/image/get/${img.id}`);
+                                                    setSelectedImageName(img.file_name || 'image');
+                                                    setOpenImageModal(true);
+                                                }}
+                                            />
+                                            <div className="admin-image-caption">{img.file_name}</div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </AccordionDetails>
                     </Accordion>
+
+                    {/* Image preview modal */}
+                    <Dialog
+                        open={openImageModal}
+                        onClose={() => setOpenImageModal(false)}
+                        maxWidth="lg"
+                        fullWidth
+                        aria-labelledby="image-dialog-title"
+                    >
+                        <DialogTitle id="image-dialog-title">
+                            {selectedImageName}
+                            <IconButton
+                                aria-label="close"
+                                onClick={() => setOpenImageModal(false)}
+                                sx={{ position: 'absolute', right: 8, top: 8 }}
+                                size="large"
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent dividers className="admin-image-modal">
+                            {selectedImageUrl ? (
+                                <img src={selectedImageUrl} alt={selectedImageName || 'image'} />
+                            ) : null}
+                        </DialogContent>
+                    </Dialog>
 
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
