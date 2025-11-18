@@ -25,6 +25,7 @@ import AuthDrawer from './pages/AuthManager/AuthDrawer';
 
 // Pages admin
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminUserDetails from './pages/Admin/AdminUserDetails';
 
 // Components
 
@@ -126,6 +127,10 @@ const App: React.FC = () => {
                         <Route
                             path="/admin/dashboard"
                             element={isTeacherAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/admin/user/:id"
+                            element={isTeacherAuthenticated ? <AdminUserDetails /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
