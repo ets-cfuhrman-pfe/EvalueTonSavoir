@@ -89,6 +89,12 @@ const createTestApp = () => {
     validateUserRegistration,
     asyncHandler(usersController.register)
   );
+  // Admin route for tests
+  app.get(
+    "/api/user/get-all-users",
+    jwtMiddleware.authenticate,
+    asyncHandler(usersController.getAllUsers)
+  );
   app.post(
     "/api/user/login",
     validateUserLogin,
@@ -732,6 +738,53 @@ describe("Users API Integration Tests", () => {
         .expect(500);
 
       expect(response.body.message).toBe("Une erreur s'est produite lors de suppression de l'utilisateur.");
+    });
+  });
+
+  describe("GET /api/user/get-all-users", () => {
+    it("should allow admin user to fetch all users", async () => {
+      const userList = [
+        { _id: "1", email: "a@example.com", name: "A", roles: ["teacher"] },
+        { _id: "2", email: "b@example.com", name: "B", roles: ["admin", "teacher"] }
+      ];
+      mockUsersModel.getAllUsers = jest.fn().mockResolvedValue(userList);
+
+      const adminUser = { email: 'admin@example.com', userId: 'adminUser', roles: ['admin'] };
+      const adminToken = jwt.sign(adminUser, process.env.JWT_SECRET);
+
+      const response = await request(app)
+        .get('/api/user/get-all-users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body.users).toBeDefined();
+      expect(response.body.users.length).toBe(2);
+      expect(mockUsersModel.getAllUsers).toHaveBeenCalled();
+    });
+
+    it("should deny access to non-admin user", async () => {
+      mockUsersModel.getAllUsers = jest.fn();
+
+      // token (authToken) from before has roles ['user'] and should be denied
+      const response = await request(app)
+        .get('/api/user/get-all-users')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(403);
+
+      expect(response.body.message).toBe('Accès refusé. Rôle administrateur requis.');
+      expect(mockUsersModel.getAllUsers).not.toHaveBeenCalled();
+    });
+
+    it("should deny access when token missing admin role even if roles present", async () => {
+      // Create token with roles but none include 'admin'
+      const tokenWithRoles = jwt.sign({ email: 'user2@example.com', userId: 'user2', roles: ['teacher'] }, process.env.JWT_SECRET);
+
+      const response = await request(app)
+        .get('/api/user/get-all-users')
+        .set('Authorization', `Bearer ${tokenWithRoles}`)
+        .expect(403);
+
+      expect(response.body.message).toBe('Accès refusé. Rôle administrateur requis.');
     });
   });
 });
