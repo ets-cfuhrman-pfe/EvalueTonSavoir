@@ -163,6 +163,20 @@ class ImagesController {
             }
             
             res.setHeader('Content-Type', 'application/json');
+
+            // If an admin requested images for another user (uid query param present), log admin action
+            const uidFromQuery = req.query?.uid;
+            if (uidFromQuery && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                if (req.logAction) {
+                    req.logAction('admin_get_user_images', {
+                        requestedBy: req.user.userId,
+                        targetUserId: uidFromQuery,
+                        page,
+                        limit,
+                        imageCount: images.length
+                    });
+                }
+            }
             return res.status(200).json(images);
         } catch (error) {
             return next(error);
