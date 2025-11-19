@@ -138,8 +138,19 @@ const EditorQuizV2: React.FC = () => {
 
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
-                setFilteredValue(content);
-                setValue(quiz.content.join('\n\n'));
+
+                // Normalize content: support array or string
+                if (Array.isArray(content)) {
+                    setFilteredValue(content);
+                    setValue(content.join('\n\n'));
+                } else if (typeof content === 'string') {
+                    const arr = content.split(/\n{2,}/).filter(Boolean);
+                    setFilteredValue(arr);
+                    setValue(content);
+                } else {
+                    setFilteredValue([]);
+                    setValue('');
+                }
                 
                 // Set initial state for existing quiz
                 setInitialQuizState({
