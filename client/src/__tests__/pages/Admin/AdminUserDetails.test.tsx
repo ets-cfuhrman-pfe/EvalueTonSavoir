@@ -9,6 +9,28 @@ import userEvent from '@testing-library/user-event';
 jest.mock('../../../services/ApiService');
 const mockApiService = ApiService as jest.Mocked<typeof ApiService>;
 
+const originalCreateObjectURL = (globalThis.URL as any).createObjectURL;
+const originalRevokeObjectURL = (globalThis.URL as any).revokeObjectURL;
+
+beforeAll(() => {
+  (globalThis.URL as any).createObjectURL = jest.fn(() => 'blob:mock-url');
+  (globalThis.URL as any).revokeObjectURL = jest.fn();
+});
+
+afterAll(() => {
+  if (originalCreateObjectURL) {
+    (globalThis.URL as any).createObjectURL = originalCreateObjectURL;
+  } else {
+    delete (globalThis.URL as any).createObjectURL;
+  }
+
+  if (originalRevokeObjectURL) {
+    (globalThis.URL as any).revokeObjectURL = originalRevokeObjectURL;
+  } else {
+    delete (globalThis.URL as any).revokeObjectURL;
+  }
+});
+
 const defaultUser = { _id: 'user123', name: 'Test User', email: 'test@example.com' };
 const foldersHeading = 'Dossiers';
 const quizzesHeading = 'Quizs';
@@ -28,6 +50,8 @@ const modalImageFilename = 'MyImage.png';
 describe('AdminUserDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockApiService.exportAdminUserResource.mockResolvedValue({ blob: new Blob(['[]'], { type: 'application/json' }), fileName: 'export.json' });
+    mockApiService.importAdminUserResource.mockResolvedValue({ inserted: 1, updated: 0, removed: 0, mode: 'append' });
   });
 
   test('shows loading spinner initially', async () => {
@@ -171,6 +195,54 @@ describe('AdminUserDetails', () => {
     // The header falls back to "Utilisateur"
     // Wait for the content to load so the header with the fallback will be rendered
     await waitFor(() => expect(screen.getByText('Utilisateur')).toBeInTheDocument());
+  });
+
+  test('download button triggers admin export endpoint', async () => {
+    const folders = [ { _id: 'f1', title: folderTitle } as any ];
+    mockApiService.getUserFoldersByUserId.mockResolvedValue(folders);
+    mockApiService.getQuizzesByUserId.mockResolvedValue([]);
+    mockApiService.getUserImagesByUserId.mockResolvedValue({ images: [], total: 0 } as any);
+    mockApiService.getRoomTitleByUserId.mockResolvedValue([]);
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/admin/user/user123', state: { user: defaultUser } }]}>
+        <Routes>
+          <Route path="/admin/user/:id" element={<AdminUserDetails />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(`${foldersHeading} (${folders.length})`)).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: `${foldersHeading} (${folders.length})` }));
+    const downloadButtons = screen.getAllByRole('button', { name: 'Télécharger' });
+    await userEvent.click(downloadButtons[0]);
+
+    await waitFor(() => expect(mockApiService.exportAdminUserResource).toHaveBeenCalledWith('user123', 'folders'));
+  });
+
+  test('upload input calls admin import endpoint', async () => {
+    mockApiService.getUserFoldersByUserId.mockResolvedValue([]);
+    mockApiService.getQuizzesByUserId.mockResolvedValue([]);
+    mockApiService.getUserImagesByUserId.mockResolvedValue({ images: [], total: 0 } as any);
+    mockApiService.getRoomTitleByUserId.mockResolvedValue([]);
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/admin/user/user123', state: { user: defaultUser } }]}>
+        <Routes>
+          <Route path="/admin/user/:id" element={<AdminUserDetails />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(`${foldersHeading} (0)`)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: `${foldersHeading} (0)` }));
+
+    const fileInput = screen.getByLabelText('Téléverser des dossiers');
+    const file = new File([JSON.stringify([])], 'folders.json', { type: 'application/json' });
+    await userEvent.upload(fileInput, file);
+
+    await waitFor(() => expect(mockApiService.importAdminUserResource).toHaveBeenCalledWith('user123', 'folders', file, 'append'));
   });
 
 });
