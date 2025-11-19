@@ -19,7 +19,28 @@ class ApiService {
     }
 
     private constructRequestUrl(endpoint: string): string {
-        return `${this.BASE_URL}/api${endpoint}`;
+        let base = this.BASE_URL || '';
+
+        // Fallback: use VITE env if not defined
+        if (!base && typeof globalThis !== 'undefined') {
+            base = ENV_VARIABLES?.VITE_BACKEND_URL || '';
+        }
+
+        // Fallback to current origin if still not defined or malformed
+        if (!base || base.startsWith(':') || base === 'http://' || base === 'https://') {
+            if (typeof globalThis !== 'undefined' && globalThis.location) {
+                const { protocol, hostname, port } = globalThis.location;
+                base = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+            } else {
+                // As a last resort, use explicit localhost with default port
+                base = 'http://localhost:4400';
+            }
+        }
+
+        // Ensure no trailing slash
+        base = base.replace(/\/$/, '');
+
+        return `${base}/api${endpoint}`;
     }
 
     private constructRequestHeaders() {
@@ -496,7 +517,16 @@ public async login(email: string, password: string): Promise<any> {
                 throw new Error(`L'obtention des quiz du dossier a échoué. Status: ${result.status}`);
             }
 
-            return result.data.data.map((quiz: QuizType) => ({ _id: quiz._id, title: quiz.title, content: quiz.content }));
+            // normalize content in each quiz before returning
+            return result.data.data.map((rawQuiz: QuizType) => {
+                const copy: QuizType = { _id: rawQuiz._id, title: rawQuiz.title, content: rawQuiz.content } as QuizType;
+
+                if (copy && typeof (copy as any).content === 'string') {
+                    copy.content = (copy.content as any).split(/\n{2,}/).filter(Boolean);
+                }
+
+                return copy;
+            });
 
         } catch (error) {
             console.log("Error details: ", error);
@@ -742,7 +772,13 @@ public async login(email: string, password: string): Promise<any> {
                 throw new Error(`L'obtention du quiz a échoué. Status: ${result.status}`);
             }
 
-            return result.data.data as QuizType;
+            // Ensure the quiz content is always an array in the client
+            const quizResult = result.data.data as QuizType;
+            if (quizResult && typeof (quizResult as any).content === 'string') {
+                quizResult.content = (quizResult as any).content.split(/\n{2,}/).filter(Boolean);
+            }
+
+            return quizResult;
 
         } catch (error) {
             console.log("Error details: ", error);
