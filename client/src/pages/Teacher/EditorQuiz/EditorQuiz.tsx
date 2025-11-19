@@ -86,22 +86,33 @@ const QuizForm: React.FC = () => {
                     return;
                 }
 
-                const quiz = await ApiService.getQuiz(id) as QuizType;
+                const quiz = await ApiService.getQuiz(id);
 
-                if (!quiz) {
+                // ApiService returns an error string on failure; handle both falsy and error string
+                if (!quiz || typeof quiz === 'string') {
                     window.alert(`Une erreur est survenue.\n Le quiz ${id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
                     console.error('Quiz not found for id:', id);
                     navigate('/teacher/dashboard');
                     return;
                 }
-
                 setQuiz(quiz as QuizType);
                 const { title, content, folderId } = quiz;
 
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
-                setFilteredValue(content);
-                setValue(quiz.content.join('\n\n'));
+                // Normalize content: may be stored as string (legacy) or an array.
+                if (Array.isArray(content)) {
+                    setFilteredValue(content);
+                    setValue(content.join('\n\n'));
+                } else if (typeof content === 'string') {
+                    // Convert the string content into an array of questions by splitting on blank lines
+                    const linesArray = content.split(/\n{2,}/).filter(Boolean);
+                    setFilteredValue(linesArray);
+                    setValue(content);
+                } else {
+                    setFilteredValue([]);
+                    setValue('');
+                }
 
             } catch (error) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
