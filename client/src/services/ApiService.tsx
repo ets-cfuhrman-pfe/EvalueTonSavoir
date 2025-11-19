@@ -8,10 +8,12 @@ import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 
 type ApiResponse = boolean | string;
+export type AdminDataResource = 'folders' | 'quizzes' | 'images' | 'rooms';
+type AdminImportResponse = { inserted: number; updated: number; removed: number; mode: string };
 
 class ApiService {
-    private BASE_URL: string;
-    private TTL: number;
+    private readonly BASE_URL: string;
+    private readonly TTL: number;
 
     constructor() {
         this.BASE_URL = ENV_VARIABLES.VITE_BACKEND_URL;
@@ -55,6 +57,16 @@ class ApiService {
                 'Content-Type': 'application/json'
             };
         }
+    }
+
+    private constructAuthOnlyHeaders() {
+        if (this.isLoggedIn()) {
+            const token = this.getToken();
+            if (token) {
+                return { Authorization: `Bearer ${token}` };
+            }
+        }
+        return {};
     }
 
     // Helpers
@@ -111,18 +123,19 @@ class ApiService {
         }
 
         try {
-            const decodedToken = jwtDecode(token) as { roles: string[] };
+            const decodedToken = jwtDecode<{ roles?: string[] }>(token);
 
             /////// REMOVE BELOW
             // automatically add teacher role if not present
-            if (!decodedToken.roles.includes('teacher')) {
-                decodedToken.roles.push('teacher');
+            const roles = decodedToken.roles ?? [];
+            if (!roles.includes('teacher')) {
+                roles.push('teacher');
             }
             ////// REMOVE ABOVE
-            const userRoles = decodedToken.roles;
+            const userRoles = roles;
             const requiredRole = 'teacher';
 
-            if (!userRoles || !userRoles.includes(requiredRole)) {
+            if (!userRoles?.includes(requiredRole)) {
                 return false;
             }
 
@@ -167,7 +180,7 @@ class ApiService {
             return "";
         }
 
-        const jsonObj = jwtDecode(token) as { userId: string };
+        const jsonObj = jwtDecode<{ userId?: string }>(token);
         
         if (!jsonObj.userId) {
             return "";
@@ -213,8 +226,7 @@ class ApiService {
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
             if (result.status == 200) {
-                //window.location.href = result.request.responseURL;
-                window.location.href = '/login';
+                globalThis.location.href = '/login';
             }
             else {
                 throw new Error(`La connexion a échoué. Status: ${result.status}`);
@@ -255,10 +267,9 @@ public async login(email: string, password: string): Promise<any> {
 
         // If login is successful, redirect the user
         if (result.status === 200) {
-            //window.location.href = result.request.responseURL;
             this.saveToken(result.data.token);
             this.saveUsername(result.data.username);
-            window.location.href = '/teacher/dashboard-v2';
+            globalThis.location.href = '/teacher/dashboard-v2';
             return true;
         } else {
             throw new Error(`La connexion a échoué. Statut: ${result.status}`);
@@ -872,7 +883,6 @@ public async login(email: string, password: string): Promise<any> {
             if (!quizId || !newFolderId) {
                 throw new Error(`Le quizId et le nouveau dossier sont requis.`);
             }
-            //console.log(quizId);
             const url: string = this.constructRequestUrl(`/quiz/move`);
             const headers = this.constructRequestHeaders();
             const body = { quizId, newFolderId };
@@ -1091,7 +1101,7 @@ public async login(email: string, password: string): Promise<any> {
             return `Une erreur inattendue s'est produite.`;
         }
     }
-    public async getRoomTitle(roomId: string): Promise<string | string> {
+    public async getRoomTitle(roomId: string): Promise<string> {
         try {
             if (!roomId) {
                 throw new Error(`L'ID de la salle est requis.`);
@@ -1148,7 +1158,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async deleteRoom(roomId: string): Promise<string | string> {
+    public async deleteRoom(roomId: string): Promise<string> {
         try {
             if (!roomId) {
                 throw new Error(`L'ID de la salle est requis.`);
@@ -1175,7 +1185,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async renameRoom(roomId: string, newTitle: string): Promise<string | string> {
+    public async renameRoom(roomId: string, newTitle: string): Promise<string> {
         try {
             if (!roomId || !newTitle) {
                 throw new Error(`L'ID de la salle et le nouveau titre sont requis.`);
@@ -1406,6 +1416,80 @@ public async login(email: string, password: string): Promise<any> {
 
     // Admin Routes
 
+    public async exportAdminUserResource(userId: string, resource: AdminDataResource): Promise<{ blob: Blob; fileName: string }> {
+        try {
+            if (!userId) {
+                throw new Error("L'ID utilisateur est requis.");
+            }
+
+            const url: string = this.constructRequestUrl(`/admin/data/${resource}/${userId}/export`);
+            const headers = this.constructRequestHeaders();
+            const response = await axios.get<Blob>(url, { headers, responseType: 'blob' });
+
+            if (response.status !== 200 || !response.data) {
+                throw new Error('Le téléchargement des données administrateur a échoué.');
+            }
+
+            const disposition = (response.headers['content-disposition'] as string | undefined)
+                ?? (response.headers['Content-Disposition'] as string | undefined);
+            const fileName = this.resolveAdminDownloadFilename(resource, userId, disposition);
+            return { blob: response.data, fileName };
+        } catch (error) {
+            console.log('Error details: ', error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError<{ error?: string; message?: string }>;
+                const data = err.response?.data;
+                throw new Error(data?.message || data?.error || 'Erreur lors du téléchargement des données administrateur.');
+            }
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Erreur inattendue lors du téléchargement des données administrateur.');
+        }
+    }
+
+    public async importAdminUserResource(
+        userId: string,
+        resource: AdminDataResource,
+        file: File,
+        mode: 'replace' | 'append' = 'append'
+    ): Promise<AdminImportResponse> {
+        try {
+            if (!userId) {
+                throw new Error("L'ID utilisateur est requis.");
+            }
+            if (!file) {
+                throw new Error('Le fichier est requis.');
+            }
+
+            const normalizedMode = mode === 'replace' ? 'replace' : 'append';
+            const url: string = this.constructRequestUrl(`/admin/data/${resource}/${userId}/import?mode=${normalizedMode}`);
+            const headers = this.constructAuthOnlyHeaders();
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await axios.post<AdminImportResponse>(url, formData, { headers });
+
+            if (response.status !== 200) {
+                throw new Error('Le téléversement des données administrateur a échoué.');
+            }
+
+            return response.data;
+        } catch (error) {
+            console.log('Error details: ', error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError<{ error?: string; message?: string }>;
+                const data = err.response?.data;
+                throw new Error(data?.message || data?.error || 'Erreur lors du téléversement des données administrateur.');
+            }
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Erreur inattendue lors du téléversement des données administrateur.');
+        }
+    }
+
     /**
      * @returns Array of users if successful
      * @throws Error if unsuccessful
@@ -1436,6 +1520,29 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+    private resolveAdminDownloadFilename(resource: AdminDataResource, userId: string, disposition?: string): string {
+        if (disposition) {
+            const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+            if (utf8Match?.[1]) {
+                try {
+                    return decodeURIComponent(utf8Match[1]);
+                } catch (error) {
+                    console.warn('Filename decode error:', error);
+                }
+            }
+
+            const simpleMatch = /filename="?([^";]+)"?/i.exec(disposition);
+            if (simpleMatch?.[1]) {
+                return simpleMatch[1];
+            }
+        }
+
+        const safeTimestamp = new Date()
+            .toISOString()
+            .replaceAll(':', '-')
+            .replaceAll('.', '-');
+        return `${resource}-${userId}-${safeTimestamp}.json`;
+    }
 }
 
 const apiService = new ApiService();
