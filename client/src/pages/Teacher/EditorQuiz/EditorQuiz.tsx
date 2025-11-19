@@ -95,24 +95,16 @@ const QuizForm: React.FC = () => {
                     navigate('/teacher/dashboard');
                     return;
                 }
-                setQuiz(quiz as QuizType);
-                const { title, content, folderId } = quiz;
+                // At this point Quiz is not a string; safely treat as QuizType
+                const typedQuiz = quiz as QuizType;
+                setQuiz(typedQuiz);
+                const { title, content, folderId } = typedQuiz;
 
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
-                // Normalize content: may be stored as string (legacy) or an array.
-                if (Array.isArray(content)) {
-                    setFilteredValue(content);
-                    setValue(content.join('\n\n'));
-                } else if (typeof content === 'string') {
-                    // Convert the string content into an array of questions by splitting on blank lines
-                    const linesArray = content.split(/\n{2,}/).filter(Boolean);
-                    setFilteredValue(linesArray);
-                    setValue(content);
-                } else {
-                    setFilteredValue([]);
-                    setValue('');
-                }
+                // Content is normalized as string[] by ApiService
+                setFilteredValue(content);
+                setValue(content.join('\n\n'));
 
             } catch (error) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
