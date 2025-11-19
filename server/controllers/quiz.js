@@ -131,7 +131,7 @@ class QuizController {
     
             // Is this quiz mine OR is the current user an admin?
             // Admin users should be able to view any quiz for auditing purposes.
-            const isAdmin = req.user?.roles && req.user.roles.includes && req.user.roles.includes('admin');
+            const isAdmin = Array.isArray(req.user?.roles) && req.user.roles.includes('admin');
 
             if (content.userId != req.user.userId && !isAdmin) {
                 // Log unauthorized quiz access attempt
