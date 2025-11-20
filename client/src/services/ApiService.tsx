@@ -325,7 +325,7 @@ public async login(email: string, password: string): Promise<any> {
 
 
     /**
-     * @returns true if  successful 
+     * @returns true if successful 
      * @returns A error string if unsuccessful,
      */
     public async resetPassword(email: string): Promise<ApiResponse> {
