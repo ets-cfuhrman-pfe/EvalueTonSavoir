@@ -9,7 +9,6 @@ import { RoomType } from 'src/Types/RoomType';
 
 type ApiResponse = boolean | string;
 export type AdminDataResource = 'folders' | 'quizzes' | 'images' | 'rooms';
-type AdminImportResponse = { inserted: number; updated: number; removed: number; mode: string };
 
 class ApiService {
     private readonly BASE_URL: string;
@@ -57,16 +56,6 @@ class ApiService {
                 'Content-Type': 'application/json'
             };
         }
-    }
-
-    private constructAuthOnlyHeaders() {
-        if (this.isLoggedIn()) {
-            const token = this.getToken();
-            if (token) {
-                return { Authorization: `Bearer ${token}` };
-            }
-        }
-        return {};
     }
 
     // Helpers
@@ -1523,30 +1512,6 @@ public async login(email: string, password: string): Promise<any> {
 
             throw new Error(`Une erreur inattendue s'est produite.`);
         }
-    }
-
-    private resolveAdminDownloadFilename(resource: AdminDataResource, userId: string, disposition?: string): string {
-        if (disposition) {
-            const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
-            if (utf8Match?.[1]) {
-                try {
-                    return decodeURIComponent(utf8Match[1]);
-                } catch (error) {
-                    console.warn('Filename decode error:', error);
-                }
-            }
-
-            const simpleMatch = /filename="?([^";]+)"?/i.exec(disposition);
-            if (simpleMatch?.[1]) {
-                return simpleMatch[1];
-            }
-        }
-
-        const safeTimestamp = new Date()
-            .toISOString()
-            .replaceAll(':', '-')
-            .replaceAll('.', '-');
-        return `${resource}-${userId}-${safeTimestamp}.json`;
     }
 }
 
