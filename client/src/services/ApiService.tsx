@@ -1445,38 +1445,6 @@ public async login(email: string, password: string): Promise<any> {
 
     // Admin Routes
 
-    public async exportAdminUserResource(userId: string, resource: AdminDataResource): Promise<{ blob: Blob; fileName: string }> {
-        try {
-            if (!userId) {
-                throw new Error("L'ID utilisateur est requis.");
-            }
-
-            const url: string = this.constructRequestUrl(`/admin/data/${resource}/${userId}/export`);
-            const headers = this.constructRequestHeaders();
-            const response = await axios.get<Blob>(url, { headers, responseType: 'blob' });
-
-            if (response.status !== 200 || !response.data) {
-                throw new Error('Le téléchargement des données administrateur a échoué.');
-            }
-
-            const disposition = (response.headers['content-disposition'] as string | undefined)
-                ?? (response.headers['Content-Disposition'] as string | undefined);
-            const fileName = this.resolveAdminDownloadFilename(resource, userId, disposition);
-            return { blob: response.data, fileName };
-        } catch (error) {
-            console.log('Error details: ', error);
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError<{ error?: string; message?: string }>;
-                const data = err.response?.data;
-                throw new Error(data?.message || data?.error || 'Erreur lors du téléchargement des données administrateur.');
-            }
-            if (error instanceof Error) {
-                throw error;
-            }
-            throw new Error('Erreur inattendue lors du téléchargement des données administrateur.');
-        }
-    }
-
     public async exportAllAdminUserData(userId: string): Promise<{ blob: Blob; fileName: string }> {
         try {
             if (!userId) {
@@ -1524,48 +1492,6 @@ public async login(email: string, password: string): Promise<any> {
                 throw error;
             }
             throw new Error('Erreur inattendue lors du téléchargement des données administrateur.');
-        }
-    }
-
-    public async importAdminUserResource(
-        userId: string,
-        resource: AdminDataResource,
-        file: File,
-        mode: 'replace' | 'append' = 'append'
-    ): Promise<AdminImportResponse> {
-        try {
-            if (!userId) {
-                throw new Error("L'ID utilisateur est requis.");
-            }
-            if (!file) {
-                throw new Error('Le fichier est requis.');
-            }
-
-            const normalizedMode = mode === 'replace' ? 'replace' : 'append';
-            const url: string = this.constructRequestUrl(`/admin/data/${resource}/${userId}/import?mode=${normalizedMode}`);
-            const headers = this.constructAuthOnlyHeaders();
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await axios.post<AdminImportResponse>(url, formData, { headers });
-
-            if (response.status !== 200) {
-                throw new Error('Le téléversement des données administrateur a échoué.');
-            }
-
-            return response.data;
-        } catch (error) {
-            console.log('Error details: ', error);
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError<{ error?: string; message?: string }>;
-                const data = err.response?.data;
-                throw new Error(data?.message || data?.error || 'Erreur lors du téléversement des données administrateur.');
-            }
-            if (error instanceof Error) {
-                throw error;
-            }
-            throw new Error('Erreur inattendue lors du téléversement des données administrateur.');
         }
     }
 
