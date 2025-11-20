@@ -509,6 +509,9 @@ public async login(email: string, password: string): Promise<any> {
      */
     public async getUserFoldersByUserId(userId: string): Promise<FolderType[] | string> {
         try {
+            if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+                throw new Error("L'ID utilisateur est requis.");
+            }
             const url: string = this.constructRequestUrl(`/folder/getUserFolders`);
             const headers = this.constructRequestHeaders();
 
@@ -530,7 +533,7 @@ public async login(email: string, password: string): Promise<any> {
                 return data?.error || 'Erreur serveur inconnue lors de la requête.';
             }
 
-            return `Une erreur inattendue s'est produite.`
+            return `Une erreur inattendue s'est produite.`;
         }
     }
 
@@ -574,7 +577,7 @@ public async login(email: string, password: string): Promise<any> {
                 return data?.error || 'Erreur serveur inconnue lors de la requête.';
             }
 
-            return `Une erreur inattendue s'est produite.`
+            return `Une erreur inattendue s'est produite.`;
         }
     }
 
