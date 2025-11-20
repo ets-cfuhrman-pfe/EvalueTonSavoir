@@ -130,11 +130,11 @@ const App: React.FC = () => {
                         {/* Pages admin */}
                         <Route
                             path="/admin/dashboard"
-                            element={isTeacherAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />}
+                            element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/admin/user/:id"
-                            element={isTeacherAuthenticated ? <AdminUserDetails /> : <Navigate to="/login" />}
+                            element={isAdmin ? <AdminUserDetails /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
