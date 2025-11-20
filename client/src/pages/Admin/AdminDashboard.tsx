@@ -20,7 +20,7 @@ const AdminDashboard: React.FC = () => {
         const fetchUsers = async () => {
             try {
                 const fetchedUsers = await ApiService.getAllUsers();
-                setUsers(fetchedUsers);
+                setUsers(Array.isArray(fetchedUsers) ? fetchedUsers : []);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch users');
             } finally {
