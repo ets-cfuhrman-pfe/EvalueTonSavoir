@@ -41,6 +41,7 @@ import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isAdmin, setIsAdmin] = useState(ApiService.isAdmin());
     const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
@@ -49,6 +50,7 @@ const App: React.FC = () => {
         const checkLoginStatus = () => {
             setIsAuthenticated(ApiService.isLoggedIn());
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
+            setIsAdmin(ApiService.isAdmin());
         };
 
         const fetchAuthenticatedRooms = async () => {
@@ -64,6 +66,7 @@ const App: React.FC = () => {
         ApiService.logout();
         setIsAuthenticated(false);
         setIsTeacherAuthenticated(false);
+        setIsAdmin(false);
     };
 
     // Determine if we should show interface toggle based on current route
@@ -82,6 +85,7 @@ const App: React.FC = () => {
             <Header 
                 isLoggedIn={isAuthenticated} 
                 isTeacherAuthenticated={isTeacherAuthenticated} 
+                isAdmin={isAdmin}
                 handleLogout={handleLogout}
                 showInterfaceToggle={shouldShowInterfaceToggle()}
                 currentVersion={getCurrentVersion()}

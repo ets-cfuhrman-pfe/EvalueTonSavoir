@@ -11,6 +11,7 @@ import InterfaceToggle from '../InterfaceToggle/InterfaceToggle';
 interface HeaderProps {
     isLoggedIn: boolean;
     isTeacherAuthenticated: boolean;
+    isAdmin: boolean;
     handleLogout: () => void;
     showInterfaceToggle: boolean;
     currentVersion: 'v1' | 'v2';
@@ -19,6 +20,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ 
     isLoggedIn, 
     isTeacherAuthenticated,
+    isAdmin,
     handleLogout,
     showInterfaceToggle,
     currentVersion
@@ -72,26 +74,26 @@ const Header: React.FC<HeaderProps> = ({
                 {/* Navigation Items */}
                 <div className="d-flex align-items-center ms-auto flex-shrink-0 gap-2">
                     {isTeacherAuthenticated && (
-                        <>
-                            <Link to="/teacher/dashboard-v2" className="text-decoration-none">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-outline-primary d-flex align-items-center btn-sm"
-                                >
-                                    <DashboardIcon fontSize="small" className="me-1 me-sm-2" />
-                                    <span className="d-none d-sm-inline">Tableau de bord</span>
-                                </button>
-                            </Link>
-                            <Link to="/admin/dashboard" className="text-decoration-none">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-outline-secondary d-flex align-items-center btn-sm"
-                                >
-                                    <AdminPanelSettingsIcon fontSize="small" className="me-1 me-sm-2" />
-                                    <span className="d-none d-sm-inline">Admin</span>
-                                </button>
-                            </Link>
-                        </>
+                        <Link to="/teacher/dashboard-v2" className="text-decoration-none">
+                            <button 
+                                type="button" 
+                                className="btn btn-outline-primary d-flex align-items-center btn-sm"
+                            >
+                                <DashboardIcon fontSize="small" className="me-1 me-sm-2" />
+                                <span className="d-none d-sm-inline">Tableau de bord</span>
+                            </button>
+                        </Link>
+                    )}
+                    {isAdmin && (
+                        <Link to="/admin/dashboard" className="text-decoration-none">
+                            <button 
+                                type="button" 
+                                className="btn btn-outline-secondary d-flex align-items-center btn-sm"
+                            >
+                                <AdminPanelSettingsIcon fontSize="small" className="me-1 me-sm-2" />
+                                <span className="d-none d-sm-inline">Admin</span>
+                            </button>
+                        </Link>
                     )}
                     {showInterfaceToggle && (
                         <InterfaceToggle currentVersion={currentVersion} />

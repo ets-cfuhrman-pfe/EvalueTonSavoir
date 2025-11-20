@@ -149,6 +149,32 @@ class ApiService {
         }
     }
 
+    public isAdmin(): boolean {
+        const token = this.getToken();
+
+        if (token == null) {
+            return false;
+        }
+
+        try {
+            const decodedToken = jwtDecode<{ roles?: string[] }>(token);
+            const userRoles = decodedToken.roles ?? [];
+            const requiredRole = 'admin';
+
+            if (!userRoles.includes(requiredRole)) {
+                return false;
+            }
+
+            // Update token expiry
+            this.saveToken(token);
+
+            return true;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            return false;
+        }
+    }
+
     public saveUsername(username: string): void {
         if (!username || username.length === 0) {
             return;
@@ -299,7 +325,7 @@ public async login(email: string, password: string): Promise<any> {
 
 
     /**
-     * @returns true if successful 
+     * @returns true if  successful 
      * @returns A error string if unsuccessful,
      */
     public async resetPassword(email: string): Promise<ApiResponse> {
