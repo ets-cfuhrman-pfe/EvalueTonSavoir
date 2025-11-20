@@ -1,6 +1,6 @@
 const AdminDataController = require('../../controllers/adminData');
 const AppError = require('../../middleware/AppError');
-const { UNAUTHORIZED_ACCESS_DENIED, MISSING_REQUIRED_PARAMETER } = require('../../constants/errorCodes');
+const { MISSING_REQUIRED_PARAMETER } = require('../../constants/errorCodes');
 const { EJSON } = require('bson');
 
 describe('AdminDataController', () => {
@@ -74,17 +74,6 @@ describe('AdminDataController', () => {
       expect(sentData.quizzes).toEqual(mockQuizzes);
       
       expect(req.logAction).toHaveBeenCalledWith('admin_export_all_user_data', expect.any(Object));
-    });
-
-    it('should throw UNAUTHORIZED_ACCESS_DENIED if user is not admin', async () => {
-      req.user.roles = ['user'];
-
-      await adminDataController.exportAllResources(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(expect.any(AppError));
-      const error = next.mock.calls[0][0];
-      expect(error.statusCode).toBe(UNAUTHORIZED_ACCESS_DENIED.code);
-      expect(error.message).toBe(UNAUTHORIZED_ACCESS_DENIED.message);
     });
 
     it('should throw MISSING_REQUIRED_PARAMETER if userId is missing', async () => {

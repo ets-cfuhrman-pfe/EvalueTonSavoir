@@ -3,8 +3,7 @@ const { EJSON } = require('bson');
 
 const AppError = require('../middleware/AppError');
 const {
-    MISSING_REQUIRED_PARAMETER,
-    UNAUTHORIZED_ACCESS_DENIED
+    MISSING_REQUIRED_PARAMETER
 } = require('../constants/errorCodes');
 
 const RESOURCE_CONFIG = {
@@ -21,8 +20,6 @@ class AdminDataController {
 
     exportAllResources = async (req, res, next) => {
         try {
-            this.ensureAdmin(req);
-
             const { userId } = req.params;
 
             if (!userId) {
@@ -58,12 +55,6 @@ class AdminDataController {
             return res.status(200).send(payload);
         } catch (error) {
             return next(error);
-        }
-    };
-
-    ensureAdmin(req) {
-        if (!req.user || !Array.isArray(req.user.roles) || !req.user.roles.includes('admin')) {
-            throw new AppError(UNAUTHORIZED_ACCESS_DENIED);
         }
     }
 
