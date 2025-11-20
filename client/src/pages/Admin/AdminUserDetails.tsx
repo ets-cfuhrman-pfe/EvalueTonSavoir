@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import ApiService, { AdminDataResource } from '../../services/ApiService';
+import ApiService from '../../services/ApiService';
 import { ENV_VARIABLES } from '../../constants';
 import { QuizType } from 'src/Types/QuizType';
 import { FolderType } from 'src/Types/FolderType';
@@ -16,23 +16,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
 
-const RESOURCE_LABELS: Record<AdminDataResource, string> = {
-    folders: 'dossiers',
-    quizzes: 'quizs',
-    images: 'images',
-    rooms: 'salles'
-};
-
-type ResourceActionState = Record<AdminDataResource, { downloading: boolean; uploading: boolean }>;
 type ActionNotice = { type: 'success' | 'error'; message: string } | null;
-
-const initialActionState: ResourceActionState = {
-    folders: { downloading: false, uploading: false },
-    quizzes: { downloading: false, uploading: false },
-    images: { downloading: false, uploading: false },
-    rooms: { downloading: false, uploading: false }
-};
 
 const AdminUserDetails: React.FC = () => {
     const params = useParams();
@@ -51,23 +37,7 @@ const AdminUserDetails: React.FC = () => {
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [notice, setNotice] = useState<ActionNotice>(null);
-    const [actionState, setActionState] = useState<ResourceActionState>(initialActionState);
-    const fileInputRefs = useRef<Record<AdminDataResource, HTMLInputElement | null>>({
-        folders: null,
-        quizzes: null,
-        images: null,
-        rooms: null
-    });
-
-    const setActionFlag = useCallback((resource: AdminDataResource, key: keyof ResourceActionState[AdminDataResource], value: boolean) => {
-        setActionState((prev) => ({
-            ...prev,
-            [resource]: {
-                ...prev[resource],
-                [key]: value
-            }
-        }));
-    }, []);
+    const [downloadingAll, setDownloadingAll] = useState(false);
 
     const fetchAll = useCallback(async () => {
         try {
@@ -111,12 +81,12 @@ const AdminUserDetails: React.FC = () => {
         setOpenImageModal(true);
     }, []);
 
-    const handleDownload = useCallback(async (resource: AdminDataResource) => {
+    const handleDownloadAll = useCallback(async () => {
         if (!userId) return;
         setNotice(null);
-        setActionFlag(resource, 'downloading', true);
+        setDownloadingAll(true);
         try {
-            const { blob, fileName } = await ApiService.exportAdminUserResource(userId, resource);
+            const { blob, fileName } = await ApiService.exportAllAdminUserData(userId);
             const blobUrl = globalThis.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = blobUrl;
@@ -125,88 +95,14 @@ const AdminUserDetails: React.FC = () => {
             link.click();
             link.remove();
             globalThis.URL.revokeObjectURL(blobUrl);
-            setNotice({ type: 'success', message: `Téléchargement des ${RESOURCE_LABELS[resource]} terminé.` });
+            setNotice({ type: 'success', message: `Téléchargement de toutes les données terminé.` });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Téléchargement impossible.';
             setNotice({ type: 'error', message });
         } finally {
-            setActionFlag(resource, 'downloading', false);
+            setDownloadingAll(false);
         }
-    }, [setActionFlag, userId]);
-
-    const handleUpload = useCallback(async (resource: AdminDataResource, file: File) => {
-        if (!userId) return;
-        setNotice(null);
-        setActionFlag(resource, 'uploading', true);
-        try {
-            const result = await ApiService.importAdminUserResource(userId, resource, file, 'append');
-            const summaryParts: string[] = [];
-            if (result.inserted) {
-                summaryParts.push(`${result.inserted} ajoutés`);
-            }
-            if (result.updated) {
-                summaryParts.push(`${result.updated} mis à jour`);
-            }
-            if (result.removed) {
-                summaryParts.push(`${result.removed} supprimés`);
-            }
-            const summary = summaryParts.length > 0 ? ` (${summaryParts.join(', ')})` : '';
-            setNotice({ type: 'success', message: `Téléversement des ${RESOURCE_LABELS[resource]} réussi${summary}.` });
-            await fetchAll();
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Téléversement impossible.';
-            setNotice({ type: 'error', message });
-        } finally {
-            setActionFlag(resource, 'uploading', false);
-        }
-    }, [fetchAll, setActionFlag, userId]);
-
-    const triggerUploadDialog = useCallback((resource: AdminDataResource) => {
-        setNotice(null);
-        const ref = fileInputRefs.current[resource];
-        ref?.click();
-    }, []);
-
-    const handleFileChange = useCallback((resource: AdminDataResource, event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            void handleUpload(resource, file);
-        }
-        event.target.value = '';
-    }, [handleUpload]);
-
-    const renderResourceActions = (resource: AdminDataResource) => (
-        <>
-            <div className="d-flex flex-wrap gap-2 mb-3">
-                <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={() => void handleDownload(resource)}
-                    disabled={actionState[resource].downloading}
-                >
-                    {actionState[resource].downloading ? 'Téléchargement...' : 'Télécharger'}
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => triggerUploadDialog(resource)}
-                    disabled={actionState[resource].uploading}
-                >
-                    {actionState[resource].uploading ? 'Téléversement...' : 'Téléverser'}
-                </button>
-            </div>
-            <input
-                type="file"
-                accept="application/json"
-                ref={(ref) => {
-                    fileInputRefs.current[resource] = ref;
-                }}
-                className="d-none"
-                onChange={(event) => handleFileChange(resource, event)}
-                aria-label={`Téléverser des ${RESOURCE_LABELS[resource]}`}
-            />
-        </>
-    );
+    }, [userId]);
 
     if (loading) {
         return (
@@ -231,8 +127,17 @@ const AdminUserDetails: React.FC = () => {
     return (
         <div className="container mt-4">
             <h1>Détails de l'utilisateur</h1>
-            <div className="mb-3">
+            <div className="mb-3 d-flex justify-content-between align-items-center">
                 <Link to="/admin/dashboard" className="btn btn-outline-secondary btn-sm">Retour</Link>
+                <button
+                    type="button"
+                    className="btn btn-primary btn-sm d-flex align-items-center"
+                    onClick={() => void handleDownloadAll()}
+                    disabled={downloadingAll}
+                >
+                    <DownloadIcon fontSize="small" className="me-2" />
+                    {downloadingAll ? 'Téléchargement...' : 'Tout télécharger'}
+                </button>
             </div>
             {notice ? (
                 <div className={`alert alert-${notice.type === 'error' ? 'danger' : 'success'}`} role="alert">
@@ -254,7 +159,6 @@ const AdminUserDetails: React.FC = () => {
                             <Typography>Dossiers ({folders.length})</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {renderResourceActions('folders')}
                             {folders.length === 0 ? (
                                 <Typography className="text-muted">Aucun dossier trouvé.</Typography>
                             ) : (
@@ -274,7 +178,6 @@ const AdminUserDetails: React.FC = () => {
                             <Typography>Quizs ({quizzes.length})</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {renderResourceActions('quizzes')}
                             {quizzes.length === 0 ? (
                                 <Typography className="text-muted">Aucun quiz trouvé.</Typography>
                             ) : (
@@ -294,7 +197,6 @@ const AdminUserDetails: React.FC = () => {
                             <Typography>Images ({images.length})</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {renderResourceActions('images')}
                             {images.length === 0 ? (
                                 <Typography className="text-muted">Aucune image trouvée.</Typography>
                             ) : (
@@ -355,7 +257,6 @@ const AdminUserDetails: React.FC = () => {
                             <Typography>Salles ({rooms.length})</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {renderResourceActions('rooms')}
                             {rooms.length === 0 ? (
                                 <Typography className="text-muted">Aucune salle trouvée.</Typography>
                             ) : (

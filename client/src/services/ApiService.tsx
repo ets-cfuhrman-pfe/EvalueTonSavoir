@@ -1474,6 +1474,56 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+    public async exportAllAdminUserData(userId: string): Promise<{ blob: Blob; fileName: string }> {
+        try {
+            if (!userId) {
+                throw new Error("L'ID utilisateur est requis.");
+            }
+
+            const url: string = this.constructRequestUrl(`/admin/data/all/${userId}/export`);
+            const headers = this.constructRequestHeaders();
+            const response = await axios.get<Blob>(url, { headers, responseType: 'blob' });
+
+            if (response.status !== 200 || !response.data) {
+                throw new Error('Le téléchargement des données administrateur a échoué.');
+            }
+
+            const disposition = (response.headers['content-disposition'] as string | undefined)
+                ?? (response.headers['Content-Disposition'] as string | undefined);
+            
+            // Helper to resolve filename similar to resolveAdminDownloadFilename but for 'all'
+            let fileName = `all-data-${userId}.json`;
+            if (disposition) {
+                const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+                if (utf8Match?.[1]) {
+                    try {
+                        fileName = decodeURIComponent(utf8Match[1]);
+                    } catch (error) {
+                        console.warn('Filename decode error:', error);
+                    }
+                } else {
+                    const simpleMatch = /filename="?([^";]+)"?/i.exec(disposition);
+                    if (simpleMatch?.[1]) {
+                        fileName = simpleMatch[1];
+                    }
+                }
+            }
+
+            return { blob: response.data, fileName };
+        } catch (error) {
+            console.log('Error details: ', error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError<{ error?: string; message?: string }>;
+                const data = err.response?.data;
+                throw new Error(data?.message || data?.error || 'Erreur lors du téléchargement des données administrateur.');
+            }
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Erreur inattendue lors du téléchargement des données administrateur.');
+        }
+    }
+
     public async importAdminUserResource(
         userId: string,
         resource: AdminDataResource,
