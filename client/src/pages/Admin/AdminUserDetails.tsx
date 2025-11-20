@@ -17,6 +17,7 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 type ActionNotice = { type: 'success' | 'error'; message: string } | null;
 
@@ -126,12 +127,17 @@ const AdminUserDetails: React.FC = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Détails de l'utilisateur</h1>
-            <div className="mb-3 d-flex justify-content-between align-items-center">
-                <Link to="/admin/dashboard" className="btn btn-outline-secondary btn-sm">Retour</Link>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center gap-3">
+                    <Link to="/admin/dashboard" className="btn btn-outline-secondary btn-sm d-flex align-items-center">
+                        <ArrowBackIcon fontSize="small" className="me-1" />
+                        Retour
+                    </Link>
+                    <h1 className="mb-0">Détails de l'utilisateur</h1>
+                </div>
                 <button
                     type="button"
-                    className="btn btn-primary btn-sm d-flex align-items-center"
+                    className="btn btn-primary btn-sm d-flex align-items-center w-auto"
                     onClick={() => void handleDownloadAll()}
                     disabled={downloadingAll}
                 >

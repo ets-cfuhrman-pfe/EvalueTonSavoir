@@ -50,8 +50,7 @@ const modalImageFilename = 'MyImage.png';
 describe('AdminUserDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockApiService.exportAdminUserResource.mockResolvedValue({ blob: new Blob(['[]'], { type: 'application/json' }), fileName: 'export.json' });
-    mockApiService.importAdminUserResource.mockResolvedValue({ inserted: 1, updated: 0, removed: 0, mode: 'append' });
+    mockApiService.exportAllAdminUserData.mockResolvedValue({ blob: new Blob(['{}'], { type: 'application/json' }), fileName: 'all-data.json' });
   });
 
   test('shows loading spinner initially', async () => {
@@ -197,31 +196,7 @@ describe('AdminUserDetails', () => {
     await waitFor(() => expect(screen.getByText('Utilisateur')).toBeInTheDocument());
   });
 
-  test('download button triggers admin export endpoint', async () => {
-    const folders = [ { _id: 'f1', title: folderTitle } as any ];
-    mockApiService.getUserFoldersByUserId.mockResolvedValue(folders);
-    mockApiService.getQuizzesByUserId.mockResolvedValue([]);
-    mockApiService.getUserImagesByUserId.mockResolvedValue({ images: [], total: 0 } as any);
-    mockApiService.getRoomTitleByUserId.mockResolvedValue([]);
-
-    render(
-      <MemoryRouter initialEntries={[{ pathname: '/admin/user/user123', state: { user: defaultUser } }]}>
-        <Routes>
-          <Route path="/admin/user/:id" element={<AdminUserDetails />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => expect(screen.getByText(`${foldersHeading} (${folders.length})`)).toBeInTheDocument());
-
-    await userEvent.click(screen.getByRole('button', { name: `${foldersHeading} (${folders.length})` }));
-    const downloadButtons = screen.getAllByRole('button', { name: 'Télécharger' });
-    await userEvent.click(downloadButtons[0]);
-
-    await waitFor(() => expect(mockApiService.exportAdminUserResource).toHaveBeenCalledWith('user123', 'folders'));
-  });
-
-  test('upload input calls admin import endpoint', async () => {
+  test('download all button triggers admin export all endpoint', async () => {
     mockApiService.getUserFoldersByUserId.mockResolvedValue([]);
     mockApiService.getQuizzesByUserId.mockResolvedValue([]);
     mockApiService.getUserImagesByUserId.mockResolvedValue({ images: [], total: 0 } as any);
@@ -235,14 +210,13 @@ describe('AdminUserDetails', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.getByText(`${foldersHeading} (0)`)).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('button', { name: `${foldersHeading} (0)` }));
+    await waitFor(() => expect(screen.getByText("Détails de l'utilisateur")).toBeInTheDocument());
 
-    const fileInput = screen.getByLabelText('Téléverser des dossiers');
-    const file = new File([JSON.stringify([])], 'folders.json', { type: 'application/json' });
-    await userEvent.upload(fileInput, file);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Tout télécharger/i })).toBeInTheDocument());
+    const downloadButton = screen.getByRole('button', { name: /Tout télécharger/i });
+    await userEvent.click(downloadButton);
 
-    await waitFor(() => expect(mockApiService.importAdminUserResource).toHaveBeenCalledWith('user123', 'folders', file, 'append'));
+    await waitFor(() => expect(mockApiService.exportAllAdminUserData).toHaveBeenCalledWith('user123'));
   });
 
 });
