@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 // Import the actual components
 const UsersController = require("../../controllers/users");
 const jwtMiddleware = require("../../middleware/jwtToken");
+const adminOnly = require("../../middleware/adminOnly");
 const errorHandler = require("../../middleware/errorHandler");
 const {
   validateUserRegistration,
@@ -93,6 +94,7 @@ const createTestApp = () => {
   app.get(
     "/api/user/get-all-users",
     jwtMiddleware.authenticate,
+    adminOnly,
     asyncHandler(usersController.getAllUsers)
   );
   app.post(
