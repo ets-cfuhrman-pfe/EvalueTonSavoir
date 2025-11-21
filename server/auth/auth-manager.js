@@ -90,7 +90,16 @@ class AuthManager{
             userId: userInfo._id,
             userEmail: userInfo.email
         });
-        userInfo.roles = ['teacher']; // hard coded role
+        if (!userInfo.roles || !Array.isArray(userInfo.roles) || userInfo.roles.length === 0) {
+            userInfo.roles = ['teacher']; // default role for backward compatibility
+        }
+
+        logger.debug('User roles from authentication module', {
+            userId: userInfo._id,
+            email: userInfo.email,
+            roles: userInfo.roles,
+            module: 'auth-manager'
+        });
         const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
         logger.debug('JWT token created successfully', {
             userId: userInfo._id,

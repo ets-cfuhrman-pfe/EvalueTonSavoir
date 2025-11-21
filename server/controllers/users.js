@@ -100,15 +100,8 @@ class UsersController {
                 throw new AppError(LOGIN_CREDENTIALS_ERROR);
             }
 
-            // Log successful database operation
-            if (req.logDbOperation) {
-                req.logDbOperation('select', 'users', dbOperationTime, true, {
-                    userId: user._id,
-                    email: user.email
-                });
-            }
 
-            const token = jwt.create(user.email, user._id);
+            const token = jwt.create(user.email, user._id, user.roles);
             const totalTime = Date.now() - startTime;
 
             // Log successful login
@@ -410,6 +403,47 @@ class UsersController {
                     requestedBy: req.user?.userId,
                     error: error.message,
                     errorCode: error.statusCode
+                });
+            }
+            return next(error);
+        }
+    }
+
+    getAllUsers = async (req, res, next) => {
+        try {
+            const startTime = Date.now();
+            const users = await this.users.getAllUsers();
+
+            const usersWithCreatedAt = users.map(u => ({
+                ...u,
+                createdAt: u.created_at || u.createdAt || null
+            }));
+            const dbOperationTime = Date.now() - startTime;
+
+            // Log database operation
+            if (req.logDbOperation) {
+                req.logDbOperation('select', 'users', dbOperationTime, true);
+            }
+
+            // Log admin action
+            if (req.logAction) {
+                req.logAction('admin_get_all_users', {
+                    requestedBy: req.user.userId,
+                    userCount: users.length,
+                    dbOperationTime: `${dbOperationTime}ms`
+                });
+            }
+
+            return res.status(200).json({
+                users: usersWithCreatedAt
+            });
+
+        } catch (error) {
+            // Log admin action failure
+            if (req.logSecurity) {
+                req.logSecurity('admin_get_all_users_error', 'error', {
+                    requestedBy: req.user?.userId,
+                    error: error.message
                 });
             }
             return next(error);

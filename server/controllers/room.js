@@ -284,6 +284,16 @@ class RoomsController {
 
       const roomTitles = rooms.map((room) => room.title);
 
+      // If admin requested room titles for another user, add an admin action log
+      const isAdminRequest = req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin') && req.user.userId !== userId;
+      if (isAdminRequest && req.logAction) {
+        req.logAction('admin_get_user_room_titles', {
+          requestedBy: req.user.userId,
+          targetUserId: userId,
+          titleCount: roomTitles.length
+        });
+      }
+
       return res.status(200).json({
         titles: roomTitles,
       });
