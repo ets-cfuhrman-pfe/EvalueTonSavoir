@@ -11,12 +11,16 @@ describe('Quiz API Integration Tests', () => {
   let token;
   let testUserEmail = process.env.TEST_USER_EMAIL;
   let testUserPassword = process.env.TEST_USER_PASSWORD;
+  let createdTestUser = false;
   let testFolderId;
   let testUserId;
   let db;
 
   if (!testUserEmail || !testUserPassword) {
-    throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables must be set for integration tests');
+    createdTestUser = true;
+    const now = Date.now();
+    testUserEmail = `integration-test-${now}@example.com`;
+    testUserPassword = `P@ssw0rd-${now}`;
   }
 
   beforeAll(async () => { 
@@ -24,11 +28,15 @@ describe('Quiz API Integration Tests', () => {
     db = require('../../config/db');
     await db.connect();
     
+    // Cleanup any lingering test rooms before starting
+    const dbConn = db.getConnection();
+    const roomsCollection = dbConn.collection('rooms');
+    await roomsCollection.deleteMany({ title: /^ROOM_/ });
+    
     // Now require app (after DB is connected)
     app = require('../../app');
     
     // Insert test user if not exists
-    const dbConn = db.getConnection();
     const usersCollection = dbConn.collection('users');
     const existingUser = await usersCollection.findOne({ email: testUserEmail });
     if (!existingUser) {
@@ -82,10 +90,16 @@ describe('Quiz API Integration Tests', () => {
     await quizzesCollection.deleteMany({ folderId: testFolderId });
     
     const foldersCollection = dbConn.collection('folders');
-    await foldersCollection.deleteMany({ userId: testUserId });
+    // Only remove folders/users when we created them for this run.
+    if (createdTestUser) {
+      await foldersCollection.deleteMany({ userId: testUserId });
+      const usersCollection = dbConn.collection('users');
+      await usersCollection.deleteOne({ email: testUserEmail });
+    }
     
-    const usersCollection = dbConn.collection('users');
-    await usersCollection.deleteOne({ email: testUserEmail });
+    // Cleanup test rooms
+    const roomsCollection = dbConn.collection('rooms');
+    await roomsCollection.deleteMany({ title: /^ROOM_/ });
     
     // Cleanup: close DB connection
     await db.closeConnection();
