@@ -90,6 +90,36 @@ jobs:
           # Additional wait to ensure all services are fully initialized
           sleep 15
       
+      - name: Ensure test user exists
+        run: |
+          echo "Ensuring test user exists..."
+          
+          # Try to login with the test user to check if it exists
+          LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
+            -H "Content-Type: application/json" \
+            -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}")
+          
+          if echo "$LOGIN_RESPONSE" | grep -q "error\|User not found"; then
+            echo "Test user does not exist or login failed. Creating test user..."
+            
+            # Create the test user via simple auth register
+            CREATE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
+              -H "Content-Type: application/json" \
+              -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}")
+            
+            if echo "$CREATE_RESPONSE" | grep -q "\"message\":\"User created\"\|\"success\":true"; then
+              echo "Test user created successfully"
+            else
+              echo "Failed to create test user: $CREATE_RESPONSE"
+              exit 1
+            fi
+          else
+            echo "Test user already exists"
+          fi
+        env:
+          TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL || secrets.TEST_USER_EMAIL }}  
+          TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD || secrets.TEST_USER_PASSWORD }}
+      
       - name: Build Playwright test image
         run: |
           cd /tmp/e2e-client-${{ github.run_id }}
