@@ -1,5 +1,4 @@
 const request = require('supertest');
-const bcrypt = require('bcrypt');
 
 // Unmock db for integration test
 jest.unmock('../../config/db');

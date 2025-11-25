@@ -1,6 +1,5 @@
 const request = require('supertest');
-const path = require('path');
-const fs = require('fs');
+
 
 // Unmock db for integration test
 jest.unmock('../../config/db');
@@ -66,14 +65,6 @@ describe('Images API Integration Tests', () => {
         if (dbConn) {
           const usersCollection = dbConn.collection('users');
           await usersCollection.deleteOne({ email: testUserEmail });
-          
-          if (testImageId) {
-             const imagesCollection = dbConn.collection('images');
-             // Clean up image if it wasn't deleted by test
-             // Note: ObjectId import might be needed if we query by _id directly, 
-             // but usually cleanup by user is enough if we delete the user.
-             // However, images might be linked.
-          }
         }
         await db.closeConnection();
       } catch (_e) {
