@@ -8,10 +8,11 @@ import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 
 type ApiResponse = boolean | string;
+export type AdminDataResource = 'folders' | 'quizzes' | 'images' | 'rooms';
 
 class ApiService {
-    private BASE_URL: string;
-    private TTL: number;
+    private readonly BASE_URL: string;
+    private readonly TTL: number;
 
     constructor() {
         this.BASE_URL = ENV_VARIABLES.VITE_BACKEND_URL;
@@ -19,7 +20,28 @@ class ApiService {
     }
 
     private constructRequestUrl(endpoint: string): string {
-        return `${this.BASE_URL}/api${endpoint}`;
+        let base = this.BASE_URL || '';
+
+        // Fallback: use VITE env if not defined
+        if (!base && typeof globalThis !== 'undefined') {
+            base = ENV_VARIABLES?.VITE_BACKEND_URL || '';
+        }
+
+        // Fallback to current origin if still not defined or malformed
+        if (!base || base.startsWith(':') || base === 'http://' || base === 'https://') {
+            if (typeof globalThis !== 'undefined' && globalThis.location) {
+                const { protocol, hostname, port } = globalThis.location;
+                base = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+            } else {
+                // As a last resort, use explicit localhost with default port
+                base = 'http://localhost:4400';
+            }
+        }
+
+        // Ensure no trailing slash
+        base = base.replace(/\/$/, '');
+
+        return `${base}/api${endpoint}`;
     }
 
     private constructRequestHeaders() {
@@ -90,18 +112,45 @@ class ApiService {
         }
 
         try {
-            const decodedToken = jwtDecode(token) as { roles: string[] };
+            const decodedToken = jwtDecode<{ roles?: string[] }>(token);
 
             /////// REMOVE BELOW
             // automatically add teacher role if not present
-            if (!decodedToken.roles.includes('teacher')) {
-                decodedToken.roles.push('teacher');
+            const roles = decodedToken.roles ?? [];
+            if (!roles.includes('teacher')) {
+                roles.push('teacher');
             }
             ////// REMOVE ABOVE
-            const userRoles = decodedToken.roles;
+            const userRoles = roles;
             const requiredRole = 'teacher';
 
-            if (!userRoles || !userRoles.includes(requiredRole)) {
+            if (!userRoles?.includes(requiredRole)) {
+                return false;
+            }
+
+            // Update token expiry
+            this.saveToken(token);
+
+            return true;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            return false;
+        }
+    }
+
+    public isAdmin(): boolean {
+        const token = this.getToken();
+
+        if (token == null) {
+            return false;
+        }
+
+        try {
+            const decodedToken = jwtDecode<{ roles?: string[] }>(token);
+            const userRoles = decodedToken.roles ?? [];
+            const requiredRole = 'admin';
+
+            if (!userRoles.includes(requiredRole)) {
                 return false;
             }
 
@@ -146,7 +195,7 @@ class ApiService {
             return "";
         }
 
-        const jsonObj = jwtDecode(token) as { userId: string };
+        const jsonObj = jwtDecode<{ userId?: string }>(token);
         
         if (!jsonObj.userId) {
             return "";
@@ -192,8 +241,7 @@ class ApiService {
             const result: AxiosResponse = await axios.post(url, body, { headers: headers });
 
             if (result.status == 200) {
-                //window.location.href = result.request.responseURL;
-                window.location.href = '/login';
+                globalThis.location.href = '/login';
             }
             else {
                 throw new Error(`La connexion a échoué. Status: ${result.status}`);
@@ -234,10 +282,9 @@ public async login(email: string, password: string): Promise<any> {
 
         // If login is successful, redirect the user
         if (result.status === 200) {
-            //window.location.href = result.request.responseURL;
             this.saveToken(result.data.token);
             this.saveUsername(result.data.username);
-            window.location.href = '/teacher/dashboard-v2';
+            globalThis.location.href = '/teacher/dashboard-v2';
             return true;
         } else {
             throw new Error(`La connexion a échoué. Statut: ${result.status}`);
@@ -447,6 +494,39 @@ public async login(email: string, password: string): Promise<any> {
     }
 
     /**
+     * Admin: get folders for a specified user (requires admin privileges). Uses query param `uid`.
+     */
+    public async getUserFoldersByUserId(userId: string): Promise<FolderType[] | string> {
+        try {
+            if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+                throw new Error("L'ID utilisateur est requis.");
+            }
+            const url: string = this.constructRequestUrl(`/folder/getUserFolders`);
+            const headers = this.constructRequestHeaders();
+
+            const params = { uid: userId } as any;
+            const result: AxiosResponse = await axios.get(url, { headers: headers, params });
+
+            if (result.status !== 200) {
+                throw new Error(`L'obtention des dossiers utilisateur a échoué. Status: ${result.status}`);
+            }
+
+            return result.data.data.map((folder: FolderType) => ({ _id: folder._id, title: folder.title }));
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+    /**
      * @returns quiz array if successful 
      * @returns A error string if unsuccessful,
      */
@@ -466,8 +546,55 @@ public async login(email: string, password: string): Promise<any> {
                 throw new Error(`L'obtention des quiz du dossier a échoué. Status: ${result.status}`);
             }
 
-            return result.data.data.map((quiz: QuizType) => ({ _id: quiz._id, title: quiz.title, content: quiz.content }));
+            // normalize content in each quiz before returning
+            return result.data.data.map((rawQuiz: QuizType) => {
+                const copy: QuizType = { _id: rawQuiz._id, title: rawQuiz.title, content: rawQuiz.content } as QuizType;
 
+                if (copy && typeof (copy as any).content === 'string') {
+                    copy.content = (copy.content as any).split(/\n{2,}/).filter(Boolean);
+                }
+
+                return copy;
+            });
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                return data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+    /**
+     * Admin: get quizzes for a specified user by enumerating folders and their content.
+     */
+    public async getQuizzesByUserId(userId: string): Promise<QuizType[] | string> {
+        try {
+            if (!userId) {
+                throw new Error(`L'ID utilisateur est requis.`);
+            }
+
+            const folders = await this.getUserFoldersByUserId(userId);
+
+            if (!Array.isArray(folders)) {
+                return 'Impossible d\'obtenir les dossiers pour cet utilisateur.';
+            }
+
+            const quizzes: QuizType[] = [];
+
+            for (const folder of folders) {
+                const folderContent = await this.getFolderContent(folder._id);
+                if (Array.isArray(folderContent)) {
+                    quizzes.push(...folderContent);
+                }
+            }
+
+            return quizzes;
         } catch (error) {
             console.log("Error details: ", error);
 
@@ -674,7 +801,13 @@ public async login(email: string, password: string): Promise<any> {
                 throw new Error(`L'obtention du quiz a échoué. Status: ${result.status}`);
             }
 
-            return result.data.data as QuizType;
+            // Ensure the quiz content is always an array in the client
+            const quizResult = result.data.data as QuizType;
+            if (quizResult && typeof (quizResult as any).content === 'string') {
+                quizResult.content = (quizResult as any).content.split(/\n{2,}/).filter(Boolean);
+            }
+
+            return quizResult;
 
         } catch (error) {
             console.log("Error details: ", error);
@@ -768,7 +901,6 @@ public async login(email: string, password: string): Promise<any> {
             if (!quizId || !newFolderId) {
                 throw new Error(`Le quizId et le nouveau dossier sont requis.`);
             }
-            //console.log(quizId);
             const url: string = this.constructRequestUrl(`/quiz/move`);
             const headers = this.constructRequestHeaders();
             const body = { quizId, newFolderId };
@@ -987,7 +1119,7 @@ public async login(email: string, password: string): Promise<any> {
             return `Une erreur inattendue s'est produite.`;
         }
     }
-    public async getRoomTitle(roomId: string): Promise<string | string> {
+    public async getRoomTitle(roomId: string): Promise<string> {
         try {
             if (!roomId) {
                 throw new Error(`L'ID de la salle est requis.`);
@@ -1044,7 +1176,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async deleteRoom(roomId: string): Promise<string | string> {
+    public async deleteRoom(roomId: string): Promise<string> {
         try {
             if (!roomId) {
                 throw new Error(`L'ID de la salle est requis.`);
@@ -1071,7 +1203,7 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
-    public async renameRoom(roomId: string, newTitle: string): Promise<string | string> {
+    public async renameRoom(roomId: string, newTitle: string): Promise<string> {
         try {
             if (!roomId || !newTitle) {
                 throw new Error(`L'ID de la salle et le nouveau titre sont requis.`);
@@ -1209,6 +1341,42 @@ public async login(email: string, password: string): Promise<any> {
         }
     }
 
+    /**
+     * Admin: get images for a specified user (requires admin privileges). Uses ?uid= on the endpoint.
+     */
+    public async getUserImagesByUserId(userId: string, page = 1, limit = 50): Promise<ImagesResponse> {
+        try {
+            const url: string = this.constructRequestUrl(`/image/getUserImages`);
+            const headers = this.constructRequestHeaders();
+            let params : ImagesParams = { page: page, limit: limit };
+
+            if (userId && userId.length > 0) {
+                (params as any).uid = userId;
+            }
+
+            const result: AxiosResponse = await axios.get(url, { params: params, headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`L'affichage des images de l'utilisateur a échoué. Status: ${result.status}`);
+            }
+            const images = result.data;
+
+            return images;
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                const msg = data?.error || 'Erreur serveur inconnue lors de la requête.';
+                throw new Error(`L'affichage des images a échoué. Status: ${msg}`);
+            }
+
+            throw new Error(`ERROR : Une erreur inattendue s'est produite.`);
+        }
+    }
+
     public async deleteImage(imgId: string): Promise<ApiResponse> {
         try {
             const url: string = this.constructRequestUrl(`/image/delete`);
@@ -1264,8 +1432,87 @@ public async login(email: string, password: string): Promise<any> {
         }
     }	
 
-   
+    // Admin Routes
 
+    public async exportAllAdminUserData(userId: string): Promise<{ blob: Blob; fileName: string }> {
+        try {
+            if (!userId) {
+                throw new Error("L'ID utilisateur est requis.");
+            }
+
+            const url: string = this.constructRequestUrl(`/admin/data/all/${userId}/export`);
+            const headers = this.constructRequestHeaders();
+            const response = await axios.get<Blob>(url, { headers, responseType: 'blob' });
+
+            if (response.status !== 200 || !response.data) {
+                throw new Error('Le téléchargement des données administrateur a échoué.');
+            }
+
+            const disposition = (response.headers['content-disposition'] as string | undefined)
+                ?? (response.headers['Content-Disposition'] as string | undefined);
+            
+            // Helper to resolve filename similar to resolveAdminDownloadFilename but for 'all'
+            let fileName = `all-data-${userId}.json`;
+            if (disposition) {
+                const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+                if (utf8Match?.[1]) {
+                    try {
+                        fileName = decodeURIComponent(utf8Match[1]);
+                    } catch (error) {
+                        console.warn('Filename decode error:', error);
+                    }
+                } else {
+                    const simpleMatch = /filename="?([^";]+)"?/i.exec(disposition);
+                    if (simpleMatch?.[1]) {
+                        fileName = simpleMatch[1];
+                    }
+                }
+            }
+
+            return { blob: response.data, fileName };
+        } catch (error) {
+            console.log('Error details: ', error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError<{ error?: string; message?: string }>;
+                const data = err.response?.data;
+                throw new Error(data?.message || data?.error || 'Erreur lors du téléchargement des données administrateur.');
+            }
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Erreur inattendue lors du téléchargement des données administrateur.');
+        }
+    }
+
+    /**
+     * @returns Array of users if successful
+     * @throws Error if unsuccessful
+     */
+    public async getAllUsers(): Promise<any[]> {
+        try {
+            const url: string = this.constructRequestUrl(`/user/get-all-users`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`Failed to get users. Status: ${result.status}`);
+            }
+
+            return result.data.users || [];
+
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { error: string } | undefined;
+                throw new Error(data?.error || 'Erreur serveur inconnue lors de la requête.');
+            }
+
+            throw new Error(`Une erreur inattendue s'est produite.`);
+        }
+    }
 }
 
 const apiService = new ApiService();

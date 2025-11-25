@@ -16,11 +16,23 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             await teacherPage.goto('/login');
             await teacherPage.waitForLoadState('networkidle');
             
+            // Prefer E2E-specific env vars set by CI, but fall back to TEST_* var names
             const emailInput = teacherPage.getByLabel('Email');
-            await emailInput.fill(process.env.TEST_USER_EMAIL || '');
-            
+            const loginEmail = process.env.E2E_TEST_USER_EMAIL || process.env.TEST_USER_EMAIL || '';
+            const loginPassword = process.env.E2E_TEST_USER_PASSWORD || process.env.TEST_USER_PASSWORD || '';
+
+            if (!loginEmail || !loginPassword) {
+                throw new Error('E2E credentials are not set. Provide E2E_TEST_USER_EMAIL and E2E_TEST_USER_PASSWORD environment variables.');
+            }
+
+            // Mask the email for logs (show first 2 chars and domain) to avoid leaking secrets
+            const masked = loginEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3');
+            console.log('Using login email:', masked);
+
+            await emailInput.fill(loginEmail);
+
             const passwordInput = teacherPage.locator('input[type="password"]');
-            await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
+            await passwordInput.fill(loginPassword);
             
             const loginButton = teacherPage.locator('button:has-text("Login"), button[type="submit"]').first();
             await loginButton.click();

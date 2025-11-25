@@ -7,6 +7,11 @@ exports.UNAUTHORIZED_INVALID_TOKEN = {
     code: 401
 };
 
+exports.UNAUTHORIZED_ACCESS_DENIED = {
+    message: 'Accès refusé. Rôle administrateur requis.',
+    code: 403
+};
+
 exports.MISSING_REQUIRED_PARAMETER = {
     message: 'Paramètre requis manquant.',
     code: 400

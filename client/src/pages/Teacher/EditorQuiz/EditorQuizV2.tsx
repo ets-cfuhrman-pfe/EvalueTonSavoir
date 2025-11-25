@@ -55,7 +55,7 @@ const EditorQuizV2: React.FC = () => {
         severity: 'info'
     });
 
-    const scrollToTop = () => {
+        const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -132,19 +132,24 @@ const EditorQuizV2: React.FC = () => {
                     navigate('/teacher/dashboard-v2');
                     return;
                 }
+                setQuiz(quiz as QuizType);
+                const { title, content, folderId } = quiz as QuizType;
 
-                setQuiz(quiz);
-                const { title, content, folderId } = quiz;
 
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
+
+                // content arrives normalized as string[] from ApiService; 
                 setFilteredValue(content);
-                setValue(quiz.content.join('\n\n'));
+                setValue(content.join('\n\n'));
                 
+                // Create a normalized string version of content to store in initial state
+                const normalizedContent = content.join('\n\n');
+
                 // Set initial state for existing quiz
                 setInitialQuizState({
                     title,
-                    content: quiz.content.join('\n\n'),
+                    content: normalizedContent,
                     folderId,
                 });
                 

@@ -69,18 +69,16 @@ const InterfaceToggle: React.FC<InterfaceToggleProps> = ({ currentVersion, onTog
     };
 
     return (
-        <div className="interface-toggle">
-            <button
-                type="button"
-                className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
-                onClick={handleToggle}
-            >
-                <SwapHoriz fontSize="small" />
-                <span className={`badge ${currentVersion === 'v2' ? 'bg-primary' : 'bg-secondary'}`}>
-                    {currentVersion === 'v2' ? 'Interface V2' : 'Interface V1'}
-                </span>
-            </button>
-        </div>
+        <button
+            type="button"
+            className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+            onClick={handleToggle}
+        >
+            <SwapHoriz fontSize="small" />
+            <span className={`badge ${currentVersion === 'v2' ? 'bg-primary' : 'bg-secondary'}`}>
+                {currentVersion === 'v2' ? 'Interface V2' : 'Interface V1'}
+            </span>
+        </button>
     );
 };
 

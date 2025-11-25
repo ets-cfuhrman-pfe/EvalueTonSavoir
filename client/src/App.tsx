@@ -23,8 +23,11 @@ import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
 
+// Pages admin
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminUserDetails from './pages/Admin/AdminUserDetails';
+
 // Components
-import InterfaceToggle from './components/InterfaceToggle/InterfaceToggle';
 
 // Header/Footer import
 import Header from './components/Header/Header';
@@ -38,6 +41,7 @@ import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isAdmin, setIsAdmin] = useState(ApiService.isAdmin());
     const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
@@ -46,6 +50,7 @@ const App: React.FC = () => {
         const checkLoginStatus = () => {
             setIsAuthenticated(ApiService.isLoggedIn());
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
+            setIsAdmin(ApiService.isAdmin());
         };
 
         const fetchAuthenticatedRooms = async () => {
@@ -61,6 +66,7 @@ const App: React.FC = () => {
         ApiService.logout();
         setIsAuthenticated(false);
         setIsTeacherAuthenticated(false);
+        setIsAdmin(false);
     };
 
     // Determine if we should show interface toggle based on current route
@@ -76,10 +82,14 @@ const App: React.FC = () => {
 
     return (
         <>
-            <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
-            {shouldShowInterfaceToggle() && (
-                <InterfaceToggle currentVersion={getCurrentVersion()} />
-            )}
+            <Header 
+                isLoggedIn={isAuthenticated} 
+                isTeacherAuthenticated={isTeacherAuthenticated} 
+                isAdmin={isAdmin}
+                handleLogout={handleLogout}
+                showInterfaceToggle={shouldShowInterfaceToggle()}
+                currentVersion={getCurrentVersion()}
+            />
             <div className="content">
                 <div className="app">
                     <main>
@@ -115,6 +125,16 @@ const App: React.FC = () => {
                         <Route
                             path="/teacher/manage-room-v2/:quizId"
                             element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
+                        />
+
+                        {/* Pages admin */}
+                        <Route
+                            path="/admin/dashboard"
+                            element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/admin/user/:id"
+                            element={isAdmin ? <AdminUserDetails /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
