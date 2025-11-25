@@ -1,0 +1,2659 @@
+{
+  "config": {
+    "configFile": "E:\\EvalueTonSavoir\\client\\playwright.config.ts",
+    "rootDir": "E:/EvalueTonSavoir/client/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "E:/EvalueTonSavoir/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "E:/EvalueTonSavoir/client/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/EvalueTonSavoir/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "E:/EvalueTonSavoir/client/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/EvalueTonSavoir/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "E:/EvalueTonSavoir/client/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/EvalueTonSavoir/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "E:/EvalueTonSavoir/client/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/EvalueTonSavoir/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "E:/EvalueTonSavoir/client/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "00-credentials.spec.ts",
+      "file": "00-credentials.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "E2E credentials are available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "E2E tests will run with user: in***@email.com\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-11-25T15:59:59.290Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9628dbce666759d12e35-21f05e716d4f84d20b72",
+          "file": "00-credentials.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "E2E credentials are available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "E2E tests will run with user: in***@email.com\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-11-25T16:01:32.669Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9628dbce666759d12e35-2153c74a4d6dc18aeacc",
+          "file": "00-credentials.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "E2E credentials are available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "E2E tests will run with user: in***@email.com\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-11-25T16:03:20.621Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9628dbce666759d12e35-d23df2f6e1204c2687c6",
+          "file": "00-credentials.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "E2E credentials are available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Mobile Chrome",
+              "projectName": "Mobile Chrome",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "E2E tests will run with user: in***@email.com\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-11-25T16:05:07.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9628dbce666759d12e35-e17e8e74c2e3a4f442fd",
+          "file": "00-credentials.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "E2E credentials are available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Mobile Safari",
+              "projectName": "Mobile Safari",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "E2E tests will run with user: in***@email.com\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-11-25T16:06:37.573Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9628dbce666759d12e35-32870aa0821f6ebc46db",
+          "file": "00-credentials.spec.ts",
+          "line": 4,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "00-setup-check.spec.ts",
+      "file": "00-setup-check.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Setup Check",
+          "file": "00-setup-check.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Ensure test prerequisites exist: user, folder, room, quiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9397,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Checking test user...\n"
+                        },
+                        {
+                          "text": "Test user exists and login successful\n"
+                        },
+                        {
+                          "text": "Checking default folder...\n"
+                        },
+                        {
+                          "text": "Default folder exists\n"
+                        },
+                        {
+                          "text": "Checking TEST room...\n"
+                        },
+                        {
+                          "text": "TEST room exists\n"
+                        },
+                        {
+                          "text": "Checking TESTQUIZ...\n"
+                        },
+                        {
+                          "text": "TESTQUIZ exists\n"
+                        },
+                        {
+                          "text": "Setup check completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T15:59:59.317Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5213f5fc3853f7e28212-6348189aa0941b979d02",
+              "file": "00-setup-check.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Ensure test prerequisites exist: user, folder, room, quiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9030,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Checking test user...\n"
+                        },
+                        {
+                          "text": "Test user exists and login successful\n"
+                        },
+                        {
+                          "text": "Checking default folder...\n"
+                        },
+                        {
+                          "text": "Default folder exists\n"
+                        },
+                        {
+                          "text": "Checking TEST room...\n"
+                        },
+                        {
+                          "text": "TEST room exists\n"
+                        },
+                        {
+                          "text": "Checking TESTQUIZ...\n"
+                        },
+                        {
+                          "text": "TESTQUIZ exists\n"
+                        },
+                        {
+                          "text": "Setup check completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:01:32.711Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5213f5fc3853f7e28212-a5f716db61eed57e3475",
+              "file": "00-setup-check.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Ensure test prerequisites exist: user, folder, room, quiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7733,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Checking test user...\n"
+                        },
+                        {
+                          "text": "Test user exists and login successful\n"
+                        },
+                        {
+                          "text": "Checking default folder...\n"
+                        },
+                        {
+                          "text": "Default folder exists\n"
+                        },
+                        {
+                          "text": "Checking TEST room...\n"
+                        },
+                        {
+                          "text": "TEST room exists\n"
+                        },
+                        {
+                          "text": "Checking TESTQUIZ...\n"
+                        },
+                        {
+                          "text": "TESTQUIZ exists\n"
+                        },
+                        {
+                          "text": "Setup check completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:03:20.648Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5213f5fc3853f7e28212-11e0cdc3f565cded1448",
+              "file": "00-setup-check.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Ensure test prerequisites exist: user, folder, room, quiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6334,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Checking test user...\n"
+                        },
+                        {
+                          "text": "Test user exists and login successful\n"
+                        },
+                        {
+                          "text": "Checking default folder...\n"
+                        },
+                        {
+                          "text": "Default folder exists\n"
+                        },
+                        {
+                          "text": "Checking TEST room...\n"
+                        },
+                        {
+                          "text": "TEST room exists\n"
+                        },
+                        {
+                          "text": "Checking TESTQUIZ...\n"
+                        },
+                        {
+                          "text": "TESTQUIZ exists\n"
+                        },
+                        {
+                          "text": "Setup check completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:05:07.729Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5213f5fc3853f7e28212-d53e3d8d7b90affbd821",
+              "file": "00-setup-check.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Ensure test prerequisites exist: user, folder, room, quiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7848,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Checking test user...\n"
+                        },
+                        {
+                          "text": "Test user exists and login successful\n"
+                        },
+                        {
+                          "text": "Checking default folder...\n"
+                        },
+                        {
+                          "text": "Default folder exists\n"
+                        },
+                        {
+                          "text": "Checking TEST room...\n"
+                        },
+                        {
+                          "text": "TEST room exists\n"
+                        },
+                        {
+                          "text": "Checking TESTQUIZ...\n"
+                        },
+                        {
+                          "text": "TESTQUIZ exists\n"
+                        },
+                        {
+                          "text": "Setup check completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:06:37.601Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5213f5fc3853f7e28212-9b286fa2779959473e3b",
+              "file": "00-setup-check.spec.ts",
+              "line": 5,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "create-quiz-workflow.spec.ts",
+      "file": "create-quiz-workflow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Teacher Create Quiz Workflow",
+          "file": "create-quiz-workflow.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete workflow - Teacher creates a new quiz with GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18492,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Second save\n"
+                        },
+                        {
+                          "text": "Verified new changes are saved\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully saved to database and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:00:09.100Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a969c48628ca98c11b0e-aa5cf305b310a7acabec",
+              "file": "create-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a new quiz with GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21220,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Second save\n"
+                        },
+                        {
+                          "text": "Verified new changes are saved\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully saved to database and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:01:42.357Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a969c48628ca98c11b0e-982b7af1c5b7d0b2b4f8",
+              "file": "create-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a new quiz with GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20864,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Second save\n"
+                        },
+                        {
+                          "text": "Verified new changes are saved\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully saved to database and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:03:28.753Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a969c48628ca98c11b0e-cdc24625bf75eff26fe8",
+              "file": "create-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a new quiz with GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 18432,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Second save\n"
+                        },
+                        {
+                          "text": "Verified new changes are saved\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully saved to database and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:05:14.148Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a969c48628ca98c11b0e-e3d8c457020e070654bb",
+              "file": "create-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a new quiz with GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22932,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Second save\n"
+                        },
+                        {
+                          "text": "Verified new changes are saved\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully saved to database and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:06:45.821Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a969c48628ca98c11b0e-2a13fe1ac0e6eeb4fd74",
+              "file": "create-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edit-quiz-workflow.spec.ts",
+      "file": "edit-quiz-workflow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Teacher Edit Quiz Workflow",
+          "file": "edit-quiz-workflow.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20627,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Added initial GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit creation\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "STEP 3: Editing the quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Editer\" button\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Save edits\n"
+                        },
+                        {
+                          "text": "Edits saved successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit edit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully updated and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:00:27.625Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d326cecef7514c46576c-1f81b7ad9ee1fe03f8d5",
+              "file": "edit-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 23301,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Added initial GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit creation\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "STEP 3: Editing the quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Editer\" button\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Save edits\n"
+                        },
+                        {
+                          "text": "Edits saved successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit edit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully updated and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:02:03.616Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d326cecef7514c46576c-db40fffe445fa4f74dca",
+              "file": "edit-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 23184,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Added initial GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit creation\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "STEP 3: Editing the quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Editer\" button\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Save edits\n"
+                        },
+                        {
+                          "text": "Edits saved successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit edit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully updated and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:03:49.646Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d326cecef7514c46576c-ffca2004c641db422632",
+              "file": "edit-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20581,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Added initial GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit creation\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "STEP 3: Editing the quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Editer\" button\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Save edits\n"
+                        },
+                        {
+                          "text": "Edits saved successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit edit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully updated and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:05:32.606Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d326cecef7514c46576c-84dd88f47ab197622793",
+              "file": "edit-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24803,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Checking for residual quiz from previous runs...\n"
+                        },
+                        {
+                          "text": "No residual quiz found\n"
+                        },
+                        {
+                          "text": "STEP 2: Creating new quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Nouveau quiz\"\n"
+                        },
+                        {
+                          "text": "Filled quiz title\n"
+                        },
+                        {
+                          "text": "Selected default folder\n"
+                        },
+                        {
+                          "text": "Added initial GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - First save\n"
+                        },
+                        {
+                          "text": "First save completed successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit creation\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "STEP 3: Editing the quiz...\n"
+                        },
+                        {
+                          "text": "Clicked \"Editer\" button\n"
+                        },
+                        {
+                          "text": "Added more GIFT content\n"
+                        },
+                        {
+                          "text": "Clicked \"Enregistrer\" - Save edits\n"
+                        },
+                        {
+                          "text": "Edits saved successfully\n"
+                        },
+                        {
+                          "text": "Clicked \"retour\" to quit edit\n"
+                        },
+                        {
+                          "text": "Back to dashboard successfully\n"
+                        },
+                        {
+                          "text": "Quiz successfully updated and visible in dashboard\n"
+                        },
+                        {
+                          "text": "Cleaning up: Deleting the created quiz...\n"
+                        },
+                        {
+                          "text": "Dialog detected: Voulez-vous vraiment supprimer ce quiz?\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:07:08.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d326cecef7514c46576c-349531f83ac06fe9b2d5",
+              "file": "edit-quiz-workflow.spec.ts",
+              "line": 5,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "launch-quiz-teacher-mode.spec.ts",
+      "file": "launch-quiz-teacher-mode.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Teacher Launch Quiz with Students in Teacher Mode",
+          "file": "launch-quiz-teacher-mode.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21343,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "STEP 2: Launching quiz...\n"
+                        },
+                        {
+                          "text": "Room name: TEST\n"
+                        },
+                        {
+                          "text": "STEP 4: Students joining...\n"
+                        },
+                        {
+                          "text": "Student 2 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 3 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 1 joined and waiting\n"
+                        },
+                        {
+                          "text": "STEP 5: Teacher starts quiz in teacher mode...\n"
+                        },
+                        {
+                          "text": "STEP 6: Quiz progression...\n"
+                        },
+                        {
+                          "text": "Total questions: 1\n"
+                        },
+                        {
+                          "text": "Question 1\n"
+                        },
+                        {
+                          "text": "Student 1 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 2 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 3 answered question 1\n"
+                        },
+                        {
+                          "text": "STEP 7: Finishing quiz...\n"
+                        },
+                        {
+                          "text": "Student 3 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 2 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 1 saw quiz results\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:00:48.276Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4851c01d319c7947b55d-56933d90c37773cf8f3e",
+              "file": "launch-quiz-teacher-mode.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26256,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "STEP 2: Launching quiz...\n"
+                        },
+                        {
+                          "text": "Room name: TEST\n"
+                        },
+                        {
+                          "text": "STEP 4: Students joining...\n"
+                        },
+                        {
+                          "text": "Student 3 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 2 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 1 joined and waiting\n"
+                        },
+                        {
+                          "text": "STEP 5: Teacher starts quiz in teacher mode...\n"
+                        },
+                        {
+                          "text": "STEP 6: Quiz progression...\n"
+                        },
+                        {
+                          "text": "Total questions: 1\n"
+                        },
+                        {
+                          "text": "Question 1\n"
+                        },
+                        {
+                          "text": "Student 1 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 2 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 3 answered question 1\n"
+                        },
+                        {
+                          "text": "STEP 7: Finishing quiz...\n"
+                        },
+                        {
+                          "text": "Student 2 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 1 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 3 saw quiz results\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:02:26.954Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4851c01d319c7947b55d-c2d28e93920c5a954ec2",
+              "file": "launch-quiz-teacher-mode.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 29515,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "STEP 2: Launching quiz...\n"
+                        },
+                        {
+                          "text": "Room name: TEST\n"
+                        },
+                        {
+                          "text": "STEP 4: Students joining...\n"
+                        },
+                        {
+                          "text": "Student 3 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 1 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 2 joined and question already visible\n"
+                        },
+                        {
+                          "text": "STEP 5: Teacher starts quiz in teacher mode...\n"
+                        },
+                        {
+                          "text": "STEP 6: Quiz progression...\n"
+                        },
+                        {
+                          "text": "Total questions: 1\n"
+                        },
+                        {
+                          "text": "Question 1\n"
+                        },
+                        {
+                          "text": "Student 1 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 2 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 3 answered question 1\n"
+                        },
+                        {
+                          "text": "STEP 7: Finishing quiz...\n"
+                        },
+                        {
+                          "text": "Student 2 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 3 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 1 saw quiz results\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:04:12.856Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4851c01d319c7947b55d-e97ab975ca37e56d8cbf",
+              "file": "launch-quiz-teacher-mode.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21355,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "STEP 2: Launching quiz...\n"
+                        },
+                        {
+                          "text": "Room name: TEST\n"
+                        },
+                        {
+                          "text": "STEP 4: Students joining...\n"
+                        },
+                        {
+                          "text": "Student 1 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 3 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 2 joined and waiting\n"
+                        },
+                        {
+                          "text": "STEP 5: Teacher starts quiz in teacher mode...\n"
+                        },
+                        {
+                          "text": "STEP 6: Quiz progression...\n"
+                        },
+                        {
+                          "text": "Total questions: 1\n"
+                        },
+                        {
+                          "text": "Question 1\n"
+                        },
+                        {
+                          "text": "Student 1 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 2 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 3 answered question 1\n"
+                        },
+                        {
+                          "text": "STEP 7: Finishing quiz...\n"
+                        },
+                        {
+                          "text": "Student 2 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 1 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 3 saw quiz results\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:05:53.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4851c01d319c7947b55d-07084e92a6ecd237fe17",
+              "file": "launch-quiz-teacher-mode.spec.ts",
+              "line": 5,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 29433,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher logging in...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "STEP 2: Launching quiz...\n"
+                        },
+                        {
+                          "text": "Room name: TEST\n"
+                        },
+                        {
+                          "text": "STEP 4: Students joining...\n"
+                        },
+                        {
+                          "text": "Student 1 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 3 joined and waiting\n"
+                        },
+                        {
+                          "text": "Student 2 joined and question already visible\n"
+                        },
+                        {
+                          "text": "STEP 5: Teacher starts quiz in teacher mode...\n"
+                        },
+                        {
+                          "text": "STEP 6: Quiz progression...\n"
+                        },
+                        {
+                          "text": "Total questions: 1\n"
+                        },
+                        {
+                          "text": "Question 1\n"
+                        },
+                        {
+                          "text": "Student 1 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 2 answered question 1\n"
+                        },
+                        {
+                          "text": "Student 3 answered question 1\n"
+                        },
+                        {
+                          "text": "STEP 7: Finishing quiz...\n"
+                        },
+                        {
+                          "text": "Student 3 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 2 saw quiz results\n"
+                        },
+                        {
+                          "text": "Student 1 saw quiz results\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:07:33.627Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4851c01d319c7947b55d-616ecdb7debc5de70bed",
+              "file": "launch-quiz-teacher-mode.spec.ts",
+              "line": 5,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "teacher-student-persistent-workflow.spec.ts",
+      "file": "teacher-student-persistent-workflow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Teacher-Student Persistent Quiz Workflow",
+          "file": "teacher-student-persistent-workflow.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete workflow - Teacher launches quiz and stays online while students join",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22166,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher setting up quiz...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "Clicked TESTQUIZ play button\n"
+                        },
+                        {
+                          "text": "Clicked \"Lancer le quiz\" - Quiz is now launching\n"
+                        },
+                        {
+                          "text": "Quiz launched, teacher URL: http://localhost:5173/teacher/manage-room-v2/6925c79a0d127e018c8b1fd3\n"
+                        },
+                        {
+                          "text": "STEP 2: Students joining room while teacher stays online...\n"
+                        },
+                        {
+                          "text": "Student 1: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 1 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 2 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 3 successfully joined room\n"
+                        },
+                        {
+                          "text": "RESULTS: 3/3 students successfully joined\n"
+                        },
+                        {
+                          "text": "SUCCESS: At least some students could join while teacher stayed online\n"
+                        },
+                        {
+                          "text": "Verifying session persistence for all students...\n"
+                        },
+                        {
+                          "text": "Cleaning up student sessions...\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:01:09.649Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f1e9196aa7b59af942d-7ef3b882ec2a9970bbab",
+              "file": "teacher-student-persistent-workflow.spec.ts",
+              "line": 6,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches quiz and stays online while students join",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26004,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher setting up quiz...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "Clicked TESTQUIZ play button\n"
+                        },
+                        {
+                          "text": "Clicked \"Lancer le quiz\" - Quiz is now launching\n"
+                        },
+                        {
+                          "text": "Quiz launched, teacher URL: http://localhost:5173/teacher/manage-room-v2/6925c79a0d127e018c8b1fd3\n"
+                        },
+                        {
+                          "text": "STEP 2: Students joining room while teacher stays online...\n"
+                        },
+                        {
+                          "text": "Student 1: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 1 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 3 successfully joined room\n"
+                        },
+                        {
+                          "text": "RESULTS: 3/3 students successfully joined\n"
+                        },
+                        {
+                          "text": "SUCCESS: At least some students could join while teacher stayed online\n"
+                        },
+                        {
+                          "text": "Verifying session persistence for all students...\n"
+                        },
+                        {
+                          "text": "Cleaning up student sessions...\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:02:53.241Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f1e9196aa7b59af942d-18b3b87b76cc9cc9a831",
+              "file": "teacher-student-persistent-workflow.spec.ts",
+              "line": 6,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches quiz and stays online while students join",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24530,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher setting up quiz...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "Clicked TESTQUIZ play button\n"
+                        },
+                        {
+                          "text": "Clicked \"Lancer le quiz\" - Quiz is now launching\n"
+                        },
+                        {
+                          "text": "Quiz launched, teacher URL: http://localhost:5173/teacher/manage-room-v2/6925c79a0d127e018c8b1fd3\n"
+                        },
+                        {
+                          "text": "STEP 2: Students joining room while teacher stays online...\n"
+                        },
+                        {
+                          "text": "Student 1: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 2 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 1 successfully joined room\n"
+                        },
+                        {
+                          "text": "RESULTS: 3/3 students successfully joined\n"
+                        },
+                        {
+                          "text": "SUCCESS: At least some students could join while teacher stayed online\n"
+                        },
+                        {
+                          "text": "Verifying session persistence for all students...\n"
+                        },
+                        {
+                          "text": "Cleaning up student sessions...\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:04:42.388Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f1e9196aa7b59af942d-adf8cd36ced50d4fd394",
+              "file": "teacher-student-persistent-workflow.spec.ts",
+              "line": 6,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches quiz and stays online while students join",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22213,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher setting up quiz...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "Clicked TESTQUIZ play button\n"
+                        },
+                        {
+                          "text": "Clicked \"Lancer le quiz\" - Quiz is now launching\n"
+                        },
+                        {
+                          "text": "Quiz launched, teacher URL: http://localhost:5173/teacher/manage-room-v2/6925c79a0d127e018c8b1fd3\n"
+                        },
+                        {
+                          "text": "STEP 2: Students joining room while teacher stays online...\n"
+                        },
+                        {
+                          "text": "Student 1: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 1 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 2 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 3 successfully joined room\n"
+                        },
+                        {
+                          "text": "RESULTS: 3/3 students successfully joined\n"
+                        },
+                        {
+                          "text": "SUCCESS: At least some students could join while teacher stayed online\n"
+                        },
+                        {
+                          "text": "Verifying session persistence for all students...\n"
+                        },
+                        {
+                          "text": "Cleaning up student sessions...\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:06:14.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f1e9196aa7b59af942d-0375c91ab6f49278516a",
+              "file": "teacher-student-persistent-workflow.spec.ts",
+              "line": 6,
+              "column": 5
+            },
+            {
+              "title": "Complete workflow - Teacher launches quiz and stays online while students join",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24514,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "STEP 1: Teacher setting up quiz...\n"
+                        },
+                        {
+                          "text": "Teacher login successful\n"
+                        },
+                        {
+                          "text": "Dashboard loaded, TESTQUIZ found\n"
+                        },
+                        {
+                          "text": "Clicked TESTQUIZ play button\n"
+                        },
+                        {
+                          "text": "Clicked \"Lancer le quiz\" - Quiz is now launching\n"
+                        },
+                        {
+                          "text": "Quiz launched, teacher URL: http://localhost:5173/teacher/manage-room-v2/6925c79a0d127e018c8b1fd3\n"
+                        },
+                        {
+                          "text": "STEP 2: Students joining room while teacher stays online...\n"
+                        },
+                        {
+                          "text": "Student 1: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 2: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3: Starting join process...\n"
+                        },
+                        {
+                          "text": "Student 3 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 2 successfully joined room\n"
+                        },
+                        {
+                          "text": "Student 1 successfully joined room\n"
+                        },
+                        {
+                          "text": "RESULTS: 3/3 students successfully joined\n"
+                        },
+                        {
+                          "text": "SUCCESS: At least some students could join while teacher stayed online\n"
+                        },
+                        {
+                          "text": "Verifying session persistence for all students...\n"
+                        },
+                        {
+                          "text": "Cleaning up student sessions...\n"
+                        },
+                        {
+                          "text": "Test completed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-25T16:08:03.081Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f1e9196aa7b59af942d-cbdfe46446bec8d8e67d",
+              "file": "teacher-student-persistent-workflow.spec.ts",
+              "line": 6,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-25T15:59:58.332Z",
+    "duration": 509342.966,
+    "expected": 30,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

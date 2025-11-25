@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getE2ECredentials } from './helpers';
+import { loginAsTeacher } from './helpers';
 
 test.describe('Teacher Create Quiz Workflow', () => {
     test('Complete workflow - Teacher creates a new quiz with GIFT content', async ({
@@ -21,21 +21,7 @@ test.describe('Teacher Create Quiz Workflow', () => {
             console.log('STEP 1: Teacher logging in...');
 
             // Teacher logs in
-            await teacherPage.goto('/login');
-            await teacherPage.waitForLoadState('networkidle');
-            
-            const { email, password } = getE2ECredentials();
-
-            const emailInput = teacherPage.getByLabel('Email').or(teacherPage.locator('input[type="email"]')).first();
-            await emailInput.fill(email);
-            
-            const passwordInput = teacherPage.locator('input[type="password"]').first();
-            await passwordInput.fill(password);
-            
-            const loginButton = teacherPage.locator('button:has-text("Login")').or(teacherPage.locator('button:has-text("Se connecter")')).first();
-            await loginButton.click();
-            
-            await teacherPage.waitForURL(/\/dashboard|\/teacher/);
+            await loginAsTeacher(teacherPage);
             console.log('Teacher login successful');
 
             // Navigate to dashboard if not already
@@ -175,9 +161,12 @@ test.describe('Teacher Create Quiz Workflow', () => {
             await teacherPage.waitForTimeout(2000);
             
             // Verify quiz is gone
-            if (await quizInDashboard.isVisible({ timeout: 2000 })) {
-                console.log('Warning: Quiz may not have been deleted properly');
-            } else {
+            try {
+                const stillVisible = await quizInDashboard.isVisible({ timeout: 2000 });
+                if (stillVisible) {
+                    console.log('Warning: Quiz may not have been deleted properly');
+                }
+            } catch {
                 console.log('Quiz successfully deleted');
             }
 

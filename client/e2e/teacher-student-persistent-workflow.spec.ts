@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getE2ECredentials, maskedEmail } from './helpers';
+import { loginAsTeacher } from './helpers';
 
 test.describe('Teacher-Student Persistent Quiz Workflow', () => {
     
@@ -14,25 +14,7 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             console.log('STEP 1: Teacher setting up quiz...');
             
             // Teacher logs in
-            await teacherPage.goto('/login');
-            await teacherPage.waitForLoadState('networkidle');
-            
-            const { email: loginEmail, password: loginPassword } = getE2ECredentials();
-
-            const emailInput = teacherPage.getByLabel('Email');
-
-            // Mask the email for logs (show first 2 chars and domain) to avoid leaking secrets
-            console.log('Using login email:', maskedEmail(loginEmail));
-
-            await emailInput.fill(loginEmail);
-
-            const passwordInput = teacherPage.locator('input[type="password"]');
-            await passwordInput.fill(loginPassword);
-            
-            const loginButton = teacherPage.locator('button:has-text("Login"), button[type="submit"]').first();
-            await loginButton.click();
-            
-            await teacherPage.waitForURL(/\/dashboard|\/teacher/);
+            await loginAsTeacher(teacherPage);
             console.log('Teacher login successful');
 
             // Navigate to dashboard

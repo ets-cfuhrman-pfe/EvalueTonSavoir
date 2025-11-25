@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getE2ECredentials } from './helpers';
+import { loginAsTeacher } from './helpers';
 
 test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
     test('Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode', async ({
@@ -37,28 +37,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             console.log('STEP 1: Teacher logging in...');
 
             // Teacher logs in
-            await teacherPage.goto('/login');
-            await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(1000);
-            
-            const { email, password } = getE2ECredentials();
-
-            const emailInput = teacherPage.getByLabel('Email').or(teacherPage.locator('input[type="email"]')).first();
-            await emailInput.fill(email);
-
-            const passwordInput = teacherPage.locator('input[type="password"]').first();
-            await passwordInput.fill(password);
-            
-            const loginButton = teacherPage.locator('button:has-text("Login")').or(teacherPage.locator('button:has-text("Se connecter")')).first();
-            await teacherPage.waitForFunction(() => {
-                const buttons = Array.from(document.querySelectorAll('button')).filter(btn => 
-                    btn.textContent?.includes('Login') || btn.textContent?.includes('Se connecter')
-                );
-                return buttons.length > 0 && !buttons[0].disabled;
-            }, { timeout: 5000 });
-            await loginButton.click();
-            
-            await teacherPage.waitForURL(/\/dashboard|\/teacher/);
+            await loginAsTeacher(teacherPage);
             console.log('Teacher login successful');
 
             // Navigate to dashboard
@@ -153,7 +132,13 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             // Get total number of questions from the counter
             const counterLocator = teacherPage.locator('text=/[0-9]+ / [0-9]+/').first();
             const counterText = await counterLocator.textContent();
+            if (!counterText) {
+                throw new Error('Could not find question counter');
+            }
             const totalQuestions = Number.parseInt(counterText.split(' / ')[1]);
+            if (Number.isNaN(totalQuestions) || totalQuestions <= 0) {
+                throw new Error(`Invalid question count: ${counterText}`);
+            }
             console.log(`Total questions: ${totalQuestions}`);
 
             // Teacher advances through questions

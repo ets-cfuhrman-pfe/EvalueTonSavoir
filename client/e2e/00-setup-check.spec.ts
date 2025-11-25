@@ -63,7 +63,7 @@ test.describe('E2E Setup Check', () => {
                 await page.waitForTimeout(1000);
 
                 // Fill folder name
-                const folderInput = page.locator('input').filter({ has: page.locator('text=Titre du dossier') }).first();
+                const folderInput = page.getByLabel('Titre du dossier');
                 await folderInput.fill('Dossier par défaut');
 
                 // Click create
@@ -79,8 +79,8 @@ test.describe('E2E Setup Check', () => {
             console.log('Checking TEST room...');
 
             // Check rooms section
-            const roomsExpanded = await page.locator('button').filter({ hasText: 'Salles' }).locator('xpath=following-sibling::*').locator('text=ExpandLess').isVisible({ timeout: 2000 });
-            if (!roomsExpanded) {
+            const roomsExpandedAttr = await page.locator('button').filter({ hasText: 'Salles' }).first().getAttribute('aria-expanded');
+            if (roomsExpandedAttr !== 'true') {
                 const roomsBtn = page.locator('button').filter({ hasText: 'Salles' }).first();
                 await roomsBtn.click();
                 await page.waitForTimeout(1000);
