@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { getE2ECredentials } from './helpers';
 
 test.describe('E2E Setup Check', () => {
     test('Ensure test prerequisites exist: user, folder, room, quiz', async ({
@@ -23,11 +24,13 @@ test.describe('E2E Setup Check', () => {
             await page.goto('/login');
             await page.waitForLoadState('networkidle');
 
+            const { email, password } = getE2ECredentials();
+
             const emailInput = page.getByLabel('Email').or(page.locator('input[type="email"]')).first();
-            await emailInput.fill(process.env.TEST_USER_EMAIL || '');
+            await emailInput.fill(email);
 
             const passwordInput = page.locator('input[type="password"]').first();
-            await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
+            await passwordInput.fill(password);
 
             const loginButton = page.locator('button:has-text("Login")').or(page.locator('button:has-text("Se connecter")')).first();
             await loginButton.click();

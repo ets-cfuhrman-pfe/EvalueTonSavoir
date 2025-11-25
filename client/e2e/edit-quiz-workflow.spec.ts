@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { getE2ECredentials } from './helpers';
 
 test.describe('Teacher Edit Quiz Workflow', () => {
     test('Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content', async ({
@@ -23,11 +24,13 @@ test.describe('Teacher Edit Quiz Workflow', () => {
             await teacherPage.goto('/login');
             await teacherPage.waitForLoadState('networkidle');
             
+            const { email, password } = getE2ECredentials();
+
             const emailInput = teacherPage.getByLabel('Email').or(teacherPage.locator('input[type="email"]')).first();
-            await emailInput.fill(process.env.TEST_USER_EMAIL || '');
+            await emailInput.fill(email);
             
             const passwordInput = teacherPage.locator('input[type="password"]').first();
-            await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
+            await passwordInput.fill(password);
             
             const loginButton = teacherPage.locator('button:has-text("Login")').or(teacherPage.locator('button:has-text("Se connecter")')).first();
             await loginButton.click();

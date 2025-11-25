@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { getE2ECredentials } from './helpers';
 
 test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
     test('Complete workflow - Teacher launches existing quiz (TESTQUIZ), 3 students join and answer in teacher mode', async ({
@@ -40,11 +41,13 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(1000);
             
+            const { email, password } = getE2ECredentials();
+
             const emailInput = teacherPage.getByLabel('Email').or(teacherPage.locator('input[type="email"]')).first();
-            await emailInput.fill(process.env.TEST_USER_EMAIL || '');
-            
+            await emailInput.fill(email);
+
             const passwordInput = teacherPage.locator('input[type="password"]').first();
-            await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
+            await passwordInput.fill(password);
             
             const loginButton = teacherPage.locator('button:has-text("Login")').or(teacherPage.locator('button:has-text("Se connecter")')).first();
             await teacherPage.waitForFunction(() => {

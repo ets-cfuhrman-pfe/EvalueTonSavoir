@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { getE2ECredentials, maskedEmail } from './helpers';
 
 test.describe('Teacher-Student Persistent Quiz Workflow', () => {
     
@@ -16,18 +17,12 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             await teacherPage.goto('/login');
             await teacherPage.waitForLoadState('networkidle');
             
-            // Prefer E2E-specific env vars set by CI, but fall back to TEST_* var names
-            const emailInput = teacherPage.getByLabel('Email');
-            const loginEmail = process.env.E2E_TEST_USER_EMAIL || process.env.TEST_USER_EMAIL || '';
-            const loginPassword = process.env.E2E_TEST_USER_PASSWORD || process.env.TEST_USER_PASSWORD || '';
+            const { email: loginEmail, password: loginPassword } = getE2ECredentials();
 
-            if (!loginEmail || !loginPassword) {
-                throw new Error('E2E credentials are not set. Provide E2E_TEST_USER_EMAIL and E2E_TEST_USER_PASSWORD environment variables.');
-            }
+            const emailInput = teacherPage.getByLabel('Email');
 
             // Mask the email for logs (show first 2 chars and domain) to avoid leaking secrets
-            const masked = loginEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3');
-            console.log('Using login email:', masked);
+            console.log('Using login email:', maskedEmail(loginEmail));
 
             await emailInput.fill(loginEmail);
 
