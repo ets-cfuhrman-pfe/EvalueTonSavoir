@@ -17,6 +17,10 @@ describe('Images API Integration Tests', () => {
   let testUserId;
   let testImageId;
 
+  // Test Data Variables
+  const IMAGE_CONTENT = 'fake image content';
+  const IMAGE_FILENAME = 'test-image.png';
+
   beforeAll(async () => {
     jest.resetModules();
     db = require('../../config/db');
@@ -81,12 +85,12 @@ describe('Images API Integration Tests', () => {
   describe('Image Management', () => {
     it('should upload an image', async () => {
       // Create a dummy image buffer
-      const buffer = Buffer.from('fake image content');
+      const buffer = Buffer.from(IMAGE_CONTENT);
       
       const response = await request(app)
         .post('/api/image/upload')
         .set('Authorization', `Bearer ${token}`)
-        .attach('image', buffer, 'test-image.png')
+        .attach('image', buffer, IMAGE_FILENAME)
         .expect(200);
 
       expect(response.body).toHaveProperty('id');

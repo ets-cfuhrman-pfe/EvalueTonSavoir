@@ -1,5 +1,4 @@
 const request = require('supertest');
-const path = require('path');
 
 // Unmock db for integration test
 jest.unmock('../../config/db');
@@ -13,7 +12,6 @@ describe('Quizzes API Integration Tests', () => {
   let testUserEmail;
   let testUserName;
   let testUserPassword = 'testUserPassword';
-  let testUserId;
   let testFolderId;
   let testQuizId;
 
@@ -22,6 +20,13 @@ describe('Quizzes API Integration Tests', () => {
   
   let testOtherUserEmail;
   let testOtherUserToken;
+
+  // Test Data Variables
+  const QUIZ_TITLE = 'Integration Test Quiz';
+  const QUIZ_CONTENT = '::Question Title:: Question Text {=Answer}';
+  const UPDATED_QUIZ_TITLE = 'Updated Quiz Title';
+  const UPDATED_QUIZ_CONTENT = '::New Question:: New Text {=New Answer}';
+  const FOLDER_TITLE = 'Test Quiz Folder';
 
   beforeAll(async () => {
     jest.resetModules();
@@ -54,23 +59,19 @@ describe('Quizzes API Integration Tests', () => {
       });
     
     token = loginRes.body.token;
-    const user = await usersCollection.findOne({ email: testUserEmail });
-    testUserId = user._id.toString();
 
     // Admin User
     testAdminEmail = 'admin_test_' + Date.now() + Math.floor(Math.random() * 1000) + '@example.com';
     await usersCollection.deleteOne({ email: testAdminEmail });
     
-    // Register admin (assuming register allows 'admin' role or we manually update)
-    // Usually register only allows 'teacher' or 'student'. 
-    // We might need to manually update role in DB.
+    // Register admin 
     await request(app)
       .post('/api/user/register')
       .send({
         username: 'admintest',
         email: testAdminEmail,
         password: testUserPassword,
-        roles: ['teacher'] 
+        roles: ['admin'] 
       });
     
     await usersCollection.updateOne({ email: testAdminEmail }, { $set: { roles: ['admin'] } });
@@ -108,7 +109,7 @@ describe('Quizzes API Integration Tests', () => {
     const folderRes = await request(app)
       .post('/api/folder/create')
       .set('Authorization', `Bearer ${token}`)
-      .send({ title: 'Test Quiz Folder' });
+      .send({ title: FOLDER_TITLE });
     
     testFolderId = folderRes.body.folderId;
   });
@@ -142,8 +143,8 @@ describe('Quizzes API Integration Tests', () => {
         .post('/api/quiz/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          title: 'Integration Test Quiz',
-          content: '::Question Title:: Question Text {=Answer}',
+          title: QUIZ_TITLE,
+          content: QUIZ_CONTENT,
           folderId: testFolderId
         })
         .expect(200);
@@ -158,7 +159,7 @@ describe('Quizzes API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(response.body.data).toHaveProperty('title', 'Integration Test Quiz');
+      expect(response.body.data).toHaveProperty('title', QUIZ_TITLE);
     });
 
     it('should update a quiz', async () => {
@@ -167,8 +168,8 @@ describe('Quizzes API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           quizId: testQuizId,
-          newTitle: 'Updated Quiz Title',
-          newContent: '::New Question:: New Text {=New Answer}'
+          newTitle: UPDATED_QUIZ_TITLE,
+          newContent: UPDATED_QUIZ_CONTENT
         })
         .expect(200);
 
@@ -178,7 +179,7 @@ describe('Quizzes API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(response.body.data).toHaveProperty('title', 'Updated Quiz Title');
+      expect(response.body.data).toHaveProperty('title', UPDATED_QUIZ_TITLE);
     });
 
     it('should allow admin to get any quiz', async () => {
@@ -187,7 +188,7 @@ describe('Quizzes API Integration Tests', () => {
         .set('Authorization', `Bearer ${testAdminToken}`)
         .expect(200);
 
-      expect(response.body.data).toHaveProperty('title', 'Updated Quiz Title');
+      expect(response.body.data).toHaveProperty('title', UPDATED_QUIZ_TITLE);
     });
 
     it('should not allow other user to get a quiz', async () => {

@@ -11,26 +11,36 @@ describe('Rooms API Integration Tests', () => {
   let token;
   let testUserEmail = `rooms_test_${Date.now()}@example.com`;
   let testUserPassword = 'password123';
+  let testUserName = `roomstestuser${Date.now()}`;
   let testUserId;
   let db;
   let createdRoomId;
 
+  // Test Data Variables
+  const ROOM_TITLE = 'New Test Room';
+  const EXPECTED_ROOM_TITLE = 'NEW TEST ROOM'; // Server uppercases room titles
+  const RENAMED_ROOM_TITLE = 'Renamed Test Room';
+  const EXPECTED_RENAMED_ROOM_TITLE = 'RENAMED TEST ROOM';
+
   beforeAll(async () => {
+    jest.resetModules();
     db = require('../../config/db');
     await db.connect();
     app = require('../../app');
 
-    // Create test user
+    // Create test user via API
     const dbConn = db.getConnection();
     const usersCollection = dbConn.collection('users');
-    const hashedPassword = await bcrypt.hash(testUserPassword, 10);
-    const result = await usersCollection.insertOne({
-      email: testUserEmail,
-      password: hashedPassword,
-      roles: ['teacher'],
-      name: 'Rooms Test User'
-    });
-    testUserId = result.insertedId.toString();
+    await usersCollection.deleteOne({ email: testUserEmail });
+
+    await request(app)
+      .post('/api/user/register')
+      .send({
+        username: testUserName,
+        email: testUserEmail,
+        password: testUserPassword,
+        roles: ['teacher']
+      });
 
     // Login
     const loginResponse = await request(app)
@@ -39,6 +49,9 @@ describe('Rooms API Integration Tests', () => {
       .expect(200);
     
     token = loginResponse.body.token;
+    
+    const user = await usersCollection.findOne({ email: testUserEmail });
+    testUserId = user._id.toString();
   });
 
   afterAll(async () => {
@@ -57,7 +70,7 @@ describe('Rooms API Integration Tests', () => {
       const response = await request(app)
         .post('/api/room/create')
         .set('Authorization', `Bearer ${token}`)
-        .send({ title: 'New Test Room' })
+        .send({ title: ROOM_TITLE })
         .expect(201);
 
       expect(response.body).toHaveProperty('roomId');
@@ -68,7 +81,7 @@ describe('Rooms API Integration Tests', () => {
       const response = await request(app)
         .post('/api/room/roomExists')
         .set('Authorization', `Bearer ${token}`)
-        .send({ roomName: 'New Test Room' })
+        .send({ roomName: ROOM_TITLE })
         .expect(200);
 
       expect(response.body.exists).toBe(true);
@@ -83,7 +96,7 @@ describe('Rooms API Integration Tests', () => {
       expect(Array.isArray(response.body.data)).toBe(true);
       const room = response.body.data.find(r => r._id === createdRoomId);
       expect(room).toBeDefined();
-      expect(room.title).toBe('NEW TEST ROOM');
+      expect(room.title).toBe(EXPECTED_ROOM_TITLE);
     });
 
     it('should rename a room', async () => {
@@ -92,7 +105,7 @@ describe('Rooms API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ 
           roomId: createdRoomId,
-          newTitle: 'Renamed Test Room'
+          newTitle: RENAMED_ROOM_TITLE
         })
         .expect(200);
 
@@ -102,7 +115,7 @@ describe('Rooms API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`);
       
       const room = response.body.data.find(r => r._id === createdRoomId);
-      expect(room.title).toBe('RENAMED TEST ROOM'); 
+      expect(room.title).toBe(EXPECTED_RENAMED_ROOM_TITLE); 
     });
 
     it('should delete a room', async () => {

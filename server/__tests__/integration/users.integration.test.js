@@ -13,6 +13,11 @@ describe('Users API Integration Tests', () => {
   let testUserName;
   let testUserPassword = 'testUserPassword';
 
+  // Test Data Variables
+  const NEW_PASSWORD = 'newpassword123';
+  const REGISTER_SUCCESS_MSG = 'Utilisateur créé avec succès.';
+  const TEACHER_ROLE = 'teacher';
+
   beforeAll(async () => {
     jest.resetModules();
     db = require('../../config/db');
@@ -57,11 +62,11 @@ describe('Users API Integration Tests', () => {
           username: testUserName,
           email: testUserEmail,
           password: testUserPassword,
-          roles: ['teacher']
+          roles: [TEACHER_ROLE]
         })
         .expect(200);
       
-      expect(response.body.message).toBe('Utilisateur créé avec succès.');
+      expect(response.body.message).toBe(REGISTER_SUCCESS_MSG);
     });
 
     it('should login via /api/user/login', async () => {
@@ -78,15 +83,13 @@ describe('Users API Integration Tests', () => {
     });
 
     it('should change password', async () => {
-      const newPassword = 'newpassword123';
-      
       await request(app)
         .post('/api/user/change-password')
         .set('Authorization', `Bearer ${token}`)
         .send({
           email: testUserEmail,
           oldPassword: testUserPassword,
-          newPassword: newPassword
+          newPassword: NEW_PASSWORD
         })
         .expect(200);
 
@@ -95,12 +98,12 @@ describe('Users API Integration Tests', () => {
         .post('/api/user/login')
         .send({
           email: testUserEmail,
-          password: newPassword
+          password: NEW_PASSWORD
         })
         .expect(200);
         
       // Reset password variable for cleanup/further tests if needed
-      testUserPassword = newPassword;
+      testUserPassword = NEW_PASSWORD;
     });
 
     it('should delete user', async () => {
