@@ -84,8 +84,6 @@ describe('Quiz API Integration Tests', () => {
     const foldersCollection = dbConn.collection('folders');
     await foldersCollection.deleteMany({ userId: testUserId });
     
-    const usersCollection = dbConn.collection('users');
-    await usersCollection.deleteOne({ email: testUserEmail });
     
     // Cleanup: close DB connection
     await db.closeConnection();
