@@ -1,6 +1,6 @@
-const Folders = require('../models/folders');
+const Folders = require('../../models/folders');
 const ObjectId = require('mongodb').ObjectId;
-const Quizzes = require('../models/quiz');
+const Quizzes = require('../../models/quiz');
 
 describe('Folders', () => {
     let folders;

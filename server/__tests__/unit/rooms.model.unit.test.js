@@ -1,15 +1,15 @@
-jest.mock("../middleware/AppError", () => {
-  const actualAppError = jest.requireActual("../middleware/AppError");
+jest.mock("../../middleware/AppError", () => {
+  const actualAppError = jest.requireActual("../../middleware/AppError");
 
   return jest.fn().mockImplementation((message, statusCode) => {
     return new actualAppError(message, statusCode);
   });
 });
 
-const Rooms = require("../models/room");
-const ValidationUtils = require("../utils/validationUtils");
+const Rooms = require("../../models/room");
+const ValidationUtils = require("../../utils/validationUtils");
 const ObjectId = require("mongodb").ObjectId;
-const validationConstants = require("../shared/validationConstants.json");
+const validationConstants = require("../../shared/validationConstants.json");
 
 describe("Rooms", () => {
   let rooms;

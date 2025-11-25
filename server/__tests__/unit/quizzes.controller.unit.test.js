@@ -378,16 +378,16 @@ describe("Quizzes API Integration Tests", () => {
       expect(mockQuizModel.getContent).toHaveBeenCalledWith(quizId);
     });
 
-    it("should return 500 when quiz not found", async () => {
+    it("should return 404 when quiz not found", async () => {
       const quizId = "quiz123";
       mockQuizModel.getContent.mockResolvedValue(null);
 
       const response = await request(app)
         .get(`/api/quiz/get/${quizId}`)
         .set("Authorization", `Bearer ${authToken}`)
-        .expect(500);
+        .expect(404);
 
-      expect(response.body.message).toBe("Une erreur s'est produite lors de la récupération du quiz.");
+      expect(response.body.message).toBe("Aucun quiz portant cet identifiant n'a été trouvé.");
     });
 
     it("should return 404 when user is not the owner", async () => {
