@@ -51,7 +51,7 @@ test.describe('E2E Setup Check', () => {
             console.log('Checking default folder...');
 
             // Check if "Dossier par défaut" exists in folders
-            const folderExists = await page.locator('text=Dossier par défaut').isVisible({ timeout: 5000 });
+            const folderExists = await page.getByRole('button', { name: /Dossier par défaut/i }).isVisible({ timeout: 5000 });
             if (!folderExists) {
                 console.log('Creating default folder...');
 
@@ -87,7 +87,7 @@ test.describe('E2E Setup Check', () => {
             }
 
             // Check if TEST room exists
-            const testRoomExists = await page.locator('text=TEST').isVisible({ timeout: 5000 });
+            const testRoomExists = await page.getByRole('list').getByText('TEST', { exact: true }).isVisible({ timeout: 5000 });
             if (!testRoomExists) {
                 console.log('Creating TEST room...');
 
