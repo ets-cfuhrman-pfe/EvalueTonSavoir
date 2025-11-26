@@ -126,8 +126,12 @@ describe('Quizzes API Integration Tests', () => {
           
           // Cleanup quizzes and folders
           if (testQuizId) {
-             const quizzesCollection = dbConn.collection('quizzes');
+             const quizzesCollection = dbConn.collection('files');
             await quizzesCollection.deleteOne({ _id: new require('mongodb').ObjectId(testQuizId) });
+          }
+          if (testFolderId) {
+            const foldersCollection = dbConn.collection('folders');
+            await foldersCollection.deleteOne({ _id: new require('mongodb').ObjectId(testFolderId) });
           }
         }
         await db.closeConnection();
