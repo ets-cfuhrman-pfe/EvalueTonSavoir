@@ -310,7 +310,8 @@ class RoomsController {
       if (!roomName) {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
-      const exists = await this.rooms.roomExists(roomName, req.user.userId);
+      const normalizedRoomName = roomName.toUpperCase().trim();
+      const exists = await this.rooms.roomExists(normalizedRoomName, req.user.userId);
       return res.status(200).json({ exists });
     } catch (error) {
       return next(error);

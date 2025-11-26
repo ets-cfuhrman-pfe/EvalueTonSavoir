@@ -15,7 +15,7 @@ class UsersController {
         try {
             const { email, password, username, roles } = req.body;
     
-            if (!email || !password) {
+            if (!email || !password || !username) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
