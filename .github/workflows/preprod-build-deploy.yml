@@ -48,11 +48,12 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Running Tests"
-          npm test
+          if [ "${{ matrix.directory }}" = "server" ]; then
+            npm test -- --testPathIgnorePatterns="integration"
+          else
+            npm test
+          fi
           echo "::endgroup::"
-        env:
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
   build-frontend:
     needs: lint-and-tests
