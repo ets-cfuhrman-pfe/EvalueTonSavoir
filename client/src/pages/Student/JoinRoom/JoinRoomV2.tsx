@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Socket } from 'socket.io-client';
 import { ENV_VARIABLES } from 'src/constants';
-import { useBeforeUnload, useSearchParams } from 'react-router-dom';
+import { useBeforeUnload, useSearchParams, useNavigate } from 'react-router-dom';
 
 import StudentModeQuizV2 from 'src/components/StudentModeQuiz/StudentModeQuizV2';
 import TeacherModeQuizV2 from 'src/components/TeacherModeQuiz/TeacherModeQuizV2';
@@ -23,6 +23,7 @@ import { setCurrentRoomName, clearCurrentRoomName } from '../../../utils/roomUti
 export type AnswerType = Array<string | number | boolean>;
 
 const JoinRoomV2: React.FC = () => {
+    const navigate = useNavigate();
     const [roomName, setRoomName] = useState('');
     const [username, setUsername] = useState(ApiService.getUsername());
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -70,7 +71,7 @@ const JoinRoomV2: React.FC = () => {
     useEffect(() => {
         handleCreateSocket();
         return () => {
-            disconnect();
+            webSocketService.disconnect();
         };
     }, []);
 
@@ -216,6 +217,13 @@ const JoinRoomV2: React.FC = () => {
             console.log('Connection Error:', error.message);
         });
 
+        socket.on('disconnect', (reason) => {
+            if (reason === "io server disconnect") {
+                disconnect();
+                setConnectionError("Le professeur a fermé la salle.");
+            }
+        });
+
         setSocket(socket);
     };
 
@@ -233,6 +241,10 @@ const JoinRoomV2: React.FC = () => {
         setUsername(ApiService.getUsername());
         setConnectionError('');
         setIsConnecting(false);
+
+        setRoomName('');
+        setIsQRCodeJoin(false);
+        navigate('/student/join-room-v2');
     };
 
     const handleSocket = () => {
