@@ -29,8 +29,7 @@ import {
     QrCode,
     ChevronLeft,
     ChevronRight,
-    Stop,
-    Refresh
+    Stop
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -682,16 +681,10 @@ const ManageRoomV2: React.FC = () => {
                     </Alert>
                     <Button
                         variant="contained"
-                        startIcon={<Refresh />}
-                        onClick={() => {
-                            setConnectingError('');
-                            const selectedRoom = rooms.find((room) => room._id === selectedRoomId);
-                            if (selectedRoom) {
-                                createWebSocketRoom(selectedRoom.title);
-                            }
-                        }}
+                        startIcon={<ArrowBack />}
+                        onClick={handleReturn}
                     >
-                        Reconnecter
+                        Retour au tableau de bord
                     </Button>
                 </Box>
             </div>
