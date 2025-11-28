@@ -9,15 +9,11 @@ jest.setTimeout(30000); // Timeout for slow connections
 describe('Quiz API Integration Tests', () => {
   let app;
   let token;
-  let testUserEmail = process.env.TEST_USER_EMAIL;
-  let testUserPassword = process.env.TEST_USER_PASSWORD;
+  let testUserEmail = process.env.TEST_USER_EMAIL || 'integrationtest@example.com';
+  let testUserPassword = process.env.TEST_USER_PASSWORD || 'integrationtest123';
   let testFolderId;
   let testUserId;
   let db;
-
-  if (!testUserEmail || !testUserPassword) {
-    throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables must be set for integration tests');
-  }
 
   beforeAll(async () => { 
     // Connect to DB first
@@ -83,6 +79,10 @@ describe('Quiz API Integration Tests', () => {
     
     const foldersCollection = dbConn.collection('folders');
     await foldersCollection.deleteMany({ userId: testUserId });
+
+    // Cleanup rooms
+    const roomsCollection = dbConn.collection('rooms');
+    await roomsCollection.deleteMany({ userId: testUserId });
     
     
     // Cleanup: close DB connection
