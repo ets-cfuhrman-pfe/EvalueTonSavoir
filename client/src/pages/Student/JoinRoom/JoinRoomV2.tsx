@@ -179,6 +179,7 @@ const JoinRoomV2: React.FC = () => {
         });
         socket.on('end-quiz', () => {
             setQuizCompleted(true);
+            disconnect();
         });
         socket.on('join-failure', (message) => {
             console.log('Failed to join the room.');
@@ -218,6 +219,7 @@ const JoinRoomV2: React.FC = () => {
         });
 
         socket.on('disconnect', (reason) => {
+            console.log('JoinRoomV2: Disconnected:', reason);
             if (reason === "io server disconnect") {
                 disconnect();
                 setConnectionError("Le professeur a fermé la salle.");
@@ -244,7 +246,7 @@ const JoinRoomV2: React.FC = () => {
 
         setRoomName('');
         setIsQRCodeJoin(false);
-        navigate('/student/join-room-v2');
+        navigate('/student/join-room-v2', { replace: true });
     };
 
     const handleSocket = () => {

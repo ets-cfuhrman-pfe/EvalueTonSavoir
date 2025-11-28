@@ -85,7 +85,7 @@ describe('JoinRoomV2 Component', () => {
 
     await waitFor(() => {
       expect(webSocketService.disconnect).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room-v2');
+      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room-v2', { replace: true });
     });
   });
 
