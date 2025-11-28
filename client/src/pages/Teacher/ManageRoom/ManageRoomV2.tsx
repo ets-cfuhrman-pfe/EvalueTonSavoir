@@ -226,6 +226,11 @@ const ManageRoomV2: React.FC = () => {
             setNewlyConnectedUser(newStudent);
         });
 
+        socket.on('create-failure', (message: string) => {
+            setConnectingError(message);
+            setSocket(null);
+        });
+
         socket.on('join-failure', (message) => {
             setConnectingError(message);
             setSocket(null);
