@@ -41,6 +41,7 @@ const JoinRoomV2: React.FC = () => {
     const [searchParams] = useSearchParams();
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [quizTitle, setQuizTitle] = useState<string>('Quiz');
+    const disconnectingRef = React.useRef(false);
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -138,11 +139,13 @@ const JoinRoomV2: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        setAnswers(questions ? new Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
+        setAnswers(questions ? Array.from({ length: questions.length }, () => ({} as AnswerSubmissionToBackendType)) : []);
     }, [questions]);
 
 
     const disconnect = () => {
+        if (disconnectingRef.current) return;
+        disconnectingRef.current = true;
         try {
             webSocketService.disconnect();
             setSocket(null);
@@ -237,6 +240,7 @@ const JoinRoomV2: React.FC = () => {
     };
 
     const handleSocket = () => {
+        disconnectingRef.current = false;
         setIsConnecting(true);
         setConnectionError('');
         if (!socket?.connected) {
