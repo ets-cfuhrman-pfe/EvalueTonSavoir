@@ -117,4 +117,42 @@ describe('JoinRoomV2 Component', () => {
       expect(screen.getByText('En attente que le professeur lance le questionnaire...')).toBeInTheDocument();
     });
   });
+
+  test('should handle "end-quiz" event correctly', async () => {
+    render(
+      <MemoryRouter>
+        <JoinRoomV2 />
+      </MemoryRouter>
+    );
+
+    // Join a room first to set some state
+    const roomInput = screen.getByTestId("input-Nom de la salle");
+    fireEvent.change(roomInput, { target: { value: 'ROOM1' } });
+    const joinButton = screen.getByText('Rejoindre');
+    fireEvent.click(joinButton);
+
+    // Simulate join success
+    const joinSuccessCallback = mockSocket.on.mock.calls.find(call => call[0] === 'join-success')?.[1];
+    act(() => {
+      joinSuccessCallback('ROOM1');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Salle: ROOM1')).toBeInTheDocument();
+    });
+
+    // Now trigger end-quiz
+    const endQuizCallback = mockSocket.on.mock.calls.find(call => call[0] === 'end-quiz')?.[1];
+    expect(endQuizCallback).toBeDefined();
+
+    act(() => {
+      endQuizCallback();
+    });
+
+    await waitFor(() => {
+      expect(webSocketService.disconnect).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room-v2', { replace: true });
+      expect(screen.getByTestId('login-container')).toBeInTheDocument();
+    });
+  });
 });
