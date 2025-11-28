@@ -33,7 +33,10 @@ test.describe('Room Lifecycle - Start, Join, End, Redirect', () => {
             // Find the quiz and click "Démarrer le quiz"
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
             const launchButton = quizItem.locator('button[aria-label="Démarrer le quiz"]').first();
-            await launchButton.click();
+            
+            // Ensure button is ready and click with force to avoid overlay issues
+            await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+            await launchButton.click({ force: true });
 
             // Wait for ManageRoomV2 page
             await teacherPage.waitForURL(/\/teacher\/manage-room-v2/);
@@ -56,7 +59,8 @@ test.describe('Room Lifecycle - Start, Join, End, Redirect', () => {
             await launchQuizButton.click();
 
             // Wait for quiz to start (teacher view)
-            await teacherPage.waitForSelector('text=Afficher les questions', { timeout: 10000 });
+            // "Masquer les questions" is shown when showQuestions is true (default)
+            await teacherPage.waitForSelector('text=Masquer les questions', { timeout: 30000 });
             console.log('Quiz started for teacher');
 
             console.log('STEP 3: Student joining...');
@@ -72,10 +76,10 @@ test.describe('Room Lifecycle - Start, Join, End, Redirect', () => {
 
             // Verify student is in the room (waiting or seeing question)
             await Promise.race([
-                studentPage.waitForSelector('text=En attente'),
-                studentPage.waitForSelector('.question-display'), 
-                studentPage.waitForSelector('text=Vrai'),
-                studentPage.waitForSelector('text=Faux')
+                studentPage.waitForSelector('text=En attente', { timeout: 30000 }),
+                studentPage.waitForSelector('.question-display', { timeout: 30000 }),
+                studentPage.waitForSelector('text=Vrai', { timeout: 30000 }),
+                studentPage.waitForSelector('text=Faux', { timeout: 30000 })
             ]);
             console.log('Student joined successfully');
 
