@@ -557,11 +557,41 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        const reconnectButton = screen.getByText('Reconnecter');
-        expect(reconnectButton).toBeInTheDocument();
+        const returnButton = screen.getByText('Retour au tableau de bord');
+        expect(returnButton).toBeInTheDocument();
         
-        fireEvent.click(reconnectButton);
-        expect(mockWebSocketService.connect).toHaveBeenCalledTimes(2);
+        fireEvent.click(returnButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+      });
+    });
+
+    test('should handle create-failure event', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const roomSelect = screen.getByRole('combobox');
+        fireEvent.change(roomSelect, { target: { value: 'room1' } });
+      });
+
+      await waitFor(() => {
+        const launchButton = screen.getAllByText('Lancer le quiz')[0];
+        fireEvent.click(launchButton);
+      });
+
+      // Simulate create-failure event
+      const createFailureCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'create-failure'
+      )?.[1];
+
+      if (createFailureCallback) {
+        act(() => {
+          createFailureCallback('Room already exists');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('Room already exists')).toBeInTheDocument();
+        expect(screen.getByText('Retour au tableau de bord')).toBeInTheDocument();
       });
     });
   });

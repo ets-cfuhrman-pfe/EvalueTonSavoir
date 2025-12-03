@@ -96,7 +96,7 @@ const setupWebsocket = (io) => {
     socket.on("end-quiz", ({ roomName }) => {
       logger.info("Quiz ended", { roomName, socketId: socket.id });
       socket.to(roomName).emit("end-quiz");
-      io.sockets.adapter.rooms.delete(roomName);
+      io.in(roomName).disconnectSockets(true);
       reportSalles();
     });
 
