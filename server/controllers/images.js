@@ -96,6 +96,19 @@ class ImagesController {
                     retrievalTime: `${retrievalTime}ms`
                 });
             }
+
+            // Admin-specific access audit: if admin views another user's image
+            if (image.userId && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin') && req.user.userId !== image.userId) {
+                if (req.logAction) {
+                    req.logAction('admin_access_image', {
+                        requestedBy: req.user.userId,
+                        targetUserId: image.userId,
+                        imageId: id,
+                        fileName: image.file_name,
+                        retrievalTime: `${retrievalTime}ms`
+                    });
+                }
+            }
     
             // Set Headers for display in browser
             res.setHeader('Content-Type', image.mime_type);
@@ -110,8 +123,8 @@ class ImagesController {
 
     getImages = async (req, res, next) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 5;
+            const page = Number.parseInt(req.query.page) || 1;
+            const limit = Number.parseInt(req.query.limit) || 5;
             const images = await this.images.getImages(page, limit);
 
             if (!images || images.length === 0) {
@@ -119,6 +132,19 @@ class ImagesController {
             }
             
             res.setHeader('Content-Type', 'application/json');
+            // If admin requested images for another user (uid query param present), log admin action
+            const uidFromQuery = req.query?.uid;
+            if (uidFromQuery && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                if (req.logAction) {
+                    req.logAction('admin_get_user_images', {
+                        requestedBy: req.user.userId,
+                        targetUserId: uidFromQuery,
+                        page,
+                        limit,
+                        imageCount: images.length
+                    });
+                }
+            }
             return res.status(200).json(images);
         } catch (error) {
             return next(error);
@@ -127,8 +153,8 @@ class ImagesController {
 
     getUserImages = async (req, res, next) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 5;
+            const page = Number.parseInt(req.query.page) || 1;
+            const limit = Number.parseInt(req.query.limit) || 5;
             const uid = req.query.uid;
             const images = await this.images.getUserImages(page, limit, uid);
     
@@ -137,6 +163,20 @@ class ImagesController {
             }
             
             res.setHeader('Content-Type', 'application/json');
+
+            // If an admin requested images for another user (uid query param present), log admin action
+            const uidFromQuery = req.query?.uid;
+            if (uidFromQuery && req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin')) {
+                if (req.logAction) {
+                    req.logAction('admin_get_user_images', {
+                        requestedBy: req.user.userId,
+                        targetUserId: uidFromQuery,
+                        page,
+                        limit,
+                        imageCount: images.length
+                    });
+                }
+            }
             return res.status(200).json(images);
         } catch (error) {
             return next(error);
@@ -181,6 +221,17 @@ class ImagesController {
                     targetUserId: uid,
                     deleteTime: `${deleteTime}ms`
                 });
+            }
+            // If admin deleted an image for another user, log audit event
+            if (req.user && Array.isArray(req.user.roles) && req.user.roles.includes('admin') && req.user.userId !== uid) {
+                if (req.logAction) {
+                    req.logAction('admin_delete_user_image', {
+                        requestedBy: req.user.userId,
+                        targetUserId: uid,
+                        imageId: imgId,
+                        deleteTime: `${deleteTime}ms`
+                    });
+                }
             }
             
             res.setHeader('Content-Type', 'application/json');

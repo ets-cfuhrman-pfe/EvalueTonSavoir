@@ -86,22 +86,25 @@ const QuizForm: React.FC = () => {
                     return;
                 }
 
-                const quiz = await ApiService.getQuiz(id) as QuizType;
+                const quiz = await ApiService.getQuiz(id);
 
-                if (!quiz) {
+                // ApiService returns an error string on failure; handle both falsy and error string
+                if (!quiz || typeof quiz === 'string') {
                     window.alert(`Une erreur est survenue.\n Le quiz ${id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
                     console.error('Quiz not found for id:', id);
                     navigate('/teacher/dashboard');
                     return;
                 }
-
-                setQuiz(quiz as QuizType);
-                const { title, content, folderId } = quiz;
+                // At this point Quiz is not a string; safely treat as QuizType
+                const typedQuiz = quiz as QuizType;
+                setQuiz(typedQuiz);
+                const { title, content, folderId } = typedQuiz;
 
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
+                // Content is normalized as string[] by ApiService
                 setFilteredValue(content);
-                setValue(quiz.content.join('\n\n'));
+                setValue(content.join('\n\n'));
 
             } catch (error) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)

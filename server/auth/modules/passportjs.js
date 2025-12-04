@@ -12,7 +12,7 @@ class PassportJs{
 
     async registerAuth(expressapp, userModel){
         logger.debug('PassportJs registerAuth initialized', {
-            userModel: JSON.stringify(userModel),
+            userModel: 'userModel object',
             module: 'passportjs'
         });
         expressapp.use(passport.initialize());

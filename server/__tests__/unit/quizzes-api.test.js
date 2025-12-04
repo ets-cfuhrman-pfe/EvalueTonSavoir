@@ -180,6 +180,7 @@ describe("Quizzes API Integration Tests", () => {
 
       expect(response.body).toEqual({
         message: "Quiz créé avec succès.",
+        quizId: "quiz123",
       });
 
       expect(mockFoldersModel.getOwner).toHaveBeenCalledWith("folder123");
@@ -350,6 +351,7 @@ describe("Quizzes API Integration Tests", () => {
         .expect(200);
 
       expect(response.body.message).toBe("Quiz créé avec succès.");
+      expect(response.body.quizId).toBe("quiz123");
     });
   });
 
@@ -404,6 +406,28 @@ describe("Quizzes API Integration Tests", () => {
         .expect(404);
 
       expect(response.body.message).toBe("Aucun quiz portant cet identifiant n'a été trouvé.");
+    });
+
+    it("should allow admin to fetch other user's quiz", async () => {
+      const quizId = "quiz123";
+      const mockContent = {
+        _id: quizId,
+        title: "Admin Access Quiz",
+        content: ["Question 1"],
+        userId: "otherUser",
+      };
+      mockQuizModel.getContent.mockResolvedValue(mockContent);
+
+      const adminUser = { email: 'admin@example.com', userId: 'adminUser', roles: ['admin'] };
+      const adminToken = jwt.sign(adminUser, process.env.JWT_SECRET);
+
+      const response = await request(app)
+        .get(`/api/quiz/get/${quizId}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body).toEqual({ data: mockContent });
+      expect(mockQuizModel.getContent).toHaveBeenCalledWith(quizId);
     });
 
     it("should return 401 when not authenticated", async () => {

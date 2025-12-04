@@ -329,6 +329,20 @@ class Users {
 
     return false;
   }
+
+  async getAllUsers() {
+    await this.db.connect();
+    const conn = this.db.getConnection();
+    const userCollection = conn.collection("users");
+
+    const users = await userCollection.find({}).project({
+      password: 0, // Exclude password
+      resetToken: 0, // Exclude reset token
+      resetTokenExpiry: 0 // Exclude reset token expiry
+    }).toArray();
+
+    return users;
+  }
 }
 
 module.exports = Users;
