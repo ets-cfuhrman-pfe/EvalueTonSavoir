@@ -52,7 +52,7 @@ const StatusPage: React.FC = () => {
                 let data = {};
                 try {
                     data = await response.json();
-                } catch (_e) {
+                } catch {
                     // Ignore JSON parse errors
                 }
 
@@ -62,7 +62,7 @@ const StatusPage: React.FC = () => {
                     httpCode: response.status,
                     ...data
                 };
-            } catch (_e) {
+            } catch {
                 newStatuses[check.endpoint] = { 
                     status: 'unreachable', 
                     timestamp: new Date().toISOString(),
