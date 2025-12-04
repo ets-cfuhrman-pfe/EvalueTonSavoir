@@ -27,6 +27,9 @@ import AuthDrawer from './pages/AuthManager/AuthDrawer';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AdminUserDetails from './pages/Admin/AdminUserDetails';
 
+// Status Page
+import StatusPage from './pages/Status/Status';
+
 // Components
 
 // Header/Footer import
@@ -96,6 +99,9 @@ const App: React.FC = () => {
                         <Routes>
                             {/* Page main */}
                             <Route path="/" element={<Home />} />
+                            
+                            {/* Status Page */}
+                            <Route path="/status" element={<StatusPage />} />
 
                             {/* Pages espace enseignant */}
                         <Route

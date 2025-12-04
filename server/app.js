@@ -52,6 +52,7 @@ const imagesRouter = require('./routers/images.js')
 const adminRouter = require('./routers/admin.js');
 const AuthManager = require('./auth/auth-manager.js')
 const authRouter = require('./routers/auth.js')
+const healthRouter = require('./routers/health.js');
 
 // Setup environment
 dotenv.config();
@@ -114,6 +115,7 @@ app.use('/api/quiz', quizRouter);
 app.use('/api/image', imagesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/health', healthRouter);
 
 // Add Auths methods
 const session = require('express-session');
