@@ -78,7 +78,7 @@ const StatusPage: React.FC = () => {
 
     useEffect(() => {
         fetchStatus();
-        const interval = setInterval(fetchStatus, 30000);
+        const interval = setInterval(fetchStatus, 500000);
         return () => clearInterval(interval);
     }, []);
 
