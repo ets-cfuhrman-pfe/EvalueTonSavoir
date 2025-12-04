@@ -1,53 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const asyncHandler = require('./routerUtils');
 
-//rate limiter
-const rateLimit = (windowMs, max) => {
-    const requests = new Map();
-    
-    // Clean up old entries every minute to prevent memory leaks
-    setInterval(() => {
-        const now = Date.now();
-        for (const [ip, data] of requests.entries()) {
-            if (now - data.startTime > windowMs) {
-                requests.delete(ip);
-            }
-        }
-    }, 60000);
-
-    return (req, res, next) => {
-        const ip = req.ip;
-        const now = Date.now();
-        
-        if (!requests.has(ip)) {
-            requests.set(ip, { count: 1, startTime: now });
-            return next();
-        }
-
-        const data = requests.get(ip);
-        
-        if (now - data.startTime > windowMs) {
-            data.count = 1;
-            data.startTime = now;
-            return next();
-        }
-
-        data.count++;
-        
-        if (data.count > max) {
-            return res.status(429).json({
-                status: 'error',
-                message: 'Too many requests. Please wait a moment.'
-            });
-        }
-
-        next();
-    };
-};
+const rateLimit = require('express-rate-limit');
 
 // Apply rate limit: 50 requests per 1 minute
-const healthLimiter = rateLimit(60 * 1000, 50);
+const healthLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 50,
+    message: {
+        status: 'error',
+        message: 'Too many requests. Please wait a moment.'
+    }
+});
 router.use(healthLimiter);
 
 // Helper to check DB connection
@@ -65,7 +31,7 @@ const checkDB = async () => {
 const checkCollection = async (collectionName) => {
     try {
         const connection = db.getConnection();
-        //count 1 document to verify access
+        // count 1 document to verify access
         await connection.collection(collectionName).findOne({}, { projection: { _id: 1 } });
         return { ok: true, code: 200 };
     } catch (e) {
@@ -73,7 +39,7 @@ const checkCollection = async (collectionName) => {
     }
 };
 
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
     const dbCheck = await checkDB();
     const response = {
         status: dbCheck.ok ? 'ok' : 'error',
@@ -86,15 +52,14 @@ router.get('/', async (req, res) => {
     
     if (!dbCheck.ok) {
         response.errors = { database: dbCheck.error };
-        res.status(503);
+        return res.status(503).json(response);
     }
     
     res.json(response);
-});
+}));
 
 // Check dependencies for /teacher/dashboard-v2
-router.get('/dashboard', async (req, res) => {
-    //const quizzesCheck = { ok: false, error: "Simulated Error" }; 
+router.get('/dashboard', asyncHandler(async (req, res) => {
 
     const quizzesCheck = await checkCollection('quizzes');
  
@@ -114,14 +79,14 @@ router.get('/dashboard', async (req, res) => {
         response.errors = {};
         if (!quizzesCheck.ok) response.errors.quizzes = quizzesCheck.error;
         if (!foldersCheck.ok) response.errors.folders = foldersCheck.error;
-        res.status(503);
+        return res.status(503).json(response);
     }
 
     res.json(response);
-});
+}));
 
 // Check dependencies for /login
-router.get('/login', async (req, res) => {
+router.get('/login', asyncHandler(async (req, res) => {
     const usersCheck = await checkCollection('users');
     
     const response = {
@@ -134,14 +99,14 @@ router.get('/login', async (req, res) => {
 
     if (!usersCheck.ok) {
         response.errors = { users_collection: usersCheck.error };
-        res.status(503);
+        return res.status(503).json(response);
     }
     
     res.json(response);
-});
+}));
 
 // Check dependencies for /student/join-room-v2
-router.get('/join-room', async (req, res) => {
+router.get('/join-room', asyncHandler(async (req, res) => {
     const roomsCheck = await checkCollection('rooms');
     
     const response = {
@@ -154,10 +119,10 @@ router.get('/join-room', async (req, res) => {
 
     if (!roomsCheck.ok) {
         response.errors = { rooms_collection: roomsCheck.error };
-        res.status(503);
+        return res.status(503).json(response);
     }
     
     res.json(response);
-});
+}));
 
 module.exports = router;
