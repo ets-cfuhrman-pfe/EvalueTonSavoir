@@ -1,4 +1,4 @@
-name: Release Staging (RC)
+name: Create Staging Release (RC)
 
 on:
   workflow_dispatch:
