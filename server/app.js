@@ -115,6 +115,11 @@ app.use('/api/image', imagesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
 
+const packageJson = require('./package.json');
+app.get('/api/version', (req, res) => {
+  res.json({ version: packageJson.version });
+});
+
 // Add Auths methods
 const session = require('express-session');
 app.use(session({
