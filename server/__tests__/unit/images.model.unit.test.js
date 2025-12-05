@@ -1,13 +1,13 @@
 /* eslint-disable */
 
 // const request = require('supertest');
-// const app = require('../app.js');
-// // const app = require('../routers/images.js');
+// const app = require('../../app.js');
+// // const app = require('../../routers/images.js');
 // const { response } = require('express');
 
 // const BASE_URL = '/image'
 
-const Images = require('../models/images');
+const Images = require('../../models/images');
 const ObjectId = require('mongodb').ObjectId;
 
 describe.skip("POST /upload", () => {

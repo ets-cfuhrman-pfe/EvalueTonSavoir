@@ -1,5 +1,5 @@
 // Only mock the database for this specific test file
-jest.mock('../config/db', () => {
+jest.mock('../../config/db', () => {
   // Create a collection mock with common methods
   const collectionMock = {
     findOne: jest.fn().mockResolvedValue(null),
@@ -34,8 +34,8 @@ afterAll(async () => {
   console.log('Auth tests completed, resources cleaned up');
 });
 
-const AuthConfig = require("../config/auth.js");
-const AuthManager = require("../auth/auth-manager.js");
+const AuthConfig = require("../../config/auth.js");
+const AuthManager = require("../../auth/auth-manager.js");
 
 // Mock fetch for OIDC configuration
 global.fetch = jest.fn(() =>
@@ -51,14 +51,14 @@ global.fetch = jest.fn(() =>
 );
 
 // Mock logger for testing
-jest.mock('../config/logger', () => ({
+jest.mock('../../config/logger', () => ({
   debug: jest.fn(),
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn()
 }));
 
-const logger = require('../config/logger');
+const logger = require('../../config/logger');
 
 const mockConfig = {
   auth: {
