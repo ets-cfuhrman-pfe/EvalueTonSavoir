@@ -123,7 +123,7 @@ jobs:
       - name: Build & push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ github.event.inputs.package == 'client' && '.' || 'server' }}
           file: ${{ github.event.inputs.package == 'client' && 'client/Dockerfile' || 'server/Dockerfile' }}
           push: true
           platforms: linux/amd64
