@@ -158,6 +158,7 @@ describe("Folders API Integration Tests", () => {
 
             expect(response.body).toEqual({
                 message: "Dossier créé avec succès.",
+                folderId: "folder123",
             });
 
             expect(mockFoldersModel.create).toHaveBeenCalledWith(
