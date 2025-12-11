@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     # Only allow running from main branch
     if: github.ref == 'refs/heads/main'
+    outputs:
+      PROD_VERSION: ${{ steps.version.outputs.PROD_VERSION }}
+      PACKAGE: ${{ steps.version.outputs.PACKAGE }}
     permissions:
       contents: write
       packages: write
@@ -149,3 +152,67 @@ jobs:
             This release was promoted from RC tag `${{ steps.version.outputs.RC_TAG }}`.
           prerelease: false
           draft: false
+
+  sync-staging:
+    needs: promote-rc
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout staging
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+          token: ${{ secrets.GH_ORG_PAT }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "${{ secrets.GH_ORG_NAME }}"
+          git config user.email "${{ secrets.GH_ORG_EMAIL }}"
+
+      - name: Merge main into staging
+        run: |
+          git fetch origin main
+          
+          # Try to merge. If it fails, we handle conflicts.
+          if ! git merge origin/main; then
+            echo "Merge conflict detected. Resolving version conflicts..."
+            
+            PACKAGE="${{ needs.promote-rc.outputs.PACKAGE }}"
+            PROD_VERSION="${{ needs.promote-rc.outputs.PROD_VERSION }}"
+            
+            # We assume conflicts are only in package.json/lock.json due to version
+            # We keep 'ours' (staging) content for dependencies etc, but update version to match main
+            
+            git checkout --ours $PACKAGE/package.json
+            git checkout --ours $PACKAGE/package-lock.json
+            
+            # Update version in package.json
+            node -e "
+              const fs = require('fs');
+              const pkg = require('./$PACKAGE/package.json');
+              pkg.version = '$PROD_VERSION';
+              fs.writeFileSync('./$PACKAGE/package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+            
+            # Update package-lock.json version
+            node -e "
+              const fs = require('fs');
+              const pkgLock = require('./$PACKAGE/package-lock.json');
+              pkgLock.version = '$PROD_VERSION';
+              pkgLock.packages[''].version = '$PROD_VERSION';
+              fs.writeFileSync('./$PACKAGE/package-lock.json', JSON.stringify(pkgLock, null, 2) + '\n');
+            "
+            
+            git add $PACKAGE/package.json $PACKAGE/package-lock.json
+            
+            # Check if there are other conflicts
+            if git diff --name-only --diff-filter=U | grep .; then
+              echo "Error: Unresolved conflicts in other files!"
+              exit 1
+            fi
+            
+            git commit -m "chore: sync release version $PROD_VERSION from main"
+          fi
+          
+          git push origin staging
