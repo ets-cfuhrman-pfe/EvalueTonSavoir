@@ -82,14 +82,14 @@ const QuizResults: React.FC<QuizResultsProps> = ({
                     <div className="row justify-content-center">
                         <div className="col-lg-12 col-md-12 col-12">
                             <div className="card shadow-lg mb-4">
-                                <div className="card-body text-center py-5">
-                                    <h1 className="display-4 text-primary fw-bold mb-3">
+                                <div className="card-body text-center py-4">
+                                    <h2 className="display-6 text-primary fw-bold mb-2">
                                         Quiz terminé!
-                                    </h1>
+                                    </h2>
                                     {quizTitle && (
-                                        <h5 className="text-muted mb-0">
+                                        <p className="text-muted mb-0 fw-semibold">
                                             {quizTitle}
-                                        </h5>
+                                        </p>
                                     )}
                                 </div>
                             </div>

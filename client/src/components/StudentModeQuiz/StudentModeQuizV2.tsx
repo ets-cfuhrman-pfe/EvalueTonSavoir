@@ -33,7 +33,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
-    const [hasShownResultsOnce, setHasShownResultsOnce] = useState(false);
     const [hideFeedback, setHideFeedback] = useState(true);
 
     const hasFeedback = (question: Question) => {
@@ -59,14 +58,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     // Check if quiz is completed (all questions answered OR teacher ended quiz)
     const isQuizCompleted = answers.length === questions.length && answers.every(answer => answer?.answer !== undefined);
     const shouldShowResults = isQuizCompleted || quizCompleted;
-
-    // Auto-show results modal on first completion
-    useEffect(() => {
-        if (shouldShowResults && !hasShownResultsOnce) {
-            setIsResultsModalOpen(true);
-            setHasShownResultsOnce(true);
-        }
-    }, [shouldShowResults, hasShownResultsOnce]);
 
     // Always re-show feedback when moving to a different question
     useEffect(() => {
