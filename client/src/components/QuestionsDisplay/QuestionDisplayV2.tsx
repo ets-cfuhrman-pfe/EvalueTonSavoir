@@ -18,6 +18,7 @@ interface QuestionV2Props {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    showCorrectnessBanner?: boolean;
 }
 
 const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
@@ -30,6 +31,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     students = [],
     showStatistics = false,
     hideAnswerFeedback = false,
+    showCorrectnessBanner = true,
 }) => {
     const forceShowFeedback = question?.type === 'Numerical' || question?.type === 'Short';
 
@@ -50,6 +52,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
             break;
@@ -65,6 +68,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
             break;

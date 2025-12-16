@@ -18,10 +18,11 @@ interface PropsV2 {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    showCorrectnessBanner?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false, showCorrectnessBanner = true } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -90,7 +91,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     return (
         <div className="quiz-question-area">
             {/* Overall correctness banner */}
-            {shouldShowValidation && (
+            {shouldShowValidation && showCorrectnessBanner && (
                 <div
                     className={`alert d-flex align-items-center fw-bold mb-3 quiz-correctness-banner ${
                         isUserAnswerCorrect ? 'alert-success' : 'alert-danger'
