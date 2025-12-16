@@ -201,6 +201,18 @@
   }
 }
 
+// Floating correctness banner so it stays visible while scrolling
+.quiz-correctness-banner {
+  position: sticky;
+  top: 72px;
+  z-index: 1020;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    top: 64px;
+  }
+}
+
 // Very small screens
 @media (max-width: #{vars.$breakpoint-sm - 1px}) {
   .quiz-header {

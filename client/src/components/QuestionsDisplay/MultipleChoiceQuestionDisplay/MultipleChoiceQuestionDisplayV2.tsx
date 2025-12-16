@@ -1,5 +1,5 @@
 // MultipleChoiceQuestionDisplayV2.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
@@ -50,6 +50,15 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // For student view, only show validation after they've submitted an answer
     const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer.length > 0);
 
+    // Determine overall correctness of the submitted answer for an immediate visual cue
+    const isUserAnswerCorrect = useMemo(() => {
+        if (!shouldShowValidation) return undefined;
+        const correctChoices = question.choices.filter((c) => c.isCorrect).map((c) => c.formattedText.text);
+        if (correctChoices.length !== answer.length) return false;
+        const correctSet = new Set(correctChoices);
+        return answer.every((choice) => correctSet.has(choice));
+    }, [answer, question.choices, shouldShowValidation]);
+
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
             // console.log(`handleOnClickAnswer -- setAnswer(): prevAnswer: ${prevAnswer}, choice: ${choice}`);
@@ -80,6 +89,17 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
     return (
         <div className="quiz-question-area">
+            {/* Overall correctness banner */}
+            {shouldShowValidation && (
+                <div
+                    className={`alert d-flex align-items-center fw-bold mb-3 quiz-correctness-banner ${
+                        isUserAnswerCorrect ? 'alert-success' : 'alert-danger'
+                    }`}
+                >
+                    {isUserAnswerCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                </div>
+            )}
+
             {/* Question text */}
             <div className="mb-4">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />

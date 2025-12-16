@@ -75,8 +75,23 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
     const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
+    const isUserAnswerCorrect = shouldShowValidation && answer !== undefined
+        ? answer === question.isTrue
+        : undefined;
+
     return (
         <div className="quiz-question-area true-false-question">
+            {/* Overall correctness banner */}
+            {shouldShowValidation && (
+                <div
+                    className={`alert d-flex align-items-center fw-bold mb-3 quiz-correctness-banner ${
+                        isUserAnswerCorrect ? 'alert-success' : 'alert-danger'
+                    }`}
+                >
+                    {isUserAnswerCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                </div>
+            )}
+
             {/* Question text */}
             <div className="mb-4">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
