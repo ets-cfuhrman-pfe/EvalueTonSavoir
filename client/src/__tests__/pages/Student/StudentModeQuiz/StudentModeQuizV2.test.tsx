@@ -4,26 +4,27 @@ import '@testing-library/jest-dom';
 import StudentModeQuizV2 from 'src/components/StudentModeQuiz/StudentModeQuizV2';
 import { QuestionType } from 'src/Types/QuestionType';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('StudentModeQuizV2 feedback toggle', () => {
   const makeMultipleChoiceQuestion = (withFeedback: boolean) => {
     const baseQuestion: any = {
       id: '1',
       type: 'MC',
-      formattedStem: '<p>Question avec feedback</p>',
+      formattedStem: { text: 'Question avec feedback', format: 'html' },
       choices: [
         {
-          formattedText: { text: 'Choix A' },
+          formattedText: { text: 'Choix A', format: 'html' },
           isCorrect: true,
-          ...(withFeedback ? { formattedFeedback: '<p>Feedback A</p>' } : {}),
+          ...(withFeedback ? { formattedFeedback: { text: 'Feedback A', format: 'html' } } : {}),
         },
         {
-          formattedText: { text: 'Choix B' },
+          formattedText: { text: 'Choix B', format: 'html' },
           isCorrect: false,
-          ...(withFeedback ? { formattedFeedback: '<p>Feedback B</p>' } : {}),
+          ...(withFeedback ? { formattedFeedback: { text: 'Feedback B', format: 'html' } } : {}),
         },
       ],
-      ...(withFeedback ? { formattedGlobalFeedback: '<p>Feedback global</p>' } : {}),
+      ...(withFeedback ? { formattedGlobalFeedback: { text: 'Feedback global', format: 'html' } } : {}),
     };
 
     return { question: baseQuestion } as QuestionType;
@@ -36,21 +37,44 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     } as AnswerSubmissionToBackendType,
   ];
 
+  // Prevent auto-opening the results dialog by passing an extra unanswered slot
+  const answeredWithPlaceholder = [
+    ...answered,
+    {
+        roomName: 'room-1',
+        username: 'placeholder-user',
+        idQuestion: 2,
+        answer: undefined,
+    } as unknown as AnswerSubmissionToBackendType,
+  ];
+
+  const closeResultsDialogIfOpen = () => {
+    const closeButton = screen.queryByRole('button', { name: /fermer/i });
+    if (closeButton) {
+      fireEvent.click(closeButton);
+    }
+  };
+
   const renderQuiz = (questions: QuestionType[], answers: AnswerSubmissionToBackendType[], props: Partial<React.ComponentProps<typeof StudentModeQuizV2>> = {}) => {
     return render(
-      <StudentModeQuizV2
-        questions={questions}
-        answers={answers}
-        submitAnswer={jest.fn()}
-        disconnectWebSocket={jest.fn()}
-        {...props}
-      />
+      <MemoryRouter>
+        <StudentModeQuizV2
+          questions={questions}
+          answers={answers}
+          submitAnswer={jest.fn()}
+          disconnectWebSocket={jest.fn()}
+          {...props}
+        />
+      </MemoryRouter>
     );
   };
 
   it('starts hidden, then shows and hides feedback on toggle', () => {
     const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
-    renderQuiz(questions, answered);
+    renderQuiz(questions, answeredWithPlaceholder);
+
+    // Ensure the quiz results modal does not hide the feedback toggle
+    closeResultsDialogIfOpen();
 
     const toggleButton = screen.getByRole('button', { name: /afficher rétroactions/i });
     expect(toggleButton).toBeInTheDocument();
@@ -70,7 +94,7 @@ describe('StudentModeQuizV2 feedback toggle', () => {
 
   it('does not show toggle when no answer submitted and quiz not completed', () => {
     const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
-    // No answers and quiz not completed -> should not show toggle
+    // No answers and quiz not completed
     renderQuiz(questions, [{} as AnswerSubmissionToBackendType]);
 
     expect(screen.queryByRole('button', { name: /rétroactions/i })).not.toBeInTheDocument();
@@ -79,6 +103,9 @@ describe('StudentModeQuizV2 feedback toggle', () => {
   it('shows toggle when quiz is marked completed even without answers', () => {
     const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
     renderQuiz(questions, [{} as AnswerSubmissionToBackendType], { quizCompleted: true });
+
+    // Close the auto-shown results modal to reveal the toggle in the main view
+    closeResultsDialogIfOpen();
 
     expect(screen.getByRole('button', { name: /afficher rétroactions/i })).toBeInTheDocument();
   });
