@@ -48,6 +48,21 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     } as unknown as AnswerSubmissionToBackendType,
   ];
 
+  const makeAnswersWithPlaceholder = (selected: string[] | undefined) => ([
+    {
+      roomName: 'room-1',
+      username: 'student-user',
+      idQuestion: 1,
+      answer: selected,
+    } as unknown as AnswerSubmissionToBackendType,
+    {
+      roomName: 'room-1',
+      username: 'placeholder-user',
+      idQuestion: 2,
+      answer: undefined,
+    } as unknown as AnswerSubmissionToBackendType,
+  ]);
+
   const closeResultsDialogIfOpen = () => {
     const closeButton = screen.queryByRole('button', { name: /fermer/i });
     if (closeButton) {
@@ -98,6 +113,24 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     renderQuiz(questions, [{} as AnswerSubmissionToBackendType]);
 
     expect(screen.queryByRole('button', { name: /rétroactions/i })).not.toBeInTheDocument();
+  });
+
+  it('shows correctness banner when answer is correct', () => {
+    const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
+    renderQuiz(questions, makeAnswersWithPlaceholder(['Choix A']));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.getByText('Réponse correcte')).toBeInTheDocument();
+  });
+
+  it('shows correctness banner when answer is incorrect', () => {
+    const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
+    renderQuiz(questions, makeAnswersWithPlaceholder(['Choix B']));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.getByText('Réponse incorrecte')).toBeInTheDocument();
   });
 
   it('shows toggle when quiz is marked completed even without answers', () => {
