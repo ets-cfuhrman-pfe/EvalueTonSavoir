@@ -52,8 +52,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    // In teacher mode rhythm, hide validation when hideAnswerFeedback is true
-    const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer !== undefined);
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer !== undefined);
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 
@@ -77,7 +76,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
     return (
-        <div className="quiz-question-area">
+        <div className="quiz-question-area true-false-question">
             {/* Question text */}
             <div className="mb-4">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
