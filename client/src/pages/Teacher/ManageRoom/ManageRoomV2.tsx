@@ -838,6 +838,7 @@ const ManageRoomV2: React.FC = () => {
                                                                     }
                                                                     students={students}
                                                                     showStatistics={showStatistics}
+                                                                    showCorrectnessBanner={false}
                                                                 />                                                       
                                                             </CardContent>
                                                         </Card>
