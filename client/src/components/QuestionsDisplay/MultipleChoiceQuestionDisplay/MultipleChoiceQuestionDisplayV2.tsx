@@ -180,7 +180,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             answer.length > 0 && handleOnSubmitAnswer?.(answer)
                         }
                         disabled={buttonText !== 'Voir les résultats' && answer.length === 0}
-                        className="btn-primary"
+                        className="quiz-submit-btn"
                     >
                         {buttonText}
                     </Button>

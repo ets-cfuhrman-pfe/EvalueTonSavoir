@@ -49,6 +49,32 @@
   }
 }
 
+// Distinct styling for the final submit button 
+.quiz-submit-btn {
+  background-color: #f3b26a !important;
+  border-color: #f3b26a !important;
+  color: vars.$dark !important;
+  font-weight: 700;
+  box-shadow: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    background-color: #eaa85f !important;
+    border-color: #eaa85f !important;
+    color: vars.$dark !important;
+    transform: translateY(-1px);
+    box-shadow: vars.$box-shadow-sm;
+  }
+
+  &:disabled {
+    background-color: #f7c891 !important;
+    border-color: #f7c891 !important;
+    color: rgba(0, 0, 0, 0.55) !important;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 .quiz-navigation-area {
   background-color: vars.$light;
   border-left: 1px solid rgba(0, 0, 0, 0.125);

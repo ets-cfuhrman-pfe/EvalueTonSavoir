@@ -174,7 +174,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             answer !== undefined && handleOnSubmitAnswer?.([answer])
                         }
                         disabled={buttonText !== 'Voir les résultats' && answer === undefined}
-                        className="btn-primary"
+                        className="quiz-submit-btn"
                     >
                         {buttonText}
                     </Button>

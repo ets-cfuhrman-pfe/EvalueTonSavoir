@@ -138,7 +138,7 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     handleOnSubmitAnswer?.(answer)
                                 }
                                 disabled={buttonText !== 'Voir les résultats' && (answer === undefined || answer === null || isNaN(answer[0] as number))}
-                                className="btn-primary"
+                                className="quiz-submit-btn"
                             >
                                 {buttonText}
                             </Button>
