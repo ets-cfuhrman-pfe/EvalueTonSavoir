@@ -52,7 +52,7 @@
 // Keep validation feedback confined to the letter badge 
 .choice-button.bg-success,
 .choice-button.bg-danger {
-  background-color: #fff !important;
+  background-color: vars.$light !important;
   color: vars.$dark !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
   border-width: 1.5px !important;
@@ -67,72 +67,72 @@
 }
 
 .choice-button.bg-success .choice-letter {
-  color: #198754 !important;
-  border-color: #198754 !important;
+  color: vars.$success !important;
+  border-color: vars.$success !important;
 }
 
 .choice-button.bg-danger .choice-letter {
-  color: #dc3545 !important;
-  border-color: #dc3545 !important;
+  color: vars.$danger !important;
+  border-color: vars.$danger !important;
 }
 
 // Multiple-choice validation, highlight the button border in green/red
 .choice-button.bg-success {
-  border-color: #198754 !important;
+  border-color: vars.$success !important;
   border-width: 2px !important;
 }
 
 .choice-button.bg-danger {
-  border-color: #dc3545 !important;
+  border-color: vars.$danger !important;
   border-width: 2px !important;
 }
 
 // True/False
 .true-false-question .choice-button.bg-success {
-  color: #198754 !important;
-  border-color: #198754 !important;
+  color: vars.$success !important;
+  border-color: vars.$success !important;
   border-width: 2px !important;
-  background-color: #fff !important;
+  background-color: vars.$light !important;
 }
 
 .true-false-question .choice-button.bg-danger {
-  color: #dc3545 !important;
-  border-color: #dc3545 !important;
+  color: vars.$danger !important;
+  border-color: vars.$danger !important;
   border-width: 2px !important;
-  background-color: #fff !important;
+  background-color: vars.$light !important;
 }
 
 // Ensure the label text inherits the validation color for true/false
 .true-false-question .choice-button.bg-success .choice-button-content,
 .true-false-question .choice-button.bg-success .choice-button-content * {
-  color: #198754 !important;
+  color: vars.$success !important;
 }
 
 .true-false-question .choice-button.bg-danger .choice-button-content,
 .true-false-question .choice-button.bg-danger .choice-button-content * {
-  color: #dc3545 !important;
+  color: vars.$danger !important;
 }
 
 // Distinct styling for the final submit button 
 .quiz-submit-btn {
-  background-color: #f3b26a !important;
-  border-color: #f3b26a !important;
+  background-color: vars.$quiz-submit-primary !important;
+  border-color: vars.$quiz-submit-primary !important;
   color: vars.$dark !important;
   font-weight: 700;
   box-shadow: none;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 
   &:hover {
-    background-color: #eaa85f !important;
-    border-color: #eaa85f !important;
+    background-color: vars.$quiz-submit-hover !important;
+    border-color: vars.$quiz-submit-hover !important;
     color: vars.$dark !important;
     transform: translateY(-1px);
     box-shadow: vars.$box-shadow-sm;
   }
 
   &:disabled {
-    background-color: #f7c891 !important;
-    border-color: #f7c891 !important;
+    background-color: vars.$quiz-submit-disabled !important;
+    border-color: vars.$quiz-submit-disabled !important;
     color: rgba(0, 0, 0, 0.55) !important;
     transform: none;
     box-shadow: none;
@@ -144,7 +144,7 @@
   font-weight: 700;
   color: vars.$primary !important;
   border-color: vars.$primary !important;
-  background-color: #fff !important;
+  background-color: vars.$light !important;
   box-shadow: none;
   padding: 0.75rem 1rem;
   border-radius: 0.375rem;
