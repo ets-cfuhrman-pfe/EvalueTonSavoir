@@ -63,6 +63,24 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     } as unknown as AnswerSubmissionToBackendType,
   ]);
 
+  const makeNumericalQuestion = () => ({
+    question: {
+      id: '1',
+      type: 'Numerical',
+      formattedStem: { text: 'Combien font 2+2 ?', format: 'html' },
+      choices: [{ number: 4, grade: 100 }],
+    },
+  } as unknown as QuestionType);
+
+  const makeShortQuestion = () => ({
+    question: {
+      id: '1',
+      type: 'Short',
+      formattedStem: { text: 'Mot magique ?', format: 'html' },
+      choices: [{ text: 'merci', grade: 100 }],
+    },
+  } as unknown as QuestionType);
+
   const closeResultsDialogIfOpen = () => {
     const closeButton = screen.queryByRole('button', { name: /fermer/i });
     if (closeButton) {
@@ -131,6 +149,26 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     closeResultsDialogIfOpen();
 
     expect(screen.getByText('Réponse incorrecte')).toBeInTheDocument();
+  });
+
+  it('shows feedback for numerical answers without needing a toggle', () => {
+    const questions: QuestionType[] = [makeNumericalQuestion()];
+    renderQuiz(questions, makeAnswersWithPlaceholder([4 as unknown as number]));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.getByText('Correct')).toBeInTheDocument();
+    expect(screen.getByText(/Bonne réponse/)).toBeInTheDocument();
+  });
+
+  it('shows feedback for short answers without needing a toggle', () => {
+    const questions: QuestionType[] = [makeShortQuestion()];
+    renderQuiz(questions, makeAnswersWithPlaceholder(['merci']));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.getByText('Correct')).toBeInTheDocument();
+    expect(screen.getByText(/Bonne réponse/)).toBeInTheDocument();
   });
 
   it('shows toggle when quiz is marked completed even without answers', () => {

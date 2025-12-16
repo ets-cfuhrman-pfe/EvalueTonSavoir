@@ -54,17 +54,24 @@ const NumericalQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                 <div className="mb-4">
                     {answer && answer.length > 0 && answer[0] !== undefined && answer[0] !== null ? (
                         (() => {
-                            const userAnswer = answer[0] as number;
+                            const userAnswer = Number(answer[0]);
                             let isCorrect = false;
-                            if (isSimpleNumericalAnswer(correctAnswers[0])) {
-                                isCorrect = userAnswer === correctAnswers[0].number;
-                            } else if (isRangeNumericalAnswer(correctAnswers[0])) {
-                                const choice = correctAnswers[0];
-                                isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
-                            } else if (isHighLowNumericalAnswer(correctAnswers[0])) {
-                                const choice = correctAnswers[0];
-                                isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
-                            }
+
+                            // Check against all provided numerical answers (simple, range, high/low)
+                            correctAnswers.forEach((choice) => {
+                                if (isCorrect) return;
+
+                                if (isSimpleNumericalAnswer(choice)) {
+                                    isCorrect = userAnswer === choice.number;
+                                } else if (isRangeNumericalAnswer(choice)) {
+                                    isCorrect = Math.abs(userAnswer - choice.number) <= choice.range;
+                                } else if (isHighLowNumericalAnswer(choice)) {
+                                    isCorrect = userAnswer >= choice.numberLow && userAnswer <= choice.numberHigh;
+                                } else if (typeof (choice as any).number === 'number') {
+                                    // Fallback for loosely shaped numerical answers
+                                    isCorrect = userAnswer === (choice as any).number;
+                                }
+                            });
                             return (
                                 <>
                                     <div className={`fw-bold ${isCorrect ? 'text-success' : 'text-danger'}`}>

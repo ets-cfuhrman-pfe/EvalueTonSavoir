@@ -31,6 +31,11 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     showStatistics = false,
     hideAnswerFeedback = false,
 }) => {
+    const forceShowFeedback = question?.type === 'Numerical' || question?.type === 'Short';
+
+    // For numerical and short answers we always show feedback once answered; override hideAnswerFeedback
+    const appliedHideAnswerFeedback = forceShowFeedback ? false : hideAnswerFeedback;
+
     let questionTypeComponent = null;
     switch (question?.type) {
         case 'TF':
@@ -44,7 +49,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
                 />
             );
             break;
@@ -59,7 +64,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
                 />
             );
             break;
@@ -73,7 +78,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                             passedAnswer={answer}
                             buttonText={buttonText}
                             disabled={disabled}
-                            hideAnswerFeedback={hideAnswerFeedback}
+                            hideAnswerFeedback={appliedHideAnswerFeedback}
                         />
                     );
             }
@@ -87,7 +92,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     passedAnswer={answer}
                     buttonText={buttonText}
                     disabled={disabled}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
                 />
             );
             break;
