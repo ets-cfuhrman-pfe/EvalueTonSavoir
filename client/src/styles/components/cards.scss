@@ -33,6 +33,7 @@
   overflow: visible !important;
   position: relative;
   padding-top: 1.25rem; 
+  color: vars.$dark;
   
   .folder-tab {
     position: absolute;
@@ -49,6 +50,13 @@
     color: vars.$primary;
     font-size: 0.875rem;
   }
+}
+
+// Ensure quiz titles inside folder cards stay high contrast
+.folder-card .quiz .title .h5,
+.folder-card .quiz .title h5,
+.folder-card .quiz .title .fw-bold {
+  color: vars.$dark;
 }
 
 //Card for quiz questions in teacher dashboard
