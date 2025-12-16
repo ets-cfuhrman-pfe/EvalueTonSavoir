@@ -153,7 +153,7 @@ describe('StudentModeQuizV2 feedback toggle', () => {
 
   it('shows feedback for numerical answers without needing a toggle', () => {
     const questions: QuestionType[] = [makeNumericalQuestion()];
-    renderQuiz(questions, makeAnswersWithPlaceholder([4 as unknown as number]));
+    renderQuiz(questions, makeAnswersWithPlaceholder(['4']));
 
     closeResultsDialogIfOpen();
 
