@@ -57,7 +57,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
         const correctChoices = question.choices.filter((c) => c.isCorrect).map((c) => c.formattedText.text);
         if (correctChoices.length !== answer.length) return false;
         const correctSet = new Set(correctChoices);
-        return answer.every((choice) => correctSet.has(choice));
+        return answer.every((choice) => correctSet.has(String(choice)));
     }, [answer, question.choices, shouldShowValidation]);
 
     const handleOnClickAnswer = (choice: string) => {
