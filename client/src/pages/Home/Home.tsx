@@ -1,29 +1,29 @@
 import React from 'react';
 
-import './home.css';
+import '../../styles/main.scss';
 import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
     return (
-        <div className="page">
-            <div className="btn-container">
+        <div className="home-page">
+            <div className="home-btn-container">
 
-                <Link to="/student/join-room-v2" className="student-btn">
-                    <div className="big-title">
+                <Link to="/student/join-room-v2" className="home-role-btn student-btn">
+                    <div className="home-big-title">
                         Espace
                         <br />
                         étudiant
                     </div>
-                    <div className="right-component">
+                    <div className="home-right-component">
                         <img src="student.svg" alt="Icône étudiant" />
                     </div>
                 </Link>
 
-                <Link to="/teacher/dashboard-v2" className="teacher-btn">
+                <Link to="/teacher/dashboard-v2" className="home-role-btn teacher-btn">
                     <div>
                         <img src="teacher.svg" alt="Icône enseignant" />
                     </div>
-                    <div className="right-component big-title">
+                    <div className="home-right-component home-big-title">
                         Espace <br />
                         enseignant
                     </div>
