@@ -299,7 +299,7 @@ describe('EditorQuizV2 Component', () => {
         expect(alertMock).toHaveBeenCalledWith(
           expect.stringContaining('Une erreur est survenue')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       }, { timeout: 3000 });
 
       alertMock.mockRestore();
@@ -350,7 +350,7 @@ describe('EditorQuizV2 Component', () => {
           'folder1'
         );
         expect(mockApiService.getQuiz).toHaveBeenCalledWith('mock-quiz-id');
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz-v2/mock-quiz-id', { replace: true });
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/mock-quiz-id', { replace: true });
       });
     });
 
@@ -402,7 +402,7 @@ describe('EditorQuizV2 Component', () => {
           'folder1'
         );
         expect(mockApiService.getQuiz).toHaveBeenCalledWith('mock-quiz-id');
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz-v2/mock-quiz-id', { replace: true });
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/mock-quiz-id', { replace: true });
       });
 
       // Clear mocks to check subsequent calls
@@ -589,7 +589,7 @@ describe('EditorQuizV2 Component', () => {
       fireEvent.click(saveExitButton);
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
   });
