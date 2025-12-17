@@ -41,15 +41,27 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                 throw new Error('Play button not found');
             }
             
+            await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
-            
+        
             // Click "Lancer le quiz" button
-            const launchQuizButton = teacherPage.locator('button.btn.btn-primary:has-text("Lancer le quiz")').first();
+            // Wait for the button to appear first
+            try {
+                await teacherPage.waitForSelector('button:has-text("Lancer le quiz")', { timeout: 20000 });
+            } catch {
+                console.log('Button not found with waitForSelector, checking page state...');
+                const pageContent = await teacherPage.content();
+                console.log('Current URL:', await teacherPage.url());
+                throw new Error('Launch quiz button not found after 20s wait');
+            }
+            
+            const launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
             const hasLaunchButton = await launchQuizButton.isVisible({ timeout: 10000 });
             
             if (hasLaunchButton) {
                 await launchQuizButton.click();
                 console.log('Clicked "Lancer le quiz" - Quiz is now launching');
+                await teacherPage.waitForLoadState('networkidle');
                 await teacherPage.waitForTimeout(5000);
                 
                 const finalUrl = await teacherPage.url();
