@@ -36,7 +36,6 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [hasShownModalOnce, setHasShownModalOnce] = useState(false);
 
     // arrive here the first time after waiting for next question
     useEffect(() => {
@@ -68,14 +67,6 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
     // Check if we should show results (quiz completed or all questions answered)
     const shouldShowResults = hasAnsweredAllQuestions || quizCompleted;
-
-    // Auto-show modal on first completion
-    useEffect(() => {
-        if (shouldShowResults && !hasShownModalOnce && questions && questions.length > 0 && studentName) {
-            setIsModalOpen(true);
-            setHasShownModalOnce(true);
-        }
-    }, [shouldShowResults, hasShownModalOnce, questions, studentName]);
 
     // Determine button text based on quiz completion status
     let buttonText = 'Répondre';
