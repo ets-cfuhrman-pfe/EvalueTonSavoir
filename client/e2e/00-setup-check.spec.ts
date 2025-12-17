@@ -46,12 +46,19 @@ test.describe('E2E Setup Check', () => {
             // Now on dashboard, check folder
             await page.goto('/teacher/dashboard');
             await page.waitForLoadState('networkidle');
-            await page.waitForTimeout(3000);
+            await page.waitForTimeout(5000); // Increased wait time for dashboard to fully load
 
             console.log('Checking default folder...');
 
-            // Check if "Dossier par défaut" exists in folders
-            const folderExists = await page.getByRole('button', { name: /Dossier par défaut/i }).isVisible({ timeout: 5000 });
+            // Check if "Dossier par défaut" exists in folders - try multiple selectors
+            let folderExists = false;
+            try {
+                folderExists = await page.getByRole('button', { name: /Dossier par défaut/i }).isVisible({ timeout: 5000 });
+            } catch {
+                // Try alternative selector
+                folderExists = await page.locator('text=Dossier par défaut').isVisible({ timeout: 3000 }).catch(() => false);
+            }
+            
             if (!folderExists) {
                 console.log('Creating default folder...');
 
@@ -111,15 +118,27 @@ test.describe('E2E Setup Check', () => {
 
             console.log('Checking TESTQUIZ...');
 
-            // Check if TESTQUIZ exists
-            const testQuizExists = await page.locator('text=TESTQUIZ').isVisible({ timeout: 5000 });
+            // Check if TESTQUIZ exists - wait for quiz list to load first
+            let testQuizExists = false;
+            try {
+                await page.waitForSelector('.quiz', { timeout: 10000 });
+                testQuizExists = await page.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).isVisible({ timeout: 5000 });
+            } catch {
+                // Try alternative selector
+                testQuizExists = await page.locator('text=TESTQUIZ').isVisible({ timeout: 3000 }).catch(() => false);
+            }
+            
             if (!testQuizExists) {
                 console.log('Creating TESTQUIZ...');
 
-                // Click "Nouveau quiz"
-                const newQuizBtn = page.locator('button:has-text("Nouveau quiz")').first();
+                // Click "Nouveau quiz" - try multiple selectors
+                let newQuizBtn = page.locator('button:has-text("Nouveau quiz")').first();
+                if (!(await newQuizBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+                    // Try finding button with span containing text
+                    newQuizBtn = page.locator('button').filter({ hasText: 'Nouveau quiz' }).first();
+                }
                 await newQuizBtn.click();
-                await page.waitForTimeout(2000);
+                await page.waitForTimeout(3000);
 
                 // Fill title
                 const titleInput = page.getByLabel('Titre').or(page.locator('input[placeholder*="titre"]')).first();

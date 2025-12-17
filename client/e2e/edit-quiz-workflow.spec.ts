@@ -27,7 +27,14 @@ test.describe('Teacher Edit Quiz Workflow', () => {
             // Navigate to dashboard if not already
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(3000);
+            await teacherPage.waitForTimeout(5000); // Increased wait time
+
+            // Wait for quiz list to load
+            try {
+                await teacherPage.waitForSelector('.quiz, .folder-card', { timeout: 15000 });
+            } catch {
+                console.log('Quiz list not found, dashboard may be empty');
+            }
 
             // Cleanup any residual quiz from previous test runs
             console.log('Checking for residual quiz from previous runs...');

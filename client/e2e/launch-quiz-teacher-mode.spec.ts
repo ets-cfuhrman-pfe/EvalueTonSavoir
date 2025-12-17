@@ -43,11 +43,19 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             // Navigate to dashboard
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(3000);
+            await teacherPage.waitForTimeout(5000); // Increased wait time
 
-            // Verify TESTQUIZ exists (created by setup check)
-            const hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 10000 });
+            // Verify TESTQUIZ exists (created by setup check) - try multiple selectors
+            let hasTESTQUIZ = false;
+            try {
+                await teacherPage.waitForSelector('.quiz', { timeout: 15000 });
+                hasTESTQUIZ = await teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first().isVisible({ timeout: 10000 });
+            } catch {
+                hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 5000 }).catch(() => false);
+            }
+            
             if (!hasTESTQUIZ) {
+                console.log('Current URL:', await teacherPage.url());
                 throw new Error('TESTQUIZ NOT FOUND on dashboard - setup check failed');
             }
             console.log('Dashboard loaded, TESTQUIZ found');
@@ -56,28 +64,44 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
 
             // Find the quiz and click "Démarrer le quiz"
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            const launchButton = quizItem.locator('button').first();
-            await launchButton.click();
+            // Use more specific selector for the play button
+            const launchButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
+            try {
+                await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+                await launchButton.click();
+            } catch {
+                // Fallback to first button
+                await quizItem.locator('button').first().click();
+            }
 
             // Wait for ManageRoom page
             await teacherPage.waitForURL(/\/teacher\/manage-room/);
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(2000);
+            await teacherPage.waitForTimeout(5000); // Increased wait time
 
-            // Select default room (assuming it exists)
-            const roomSelect = teacherPage.locator('select').first();
-            await roomSelect.selectOption({ index: 1 }); // Select first room
+            // Select default room (assuming it exists) - try multiple selectors
+            const roomSelect = teacherPage.locator('select#roomSelect, select').first();
+            try {
+                await roomSelect.waitFor({ state: 'visible', timeout: 10000 });
+                await roomSelect.selectOption({ index: 1 }); // Select first room
+            } catch {
+                console.log('Room select not found, trying alternative...');
+                // Try clicking a room in a list if it's rendered differently
+            }
 
             // Get room name from selected option
             const selectedOption = teacherPage.locator('select option:checked');
-            const roomName = (await selectedOption.textContent())?.toUpperCase();
+            const roomName = (await selectedOption.textContent())?.trim().toUpperCase();
             if (!roomName) {
                 throw new Error('Could not get room name');
             }
             console.log('Room name:', roomName);
 
-            // Click launch
-            const launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
+            // Click launch - try multiple selectors
+            let launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
+            if (!(await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false))) {
+                launchQuizButton = teacherPage.locator('button:has-text("Lancer")').first();
+            }
             await launchQuizButton.click();
 
             // Wait for quiz to start

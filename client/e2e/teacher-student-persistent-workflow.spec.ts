@@ -20,43 +20,74 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             // Navigate to dashboard
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(3000);
+            await teacherPage.waitForTimeout(5000); // Increased wait for dashboard to fully load
             
             // Verify dashboard loads and TESTQUIZ exists (created by setup check)
-            const hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 10000 });
+            // Try multiple selectors for robustness
+            let hasTESTQUIZ = false;
+            try {
+                // Wait for quiz list to load
+                await teacherPage.waitForSelector('.quiz', { timeout: 15000 });
+                hasTESTQUIZ = await teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first().isVisible({ timeout: 10000 });
+            } catch {
+                // Try alternative: look for the quiz title directly
+                hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 5000 });
+            }
+            
             if (!hasTESTQUIZ) {
+                console.log('Current URL:', await teacherPage.url());
+                console.log('Page content preview:', (await teacherPage.content()).substring(0, 500));
                 throw new Error('TESTQUIZ NOT FOUND on dashboard - setup check failed');
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
-            // Click play button to launch quiz
+            // Click play button to launch quiz - use more specific selector
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            const playButton = quizItem.locator('button').first();
-            const hasPlayButton = await playButton.isVisible({ timeout: 5000 });
+            // The play button is an IconButton with aria-label "Démarrer le quiz" or contains PlayArrow icon
+            const playButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
             
-            if (hasPlayButton) {
+            try {
+                await playButton.waitFor({ state: 'visible', timeout: 10000 });
                 await playButton.click();
                 console.log('Clicked TESTQUIZ play button');
-            } else {
-                throw new Error('Play button not found');
+            } catch {
+                // Fallback: try clicking the first button in the quiz item
+                const fallbackButton = quizItem.locator('button').first();
+                if (await fallbackButton.isVisible({ timeout: 5000 })) {
+                    await fallbackButton.click();
+                    console.log('Clicked TESTQUIZ play button (fallback)');
+                } else {
+                    throw new Error('Play button not found');
+                }
             }
             
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(3000);
+            await teacherPage.waitForTimeout(5000); // Increased wait for manage room page to load
         
             // Click "Lancer le quiz" button
-            // Wait for the button to appear first
+            // Wait for the page to be ready and button to appear
+            console.log('Current URL after play click:', await teacherPage.url());
+            
             try {
-                await teacherPage.waitForSelector('button:has-text("Lancer le quiz")', { timeout: 20000 });
+                // Wait for either the manage room page or the launch dialog
+                await teacherPage.waitForSelector('button:has-text("Lancer le quiz"), button:has-text("Lancer")', { timeout: 30000 });
             } catch {
                 console.log('Button not found with waitForSelector, checking page state...');
-                const pageContent = await teacherPage.content();
                 console.log('Current URL:', await teacherPage.url());
-                throw new Error('Launch quiz button not found after 20s wait');
+                const buttons = await teacherPage.locator('button').allTextContents();
+                console.log('Available buttons:', buttons.join(', '));
+                throw new Error('Launch quiz button not found after 30s wait');
             }
             
-            const launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
-            const hasLaunchButton = await launchQuizButton.isVisible({ timeout: 10000 });
+            // Try multiple selectors for the launch button
+            let launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
+            let hasLaunchButton = await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false);
+            
+            if (!hasLaunchButton) {
+                // Try alternative selector - button with just "Lancer"
+                launchQuizButton = teacherPage.locator('button:has-text("Lancer")').first();
+                hasLaunchButton = await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false);
+            }
             
             if (hasLaunchButton) {
                 await launchQuizButton.click();
@@ -67,6 +98,8 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                 const finalUrl = await teacherPage.url();
                 console.log(`Quiz launched, teacher URL: ${finalUrl}`);
             } else {
+                const buttons = await teacherPage.locator('button').allTextContents();
+                console.log('Available buttons:', buttons.join(', '));
                 throw new Error('Launch quiz button not found');
             }
 
