@@ -92,10 +92,6 @@ const App: React.FC = () => {
                             element={isTeacherAuthenticated ? <DashboardV2 /> : <Navigate to="/login" />}
                         />
                         <Route
-                            path="/teacher/dashboard-v2"
-                            element={<Navigate to="/teacher/dashboard" replace />}
-                        />
-                        <Route
                             path="/teacher/share/:id"
                             element={isTeacherAuthenticated ? <Share /> : <Navigate to="/login" />}
                         />
@@ -104,16 +100,8 @@ const App: React.FC = () => {
                             element={isTeacherAuthenticated ? <EditorQuizV2 /> : <Navigate to="/login" />}
                         />
                         <Route
-                            path="/teacher/editor-quiz-v2/:id"
-                            element={<Navigate to={`/teacher/editor-quiz/${location.pathname.split('/').pop()}`} replace />}
-                        />
-                        <Route
                             path="/teacher/manage-room/:quizId"
                             element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/teacher/manage-room-v2/:quizId"
-                            element={<Navigate to={`/teacher/manage-room/${location.pathname.split('/').pop()}`} replace />}
                         />
 
                         {/* Pages admin */}
@@ -130,10 +118,6 @@ const App: React.FC = () => {
                         <Route
                             path="/student/join-room"
                             element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoomV2 /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/student/join-room-v2"
-                            element={<Navigate to="/student/join-room" replace />}
                         />
 
                         {/* Pages authentification */}
