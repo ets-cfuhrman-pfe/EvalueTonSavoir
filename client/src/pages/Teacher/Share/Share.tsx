@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FolderType } from '../../../Types/FolderType';
 import './share.css';
 import { Button, NativeSelect, Typography, Box } from '@mui/material';
-import ReturnButton from 'src/components/ReturnButton/ReturnButton';
+import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import ApiService from '../../../services/ApiService';
 import SaveIcon from '@mui/icons-material/Save';
 
@@ -42,7 +42,7 @@ const Share: React.FC = () => {
                 const userFolders = await ApiService.getUserFolders();
                 
                 if (userFolders.length == 0) {
-                    navigate('/teacher/dashboard');
+                    navigate('/teacher/dashboard-v2');
                     return;
                 }
 
@@ -52,7 +52,7 @@ const Share: React.FC = () => {
 
                 if (!title) {
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard');
+                    navigate('/teacher/dashboard-v2');
                     return;
                 }
 
@@ -61,7 +61,7 @@ const Share: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setLoading(false);
-                navigate('/teacher/dashboard');
+                navigate('/teacher/dashboard-v2');
             }
         };
 
@@ -81,12 +81,12 @@ const Share: React.FC = () => {
             
             if (!id) {
                 console.error('Quiz not found for id:', id);
-                navigate('/teacher/dashboard');
+                navigate('/teacher/dashboard-v2');
                 return;
             }
 
             await ApiService.receiveSharedQuiz(id, selectedFolder)
-            navigate('/teacher/dashboard');
+            navigate('/teacher/dashboard-v2');
 
         } catch (error) {
             console.log(error)
@@ -101,7 +101,7 @@ const Share: React.FC = () => {
         return (
             <div className='quizImport'>
                 <div className='importHeader'>
-                    <ReturnButton />
+                    <ReturnButtonV2 />
                     <div className='titleContainer'>
                         <div className='mainTitle'>Quiz déjà existant</div>
                     </div>
@@ -121,7 +121,7 @@ const Share: React.FC = () => {
                         
                         <Button 
                             variant="contained" 
-                            onClick={() => navigate('/teacher/dashboard')}
+                            onClick={() => navigate('/teacher/dashboard-v2')}
                             sx={{ mt: 3, mb: 1 }}
                             fullWidth
                         >
@@ -142,7 +142,7 @@ const Share: React.FC = () => {
     return (
         <div className='quizImport'>
             <div className='importHeader'>
-                <ReturnButton />
+                <ReturnButtonV2 />
                 <div className='titleContainer'>
                     <div className='mainTitle'>Importation du Quiz: {quizTitle}</div>
                     <div className='subTitle'>
