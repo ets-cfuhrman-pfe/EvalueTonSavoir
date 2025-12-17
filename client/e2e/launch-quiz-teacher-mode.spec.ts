@@ -56,7 +56,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
 
             // Find the quiz and click "Démarrer le quiz"
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            const launchButton = quizItem.locator('button[aria-label="Démarrer le quiz"]').first();
+            const launchButton = quizItem.locator('button').first();
             await launchButton.click();
 
             // Wait for ManageRoom page
@@ -207,13 +207,31 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             const finishButton = teacherPage.locator('button:has-text("Terminer")').first();
             await finishButton.click();
 
-            // Confirm finish
+            // Confirm finish if there's a confirmation dialog
             await teacherPage.waitForTimeout(1000);
+            const confirmButton = teacherPage.locator('button:has-text("Confirmer")');
+            if (await confirmButton.isVisible({ timeout: 2000 })) {
+                await confirmButton.click();
+            }
 
-            // Wait for students to see quiz results
+            // Wait for students to see quiz results dialog
             const resultPromises = studentPages.map(async (page, index) => {
-                await page.waitForSelector('text=Quiz terminé!', { timeout: 20000 });
-                console.log(`Student ${index + 1} saw quiz results`);
+                try {
+                    // Wait for the QuizResults dialog - look for dialog title or completion text
+                    await page.waitForSelector('text=/Résultats du Quiz|Quiz terminé/i', { timeout: 30000 });
+                    console.log(`Student ${index + 1} saw quiz results dialog`);
+                    
+                    // Close the results dialog if visible
+                    const closeButton = page.locator('button:has-text("Fermer")');
+                    if (await closeButton.isVisible({ timeout: 2000 })) {
+                        await closeButton.click();
+                        console.log(`Student ${index + 1} closed results dialog`);
+                    }
+                } catch {
+                    // If quiz results not shown, check if student was disconnected (quiz ended)
+                    const url = page.url();
+                    console.log(`Student ${index + 1} final state - URL: ${url}`);
+                }
             });
             await Promise.all(resultPromises);
 

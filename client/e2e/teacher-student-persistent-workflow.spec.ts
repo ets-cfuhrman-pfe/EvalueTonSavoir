@@ -30,7 +30,8 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             console.log('Dashboard loaded, TESTQUIZ found');
 
             // Click play button to launch quiz
-            const playButton = teacherPage.locator('button[aria-label="Démarrer le quiz"]').first();
+            const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
+            const playButton = quizItem.locator('button').first();
             const hasPlayButton = await playButton.isVisible({ timeout: 5000 });
             
             if (hasPlayButton) {
