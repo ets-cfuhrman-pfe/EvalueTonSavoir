@@ -76,7 +76,7 @@ describe('Share Component', () => {
     
     await waitFor(() => {
       fireEvent.click(screen.getByText('Retour au tableau de bord'));
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
     });
   });
 
@@ -88,7 +88,7 @@ describe('Share Component', () => {
     renderComponent();
     
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
     });
   });
 

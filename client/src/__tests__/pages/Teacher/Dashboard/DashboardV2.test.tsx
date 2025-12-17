@@ -36,11 +36,6 @@ jest.mock('../../../../components/DownloadQuizModal/DownloadQuizModal', () => {
     return <div data-testid={`download-modal-${quiz._id}`}>Download Modal</div>;
   };
 });
-jest.mock('../../../../components/ShareQuizModal/ShareQuizModal', () => {
-  return function MockShareQuizModal({ quiz }: any) {
-    return <div data-testid={`share-modal-${quiz._id}`}>Share Modal</div>;
-  };
-});
 jest.mock('../../../../components/ValidatedTextField/ValidatedTextField', () => {
   return function MockValidatedTextField({ initialValue, onValueChange, label }: any) {
     return (
