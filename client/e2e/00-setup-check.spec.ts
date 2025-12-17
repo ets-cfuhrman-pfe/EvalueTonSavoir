@@ -44,7 +44,7 @@ test.describe('E2E Setup Check', () => {
             }
 
             // Now on dashboard, check folder
-            await page.goto('/teacher/dashboard-v2');
+            await page.goto('/teacher/dashboard');
             await page.waitForLoadState('networkidle');
             await page.waitForTimeout(3000);
 

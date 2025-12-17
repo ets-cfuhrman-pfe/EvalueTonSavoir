@@ -18,7 +18,7 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             console.log('Teacher login successful');
 
             // Navigate to dashboard
-            await teacherPage.goto('/teacher/dashboard-v2');
+            await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
             

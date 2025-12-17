@@ -41,7 +41,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             console.log('Teacher login successful');
 
             // Navigate to dashboard
-            await teacherPage.goto('/teacher/dashboard-v2');
+            await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
 
@@ -59,8 +59,8 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             const launchButton = quizItem.locator('button[aria-label="Démarrer le quiz"]').first();
             await launchButton.click();
 
-            // Wait for ManageRoomV2 page
-            await teacherPage.waitForURL(/\/teacher\/manage-room-v2/);
+            // Wait for ManageRoom page
+            await teacherPage.waitForURL(/\/teacher\/manage-room/);
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(2000);
 
@@ -87,7 +87,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
 
             // Students join the room
             const joinPromises = studentPages.map(async (page, index) => {
-                await page.goto(`/student/join-room-v2?roomName=${roomName}`);
+                await page.goto(`/student/join-room?roomName=${roomName}`);
                 await page.waitForLoadState('networkidle');
                 await page.waitForTimeout(2000);
 
