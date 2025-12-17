@@ -6,24 +6,19 @@ import LoginIcon from '@mui/icons-material/Login';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { getCurrentRoomName } from '../../utils/roomUtils';
-import InterfaceToggle from '../InterfaceToggle/InterfaceToggle';
 
 interface HeaderProps {
     isLoggedIn: boolean;
     isTeacherAuthenticated: boolean;
     isAdmin: boolean;
     handleLogout: () => void;
-    showInterfaceToggle: boolean;
-    currentVersion: 'v1' | 'v2';
 }
 
 const Header: React.FC<HeaderProps> = ({ 
     isLoggedIn, 
     isTeacherAuthenticated,
     isAdmin,
-    handleLogout,
-    showInterfaceToggle,
-    currentVersion
+    handleLogout
 }) => {
     const navigate = useNavigate();
     const [roomName, setRoomName] = useState<string | null>(null);
@@ -95,9 +90,7 @@ const Header: React.FC<HeaderProps> = ({
                             </button>
                         </Link>
                     )}
-                    {showInterfaceToggle && (
-                        <InterfaceToggle currentVersion={currentVersion} />
-                    )}
+
                     {isLoggedIn ? (
                         <button
                             type="button"
