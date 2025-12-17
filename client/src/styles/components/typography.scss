@@ -47,3 +47,30 @@
 .feedback-container {
   font-size: 1em;
 }
+
+// Footer styles
+.footer {
+  flex-shrink: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+.footer-content {
+  margin-bottom: 10px;
+}
+
+.footer-links {
+  a {
+    color: #333;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.divider {
+  margin: 0 10px;
+  color: #666;
+}
