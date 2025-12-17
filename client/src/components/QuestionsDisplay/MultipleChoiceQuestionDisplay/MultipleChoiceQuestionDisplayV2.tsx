@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { Student } from 'src/Types/StudentType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
