@@ -173,11 +173,11 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleCreateQuiz = () => {
-        navigate('/teacher/editor-quiz-v2/new');
+        navigate('/teacher/editor-quiz/new');
     };
 
     const handleEditQuiz = (quiz: QuizType) => {
-        navigate(`/teacher/editor-quiz-v2/${quiz._id}`);
+        navigate(`/teacher/editor-quiz/${quiz._id}`);
     };
 
     const handleLancerQuiz = (quiz: QuizType) => {
@@ -187,7 +187,7 @@ const DashboardV2: React.FC = () => {
         }
         // Store selected room for the ManageRoomV2 component
         localStorage.setItem('selectedRoomId', selectedRoomId);
-        navigate(`/teacher/manage-room-v2/${quiz._id}`);
+        navigate(`/teacher/manage-room/${quiz._id}`);
     };
 
     const handleCreateRoom = async () => {

@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({
                 {/* Navigation Items */}
                 <div className="d-flex align-items-center ms-auto flex-shrink-0 gap-2">
                     {isTeacherAuthenticated && (
-                        <Link to="/teacher/dashboard-v2" className="text-decoration-none">
+                        <Link to="/teacher/dashboard" className="text-decoration-none">
                             <button 
                                 type="button" 
                                 className="btn btn-outline-primary d-flex align-items-center btn-sm"

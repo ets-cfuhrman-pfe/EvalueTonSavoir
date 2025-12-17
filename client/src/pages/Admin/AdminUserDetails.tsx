@@ -190,7 +190,7 @@ const AdminUserDetails: React.FC = () => {
                                 <ul className="list-unstyled">
                                     {quizzes.map((q) => (
                                         <li key={q._id} className="mb-2">
-                                            <Link to={`/teacher/editor-quiz-v2/${q._id}`} className="text-decoration-none">{q.title}</Link>
+                                            <Link to={`/teacher/editor-quiz/${q._id}`} className="text-decoration-none">{q.title}</Link>
                                         </li>
                                     ))}
                                 </ul>

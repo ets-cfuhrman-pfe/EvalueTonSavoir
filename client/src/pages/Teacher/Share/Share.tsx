@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FolderType } from '../../../Types/FolderType';
-import './share.css';
 import { Button, NativeSelect, Typography, Box } from '@mui/material';
 import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import ApiService from '../../../services/ApiService';
@@ -22,7 +21,7 @@ const Share: React.FC = () => {
             try {
                 if (!id) {
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
 
@@ -42,7 +41,7 @@ const Share: React.FC = () => {
                 const userFolders = await ApiService.getUserFolders();
                 
                 if (userFolders.length == 0) {
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
 
@@ -52,7 +51,7 @@ const Share: React.FC = () => {
 
                 if (!title) {
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
 
@@ -61,7 +60,7 @@ const Share: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setLoading(false);
-                navigate('/teacher/dashboard-v2');
+                navigate('/teacher/dashboard');
             }
         };
 
@@ -81,12 +80,12 @@ const Share: React.FC = () => {
             
             if (!id) {
                 console.error('Quiz not found for id:', id);
-                navigate('/teacher/dashboard-v2');
+                navigate('/teacher/dashboard');
                 return;
             }
 
             await ApiService.receiveSharedQuiz(id, selectedFolder)
-            navigate('/teacher/dashboard-v2');
+            navigate('/teacher/dashboard');
 
         } catch (error) {
             console.log(error)
@@ -121,7 +120,7 @@ const Share: React.FC = () => {
                         
                         <Button 
                             variant="contained" 
-                            onClick={() => navigate('/teacher/dashboard-v2')}
+                            onClick={() => navigate('/teacher/dashboard')}
                             sx={{ mt: 3, mb: 1 }}
                             fullWidth
                         >
