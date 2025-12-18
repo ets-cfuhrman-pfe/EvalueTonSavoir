@@ -1,0 +1,75 @@
+// Home page specific styles
+@use '../variables' as vars;
+
+.home-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 120px); // Keep room for header/footer but start higher
+  padding: 2rem 1rem 1.5rem;
+}
+
+.home-btn-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+  max-width: 1100px;
+  width: 100%;
+  
+  @media (max-width: vars.$breakpoint-md) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.home-role-btn {
+  flex: 1;
+  min-width: min(32rem, 44vw);
+  min-height: 26rem;
+  margin: 0;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  place-items: center;
+  background-color: vars.$primary;
+  text-decoration: none;
+  border-radius: vars.$border-radius;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: vars.$box-shadow;
+    text-decoration: none;
+  }
+  
+  img {
+    width: clamp(9rem, 13vw, 12rem);
+    height: clamp(9rem, 13vw, 12rem);
+    object-fit: contain;
+  }
+  
+  &.student-btn img {
+    margin-right: 0;
+  }
+  
+  &.teacher-btn img {
+    margin-left: 0;
+  }
+}
+
+.home-big-title {
+  font-size: clamp(2.4rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: vars.$light;
+  text-align: center;
+}
+
+.home-right-component {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  width: 100%;
+}

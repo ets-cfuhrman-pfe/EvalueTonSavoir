@@ -113,7 +113,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                                     handleOnSubmitAnswer?.(answer)
                                 }
                                 disabled={buttonText !== 'Voir les résultats' && (!answer[0] || answer[0].toString().trim() === '')}
-                                className="btn-primary"
+                                className="quiz-submit-btn"
                             >
                                 {buttonText}
                             </Button>
