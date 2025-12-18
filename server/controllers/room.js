@@ -50,14 +50,14 @@ class RoomsController {
       // Log successful room creation
       if (req.logDbOperation) {
         req.logDbOperation('insert', 'rooms', createTime, true, {
-          roomId: result.insertedId,
+          roomId: result,
           roomTitle: normalizedTitle
         });
       }
       
       if (req.logAction) {
         req.logAction('room_created', {
-          roomId: result.insertedId,
+          roomId: result,
           roomTitle: normalizedTitle,
           createTime: `${createTime}ms`,
           totalTime: `${totalTime}ms`
@@ -66,7 +66,7 @@ class RoomsController {
 
       return res.status(201).json({
         message: "Salle créée avec succès.",
-        roomId: result.insertedId,
+        roomId: result,
       });
     } catch (error) {
       next(error);
@@ -194,19 +194,21 @@ class RoomsController {
         throw new AppError(MISSING_REQUIRED_PARAMETER);
       }
 
+      const normalizedTitle = newTitle.toUpperCase().trim();
+
       const owner = await this.rooms.getOwner(roomId);
 
       if (owner != req.user.userId) {
         throw new AppError(ROOM_NOT_FOUND);
       }
 
-      const exists = await this.rooms.roomExists(newTitle, req.user.userId);
+      const exists = await this.rooms.roomExists(normalizedTitle, req.user.userId);
 
       if (exists) {
         throw new AppError(ROOM_ALREADY_EXISTS);
       }
 
-      const result = await this.rooms.rename(roomId, req.user.userId, newTitle);
+      const result = await this.rooms.rename(roomId, req.user.userId, normalizedTitle);
 
       if (!result) {
         throw new AppError(UPDATE_ROOM_ERROR);
@@ -297,6 +299,20 @@ class RoomsController {
       return res.status(200).json({
         titles: roomTitles,
       });
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  roomExists = async (req, res, next) => {
+    try {
+      const { roomName } = req.body;
+      if (!roomName) {
+        throw new AppError(MISSING_REQUIRED_PARAMETER);
+      }
+      const normalizedRoomName = roomName.toUpperCase().trim();
+      const exists = await this.rooms.roomExists(normalizedRoomName, req.user.userId);
+      return res.status(200).json({ exists });
     } catch (error) {
       return next(error);
     }

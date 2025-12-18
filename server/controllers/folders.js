@@ -53,7 +53,8 @@ class FoldersController {
             }
     
             return res.status(200).json({
-                message: 'Dossier créé avec succès.'
+                message: 'Dossier créé avec succès.',
+                folderId: result
             });
     
         } catch (error) {

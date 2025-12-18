@@ -144,7 +144,7 @@ describe("Rooms API Integration Tests", () => {
   describe("POST /api/room/create", () => {
     it("should create a room successfully", async () => {
       mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomsModel.create.mockResolvedValue("room123");
 
       const response = await request(app)
         .post("/api/room/create")
@@ -320,7 +320,7 @@ describe("Rooms API Integration Tests", () => {
 
     it("should accept valid title with mixed characters", async () => {
       mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomsModel.create.mockResolvedValue("room123");
 
       const response = await request(app)
         .post("/api/room/create")
@@ -333,7 +333,7 @@ describe("Rooms API Integration Tests", () => {
 
     it("should handle minimum valid title length", async () => {
       mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomsModel.create.mockResolvedValue("room123");
 
       const response = await request(app)
         .post("/api/room/create")
@@ -346,7 +346,7 @@ describe("Rooms API Integration Tests", () => {
 
     it("should handle maximum valid title length", async () => {
       mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomsModel.create.mockResolvedValue("room123");
 
       const maxValidTitle = "A".repeat(25); // Room validation: max is 25
 
@@ -361,7 +361,7 @@ describe("Rooms API Integration Tests", () => {
 
     it("should handle title with numbers and special allowed characters", async () => {
       mockRoomsModel.roomExists.mockResolvedValue(false);
-      mockRoomsModel.create.mockResolvedValue({ insertedId: "room123" });
+      mockRoomsModel.create.mockResolvedValue("room123");
 
       const response = await request(app)
         .post("/api/room/create")
@@ -538,13 +538,13 @@ describe("Rooms API Integration Tests", () => {
 
       expect(mockRoomsModel.getOwner).toHaveBeenCalledWith(roomId);
       expect(mockRoomsModel.roomExists).toHaveBeenCalledWith(
-        newTitle,
+        newTitle.toUpperCase(),
         "user123"
       );
       expect(mockRoomsModel.rename).toHaveBeenCalledWith(
         roomId,
         "user123",
-        newTitle
+        newTitle.toUpperCase()
       );
     });
 
