@@ -145,32 +145,40 @@ jobs:
       
       - name: Ensure test user exists
         run: |
-          echo "Ensuring test user exists..."
+          echo "Ensuring test user exists in test environment..."
           
           # Get backend container name
           BACKEND_CONTAINER="${{ env.TEST_PROJECT }}-backend-1"
           
-          # Try to login with the test user to check if it exists
-          LOGIN_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
-            -H "Content-Type: application/json" \
-            -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}")
+          echo "Creating test user via backend container: $BACKEND_CONTAINER"
           
-          if echo "$LOGIN_RESPONSE" | grep -q "error\|User not found"; then
-            echo "Test user does not exist or login failed. Creating test user..."
+          # Create the test user directly (don't check if exists first, just create)
+          CREATE_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
+            -H "Content-Type: application/json" \
+            -d "{\"email\": \"${{ secrets.E2E_TEST_USER_EMAIL }}\", \"password\": \"${{ secrets.E2E_TEST_USER_PASSWORD }}\", \"name\": \"E2E Test User\"}")
+          
+          echo "Create user response: $CREATE_RESPONSE"
+          
+          # Check if creation succeeded or if user already exists
+          if echo "$CREATE_RESPONSE" | grep -q "User created\|success.*true\|User already exists"; then
+            echo "Test user ready (created or already exists)"
+          else
+            echo "WARNING: Unexpected response when creating test user"
+            echo "Response: $CREATE_RESPONSE"
+            echo "Attempting to verify user can login..."
             
-            # Create the test user via simple auth register
-            CREATE_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
+            # Try to login to verify user exists
+            LOGIN_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
               -H "Content-Type: application/json" \
-              -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}")
+              -d "{\"email\": \"${{ secrets.E2E_TEST_USER_EMAIL }}\", \"password\": \"${{ secrets.E2E_TEST_USER_PASSWORD }}\"}")
             
-            if echo "$CREATE_RESPONSE" | grep -q "\"message\":\"User created\"\|\"success\":true"; then
-              echo "Test user created successfully"
+            if echo "$LOGIN_RESPONSE" | grep -q "token\|success"; then
+              echo "User can login successfully"
             else
-              echo "Failed to create test user: $CREATE_RESPONSE"
+              echo "ERROR: Failed to create test user and user cannot login"
+              echo "Login response: $LOGIN_RESPONSE"
               exit 1
             fi
-          else
-            echo "Test user already exists"
           fi
         env:
           TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL || secrets.TEST_USER_EMAIL }}  
