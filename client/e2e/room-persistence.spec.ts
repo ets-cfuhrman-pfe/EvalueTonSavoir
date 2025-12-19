@@ -75,75 +75,98 @@ test.describe('Room Persistence', () => {
             // before clicking the play button, otherwise handleLancerQuiz shows alert and returns
             console.log('Selecting active room from dropdown...');
             
-            // Wait for page to fully load
-            await teacherPage.waitForTimeout(2000);
+            // Wait for page to fully load and stabilize
+            await teacherPage.waitForLoadState('networkidle');
+            await teacherPage.waitForTimeout(3000);
             
             // Take screenshot for debugging
             await teacherPage.screenshot({ path: 'room-persistence-step3-before-room-selection.png' });
             
+            // Log page info for debugging
+            console.log('Page URL:', await teacherPage.url());
+            
             try {
-                // Try to find and click the MUI Select dropdown
-                const roomDropdown = teacherPage.locator('[role="combobox"]').first();
-                await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
+                // Try multiple selectors for the room dropdown
+                let roomDropdown = teacherPage.locator('[data-testid="room-select"]');
+                let dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
                 
-                // Log the current state for debugging
-                const dropdownText = await roomDropdown.textContent();
-                console.log('Dropdown current text:', dropdownText);
+                if (!dropdownVisible) {
+                    console.log('data-testid selector not found, trying role="combobox"...');
+                    roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                }
                 
-                // Check if a room is already selected (not "Aucune salle")
-                if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
-                    console.log('Room already selected:', dropdownText);
+                if (!dropdownVisible) {
+                    console.log('role="combobox" not found, trying MuiSelect-select...');
+                    roomDropdown = teacherPage.locator('.MuiSelect-select').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                }
+                
+                if (!dropdownVisible) {
+                    console.log('WARNING: Room dropdown not found on page!');
+                    await teacherPage.screenshot({ path: 'room-persistence-step3-dropdown-not-found.png' });
                 } else {
-                    // Need to select a room
-                    await roomDropdown.click();
-                    await teacherPage.waitForTimeout(1500); // Wait for dropdown animation
+                    await roomDropdown.waitFor({ state: 'visible', timeout: 5000 });
                     
-                    // Take screenshot after click
-                    await teacherPage.screenshot({ path: 'room-persistence-step3-dropdown-opened.png' });
+                    // Log the current state for debugging
+                    const dropdownText = await roomDropdown.textContent();
+                    console.log('Dropdown current text:', dropdownText);
                     
-                    // Wait for the listbox to appear
-                    const listbox = teacherPage.locator('[role="listbox"]');
-                    const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
-                    
-                    if (listboxVisible) {
-                        console.log('Dropdown listbox opened');
-                        
-                        // Get all options for debugging
-                        const options = listbox.locator('[role="option"]');
-                        const optionCount = await options.count();
-                        console.log('Number of room options:', optionCount);
-                        
-                        // Try to find TEST room or any non-empty room
-                        let roomFound = false;
-                        for (let i = 0; i < optionCount && !roomFound; i++) {
-                            const optionText = await options.nth(i).textContent();
-                            console.log(`Option ${i}: ${optionText}`);
-                            if (optionText && optionText.trim() === 'TEST') {
-                                await options.nth(i).click();
-                                roomFound = true;
-                                console.log('Selected TEST room');
-                            }
-                        }
-                        
-                        // If TEST not found, select first non-empty option
-                        if (!roomFound && optionCount > 1) {
-                            // Skip first option which is usually "Aucune salle"
-                            await options.nth(1).click();
-                            console.log('Selected first available room');
-                        } else if (!roomFound) {
-                            console.log('WARNING: No rooms available to select!');
-                            // Close the dropdown by pressing Escape
-                            await teacherPage.keyboard.press('Escape');
-                        }
+                    // Check if a room is already selected (not "Aucune salle")
+                    if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
+                        console.log('Room already selected:', dropdownText);
                     } else {
-                        console.log('Listbox did not appear, trying keyboard navigation...');
-                        // Try using keyboard to select
-                        await teacherPage.keyboard.press('ArrowDown');
-                        await teacherPage.waitForTimeout(300);
-                        await teacherPage.keyboard.press('Enter');
+                        // Need to select a room
+                        await roomDropdown.click();
+                        await teacherPage.waitForTimeout(1500); // Wait for dropdown animation
+                        
+                        // Take screenshot after click
+                        await teacherPage.screenshot({ path: 'room-persistence-step3-dropdown-opened.png' });
+                        
+                        // Wait for the listbox to appear
+                        const listbox = teacherPage.locator('[role="listbox"]');
+                        const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
+                        
+                        if (listboxVisible) {
+                            console.log('Dropdown listbox opened');
+                            
+                            // Get all options for debugging
+                            const options = listbox.locator('[role="option"]');
+                            const optionCount = await options.count();
+                            console.log('Number of room options:', optionCount);
+                            
+                            // Try to find TEST room or any non-empty room
+                            let roomFound = false;
+                            for (let i = 0; i < optionCount && !roomFound; i++) {
+                                const optionText = await options.nth(i).textContent();
+                                console.log(`Option ${i}: ${optionText}`);
+                                if (optionText && optionText.trim() === 'TEST') {
+                                    await options.nth(i).click();
+                                    roomFound = true;
+                                    console.log('Selected TEST room');
+                                }
+                            }
+                            
+                            // If TEST not found, select first non-empty option
+                            if (!roomFound && optionCount > 1) {
+                                // Skip first option which is usually "Aucune salle"
+                                await options.nth(1).click();
+                                console.log('Selected first available room');
+                            } else if (!roomFound) {
+                                console.log('WARNING: No rooms available to select!');
+                                // Close the dropdown by pressing Escape
+                                await teacherPage.keyboard.press('Escape');
+                            }
+                        } else {
+                            console.log('Listbox did not appear, trying keyboard navigation...');
+                            // Try using keyboard to select
+                            await teacherPage.keyboard.press('ArrowDown');
+                            await teacherPage.waitForTimeout(300);
+                            await teacherPage.keyboard.press('Enter');
+                        }
+                        
+                        await teacherPage.waitForTimeout(1000); // Wait for selection to register
                     }
-                    
-                    await teacherPage.waitForTimeout(1000); // Wait for selection to register
                 }
             } catch (e) {
                 console.log('Error during room selection:', e);
@@ -492,61 +515,85 @@ test.describe('Room Persistence', () => {
             // IMPORTANT: Must select a room from the "Salle active" MUI Select dropdown first
             console.log('Selecting active room from dropdown...');
             
-            // Wait for page to fully load
-            await teacherPage.waitForTimeout(2000);
+            // Wait for page to fully load and stabilize
+            await teacherPage.waitForLoadState('networkidle');
+            await teacherPage.waitForTimeout(3000);
             
             // Take screenshot for debugging
             await teacherPage.screenshot({ path: 'delayed-test-before-room-selection.png' });
             
+            // Log page info for debugging
+            console.log('Page URL:', await teacherPage.url());
+            
             try {
-                const roomDropdown = teacherPage.locator('[role="combobox"]').first();
-                await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
+                // Try multiple selectors for the room dropdown
+                let roomDropdown = teacherPage.locator('[data-testid="room-select"]');
+                let dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
                 
-                // Log the current state for debugging
-                const dropdownText = await roomDropdown.textContent();
-                console.log('Dropdown current text:', dropdownText);
+                if (!dropdownVisible) {
+                    console.log('data-testid selector not found, trying role="combobox"...');
+                    roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                }
                 
-                // Check if a room is already selected (not "Aucune salle")
-                if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
-                    console.log('Room already selected:', dropdownText);
+                if (!dropdownVisible) {
+                    console.log('role="combobox" not found, trying MuiSelect-select...');
+                    roomDropdown = teacherPage.locator('.MuiSelect-select').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                }
+                
+                if (!dropdownVisible) {
+                    console.log('WARNING: Room dropdown not found on page!');
+                    await teacherPage.screenshot({ path: 'delayed-test-dropdown-not-found.png' });
                 } else {
-                    await roomDropdown.click();
-                    await teacherPage.waitForTimeout(1500);
+                    await roomDropdown.waitFor({ state: 'visible', timeout: 5000 });
                     
-                    // Take screenshot after click
-                    await teacherPage.screenshot({ path: 'delayed-test-dropdown-opened.png' });
+                    // Log the current state for debugging
+                    const dropdownText = await roomDropdown.textContent();
+                    console.log('Dropdown current text:', dropdownText);
                     
-                    const listbox = teacherPage.locator('[role="listbox"]');
-                    const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
-                    
-                    if (listboxVisible) {
-                        const options = listbox.locator('[role="option"]');
-                        const optionCount = await options.count();
-                        console.log('Number of room options:', optionCount);
-                        
-                        let roomFound = false;
-                        for (let i = 0; i < optionCount && !roomFound; i++) {
-                            const optionText = await options.nth(i).textContent();
-                            console.log(`Option ${i}: ${optionText}`);
-                            if (optionText && optionText.trim() === 'TEST') {
-                                await options.nth(i).click();
-                                roomFound = true;
-                            }
-                        }
-                        
-                        if (!roomFound && optionCount > 1) {
-                            await options.nth(1).click();
-                            console.log('Selected first available room');
-                        } else if (!roomFound) {
-                            await teacherPage.keyboard.press('Escape');
-                        }
+                    // Check if a room is already selected (not "Aucune salle")
+                    if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
+                        console.log('Room already selected:', dropdownText);
                     } else {
-                        console.log('Listbox did not appear, trying keyboard navigation...');
-                        await teacherPage.keyboard.press('ArrowDown');
-                        await teacherPage.waitForTimeout(300);
-                        await teacherPage.keyboard.press('Enter');
+                        await roomDropdown.click();
+                        await teacherPage.waitForTimeout(1500);
+                        
+                        // Take screenshot after click
+                        await teacherPage.screenshot({ path: 'delayed-test-dropdown-opened.png' });
+                        
+                        const listbox = teacherPage.locator('[role="listbox"]');
+                        const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
+                        
+                        if (listboxVisible) {
+                            const options = listbox.locator('[role="option"]');
+                            const optionCount = await options.count();
+                            console.log('Number of room options:', optionCount);
+                            
+                            let roomFound = false;
+                            for (let i = 0; i < optionCount && !roomFound; i++) {
+                                const optionText = await options.nth(i).textContent();
+                                console.log(`Option ${i}: ${optionText}`);
+                                if (optionText && optionText.trim() === 'TEST') {
+                                    await options.nth(i).click();
+                                    roomFound = true;
+                                }
+                            }
+                            
+                            if (!roomFound && optionCount > 1) {
+                                await options.nth(1).click();
+                                console.log('Selected first available room');
+                            } else if (!roomFound) {
+                                await teacherPage.keyboard.press('Escape');
+                            }
+                        } else {
+                            console.log('Listbox did not appear, trying keyboard navigation...');
+                            await teacherPage.keyboard.press('ArrowDown');
+                            await teacherPage.waitForTimeout(300);
+                            await teacherPage.keyboard.press('Enter');
+                        }
+                        await teacherPage.waitForTimeout(1000);
                     }
-                    await teacherPage.waitForTimeout(1000);
                 }
             } catch (e) {
                 console.log('Error during room selection:', e);

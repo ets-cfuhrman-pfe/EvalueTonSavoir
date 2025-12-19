@@ -63,20 +63,42 @@ test.describe('E2E Setup Check', () => {
             if (!folderExists) {
                 console.log('Creating default folder...');
 
-                // Click create folder button - it's inside the folders section
-                const createFolderBtn = page.locator('button').filter({ hasText: 'Nouveau dossier' }).first();
+                // Click create folder button - try data-testid first, then fallback
+                let createFolderBtn = page.locator('[data-testid="create-folder-btn"]');
+                if (!(await createFolderBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+                    console.log('data-testid not found, trying text selector...');
+                    createFolderBtn = page.locator('button').filter({ hasText: 'Nouveau dossier' }).first();
+                }
+                
+                // If still not visible, might need to expand folder section first
+                if (!(await createFolderBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+                    console.log('Button not visible, trying to expand folders section...');
+                    const expandBtn = page.locator('button').filter({ hasText: 'Dossiers' }).first();
+                    if (await expandBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+                        await expandBtn.click();
+                        await page.waitForTimeout(1000);
+                    }
+                }
+                
                 await createFolderBtn.waitFor({ state: 'visible', timeout: 10000 });
                 await createFolderBtn.click();
 
                 // Wait for dialog to open
                 await page.waitForTimeout(1500);
                 
-                // The dialog uses ValidatedTextField, need to find the input inside it
-                const folderDialog = page.locator('[role="dialog"]').filter({ hasText: 'Créer un nouveau dossier' });
+                // The dialog uses ValidatedTextField with label="Titre du dossier"
+                const folderDialog = page.locator('[role="dialog"]');
                 await folderDialog.waitFor({ state: 'visible', timeout: 5000 });
                 
-                // Find input inside the dialog
-                const folderInput = folderDialog.locator('input').first();
+                // Take screenshot for debugging
+                await page.screenshot({ path: 'setup-check-folder-dialog.png' });
+                
+                // Find input inside the dialog - try multiple selectors
+                let folderInput = folderDialog.locator('input').first();
+                if (!(await folderInput.isVisible({ timeout: 2000 }).catch(() => false))) {
+                    // Try finding by label
+                    folderInput = page.getByLabel('Titre du dossier');
+                }
                 await folderInput.waitFor({ state: 'visible', timeout: 5000 });
                 await folderInput.fill('Dossier par défaut');
 
@@ -122,10 +144,11 @@ test.describe('E2E Setup Check', () => {
             if (!testRoomExists) {
                 console.log('Creating TEST room...');
 
-                // Click create room button - try multiple selectors
-                let createRoomBtn = page.locator('button').filter({ hasText: 'Nouvelle salle' }).first();
+                // Click create room button - try data-testid first
+                let createRoomBtn = page.locator('[data-testid="create-room-btn"]');
                 if (!(await createRoomBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-                    createRoomBtn = page.locator('button').filter({ hasText: /salle/i }).first();
+                    console.log('data-testid not found, trying text selector...');
+                    createRoomBtn = page.locator('button').filter({ hasText: 'Nouvelle salle' }).first();
                 }
                 await createRoomBtn.waitFor({ state: 'visible', timeout: 10000 });
                 await createRoomBtn.click();
@@ -134,15 +157,13 @@ test.describe('E2E Setup Check', () => {
                 // Take screenshot after clicking create room
                 await page.screenshot({ path: 'setup-check-room-create-clicked.png' });
 
-                // Fill room name - the input appears inline
-                const roomInput = page.locator('input[placeholder="Nom de la salle"]').first();
-                if (!(await roomInput.isVisible({ timeout: 3000 }).catch(() => false))) {
-                    // Try alternative selectors
-                    const altInput = page.locator('input').filter({ hasNotText: '' }).last();
-                    await altInput.fill('TEST');
-                } else {
-                    await roomInput.fill('TEST');
+                // Fill room name - try data-testid first, then placeholder
+                let roomInput = page.locator('[data-testid="room-name-input"]');
+                if (!(await roomInput.isVisible({ timeout: 2000 }).catch(() => false))) {
+                    roomInput = page.locator('input[placeholder="Nom de la salle"]').first();
                 }
+                await roomInput.waitFor({ state: 'visible', timeout: 5000 });
+                await roomInput.fill('TEST');
 
                 // Click create button
                 const createBtn = page.locator('button').filter({ hasText: 'Créer' }).first();
