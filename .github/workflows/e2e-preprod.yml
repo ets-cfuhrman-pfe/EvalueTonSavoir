@@ -11,13 +11,13 @@ jobs:
     
     env:
       PREPROD_PATH: ${{ vars.PREPROD_PATH || '/opt/EvalueTonSavoir' }}
-      BUILD_CONTEXT: /tmp/repo
+      BUILD_CONTEXT: ${{ github.workspace }}/repo
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          path: ${{ env.BUILD_CONTEXT }}
+          path: repo
       
       - name: Restart preprod services with new code
         run: |
