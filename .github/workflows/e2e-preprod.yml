@@ -44,7 +44,7 @@ jobs:
           docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG .
           
           # Create override file to use PR images
-          sudo cat > docker-compose.override.yml << EOF
+          cat > /tmp/docker-compose.override.yml << EOF
           services:
             frontend:
               image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG
@@ -55,7 +55,7 @@ jobs:
           EOF
           
           cd ${{ env.PREPROD_PATH }}
-          docker compose -f docker-compose.yaml -f docker-compose.override.yml up -d
+          docker compose -f docker-compose.yaml -f /tmp/docker-compose.override.yml up -d
       
       - name: Verify runner environment
         run: |
@@ -188,7 +188,7 @@ jobs:
         if: always()
         run: |
           cd ${{ env.PREPROD_PATH }}
-          sudo rm -f docker-compose.override.yml
+          rm -f /tmp/docker-compose.override.yml
           docker compose pull  # Pull latest registry images
           docker compose up -d
             
@@ -230,6 +230,7 @@ jobs:
           # Clean up temporary test files and images only
           sudo rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
           sudo rm -rf ${{ env.BUILD_CONTEXT }} 2>/dev/null || true
+          rm -f /tmp/docker-compose.override.yml 2>/dev/null || true
           if docker images | grep -q evaluetonsavoir-e2e-${{ github.run_id }}; then
             docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
           fi
