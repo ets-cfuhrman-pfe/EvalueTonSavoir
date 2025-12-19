@@ -68,28 +68,38 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             // Wait for the page to be ready and button to appear
             console.log('Current URL after play click:', await teacherPage.url());
             
-            try {
-                // Wait for either the manage room page or the launch dialog
-                await teacherPage.waitForSelector('button:has-text("Lancer le quiz"), button:has-text("Lancer")', { timeout: 30000 });
-            } catch {
-                console.log('Button not found with waitForSelector, checking page state...');
-                console.log('Current URL:', await teacherPage.url());
-                const buttons = await teacherPage.locator('button').allTextContents();
-                console.log('Available buttons:', buttons.join(', '));
-                throw new Error('Launch quiz button not found after 30s wait');
+            // Improved wait strategy with polling and robust selectors
+            let launchQuizButton = null;
+            const startTime = Date.now();
+            const timeout = 30000;
+            
+            console.log('Waiting for launch button...');
+            
+            while (Date.now() - startTime < timeout) {
+                // Try specific text first - case insensitive regex
+                const specificButton = teacherPage.locator('button').filter({ hasText: /Lancer( le quiz)?/i }).first();
+                if (await specificButton.isVisible()) {
+                    launchQuizButton = specificButton;
+                    console.log('Found launch button by text');
+                    break;
+                }
+                
+                // Try submit button as fallback
+                const submitButton = teacherPage.locator('button[type="submit"]').first();
+                if (await submitButton.isVisible()) {
+                    const text = await submitButton.textContent();
+                    // Verify it's not a cancel button or something else
+                    if (text && !text.toLowerCase().includes('annuler') && !text.toLowerCase().includes('cancel')) {
+                        launchQuizButton = submitButton;
+                        console.log(`Found launch button by type="submit" (text: ${text})`);
+                        break;
+                    }
+                }
+                
+                await teacherPage.waitForTimeout(1000);
             }
             
-            // Try multiple selectors for the launch button
-            let launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
-            let hasLaunchButton = await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false);
-            
-            if (!hasLaunchButton) {
-                // Try alternative selector - button with just "Lancer"
-                launchQuizButton = teacherPage.locator('button:has-text("Lancer")').first();
-                hasLaunchButton = await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false);
-            }
-            
-            if (hasLaunchButton) {
+            if (launchQuizButton) {
                 // Use force click for Firefox compatibility if needed
                 try {
                     await launchQuizButton.click({ timeout: 5000 });
@@ -104,9 +114,11 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                 const finalUrl = await teacherPage.url();
                 console.log(`Quiz launched, teacher URL: ${finalUrl}`);
             } else {
+                console.log('Button not found after polling, checking page state...');
+                console.log('Current URL:', await teacherPage.url());
                 const buttons = await teacherPage.locator('button').allTextContents();
                 console.log('Available buttons:', buttons.join(', '));
-                throw new Error('Launch quiz button not found');
+                throw new Error('Launch quiz button not found after 30s wait');
             }
 
             console.log('STEP 2: Students joining room while teacher stays online...');
