@@ -126,7 +126,7 @@ jobs:
           # Try to login with the test user to check if it exists
           LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}")
+            -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}" || echo "curl_failed")
           
           echo "Login response: $LOGIN_RESPONSE"
           
@@ -136,7 +136,7 @@ jobs:
             # Create the test user via simple auth register
             CREATE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
               -H "Content-Type: application/json" \
-              -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}")
+              -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}" || echo "curl_failed")
             
             echo "Create response: $CREATE_RESPONSE"
             
