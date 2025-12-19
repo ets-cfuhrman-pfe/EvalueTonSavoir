@@ -11,10 +11,13 @@ jobs:
     
     env:
       PREPROD_PATH: ${{ vars.PREPROD_PATH || '/opt/EvalueTonSavoir' }}
+      BUILD_CONTEXT: /tmp/repo
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          path: ${{ env.BUILD_CONTEXT }}
       
       - name: Restart preprod services with new code
         run: |
@@ -23,9 +26,9 @@ jobs:
           
           # Build images from checked out PR code with unique tags
           PR_TAG="pr-${{ github.run_id }}"
-          docker build -f client/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ github.workspace }}
-          docker build -f server/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ github.workspace }}
-          docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ github.workspace }}
+          docker build -f client/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ env.BUILD_CONTEXT }}
+          docker build -f server/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ env.BUILD_CONTEXT }}
+          docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ env.BUILD_CONTEXT }}
           
           # Create override file to use PR images
           cat > docker-compose.override.yml << EOF
@@ -58,7 +61,7 @@ jobs:
       - name: Copy test files to runner workspace
         run: |
           # Copy the client directory with E2E tests to the runner workspace
-          cp -r ${{ github.workspace }}/client /tmp/e2e-client-${{ github.run_id }}
+          cp -r ${{ env.BUILD_CONTEXT }}/client /tmp/e2e-client-${{ github.run_id }}
           
       - name: Wait for services to be ready
         run: |
@@ -170,10 +173,10 @@ jobs:
       - name: Copy test results back to workspace
         if: always()
         run: |
-          mkdir -p ${{ github.workspace }}/client/playwright-report
-          mkdir -p ${{ github.workspace }}/client/test-results
-          cp -r /tmp/e2e-client-${{ github.run_id }}/playwright-report/* ${{ github.workspace }}/client/playwright-report/ 2>/dev/null || true
-          cp -r /tmp/e2e-client-${{ github.run_id }}/test-results/* ${{ github.workspace }}/client/test-results/ 2>/dev/null || true
+          mkdir -p ${{ env.BUILD_CONTEXT }}/client/playwright-report
+          mkdir -p ${{ env.BUILD_CONTEXT }}/client/test-results
+          cp -r /tmp/e2e-client-${{ github.run_id }}/playwright-report/* ${{ env.BUILD_CONTEXT }}/client/playwright-report/ 2>/dev/null || true
+          cp -r /tmp/e2e-client-${{ github.run_id }}/test-results/* ${{ env.BUILD_CONTEXT }}/client/test-results/ 2>/dev/null || true
       
       - name: Show test logs on failure
         if: failure()
@@ -202,4 +205,5 @@ jobs:
         run: |
           # Clean up temporary test files and images only
           sudo rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
+          sudo rm -rf ${{ env.BUILD_CONTEXT }} 2>/dev/null || true
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
