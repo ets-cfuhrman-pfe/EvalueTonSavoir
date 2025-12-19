@@ -105,7 +105,7 @@ const EditorQuizV2: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             const userFolders = await ApiService.getUserFolders();
-            setFolders(userFolders as FolderType[]);
+            setFolders(userFolders);
         };
 
         fetchData();
@@ -462,7 +462,7 @@ const EditorQuizV2: React.FC = () => {
                                             <MenuItem disabled value="">
                                                 <em>Choisir un dossier...</em>
                                             </MenuItem>
-                                            {folders.map((folder: FolderType) => (
+                                            {alphabeticalSort(folders).map((folder: FolderType) => (
                                                 <MenuItem value={folder._id} key={folder._id}>
                                                     {folder.title}
                                                 </MenuItem>
@@ -596,5 +596,10 @@ const EditorQuizV2: React.FC = () => {
         </div>
     );
 };
+
+// Helper function for alphabetical sorting
+function alphabeticalSort<T extends { title: string }>(items: T[]): T[] {
+    return items.sort((a, b) => a.title.localeCompare(b.title));
+}
 
 export default EditorQuizV2;

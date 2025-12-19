@@ -74,9 +74,23 @@ describe('DashboardV2 Component', () => {
     { _id: 'room2', userId: 'user1', title: 'Salle 2', created_at: '2024-01-02' },
   ];
 
+  const mockRoomsForSorting: RoomType[] = [
+    { _id: 'room3', userId: 'user1', title: 'Zebra Room', created_at: '2024-01-03' },
+    { _id: 'room1', userId: 'user1', title: 'Alpha Room', created_at: '2024-01-01' },
+    { _id: 'room2', userId: 'user1', title: 'Beta Room', created_at: '2024-01-02' },
+    { _id: 'room4', userId: 'user1', title: 'Gamma Room', created_at: '2024-01-04' },
+  ];
+
   const mockFolders: FolderType[] = [
     { _id: 'folder1', userId: 'user1', title: 'Dossier 1', created_at: '2024-01-01' },
     { _id: 'folder2', userId: 'user1', title: 'Dossier 2', created_at: '2024-01-02' },
+  ];
+
+  const mockFoldersForSorting: FolderType[] = [
+    { _id: 'folder3', userId: 'user1', title: 'Zebra Folder', created_at: '2024-01-03' },
+    { _id: 'folder1', userId: 'user1', title: 'Alpha Folder', created_at: '2024-01-01' },
+    { _id: 'folder2', userId: 'user1', title: 'Beta Folder', created_at: '2024-01-02' },
+    { _id: 'folder4', userId: 'user1', title: 'Gamma Folder', created_at: '2024-01-04' },
   ];
 
   const mockQuizzes: QuizType[] = [
@@ -109,6 +123,49 @@ describe('DashboardV2 Component', () => {
       content: ['Question 5?'],
       created_at: new Date('2024-01-03'),
       updated_at: new Date('2024-01-03'),
+    },
+  ];
+
+  const mockQuizzesForSorting: QuizType[] = [
+    {
+      _id: 'quiz1',
+      folderId: 'folder1',
+      folderName: 'Alpha Folder',
+      userId: 'user1',
+      title: 'Quiz Alpha',
+      content: ['Question 1?'],
+      created_at: new Date('2024-01-01'),
+      updated_at: new Date('2024-01-01'),
+    },
+    {
+      _id: 'quiz2',
+      folderId: 'folder2',
+      folderName: 'Beta Folder',
+      userId: 'user1',
+      title: 'Quiz Beta',
+      content: ['Question 2?'],
+      created_at: new Date('2024-01-02'),
+      updated_at: new Date('2024-01-02'),
+    },
+    {
+      _id: 'quiz3',
+      folderId: 'folder4',
+      folderName: 'Gamma Folder',
+      userId: 'user1',
+      title: 'Quiz Gamma',
+      content: ['Question 3?'],
+      created_at: new Date('2024-01-03'),
+      updated_at: new Date('2024-01-03'),
+    },
+    {
+      _id: 'quiz4',
+      folderId: 'folder3',
+      folderName: 'Zebra Folder',
+      userId: 'user1',
+      title: 'Quiz Zebra',
+      content: ['Question 4?'],
+      created_at: new Date('2024-01-04'),
+      updated_at: new Date('2024-01-04'),
     },
   ];
 
@@ -876,6 +933,296 @@ describe('DashboardV2 Component', () => {
         // Check that quizzes are grouped by folder in cards
         const folderCards = screen.getAllByText(/Dossier \d/);
         expect(folderCards.length).toBeGreaterThanOrEqual(2);
+      });
+    });
+  });
+
+  describe('Folder Sorting', () => {
+    test('should display folders in alphabetical order in the left sidebar', async () => {
+      // Setup mocks with unsorted folders
+      mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        const quizzes = mockQuizzesForSorting.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        // Get folder elements in the left sidebar by searching within the sidebar container
+        const sidebarContainer = document.querySelector('.col-lg-4.col-md-4.bg-white.border-end.shadow-sm');
+        expect(sidebarContainer).toBeInTheDocument();
+        
+        // Find all folder text elements within the sidebar
+        const folderElements = Array.from(sidebarContainer!.querySelectorAll('.flex-fill.text-truncate'));
+        const folderNames = folderElements.map(el => el.textContent?.trim()).filter(Boolean);
+        
+        // Verify folders appear in alphabetical order
+        const expectedOrder = ['Alpha Folder', 'Beta Folder', 'Gamma Folder', 'Zebra Folder'];
+        expect(folderNames).toEqual(expectedOrder);
+      });
+    });
+
+    test('should display folder sections in alphabetical order in the quiz list', async () => {
+      // Setup mocks with unsorted folders
+      mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        const quizzes = mockQuizzesForSorting.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        // Get all folder cards (sections) in the main quiz list area
+        const folderCards = document.querySelectorAll('.folder-tab');
+        
+        // Extract folder names from the folder tabs
+        const displayedFolderNames: string[] = [];
+        folderCards.forEach(tab => {
+          const textContent = tab.textContent?.trim();
+          if (textContent) {
+            displayedFolderNames.push(textContent);
+          }
+        });
+
+        // Verify folders appear in alphabetical order
+        const expectedOrder = ['Alpha Folder', 'Beta Folder', 'Gamma Folder', 'Zebra Folder'];
+        
+        // Check that the order matches alphabetical sorting
+        expect(displayedFolderNames).toEqual(expectedOrder);
+      });
+    });
+
+    test('should maintain alphabetical sorting when folders are created', async () => {
+      // Start with sorted folders
+      const initialFolders = mockFoldersForSorting;
+      const initialQuizzes = mockQuizzesForSorting;
+      
+      // Mock creation of a new folder that should appear in the middle alphabetically
+      const newFolder = { _id: 'folder5', userId: 'user1', title: 'Charlie Folder', created_at: '2024-01-05' };
+      const updatedFolders = [...mockFoldersForSorting, newFolder];
+      
+      mockApiService.createFolder.mockResolvedValue(true);
+      
+      // Mock the sequence: initial load, then after folder creation
+      mockApiService.getUserFolders
+        .mockResolvedValueOnce(initialFolders)
+        .mockResolvedValue(updatedFolders);
+      
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        if (folderId === 'folder5') {
+          return Promise.resolve([]); // New folder is empty
+        }
+        const quizzes = initialQuizzes.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      // Wait for initial render
+      await waitFor(() => {
+        expect(screen.getAllByText('Alpha Folder')).toHaveLength(2); // appears in both sidebar and main content
+      });
+
+      // Create a new folder
+      const addFolderButton = screen.getByText('Nouveau dossier');
+      fireEvent.click(addFolderButton);
+
+      await waitFor(() => {
+        const folderNameInput = screen.getByTestId('validated-text-field-titre-du-dossier');
+        fireEvent.change(folderNameInput, { target: { value: 'Charlie Folder' } });
+      });
+
+      const createButton = screen.getByText('Créer');
+      fireEvent.click(createButton);
+
+      // Verify the new folder appears in the correct alphabetical position
+      await waitFor(() => {
+        expect(mockApiService.createFolder).toHaveBeenCalledWith('Charlie Folder');
+        
+        // Check that folders are in alphabetical order in the quiz list
+        const folderCards = document.querySelectorAll('.folder-tab');
+        const displayedFolderNames: string[] = [];
+        folderCards.forEach(tab => {
+          const textContent = tab.textContent?.trim();
+          if (textContent) {
+            displayedFolderNames.push(textContent);
+          }
+        });
+        
+        const expectedOrder = ['Alpha Folder', 'Beta Folder', 'Charlie Folder', 'Gamma Folder', 'Zebra Folder'];
+        expect(displayedFolderNames).toEqual(expectedOrder);
+      });
+    });
+
+    test('should maintain alphabetical sorting when folders are renamed', async () => {
+      // Start with sorted folders
+      const initialFolders = mockFoldersForSorting;
+      const initialQuizzes = mockQuizzesForSorting;
+      
+      mockApiService.renameFolder.mockResolvedValue(true);
+      
+      // Mock the updated folders after rename (Alpha -> Delta)
+      const renamedFolders = mockFoldersForSorting.map(folder => 
+        folder._id === 'folder1' 
+          ? { ...folder, title: 'Delta Folder' }
+          : folder
+      );
+      
+      const renamedQuizzes = mockQuizzesForSorting.map(quiz => 
+        quiz.folderId === 'folder1'
+          ? { ...quiz, folderName: 'Delta Folder' }
+          : quiz
+      );
+      
+      // Mock the sequence: initial load, then after folder rename
+      mockApiService.getUserFolders
+        .mockResolvedValueOnce(initialFolders)
+        .mockResolvedValue(renamedFolders);
+      
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        if (folderId === 'folder1') {
+          // After rename, return quizzes with updated folder name
+          const quizzes = renamedQuizzes.filter(q => q.folderId === folderId);
+          return Promise.resolve(quizzes);
+        }
+        const quizzes = initialQuizzes.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      // Wait for initial render and click on Alpha Folder (using getAllByText to get the sidebar one)
+      await waitFor(() => {
+        const alphaFolders = screen.getAllByText('Alpha Folder');
+        expect(alphaFolders.length).toBeGreaterThan(0);
+        // Click the first one (should be in the sidebar)
+        fireEvent.click(alphaFolders[0]);
+      });
+
+      // Open folder menu and rename
+      await waitFor(() => {
+        const menuButtons = screen.getAllByTestId('MoreVertIcon');
+        const folderMenuButton = menuButtons[0];
+        fireEvent.click(folderMenuButton);
+      });
+
+      const renameMenuItem = screen.getByText('Renommer');
+      fireEvent.click(renameMenuItem);
+
+      await waitFor(() => {
+        const renameInput = screen.getByTestId('validated-text-field-nouveau-titre-du-dossier');
+        fireEvent.change(renameInput, { target: { value: 'Delta Folder' } });
+      });
+
+      const renameConfirmButton = screen.getAllByText('Renommer')[1];
+      fireEvent.click(renameConfirmButton);
+
+      // Verify folders are still in alphabetical order after rename
+      await waitFor(() => {
+        expect(mockApiService.renameFolder).toHaveBeenCalledWith('folder1', 'Delta Folder');
+        
+        // Check that folders are in alphabetical order in the quiz list
+        const folderCards = document.querySelectorAll('.folder-tab');
+        const displayedFolderNames: string[] = [];
+        folderCards.forEach(tab => {
+          const textContent = tab.textContent?.trim();
+          if (textContent) {
+            displayedFolderNames.push(textContent);
+          }
+        });
+        
+        const expectedOrder = ['Beta Folder', 'Delta Folder', 'Gamma Folder', 'Zebra Folder'];
+        expect(displayedFolderNames).toEqual(expectedOrder);
+      });
+    });
+  });
+
+  describe('Room Dropdown Sorting', () => {
+    test('should display rooms in alphabetical order in the header dropdown', async () => {
+      // Setup mocks with unsorted rooms
+      mockApiService.getUserRooms.mockResolvedValue(mockRoomsForSorting);
+      mockApiService.getUserFolders.mockResolvedValue(mockFolders);
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        const quizzes = mockQuizzes.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        // Click the room dropdown to open it
+        const roomSelect = screen.getByRole('combobox');
+        fireEvent.mouseDown(roomSelect);
+      });
+
+      // Wait for dropdown to open and check room order
+      await waitFor(() => {
+        // Get all room menu items (excluding the "Aucune salle sélectionnée" option)
+        const roomMenuItems = screen.getAllByRole('option').filter(option => 
+          !option.textContent?.includes('Aucune salle')
+        );
+        
+        const displayedRoomNames = roomMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
+        const expectedOrder = ['Alpha Room', 'Beta Room', 'Gamma Room', 'Zebra Room'];
+        
+        expect(displayedRoomNames).toEqual(expectedOrder);
+      });
+    });
+
+    test('should maintain alphabetical sorting after creating a new room', async () => {
+      // Start with initial unsorted rooms
+      const initialRooms = mockRoomsForSorting;
+      const newRoom = { _id: 'room5', userId: 'user1', title: 'DELTA ROOM', created_at: '2024-01-05' };
+      const updatedRooms = [...mockRoomsForSorting, newRoom];
+      
+      mockApiService.createRoom.mockResolvedValue('room5');
+      mockApiService.getUserRooms
+        .mockResolvedValueOnce(initialRooms)
+        .mockResolvedValue(updatedRooms);
+      mockApiService.getUserFolders.mockResolvedValue(mockFolders);
+      mockApiService.getFolderContent.mockImplementation((folderId: string) => {
+        const quizzes = mockQuizzes.filter(q => q.folderId === folderId);
+        return Promise.resolve(quizzes);
+      });
+
+      renderComponent();
+
+      // Expand rooms section and create new room
+      await waitFor(() => {
+        const roomsButton = screen.getByText('Salles');
+        fireEvent.click(roomsButton);
+      });
+
+      const newRoomButton = screen.getByText('Nouvelle salle');
+      fireEvent.click(newRoomButton);
+
+      const roomNameInput = screen.getByPlaceholderText('Nom de la salle');
+      fireEvent.change(roomNameInput, { target: { value: 'Delta Room' } });
+
+      const createButton = screen.getByText('Créer');
+      fireEvent.click(createButton);
+
+      // After room creation, open the dropdown to verify alphabetical order is maintained
+      await waitFor(() => {
+        expect(mockApiService.createRoom).toHaveBeenCalledWith('DELTA ROOM');
+      });
+
+      // Open the dropdown to verify rooms are sorted including the new one
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.mouseDown(roomSelect);
+
+      // Verify rooms are in alphabetical order including the newly created room
+      await waitFor(() => {
+        const roomMenuItems = screen.getAllByRole('option').filter(option => 
+          !option.textContent?.includes('Aucune salle')
+        );
+        
+        const displayedRoomNames = roomMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
+        const expectedOrder = ['Alpha Room', 'Beta Room', 'DELTA ROOM', 'Gamma Room', 'Zebra Room'];
+        
+        expect(displayedRoomNames).toEqual(expectedOrder);
       });
     });
   });

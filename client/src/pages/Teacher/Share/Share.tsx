@@ -45,7 +45,7 @@ const Share: React.FC = () => {
                     return;
                 }
 
-                setFolders(userFolders as FolderType[]);
+                setFolders(userFolders);
 
                 const title = await ApiService.getSharedQuiz(id);
 

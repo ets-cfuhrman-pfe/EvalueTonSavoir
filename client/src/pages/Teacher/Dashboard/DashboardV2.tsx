@@ -88,14 +88,26 @@ const DashboardV2: React.FC = () => {
         );
     }, [quizzes, searchTerm]);
 
-    // Group quizzes by folder
-    const quizzesByFolder = filteredQuizzes.reduce((acc, quiz) => {
-        if (!acc[quiz.folderName]) {
-            acc[quiz.folderName] = [];
-        }
-        acc[quiz.folderName].push(quiz);
-        return acc;
-    }, {} as Record<string, QuizType[]>);
+    // Group quizzes by folder and ensure all folders are represented
+    const quizzesByFolder = useMemo(() => {
+        // Start with all folders having empty arrays
+        const folderMap: Record<string, QuizType[]> = {};
+        
+        // Initialize all folders with empty arrays
+        folders.forEach(folder => {
+            folderMap[folder.title] = [];
+        });
+        
+        // Add quizzes to their respective folders
+        filteredQuizzes.forEach(quiz => {
+            if (!folderMap[quiz.folderName]) {
+                folderMap[quiz.folderName] = [];
+            }
+            folderMap[quiz.folderName].push(quiz);
+        });
+        
+        return folderMap;
+    }, [filteredQuizzes, folders]);
 
     // Validation function for quizzes
     const validateQuiz = (questions: string[]) => {
@@ -149,11 +161,11 @@ const DashboardV2: React.FC = () => {
         try {
             await ApiService.duplicateQuiz(quiz._id);
             if (selectedFolderId == '') {
-                const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
+                const folders = sortFolders(await ApiService.getUserFolders()); // HACK force user folders to load on first load
                 // console.log('show all quizzes');
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     // console.log('folder: ', folder.title, ' quiz: ', folderQuizzes);
                     addFolderTitleToQuizzes(folderQuizzes, folder.title);
@@ -351,8 +363,11 @@ const DashboardV2: React.FC = () => {
             if (newFolderTitle.trim()) {
                 await ApiService.createFolder(newFolderTitle.trim());
                 const userFolders = await ApiService.getUserFolders();
-                setFolders(userFolders as FolderType[]);
-                const newlyCreatedFolder = userFolders[userFolders.length - 1] as FolderType;
+                const sortedFolders = sortFolders(userFolders);
+                setFolders(sortedFolders);
+                const newlyCreatedFolder = userFolders.find(folder => 
+                    folder.title === newFolderTitle.trim()
+                ) as FolderType;
                 setSelectedFolderId(newlyCreatedFolder._id);
                 setNewFolderTitle('');
                 setOpenAddFolderDialog(false);
@@ -379,12 +394,13 @@ const DashboardV2: React.FC = () => {
             if (confirmed) {
                 await ApiService.deleteFolder(folderToDelete._id);
                 const userFolders = await ApiService.getUserFolders();
-                setFolders(userFolders as FolderType[]);
+                const sortedFolders = sortFolders(userFolders);
+                setFolders(sortedFolders);
 
                 const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     quizzes = quizzes.concat(folderQuizzes as QuizType[]);
                 }
@@ -415,7 +431,8 @@ const DashboardV2: React.FC = () => {
                 }
 
                 const userFolders = await ApiService.getUserFolders();
-                setFolders(userFolders as FolderType[]);
+                const sortedFolders = sortFolders(userFolders);
+                setFolders(sortedFolders);
                 // Update the folderName in existing quizzes
                 setQuizzes((prev) =>
                     prev.map((quiz) =>
@@ -446,12 +463,23 @@ const DashboardV2: React.FC = () => {
         try {
             await ApiService.duplicateFolder(folderToDuplicate._id);
             const userFolders = await ApiService.getUserFolders();
-            setFolders(userFolders as FolderType[]);
+            const sortedFolders = sortFolders(userFolders);
+            setFolders(sortedFolders);
             const newlyCreatedFolder = userFolders[userFolders.length - 1] as FolderType;
             setSelectedFolderId(newlyCreatedFolder._id);
         } catch (error) {
             console.error('Error duplicating folder:', error);
         }
+    };
+
+    // Helper function for consistent alphabetical sorting
+    const alphabeticalSort = (a: string, b: string): number => {
+        return a.localeCompare(b);
+    };
+
+    // Helper function to sort folders alphabetically
+    const sortFolders = (folders: FolderType[]): FolderType[] => {
+        return [...folders].sort((a, b) => alphabeticalSort(a.title, b.title));
     };
 
     // useEffect hooks for data fetching
@@ -464,7 +492,8 @@ const DashboardV2: React.FC = () => {
             } else {
                 try {
                     const userFolders = await ApiService.getUserFolders();
-                    setFolders(userFolders as FolderType[]);
+                    const sortedFolders = sortFolders(userFolders);
+                    setFolders(sortedFolders);
                 } catch (error) {
                     console.error('Error fetching user folders:', error);
                     setFolders([]);
@@ -498,7 +527,7 @@ const DashboardV2: React.FC = () => {
                 const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     addFolderTitleToQuizzes(folderQuizzes, folder.title);
                     quizzes = quizzes.concat(folderQuizzes as QuizType[]);
@@ -558,7 +587,7 @@ const DashboardV2: React.FC = () => {
                                         <MenuItem value="">
                                             <em>Aucune salle sélectionnée</em>
                                         </MenuItem>
-                                        {rooms.map((room) => (
+                                        {sortRooms(rooms).map((room) => (
                                             <MenuItem 
                                                 key={room._id} 
                                                 value={room._id}
@@ -612,7 +641,7 @@ const DashboardV2: React.FC = () => {
                                 {isFolderListExpanded && (
                                     <div>
                                         <div className="folder-list mb-3">
-                                            {folders.map((folder, index) => (
+                                            {sortFolders(folders).map((folder, index) => (
                                                 <React.Fragment key={folder._id}>
                                                     <div className="folder-item d-flex align-items-center">
                                                         <Button
@@ -703,7 +732,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Room Management */}
                                         <Box mb={3}>
                                             <List disablePadding>
-                                                {rooms.map((room, idx) => {
+                                                {sortRooms(rooms).map((room, idx) => {
                                                     const isEditing = editingRoomId === room._id;
 
                                                     return (
@@ -920,100 +949,106 @@ const DashboardV2: React.FC = () => {
 
                             {/* Quiz List */}
                             <div className="list">
-                                {Object.keys(quizzesByFolder).map((folderName) => (
+                                {Object.keys(quizzesByFolder)
+                                    .sort(alphabeticalSort)
+                                    .map((folderName) => (
                                     <div
                                         key={folderName}
                                         className="card folder-card my-5 rounded-3 shadow-sm border"
                                     >
                                         <div className="folder-tab">{folderName}</div>
                                         <div className="card-body">
-                                            {quizzesByFolder[folderName].map(
-                                                (quiz: QuizType, index: number) => (
-                                                    <div key={quiz._id}>
-                                                        <div className="quiz d-flex align-items-center py-2 w-100">
-                                                            <div className="title flex-fill d-flex align-items-center gap-3">
-                                                                <Tooltip
-                                                                    title="Démarrer le quiz"
-                                                                    placement="top-start"
-                                                                >
-                                                                    <IconButton
-                                                                        color="primary"
-                                                                        size="large"
-                                                                        className="border border-2 border-primary rounded-circle"
-                                                                        onClick={() =>
-                                                                            handleLancerQuiz(quiz)
-                                                                        }
-                                                                        disabled={
-                                                                            !validateQuiz(
-                                                                                quiz.content
-                                                                            )
-                                                                        }
+                                            {quizzesByFolder[folderName].length === 0 ? (
+                                                <div className="text-center text-muted py-4">
+                                                    <em>Aucun quiz dans ce dossier</em>
+                                                </div>
+                                            ) : (
+                                                quizzesByFolder[folderName].map(
+                                                    (quiz: QuizType, index: number) => (
+                                                        <div key={quiz._id}>
+                                                            <div className="quiz d-flex align-items-center py-2 w-100">
+                                                                <div className="title flex-fill d-flex align-items-center gap-3">
+                                                                    <Tooltip
+                                                                        title="Démarrer le quiz"
+                                                                        placement="top-start"
                                                                     >
-                                                                        <PlayArrow />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                                <div className="h5 fw-bold pt-2">
-                                                                    {`${quiz.title} (${quiz.content.length
-                                                                        } question${quiz.content.length > 1
-                                                                            ? 's'
-                                                                            : ''
-                                                                        })`}
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="actions flex-shrink-0 d-flex align-items-center gap-1">
-
-                                                                <Tooltip
-                                                                    title="Modifier"
-                                                                    placement="top"
-                                                                >
-                                                                    <IconButton
-                                                                        onClick={() =>
-                                                                            handleEditQuiz(quiz)
-                                                                        }
-                                                                        color="primary"
-                                                                        size="small"
-                                                                        aria-label="Modifier"
-                                                                    >
-                                                                        <Edit fontSize="small" />
-                                                                    </IconButton>
-                                                                </Tooltip>
-
-                                                                <div className="dashboard">
-                                                                    <DownloadQuizModal
-                                                                        quiz={quiz}
-                                                                    />
+                                                                        <IconButton
+                                                                            color="primary"
+                                                                            size="large"
+                                                                            className="border border-2 border-primary rounded-circle"
+                                                                            onClick={() =>
+                                                                                handleLancerQuiz(quiz)
+                                                                            }
+                                                                            disabled={
+                                                                                !validateQuiz(
+                                                                                    quiz.content
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <PlayArrow />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                    <div className="h5 fw-bold pt-2">
+                                                                        {`${quiz.title} (${quiz.content.length
+                                                                            } question${quiz.content.length > 1
+                                                                                ? 's'
+                                                                                : ''
+                                                                            })`}
+                                                                    </div>
                                                                 </div>
 
-                                                                <Tooltip
-                                                                    title="Plus d'actions"
-                                                                    placement="top"
-                                                                >
-                                                                    <IconButton
-                                                                        onClick={(event) =>
-                                                                            handleMenuOpen(
-                                                                                event,
-                                                                                quiz
-                                                                            )
-                                                                        }
-                                                                        size="small"
-                                                                        aria-label="Plus d'actions"
+                                                                <div className="actions flex-shrink-0 d-flex align-items-center gap-1">
+
+                                                                    <Tooltip
+                                                                        title="Modifier"
+                                                                        placement="top"
                                                                     >
-                                                                        <MoreVert
-                                                                            style={{
-                                                                                fontSize: '1.5rem'
-                                                                            }}
+                                                                        <IconButton
+                                                                            onClick={() =>
+                                                                                handleEditQuiz(quiz)
+                                                                            }
+                                                                            color="primary"
+                                                                            size="small"
+                                                                            aria-label="Modifier"
+                                                                        >
+                                                                            <Edit fontSize="small" />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+
+                                                                    <div className="dashboard">
+                                                                        <DownloadQuizModal
+                                                                            quiz={quiz}
                                                                         />
-                                                                    </IconButton>
-                                                                </Tooltip>
+                                                                    </div>
+
+                                                                    <Tooltip
+                                                                        title="Plus d'actions"
+                                                                        placement="top"
+                                                                    >
+                                                                        <IconButton
+                                                                            onClick={(event) =>
+                                                                                handleMenuOpen(
+                                                                                    event,
+                                                                                    quiz
+                                                                                )
+                                                                            }
+                                                                            size="small"
+                                                                            aria-label="Plus d'actions"
+                                                                        >
+                                                                            <MoreVert
+                                                                                style={{
+                                                                                    fontSize: '1.5rem'
+                                                                                }}
+                                                                            />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        {index <
-                                                            quizzesByFolder[folderName].length -
-                                                            1 && (
+                                                            {index < quizzesByFolder[folderName].length - 1 && (
                                                                 <div className="my-1 border-top"></div>
                                                             )}
-                                                    </div>
+                                                        </div>
+                                                    )
                                                 )
                                             )}
                                         </div>
@@ -1179,4 +1214,14 @@ function addFolderTitleToQuizzes(folderQuizzes: string | QuizType[], folderName:
             quiz.folderName = folderName;
             // console.log(`quiz: ${quiz.title} folder: ${quiz.folderName}`);
         });
+}
+
+// Helper function for alphabetical sorting
+function alphabeticalRoomSort<T extends { title: string }>(items: T[]): T[] {
+    return items.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+// Helper function to sort rooms alphabetically
+function sortRooms(rooms: RoomType[]): RoomType[] {
+    return alphabeticalRoomSort(rooms);
 }
