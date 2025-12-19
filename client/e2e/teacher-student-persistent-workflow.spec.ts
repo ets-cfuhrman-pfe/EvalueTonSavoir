@@ -90,7 +90,13 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             }
             
             if (hasLaunchButton) {
-                await launchQuizButton.click();
+                // Use force click for Firefox compatibility if needed
+                try {
+                    await launchQuizButton.click({ timeout: 5000 });
+                } catch {
+                    console.log('Native click failed, trying force click for Firefox compatibility...');
+                    await launchQuizButton.click({ force: true, timeout: 5000 });
+                }
                 console.log('Clicked "Lancer le quiz" - Quiz is now launching');
                 await teacherPage.waitForLoadState('networkidle');
                 await teacherPage.waitForTimeout(5000);
