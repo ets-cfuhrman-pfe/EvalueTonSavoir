@@ -10,6 +10,12 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
         const teacherContext = await browser.newContext();
         const teacherPage = await teacherContext.newPage();
 
+        // Handle dialogs (e.g. "Please select a room")
+        teacherPage.on('dialog', async dialog => {
+            console.log(`Teacher Dialog: ${dialog.message()}`);
+            await dialog.accept();
+        });
+
         try {
             console.log('STEP 1: Teacher setting up quiz...');
             
@@ -43,7 +49,18 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
 
             // Ensure a room is selected
             console.log('Checking room selection...');
-            const roomSelect = teacherPage.locator('div:has(> span:has-text("Salle active :"))').locator('[role="button"], [role="combobox"]').first();
+            
+            // Find the label first, then the sibling/parent control
+            // Using regex for text to be robust against whitespace
+            const label = teacherPage.locator('span').filter({ hasText: /Salle active/ }).first();
+            // Go to parent div, then find the select button
+            let roomSelect = label.locator('..').locator('[role="button"], [role="combobox"]').first();
+            
+            // Fallback: try generic class if specific structure fails
+            if (!await roomSelect.isVisible()) {
+                 console.log('Specific room selector failed, trying generic .MuiSelect-select');
+                 roomSelect = teacherPage.locator('.MuiSelect-select').first();
+            }
             
             if (await roomSelect.isVisible()) {
                 const selectedText = await roomSelect.textContent();
