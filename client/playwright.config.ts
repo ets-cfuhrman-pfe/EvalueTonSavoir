@@ -57,17 +57,6 @@ export default defineConfig({
       },
     },
 
-    // Disable other browsers for now to focus on core E2E functionality
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
-
     /* Test against mobile viewports. */
     // Mobile tests disabled - dashboard workflow requires desktop viewport
     // {
