@@ -144,7 +144,7 @@ async function start() {
     db.getConnection();
     logger.info('MongoDB connection established');
 
-    server.listen(port, () => {
+    server.listen(port, '0.0.0.0', () => {
       logger.info(`Server listening on port ${port}`, {
         port,
         environment: process.env.NODE_ENV,
