@@ -177,7 +177,7 @@ test.describe('Room Persistence', () => {
             console.log('STEP 6: Getting question count...');
             await teacherPage.waitForTimeout(2000);
 
-            const counterLocator = teacherPage.locator('text=/[0-9]+ \\/ [0-9]+/').first();
+            const counterLocator = teacherPage.locator(String.raw`text=/[0-9]+ \/ [0-9]+/`).first();
             const counterText = await counterLocator.textContent();
             if (!counterText) {
                 throw new Error('Could not find question counter');
@@ -210,9 +210,7 @@ test.describe('Room Persistence', () => {
                 // Check all students are still connected
                 for (let i = 0; i < studentPages.length; i++) {
                     const page = studentPages[i];
-                    
-                    // Check the page hasn't navigated away unexpectedly
-                    const currentUrl = page.url();
+
                     const hasDisconnectedMessage = await page.locator('text=/déconnecté|connexion perdue|erreur/i').isVisible({ timeout: 500 }).catch(() => false);
                     
                     if (hasDisconnectedMessage) {
@@ -267,8 +265,8 @@ test.describe('Room Persistence', () => {
                 // PERSISTENCE CHECK: After students answer
                 console.log(`[Persistence Check Q${q}] Post-answer verification...`);
                 
-                for (let i = 0; i < studentPages.length; i++) {
-                    const hasError = await studentPages[i].locator('text=/erreur|error/i').isVisible({ timeout: 500 }).catch(() => false);
+                for (const studentPage of studentPages) {
+                    const hasError = await studentPage.locator('text=/erreur|error/i').isVisible({ timeout: 500 }).catch(() => false);
                     expect(hasError).toBeFalsy();
                 }
                 console.log(`[Persistence Check Q${q}] All students still connected after answering`);
@@ -464,7 +462,7 @@ test.describe('Room Persistence', () => {
 
             // Get question count
             await teacherPage.waitForTimeout(2000);
-            const counterLocator = teacherPage.locator('text=/[0-9]+ \\/ [0-9]+/').first();
+            const counterLocator = teacherPage.locator(String.raw`text=/[0-9]+ \/ [0-9]+/`).first();
             const counterText = await counterLocator.textContent();
             const totalQuestions = Number.parseInt((counterText || '0 / 1').split(' / ')[1]) || 1;
 
