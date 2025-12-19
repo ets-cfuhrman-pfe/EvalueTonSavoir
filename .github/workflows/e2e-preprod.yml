@@ -44,7 +44,7 @@ jobs:
           docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG .
           
           # Create override file to use PR images
-          cat > ${{ env.PREPROD_PATH }}/docker-compose.override.yml << EOF
+          sudo cat > docker-compose.override.yml << EOF
           services:
             frontend:
               image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG
@@ -188,7 +188,7 @@ jobs:
         if: always()
         run: |
           cd ${{ env.PREPROD_PATH }}
-          rm -f docker-compose.override.yml
+          sudo rm -f docker-compose.override.yml
           docker compose pull  # Pull latest registry images
           docker compose up -d
             
