@@ -41,6 +41,45 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
+            // Ensure a room is selected
+            console.log('Checking room selection...');
+            const roomSelect = teacherPage.locator('div:has(> span:has-text("Salle active :"))').locator('[role="button"], [role="combobox"]').first();
+            
+            if (await roomSelect.isVisible()) {
+                const selectedText = await roomSelect.textContent();
+                console.log(`Current room selection: "${selectedText}"`);
+                
+                if (selectedText?.includes('Aucune') || !selectedText) {
+                    console.log('No room selected. Attempting to select "TEST"...');
+                    await roomSelect.click();
+                    
+                    // Wait for dropdown
+                    const dropdown = teacherPage.locator('ul[role="listbox"]');
+                    await dropdown.waitFor({ state: 'visible', timeout: 5000 });
+                    
+                    // Try to find TEST
+                    const testOption = dropdown.locator('li').filter({ hasText: 'TEST' }).first();
+                    if (await testOption.isVisible()) {
+                        await testOption.click();
+                        console.log('Selected "TEST" room');
+                    } else {
+                        // Select the last option (usually the most recently created)
+                        const options = dropdown.locator('li');
+                        const count = await options.count();
+                        if (count > 1) { // > 1 because first might be "Aucune"
+                            await options.last().click();
+                            console.log('Selected last available room');
+                        } else {
+                            console.log('No rooms available to select!');
+                            throw new Error('No rooms available. Setup check failed to create a room?');
+                        }
+                    }
+                    await teacherPage.waitForTimeout(1000);
+                }
+            } else {
+                console.log('Could not find room selector!');
+            }
+
             // Click play button to launch quiz - use more specific selector
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
             // The play button is an IconButton with aria-label "Démarrer le quiz" or contains PlayArrow icon
