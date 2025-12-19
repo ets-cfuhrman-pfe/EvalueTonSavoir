@@ -165,7 +165,7 @@ const DashboardV2: React.FC = () => {
                 // console.log('show all quizzes');
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     // console.log('folder: ', folder.title, ' quiz: ', folderQuizzes);
                     addFolderTitleToQuizzes(folderQuizzes, folder.title);
@@ -394,13 +394,13 @@ const DashboardV2: React.FC = () => {
             if (confirmed) {
                 await ApiService.deleteFolder(folderToDelete._id);
                 const userFolders = await ApiService.getUserFolders();
-                const sortedFolders = sortFolders(userFolders as FolderType[]);
+                const sortedFolders = sortFolders(userFolders);
                 setFolders(sortedFolders);
 
                 const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     quizzes = quizzes.concat(folderQuizzes as QuizType[]);
                 }
@@ -431,7 +431,7 @@ const DashboardV2: React.FC = () => {
                 }
 
                 const userFolders = await ApiService.getUserFolders();
-                const sortedFolders = sortFolders(userFolders as FolderType[]);
+                const sortedFolders = sortFolders(userFolders);
                 setFolders(sortedFolders);
                 // Update the folderName in existing quizzes
                 setQuizzes((prev) =>
@@ -463,7 +463,7 @@ const DashboardV2: React.FC = () => {
         try {
             await ApiService.duplicateFolder(folderToDuplicate._id);
             const userFolders = await ApiService.getUserFolders();
-            const sortedFolders = sortFolders(userFolders as FolderType[]);
+            const sortedFolders = sortFolders(userFolders);
             setFolders(sortedFolders);
             const newlyCreatedFolder = userFolders[userFolders.length - 1] as FolderType;
             setSelectedFolderId(newlyCreatedFolder._id);
@@ -492,7 +492,7 @@ const DashboardV2: React.FC = () => {
             } else {
                 try {
                     const userFolders = await ApiService.getUserFolders();
-                    const sortedFolders = sortFolders(userFolders as FolderType[]);
+                    const sortedFolders = sortFolders(userFolders);
                     setFolders(sortedFolders);
                 } catch (error) {
                     console.error('Error fetching user folders:', error);
@@ -527,7 +527,7 @@ const DashboardV2: React.FC = () => {
                 const folders = await ApiService.getUserFolders(); // HACK force user folders to load on first load
                 let quizzes: QuizType[] = [];
 
-                for (const folder of folders as FolderType[]) {
+                for (const folder of folders) {
                     const folderQuizzes = await ApiService.getFolderContent(folder._id);
                     addFolderTitleToQuizzes(folderQuizzes, folder.title);
                     quizzes = quizzes.concat(folderQuizzes as QuizType[]);

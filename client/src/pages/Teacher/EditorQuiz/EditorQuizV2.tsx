@@ -105,7 +105,7 @@ const EditorQuizV2: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             const userFolders = await ApiService.getUserFolders();
-            setFolders(userFolders as FolderType[]);
+            setFolders(userFolders);
         };
 
         fetchData();
