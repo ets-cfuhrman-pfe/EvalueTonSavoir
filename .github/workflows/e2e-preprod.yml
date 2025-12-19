@@ -33,19 +33,18 @@ jobs:
       
       - name: Restart preprod services with new code
         run: |
-          cd ${{ env.PREPROD_PATH }}
-          docker compose down
+          cd ${{ env.BUILD_CONTEXT }}
           
           # Build images from checked out PR code with unique tags
           PR_TAG="pr-${{ github.run_id }}"
-          if [ -d "${{ env.BUILD_CONTEXT }}/client" ]; then
-            docker build -f client/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ env.BUILD_CONTEXT }}
+          if [ -d "client" ]; then
+            docker build -f client/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG .
           fi
-          docker build -f server/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ env.BUILD_CONTEXT }}
-          docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ env.BUILD_CONTEXT }}
+          docker build -f server/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG .
+          docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG .
           
           # Create override file to use PR images
-          cat > docker-compose.override.yml << EOF
+          cat > ${{ env.PREPROD_PATH }}/docker-compose.override.yml << EOF
           services:
             frontend:
               image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG
@@ -55,6 +54,7 @@ jobs:
               image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG
           EOF
           
+          cd ${{ env.PREPROD_PATH }}
           docker compose -f docker-compose.yaml -f docker-compose.override.yml up -d
       
       - name: Verify runner environment
