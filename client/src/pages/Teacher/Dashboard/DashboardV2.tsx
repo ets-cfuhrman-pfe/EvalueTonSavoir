@@ -527,11 +527,13 @@ const DashboardV2: React.FC = () => {
                             <div>
                                 <h1 className="h3 mb-0 ms-3 text-dark fw-bold">Tableau de bord</h1>
                             </div>
-                            <div className="d-flex align-items-center gap-2 px-4">
+                            <div className="d-flex align-items-center gap-2 px-4" data-testid="room-select-container">
                                 <span className="h5 fw-bold">Salle active :</span>
                                 <FormControl size="small" className="pb-2">
                                     <Select
+                                        id="room-select"
                                         data-testid="room-select"
+                                        SelectDisplayProps={{ 'data-testid': 'room-select-display' } as React.HTMLAttributes<HTMLDivElement>}
                                         value={selectedRoomId}
                                         onChange={(e) => {
                                             const newRoomId = e.target.value;
