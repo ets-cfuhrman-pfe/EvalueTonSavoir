@@ -58,8 +58,8 @@ jobs:
           sed -i 's/"5173:5173"/"15173:5173"/g' $TEST_DIR/docker-compose.yaml
           # Change keycloak port from 8080 to 18080
           sed -i 's/"8080:8080"/"18080:8080"/g' $TEST_DIR/docker-compose.yaml
-          # Remove MongoDB port mapping (not needed for tests)
-          sed -i 's/"27017:27017"//g' $TEST_DIR/docker-compose.yaml
+          # Change MongoDB port from 27017 to 17017 (keep it for debugging if needed)
+          sed -i 's/"27017:27017"/"17017:27017"/g' $TEST_DIR/docker-compose.yaml
           
           # Copy production config files (auth, etc.) if they exist
           if [ -f "${{ env.PREPROD_PATH }}/server/auth_config.json" ]; then
