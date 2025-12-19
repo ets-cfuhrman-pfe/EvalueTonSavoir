@@ -16,6 +16,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Restart preprod services with new code
+        run: |
+          cd ${{ env.PREPROD_PATH }}
+          docker compose down
+          
+          # Build images from checked out PR code with unique tags
+          PR_TAG="pr-${{ github.run_id }}"
+          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ github.workspace }}/client
+          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ github.workspace }}/server
+          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ github.workspace }}/nginx
+          
+          # Create override file to use PR images
+          cat > docker-compose.override.yml << EOF
+          services:
+            frontend:
+              image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG
+            backend:
+              image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG
+            nginx:
+              image: ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG
+          EOF
+          
+          docker compose -f docker-compose.yaml -f docker-compose.override.yml up -d
+      
       - name: Verify runner environment
         run: |
           echo "=== Runner Information ==="
@@ -31,20 +55,6 @@ jobs:
           docker --version
           docker compose version
       
-      - name: Verify preprod environment is running
-        run: |
-          echo "Checking if preprod services are running..."
-          
-          # Check if services are running
-          if ! docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps | grep -q "Up"; then
-            echo "Preprod services are not running. Please start them manually or ensure they are running."
-            echo "Run: cd ${{ env.PREPROD_PATH }} && docker compose up -d"
-            exit 1
-          fi
-          
-          echo "Preprod services are running:"
-          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
-        
       - name: Copy test files to runner workspace
         run: |
           # Copy the client directory with E2E tests to the runner workspace
@@ -148,6 +158,14 @@ jobs:
             -e TEST_USER_PASSWORD=${{ secrets.E2E_TEST_USER_PASSWORD }} \
             -e CI=true \
             evaluetonsavoir-e2e-${{ github.run_id }}
+      
+      - name: Restore preprod to original state
+        if: always()
+        run: |
+          cd ${{ env.PREPROD_PATH }}
+          rm -f docker-compose.override.yml
+          docker compose pull  # Pull latest registry images
+          docker compose up -d
             
       - name: Copy test results back to workspace
         if: always()
