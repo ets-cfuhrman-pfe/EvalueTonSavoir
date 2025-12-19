@@ -584,7 +584,7 @@ const DashboardV2: React.FC = () => {
                                         <MenuItem value="">
                                             <em>Aucune salle sélectionnée</em>
                                         </MenuItem>
-                                        {rooms.map((room) => (
+                                        {sortRooms(rooms).map((room) => (
                                             <MenuItem 
                                                 key={room._id} 
                                                 value={room._id}
@@ -638,7 +638,7 @@ const DashboardV2: React.FC = () => {
                                 {isFolderListExpanded && (
                                     <div>
                                         <div className="folder-list mb-3">
-                                            {folders.map((folder, index) => (
+                                            {sortFolders(folders).map((folder, index) => (
                                                 <React.Fragment key={folder._id}>
                                                     <div className="folder-item d-flex align-items-center">
                                                         <Button
@@ -728,7 +728,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Room Management */}
                                         <Box mb={3}>
                                             <List disablePadding>
-                                                {rooms.map((room, idx) => {
+                                                {sortRooms(rooms).map((room, idx) => {
                                                     const isEditing = editingRoomId === room._id;
 
                                                     return (
@@ -1208,4 +1208,19 @@ function addFolderTitleToQuizzes(folderQuizzes: string | QuizType[], folderName:
             quiz.folderName = folderName;
             // console.log(`quiz: ${quiz.title} folder: ${quiz.folderName}`);
         });
+}
+
+// Helper function for alphabetical sorting
+function alphabeticalSort<T extends { title: string }>(items: T[]): T[] {
+    return items.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+// Helper function to sort folders alphabetically
+function sortFolders(folders: FolderType[]): FolderType[] {
+    return alphabeticalSort(folders);
+}
+
+// Helper function to sort rooms alphabetically
+function sortRooms(rooms: RoomType[]): RoomType[] {
+    return alphabeticalSort(rooms);
 }

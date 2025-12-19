@@ -99,6 +99,13 @@ const mockNavigate = jest.fn();
 const mockUseParams = jest.fn();
 const mockApiService = ApiService as jest.Mocked<typeof ApiService>;
 
+  // Mock data for sorting tests
+  const mockFoldersForSorting: FolderType[] = [
+    { _id: 'folder3', userId: 'user1', title: 'Zebra Folder', created_at: '2023-01-03' },
+    { _id: 'folder1', userId: 'user1', title: 'Alpha Folder', created_at: '2023-01-01' },
+    { _id: 'folder2', userId: 'user1', title: 'Beta Folder', created_at: '2023-01-02' },
+    { _id: 'folder4', userId: 'user1', title: 'Gamma Folder', created_at: '2023-01-04' },
+  ];
 beforeEach(() => {
   jest.clearAllMocks();
   mockNavigate.mockClear();
@@ -524,6 +531,81 @@ describe('EditorQuizV2 Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Folder Dropdown Sorting', () => {
+    test('should display folders in alphabetical order in the folder dropdown', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      // Setup mocks with unsorted folders
+      mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
+
+      renderComponent();
+
+      // Wait for folders to load
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Click the folder dropdown to open it
+      const folderSelect = screen.getByRole('combobox', { name: 'Dossier' });
+      fireEvent.mouseDown(folderSelect);
+
+      // Wait for dropdown to open and check folder order
+      await waitFor(() => {
+        // Get all folder menu items (excluding the placeholder option)
+        const folderMenuItems = screen.getAllByRole('option').filter(option => 
+          !option.textContent?.includes('Choisir un dossier')
+        );
+        
+        const displayedFolderNames = folderMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
+        const expectedOrder = ['Alpha Folder', 'Beta Folder', 'Gamma Folder', 'Zebra Folder'];
+        
+        expect(displayedFolderNames).toEqual(expectedOrder);
+      });
+    });
+
+    test('should maintain alphabetical sorting when selecting folders', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
+
+      renderComponent();
+
+      // Wait for folders to load
+      await waitFor(() => {
+        expect(mockApiService.getUserFolders).toHaveBeenCalled();
+      });
+
+      // Open dropdown and verify we can select a folder that should be in the middle alphabetically
+      const folderSelect = screen.getByRole('combobox', { name: 'Dossier' });
+      fireEvent.mouseDown(folderSelect);
+
+      // Wait for options to be available
+      await waitFor(() => {
+        const gammaOption = screen.getByText('Gamma Folder');
+        expect(gammaOption).toBeInTheDocument();
+      });
+
+      // Click on "Gamma Folder" which should be in the middle of the sorted list
+      const gammaOption = screen.getByText('Gamma Folder');
+      fireEvent.click(gammaOption);
+
+      // Verify the selection worked
+      expect(folderSelect).toHaveTextContent('Gamma Folder');
+
+      // Open dropdown again to verify order is still correct
+      fireEvent.mouseDown(folderSelect);
+
+      await waitFor(() => {
+        const folderMenuItems = screen.getAllByRole('option').filter(option => 
+          !option.textContent?.includes('Choisir un dossier')
+        );
+        
+        const displayedFolderNames = folderMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
+        const expectedOrder = ['Alpha Folder', 'Beta Folder', 'Gamma Folder', 'Zebra Folder'];
+        
+        expect(displayedFolderNames).toEqual(expectedOrder);
       });
     });
   });
