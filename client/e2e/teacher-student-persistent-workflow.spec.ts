@@ -27,8 +27,15 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             const testRoomId = await teacherPage.evaluate(async () => {
                 const findTestRoom = (rooms: any[]) => rooms.find((r) => (r.title || '').toUpperCase() === 'TEST');
                 try {
+                    const rawJwt = localStorage.getItem('jwt');
+                    const token = rawJwt ? (JSON.parse(rawJwt)?.token as string | undefined) : undefined;
+                    const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
                     const fetchRooms = async () => {
-                        const res = await fetch('/api/room/getUserRooms', { credentials: 'include' });
+                        const res = await fetch('/api/room/getUserRooms', {
+                            credentials: 'include',
+                            headers: Object.keys(authHeader).length ? authHeader : undefined
+                        });
                         if (!res.ok) throw new Error(`status ${res.status}`);
                         const body = await res.json();
                         return body?.data || [];
@@ -42,13 +49,15 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                         const createRes = await fetch('/api/room/create', {
                             method: 'POST',
                             credentials: 'include',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(Object.keys(authHeader).length ? authHeader : {})
+                            },
                             body: JSON.stringify({ title: 'TEST' })
                         });
-                        if (createRes.ok) {
-                            rooms = await fetchRooms();
-                            testRoom = findTestRoom(rooms);
-                        }
+                        if (!createRes.ok) throw new Error(`create status ${createRes.status}`);
+                        rooms = await fetchRooms();
+                        testRoom = findTestRoom(rooms);
                     }
 
                     if (testRoom?._id) {
