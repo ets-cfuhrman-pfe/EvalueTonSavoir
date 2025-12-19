@@ -31,30 +31,32 @@ jobs:
           docker --version
           docker compose version
       
-      - name: Update preprod with PR code
+      - name: Setup test environment with PR code
         run: |
-          echo "Updating preprod environment with PR code..."
+          echo "Setting up test environment with PR code..."
           
-          # Stop existing services
-          cd ${{ env.PREPROD_PATH }}
-          docker compose down || true
+          # Create temporary test directory
+          TEST_DIR="/tmp/e2e-preprod-${{ github.run_id }}"
+          mkdir -p $TEST_DIR
           
-          # Backup current code
-          cp -r ${{ env.PREPROD_PATH }} ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} || true
+          # Copy PR code to test directory
+          cp -r ${{ github.workspace }}/. $TEST_DIR/
           
-          # Copy PR code to preprod path
-          rsync -av --delete \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='logs' \
-            ${{ github.workspace }}/ ${{ env.PREPROD_PATH }}/
+          # Copy production config files (auth, etc.) if they exist
+          if [ -f "${{ env.PREPROD_PATH }}/server/auth_config.json" ]; then
+            cp ${{ env.PREPROD_PATH }}/server/auth_config.json $TEST_DIR/server/auth_config.json
+          fi
           
-          # Rebuild and start services with PR code
-          cd ${{ env.PREPROD_PATH }}
-          docker compose build --no-cache
-          docker compose up -d
+          # Build and start services from test directory
+          cd $TEST_DIR
+          docker compose -p e2e-test-${{ github.run_id }} build --no-cache
+          docker compose -p e2e-test-${{ github.run_id }} up -d
           
-          echo "Preprod updated and services restarted with PR code"
+          # Store test directory path for later steps
+          echo "TEST_DIR=$TEST_DIR" >> $GITHUB_ENV
+          echo "TEST_PROJECT=e2e-test-${{ github.run_id }}" >> $GITHUB_ENV
+          
+          echo "Test environment created at $TEST_DIR"
         
       - name: Copy test files to runner workspace
         run: |
@@ -65,38 +67,46 @@ jobs:
         run: |
           echo "Waiting for services to start..."
           
+          # Get container names with project prefix
+          PROJECT="${{ env.TEST_PROJECT }}"
+          
           # Wait for MongoDB to be ready
-          if ! timeout 60 bash -c 'until docker exec mongo mongosh --eval "db.runCommand({ping: 1})" > /dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 3; done'; then
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-mongo-1 mongosh --eval \"db.runCommand({ping: 1})\" > /dev/null 2>&1; do echo 'Waiting for MongoDB...'; sleep 3; done"; then
             echo "MongoDB failed to start within timeout"
+            docker logs ${PROJECT}-mongo-1 --tail 50
             exit 1
           fi
           
-          # Wait for backend to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 3000; do echo "Waiting for backend..."; sleep 3; done'; then
+          # Wait for backend to be ready (check container health)
+          if ! timeout 60 bash -c "until docker inspect ${PROJECT}-backend-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -q 'healthy\|starting' || docker exec ${PROJECT}-backend-1 curl -f http://localhost:3000/api/health 2>/dev/null; do echo 'Waiting for backend...'; sleep 3; done"; then
             echo "Backend failed to start within timeout"
+            docker logs ${PROJECT}-backend-1 --tail 50
             exit 1
           fi
           
-          # Wait for frontend to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 5173; do echo "Waiting for frontend..."; sleep 3; done'; then
+          # Wait for frontend to be ready
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-frontend-1 curl -f http://localhost:5173 > /dev/null 2>&1; do echo 'Waiting for frontend...'; sleep 3; done"; then
             echo "Frontend failed to start within timeout"
+            docker logs ${PROJECT}-frontend-1 --tail 50
             exit 1
           fi
           
-          # Wait for nginx to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 80; do echo "Waiting for nginx..."; sleep 3; done'; then
+          # Wait for nginx to be ready
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-nginx-1 curl -f http://localhost > /dev/null 2>&1; do echo 'Waiting for nginx...'; sleep 3; done"; then
             echo "Nginx failed to start within timeout"
+            docker logs ${PROJECT}-nginx-1 --tail 50
             exit 1
           fi
           
-          # Wait for Keycloak to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 8080; do echo "Waiting for Keycloak..."; sleep 3; done'; then
+          # Wait for Keycloak to be ready
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-keycloak-1 curl -f http://localhost:8080 > /dev/null 2>&1; do echo 'Waiting for Keycloak...'; sleep 3; done"; then
             echo "Keycloak failed to start within timeout"
+            docker logs ${PROJECT}-keycloak-1 --tail 50
             exit 1
           fi
           
           echo "Services status check:"
-          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+          docker compose -p ${{ env.TEST_PROJECT }} ps
           
           # Additional wait to ensure all services are fully initialized
           sleep 15
@@ -105,8 +115,11 @@ jobs:
         run: |
           echo "Ensuring test user exists..."
           
+          # Get backend container name
+          BACKEND_CONTAINER="${{ env.TEST_PROJECT }}-backend-1"
+          
           # Try to login with the test user to check if it exists
-          LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
+          LOGIN_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/login \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\"}")
           
@@ -114,7 +127,7 @@ jobs:
             echo "Test user does not exist or login failed. Creating test user..."
             
             # Create the test user via simple auth register
-            CREATE_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
+            CREATE_RESPONSE=$(docker exec $BACKEND_CONTAINER curl -s -X POST http://localhost:3000/api/auth/simple-auth/register \
               -H "Content-Type: application/json" \
               -d "{\"email\": \"${TEST_USER_EMAIL}\", \"password\": \"${TEST_USER_PASSWORD}\", \"name\": \"Integration Test Bot\"}")
             
@@ -172,15 +185,15 @@ jobs:
         if: failure()
         run: |
           echo "=== Docker containers status ==="
-          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+          docker compose -p ${{ env.TEST_PROJECT }} ps
           echo "=== Backend logs ==="
-          docker logs backend --tail 50
+          docker logs ${{ env.TEST_PROJECT }}-backend-1 --tail 50
           echo "=== Frontend logs ==="
-          docker logs frontend --tail 50
+          docker logs ${{ env.TEST_PROJECT }}-frontend-1 --tail 50
           echo "=== MongoDB logs ==="
-          docker logs mongo --tail 20
+          docker logs ${{ env.TEST_PROJECT }}-mongo-1 --tail 20
           echo "=== Nginx logs ==="
-          docker logs nginx --tail 20
+          docker logs ${{ env.TEST_PROJECT }}-nginx-1 --tail 20
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -190,31 +203,23 @@ jobs:
           path: client/playwright-report/
           retention-days: 7
       
-      - name: Restore preprod environment
+      - name: Cleanup test environment
         if: always()
         run: |
-          echo "Restoring original preprod environment..."
+          echo "Cleaning up test environment..."
           
-          # Stop services running PR code
-          cd ${{ env.PREPROD_PATH }}
-          docker compose down || true
-          
-          # Restore backup
-          if [ -d "${{ env.PREPROD_PATH }}.backup-${{ github.run_id }}" ]; then
-            rm -rf ${{ env.PREPROD_PATH }}
-            mv ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} ${{ env.PREPROD_PATH }}
-            
-            # Restart original preprod services
-            cd ${{ env.PREPROD_PATH }}
-            docker compose up -d
-            
-            echo "Original preprod environment restored"
+          # Stop and remove test containers
+          if [ -n "${{ env.TEST_PROJECT }}" ]; then
+            docker compose -p ${{ env.TEST_PROJECT }} down -v || true
           fi
-      
-      - name: Cleanup test artifacts
-        if: always()
-        run: |
-          # Clean up temporary test files and images only
+          
+          # Remove test directory
+          if [ -n "${{ env.TEST_DIR }}" ] && [ -d "${{ env.TEST_DIR }}" ]; then
+            rm -rf ${{ env.TEST_DIR }}
+          fi
+          
+          # Clean up temporary test files and images
           rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
-          rm -rf ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} 2>/dev/null || true
+          
+          echo "Test environment cleaned up"
