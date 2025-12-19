@@ -23,9 +23,9 @@ jobs:
           
           # Build images from checked out PR code with unique tags
           PR_TAG="pr-${{ github.run_id }}"
-          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ github.workspace }}/client
-          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ github.workspace }}/server
-          docker build -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ github.workspace }}/nginx
+          docker build -f client/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-frontend:$PR_TAG ${{ github.workspace }}
+          docker build -f server/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-backend:$PR_TAG ${{ github.workspace }}
+          docker build -f nginx/Dockerfile -t ghcr.io/ets-cfuhrman-pfe/evaluetonsavoir-preprod-router:$PR_TAG ${{ github.workspace }}
           
           # Create override file to use PR images
           cat > docker-compose.override.yml << EOF
