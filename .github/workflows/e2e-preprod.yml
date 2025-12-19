@@ -42,6 +42,9 @@ jobs:
           # Copy PR code to test directory
           cp -r ${{ github.workspace }}/. $TEST_DIR/
           
+          # Remove hardcoded container names to avoid conflicts with existing preprod
+          sed -i '/container_name:/d' $TEST_DIR/docker-compose.yaml
+          
           # Copy production config files (auth, etc.) if they exist
           if [ -f "${{ env.PREPROD_PATH }}/server/auth_config.json" ]; then
             cp ${{ env.PREPROD_PATH }}/server/auth_config.json $TEST_DIR/server/auth_config.json
