@@ -87,7 +87,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             // Take screenshot for debugging
             await teacherPage.screenshot({ path: 'step2-before-room-selection.png' });
             
-            // Log page content for debugging
+            // Log page info for debugging
             const pageTitle = await teacherPage.title();
             console.log('Page title:', pageTitle);
             const pageUrl = await teacherPage.url();
@@ -95,35 +95,58 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             
             try {
                 // Try multiple selectors for the room dropdown
-                // 1. Try data-testid first (most reliable)
-                // 2. Fallback to role="combobox"
-                // 3. Fallback to text-based search
+                // MUI Select renders a div with role="combobox" or we can find it by id
                 
-                let roomDropdown = teacherPage.locator('[data-testid="room-select"]');
-                let dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                // First, check if the room select container exists
+                const roomSelectContainer = teacherPage.locator('[data-testid="room-select-container"]');
+                const containerVisible = await roomSelectContainer.isVisible({ timeout: 5000 }).catch(() => false);
+                console.log('Room select container visible:', containerVisible);
+                
+                // Try to find the clickable select element using multiple approaches
+                let roomDropdown;
+                let dropdownVisible = false;
+                
+                // Approach 1: Find by id
+                roomDropdown = teacherPage.locator('#room-select');
+                dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                console.log('Selector #room-select visible:', dropdownVisible);
                 
                 if (!dropdownVisible) {
-                    console.log('data-testid selector not found, trying role="combobox"...');
-                    roomDropdown = teacherPage.locator('[role="combobox"]').first();
-                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                    // Approach 2: Find by data-testid on display props
+                    roomDropdown = teacherPage.locator('[data-testid="room-select-display"]');
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector [data-testid="room-select-display"] visible:', dropdownVisible);
                 }
                 
                 if (!dropdownVisible) {
-                    console.log('role="combobox" not found, trying MuiSelect-select...');
+                    // Approach 3: Find within container
+                    roomDropdown = roomSelectContainer.locator('.MuiSelect-select');
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector .MuiSelect-select in container visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    // Approach 4: Find any MuiSelect-select on page
                     roomDropdown = teacherPage.locator('.MuiSelect-select').first();
-                    dropdownVisible = await roomDropdown.isVisible({ timeout: 3000 }).catch(() => false);
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector .MuiSelect-select (first) visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    // Approach 5: Try role="combobox"
+                    roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector [role="combobox"] visible:', dropdownVisible);
                 }
                 
                 if (!dropdownVisible) {
                     console.log('WARNING: Room dropdown not found on page!');
                     // Take a screenshot to debug
                     await teacherPage.screenshot({ path: 'step2-dropdown-not-found.png' });
-                    // Log the page HTML for debugging
+                    // Log more HTML for debugging
                     const bodyHTML = await teacherPage.locator('body').innerHTML();
-                    console.log('Page body contains:', bodyHTML.substring(0, 500));
+                    console.log('Page body contains:', bodyHTML.substring(0, 1000));
                 } else {
-                    await roomDropdown.waitFor({ state: 'visible', timeout: 5000 });
-                    
                     // Log the current state for debugging
                     const dropdownText = await roomDropdown.textContent();
                     console.log('Dropdown current text:', dropdownText);

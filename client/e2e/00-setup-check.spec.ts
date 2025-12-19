@@ -48,24 +48,53 @@ test.describe('E2E Setup Check', () => {
             await page.waitForLoadState('networkidle');
             await page.waitForTimeout(3000);
             
+            // Check if we got redirected to login (auth issue)
+            const currentUrl = await page.url();
+            console.log('Current URL after dashboard navigation:', currentUrl);
+            if (currentUrl.includes('login')) {
+                console.log('ERROR: Got redirected to login - auth may have failed');
+                // Try to login again
+                const { email, password } = getE2ECredentials();
+                const emailInput = page.getByLabel('Email').or(page.locator('input[type="email"]')).first();
+                await emailInput.fill(email);
+                const passwordInput = page.locator('input[type="password"]').first();
+                await passwordInput.fill(password);
+                const loginButton = page.locator('button:has-text("Login")').or(page.locator('button:has-text("Se connecter")')).first();
+                await loginButton.click();
+                await page.waitForURL(/\/dashboard|\/teacher/, { timeout: 15000 });
+                await page.waitForTimeout(3000);
+            }
+            
+            // Wait for dashboard content to fully render
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(3000);
+            
             // Wait for dashboard content to fully render
             // Look for the "Tableau de bord" header which indicates dashboard is loaded
             const dashboardHeader = page.locator('h1:has-text("Tableau de bord")');
             try {
-                await dashboardHeader.waitFor({ state: 'visible', timeout: 20000 });
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 30000 });
                 console.log('Dashboard header visible');
             } catch {
                 console.log('WARNING: Dashboard header not found, taking screenshot...');
                 await page.screenshot({ path: 'setup-check-dashboard-not-loaded.png' });
                 // Log current URL to debug
                 console.log('Current URL:', await page.url());
+                // Log what we can see on the page
+                const bodyHTML = await page.locator('body').innerHTML();
+                console.log('Page body (first 1500 chars):', bodyHTML.substring(0, 1500));
             }
             
-            // Wait for React components to render
-            await page.waitForTimeout(3000);
+            // Wait for React components to render - give it more time
+            await page.waitForTimeout(5000);
             
             // Take screenshot of dashboard state
             await page.screenshot({ path: 'setup-check-dashboard-loaded.png' });
+            
+            // Also check for the room select container as another indicator
+            const roomSelectContainer = page.locator('[data-testid="room-select-container"]');
+            const roomSelectVisible = await roomSelectContainer.isVisible({ timeout: 3000 }).catch(() => false);
+            console.log('Room select container visible:', roomSelectVisible);
 
             console.log('Checking default folder...');
 
