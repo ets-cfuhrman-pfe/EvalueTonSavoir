@@ -1217,16 +1217,11 @@ function addFolderTitleToQuizzes(folderQuizzes: string | QuizType[], folderName:
 }
 
 // Helper function for alphabetical sorting
-function alphabeticalSort<T extends { title: string }>(items: T[]): T[] {
+function alphabeticalRoomSort<T extends { title: string }>(items: T[]): T[] {
     return items.sort((a, b) => a.title.localeCompare(b.title));
-}
-
-// Helper function to sort folders alphabetically
-function sortFolders(folders: FolderType[]): FolderType[] {
-    return alphabeticalSort(folders);
 }
 
 // Helper function to sort rooms alphabetically
 function sortRooms(rooms: RoomType[]): RoomType[] {
-    return alphabeticalSort(rooms);
+    return alphabeticalRoomSort(rooms);
 }
