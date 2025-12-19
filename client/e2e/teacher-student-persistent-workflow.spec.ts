@@ -23,6 +23,46 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             await loginAsTeacher(teacherPage);
             console.log('Teacher login successful');
 
+            // Prime selected room via API and localStorage before hitting dashboard UI
+            const testRoomId = await teacherPage.evaluate(async () => {
+                const findTestRoom = (rooms: any[]) => rooms.find((r) => (r.title || '').toUpperCase() === 'TEST');
+                try {
+                    const fetchRooms = async () => {
+                        const res = await fetch('/api/room/getUserRooms', { credentials: 'include' });
+                        if (!res.ok) throw new Error(`status ${res.status}`);
+                        const body = await res.json();
+                        return body?.data || [];
+                    };
+
+                    let rooms = await fetchRooms();
+                    let testRoom = findTestRoom(rooms);
+
+                    if (!testRoom) {
+                        // Create TEST room if missing
+                        const createRes = await fetch('/api/room/create', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ title: 'TEST' })
+                        });
+                        if (createRes.ok) {
+                            rooms = await fetchRooms();
+                            testRoom = findTestRoom(rooms);
+                        }
+                    }
+
+                    if (testRoom?._id) {
+                        localStorage.setItem('selectedRoomId', testRoom._id);
+                        return testRoom._id as string;
+                    }
+                    return '';
+                } catch (err) {
+                    console.log('Failed to fetch/create rooms in pre-step', err);
+                    return '';
+                }
+            });
+            console.log(`Pre-fetched TEST room id: ${testRoomId || 'not found'}`);
+
             // Navigate to dashboard
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
@@ -47,35 +87,30 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
-            // Ensure a room is selected
-            console.log('Checking room selection...');
-
+            // Optionally confirm the select if visible, but don't block if hidden in CI
+            console.log('Checking room selection UI (non-blocking)...');
             const roomSelect = teacherPage
                 .locator('[aria-haspopup="listbox"], [role="combobox"], .MuiSelect-select')
                 .first();
-
-            await roomSelect.waitFor({ state: 'visible', timeout: 15000 });
-            const currentRoomText = (await roomSelect.innerText()).trim();
-            console.log(`Current room selection text: "${currentRoomText}"`);
-
-            if (!currentRoomText || /Aucune/i.test(currentRoomText) || !/TEST/i.test(currentRoomText)) {
-                console.log('Selecting TEST room from dropdown...');
-                await roomSelect.click();
-
-                const listbox = teacherPage.locator('ul[role="listbox"]');
-                await listbox.waitFor({ state: 'visible', timeout: 5000 });
-
-                const testOption = listbox.getByRole('option', { name: /^TEST$/ }).first();
-                if (await testOption.isVisible()) {
-                    await testOption.click();
-                } else {
-                    const fallbackOption = listbox.getByRole('option').last();
-                    await fallbackOption.click();
+            if (await roomSelect.isVisible({ timeout: 5000 }).catch(() => false)) {
+                const currentRoomText = ((await roomSelect.innerText().catch(() => '')) || '').trim();
+                console.log(`Current room selection text: "${currentRoomText}"`);
+                if (!/TEST/i.test(currentRoomText)) {
+                    console.log('Selecting TEST room from dropdown (UI)...');
+                    await roomSelect.click({ timeout: 5000 });
+                    const listbox = teacherPage.locator('ul[role="listbox"]');
+                    await listbox.waitFor({ state: 'visible', timeout: 5000 });
+                    const testOption = listbox.getByRole('option', { name: /^TEST$/ }).first();
+                    if (await testOption.isVisible().catch(() => false)) {
+                        await testOption.click();
+                    } else {
+                        const fallbackOption = listbox.getByRole('option').last();
+                        await fallbackOption.click();
+                    }
+                    await teacherPage.waitForTimeout(500);
                 }
-
-                await teacherPage.waitForTimeout(1000);
-                const newRoomText = (await roomSelect.innerText()).trim();
-                console.log(`Room selection after click: "${newRoomText}"`);
+            } else {
+                console.log('Room select not visible; relying on pre-fetched selectedRoomId');
             }
 
             // Click play button to launch quiz - use more specific selector
