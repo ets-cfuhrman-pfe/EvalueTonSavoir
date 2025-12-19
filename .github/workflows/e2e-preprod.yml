@@ -45,6 +45,18 @@ jobs:
           # Remove hardcoded container names to avoid conflicts with existing preprod
           sed -i '/container_name:/d' $TEST_DIR/docker-compose.yaml
           
+          # Use different ports to avoid conflicts with existing preprod services
+          # Change nginx port from 80 to 10080
+          sed -i 's/"80:80"/"10080:80"/g' $TEST_DIR/docker-compose.yaml
+          # Change backend port from 3000 to 13000
+          sed -i 's/"3000:3000"/"13000:3000"/g' $TEST_DIR/docker-compose.yaml
+          # Change frontend port from 5173 to 15173
+          sed -i 's/"5173:5173"/"15173:5173"/g' $TEST_DIR/docker-compose.yaml
+          # Change keycloak port from 8080 to 18080
+          sed -i 's/"8080:8080"/"18080:8080"/g' $TEST_DIR/docker-compose.yaml
+          # Change MongoDB port from 27017 to 17017 (keep it for debugging if needed)
+          sed -i 's/"27017:27017"/"17017:27017"/g' $TEST_DIR/docker-compose.yaml
+          
           # Copy production config files (auth, etc.) if they exist
           if [ -f "${{ env.PREPROD_PATH }}/server/auth_config.json" ]; then
             cp ${{ env.PREPROD_PATH }}/server/auth_config.json $TEST_DIR/server/auth_config.json
@@ -55,9 +67,13 @@ jobs:
           docker compose -p e2e-test-${{ github.run_id }} build --no-cache
           docker compose -p e2e-test-${{ github.run_id }} up -d
           
-          # Store test directory path for later steps
+          # Store test directory path and ports for later steps
           echo "TEST_DIR=$TEST_DIR" >> $GITHUB_ENV
           echo "TEST_PROJECT=e2e-test-${{ github.run_id }}" >> $GITHUB_ENV
+          echo "TEST_NGINX_PORT=10080" >> $GITHUB_ENV
+          echo "TEST_BACKEND_PORT=13000" >> $GITHUB_ENV
+          echo "TEST_FRONTEND_PORT=15173" >> $GITHUB_ENV
+          echo "TEST_KEYCLOAK_PORT=18080" >> $GITHUB_ENV
           
           echo "Test environment created at $TEST_DIR"
         
