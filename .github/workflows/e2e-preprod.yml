@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: repo
+          ref: ${{ github.head_ref }}
       
       - name: Restart preprod services with new code
         run: |
