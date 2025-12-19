@@ -49,52 +49,33 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
 
             // Ensure a room is selected
             console.log('Checking room selection...');
-            
-            // Find the label first, then the sibling/parent control
-            // Using regex for text to be robust against whitespace
-            const label = teacherPage.locator('span').filter({ hasText: /Salle active/ }).first();
-            // Go to parent div, then find the select button
-            let roomSelect = label.locator('..').locator('[role="button"], [role="combobox"]').first();
-            
-            // Fallback: try generic class if specific structure fails
-            if (!await roomSelect.isVisible()) {
-                 console.log('Specific room selector failed, trying generic .MuiSelect-select');
-                 roomSelect = teacherPage.locator('.MuiSelect-select').first();
-            }
-            
-            if (await roomSelect.isVisible()) {
-                const selectedText = await roomSelect.textContent();
-                console.log(`Current room selection: "${selectedText}"`);
-                
-                if (selectedText?.includes('Aucune') || !selectedText) {
-                    console.log('No room selected. Attempting to select "TEST"...');
-                    await roomSelect.click();
-                    
-                    // Wait for dropdown
-                    const dropdown = teacherPage.locator('ul[role="listbox"]');
-                    await dropdown.waitFor({ state: 'visible', timeout: 5000 });
-                    
-                    // Try to find TEST
-                    const testOption = dropdown.locator('li').filter({ hasText: 'TEST' }).first();
-                    if (await testOption.isVisible()) {
-                        await testOption.click();
-                        console.log('Selected "TEST" room');
-                    } else {
-                        // Select the last option (usually the most recently created)
-                        const options = dropdown.locator('li');
-                        const count = await options.count();
-                        if (count > 1) { // > 1 because first might be "Aucune"
-                            await options.last().click();
-                            console.log('Selected last available room');
-                        } else {
-                            console.log('No rooms available to select!');
-                            throw new Error('No rooms available. Setup check failed to create a room?');
-                        }
-                    }
-                    await teacherPage.waitForTimeout(1000);
+
+            const roomSelect = teacherPage
+                .locator('[aria-haspopup="listbox"], [role="combobox"], .MuiSelect-select')
+                .first();
+
+            await roomSelect.waitFor({ state: 'visible', timeout: 15000 });
+            const currentRoomText = (await roomSelect.innerText()).trim();
+            console.log(`Current room selection text: "${currentRoomText}"`);
+
+            if (!currentRoomText || /Aucune/i.test(currentRoomText) || !/TEST/i.test(currentRoomText)) {
+                console.log('Selecting TEST room from dropdown...');
+                await roomSelect.click();
+
+                const listbox = teacherPage.locator('ul[role="listbox"]');
+                await listbox.waitFor({ state: 'visible', timeout: 5000 });
+
+                const testOption = listbox.getByRole('option', { name: /^TEST$/ }).first();
+                if (await testOption.isVisible()) {
+                    await testOption.click();
+                } else {
+                    const fallbackOption = listbox.getByRole('option').last();
+                    await fallbackOption.click();
                 }
-            } else {
-                console.log('Could not find room selector!');
+
+                await teacherPage.waitForTimeout(1000);
+                const newRoomText = (await roomSelect.innerText()).trim();
+                console.log(`Room selection after click: "${newRoomText}"`);
             }
 
             // Click play button to launch quiz - use more specific selector
@@ -117,65 +98,33 @@ test.describe('Teacher-Student Persistent Quiz Workflow', () => {
                 }
             }
             
+            await teacherPage.waitForURL(/teacher\/manage-room\//, { timeout: 20000 });
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(5000); // Increased wait for manage room page to load
-        
-            // Click "Lancer le quiz" button
-            // Wait for the page to be ready and button to appear
             console.log('Current URL after play click:', await teacherPage.url());
-            
-            // Improved wait strategy with polling and robust selectors
-            let launchQuizButton = null;
-            const startTime = Date.now();
-            const timeout = 30000;
-            
-            console.log('Waiting for launch button...');
-            
-            while (Date.now() - startTime < timeout) {
-                // Try specific text first - case insensitive regex
-                const specificButton = teacherPage.locator('button').filter({ hasText: /Lancer( le quiz)?/i }).first();
-                if (await specificButton.isVisible()) {
-                    launchQuizButton = specificButton;
-                    console.log('Found launch button by text');
-                    break;
-                }
-                
-                // Try submit button as fallback
-                const submitButton = teacherPage.locator('button[type="submit"]').first();
-                if (await submitButton.isVisible()) {
-                    const text = await submitButton.textContent();
-                    // Verify it's not a cancel button or something else
-                    if (text && !text.toLowerCase().includes('annuler') && !text.toLowerCase().includes('cancel')) {
-                        launchQuizButton = submitButton;
-                        console.log(`Found launch button by type="submit" (text: ${text})`);
-                        break;
-                    }
-                }
-                
-                await teacherPage.waitForTimeout(1000);
+
+            // Ensure room selection persists on manage-room page
+            const manageRoomSelect = teacherPage.locator('#roomSelect');
+            await manageRoomSelect.waitFor({ state: 'visible', timeout: 10000 });
+            const manageRoomValue = await manageRoomSelect.inputValue();
+            if (!manageRoomValue) {
+                console.log('No room selected in manage-room page, selecting TEST...');
+                await manageRoomSelect.selectOption({ label: 'TEST' }).catch(async () => {
+                    const options = manageRoomSelect.locator('option');
+                    const optionValues = await options.allInnerTexts();
+                    console.log('Available room options:', optionValues.join(', '));
+                    await manageRoomSelect.selectOption({ index: 1 });
+                });
             }
-            
-            if (launchQuizButton) {
-                // Use force click for Firefox compatibility if needed
-                try {
-                    await launchQuizButton.click({ timeout: 5000 });
-                } catch {
-                    console.log('Native click failed, trying force click for Firefox compatibility...');
-                    await launchQuizButton.click({ force: true, timeout: 5000 });
-                }
-                console.log('Clicked "Lancer le quiz" - Quiz is now launching');
-                await teacherPage.waitForLoadState('networkidle');
-                await teacherPage.waitForTimeout(5000);
-                
-                const finalUrl = await teacherPage.url();
-                console.log(`Quiz launched, teacher URL: ${finalUrl}`);
-            } else {
-                console.log('Button not found after polling, checking page state...');
-                console.log('Current URL:', await teacherPage.url());
-                const buttons = await teacherPage.locator('button').allTextContents();
-                console.log('Available buttons:', buttons.join(', '));
-                throw new Error('Launch quiz button not found after 30s wait');
-            }
+
+            const launchQuizButton = teacherPage.getByRole('button', { name: /Lancer le quiz/i }).first();
+            await launchQuizButton.waitFor({ state: 'visible', timeout: 10000 });
+            await launchQuizButton.click();
+            console.log('Clicked "Lancer le quiz" - Quiz is now launching');
+
+            await teacherPage.waitForLoadState('networkidle');
+            await teacherPage.waitForTimeout(5000);
+            const finalUrl = await teacherPage.url();
+            console.log(`Quiz launched, teacher URL: ${finalUrl}`);
 
             console.log('STEP 2: Students joining room while teacher stays online...');
             
