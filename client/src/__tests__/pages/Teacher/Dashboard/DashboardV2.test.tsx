@@ -36,11 +36,6 @@ jest.mock('../../../../components/DownloadQuizModal/DownloadQuizModal', () => {
     return <div data-testid={`download-modal-${quiz._id}`}>Download Modal</div>;
   };
 });
-jest.mock('../../../../components/ShareQuizModal/ShareQuizModal', () => {
-  return function MockShareQuizModal({ quiz }: any) {
-    return <div data-testid={`share-modal-${quiz._id}`}>Share Modal</div>;
-  };
-});
 jest.mock('../../../../components/ValidatedTextField/ValidatedTextField', () => {
   return function MockValidatedTextField({ initialValue, onValueChange, label }: any) {
     return (
@@ -506,7 +501,7 @@ describe('DashboardV2 Component', () => {
         fireEvent.click(createQuizButton);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz-v2/new');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/new');
     });
 
     test('should navigate to quiz edit page when clicking edit button', async () => {
@@ -517,7 +512,7 @@ describe('DashboardV2 Component', () => {
         fireEvent.click(editButtons[0]);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz-v2/quiz1');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/quiz1');
     });
 
     test('should launch quiz', async () => {
@@ -528,7 +523,7 @@ describe('DashboardV2 Component', () => {
         fireEvent.click(launchButtons[0]); // Click the first launch button
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith('/teacher/manage-room-v2/quiz1');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/manage-room/quiz1');
     });
 
 

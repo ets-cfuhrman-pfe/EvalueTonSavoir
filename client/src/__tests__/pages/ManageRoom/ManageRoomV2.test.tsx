@@ -51,15 +51,6 @@ jest.mock('src/components/LiveResults/LiveResultsV2', () => {
     );
   };
 });
-jest.mock('src/components/QuestionsDisplay/QuestionDisplay', () => {
-  return function MockQuestionDisplay({ question }: any) {
-    return (
-      <div data-testid="question-display">
-        Question: {question?.stem || 'No question'}
-      </div>
-    );
-  };
-});
 jest.mock('src/components/QRCodeModal', () => {
   return function MockQRCodeModal({ open, onClose, roomName, roomUrl }: any) {
     return open ? (
@@ -215,7 +206,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz quiz1 n\'a pas été trouvé')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
 
@@ -226,7 +217,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz n\'a pas été spécifié')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
 
@@ -561,7 +552,7 @@ describe('ManageRoomV2 Component', () => {
         expect(returnButton).toBeInTheDocument();
         
         fireEvent.click(returnButton);
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
 

@@ -284,7 +284,7 @@ public async login(email: string, password: string): Promise<any> {
         if (result.status === 200) {
             this.saveToken(result.data.token);
             this.saveUsername(result.data.username);
-            globalThis.location.href = '/teacher/dashboard-v2';
+            globalThis.location.href = '/teacher/dashboard';
             return true;
         } else {
             throw new Error(`La connexion a échoué. Statut: ${result.status}`);

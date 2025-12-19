@@ -173,11 +173,11 @@ const DashboardV2: React.FC = () => {
     };
 
     const handleCreateQuiz = () => {
-        navigate('/teacher/editor-quiz-v2/new');
+        navigate('/teacher/editor-quiz/new');
     };
 
     const handleEditQuiz = (quiz: QuizType) => {
-        navigate(`/teacher/editor-quiz-v2/${quiz._id}`);
+        navigate(`/teacher/editor-quiz/${quiz._id}`);
     };
 
     const handleLancerQuiz = (quiz: QuizType) => {
@@ -187,7 +187,7 @@ const DashboardV2: React.FC = () => {
         }
         // Store selected room for the ManageRoomV2 component
         localStorage.setItem('selectedRoomId', selectedRoomId);
-        navigate(`/teacher/manage-room-v2/${quiz._id}`);
+        navigate(`/teacher/manage-room/${quiz._id}`);
     };
 
     const handleCreateRoom = async () => {
@@ -527,10 +527,13 @@ const DashboardV2: React.FC = () => {
                             <div>
                                 <h1 className="h3 mb-0 ms-3 text-dark fw-bold">Tableau de bord</h1>
                             </div>
-                            <div className="d-flex align-items-center gap-2 px-4">
+                            <div className="d-flex align-items-center gap-2 px-4" data-testid="room-select-container">
                                 <span className="h5 fw-bold">Salle active :</span>
                                 <FormControl size="small" className="pb-2">
                                     <Select
+                                        id="room-select"
+                                        data-testid="room-select"
+                                        SelectDisplayProps={{ 'data-testid': 'room-select-display' } as React.HTMLAttributes<HTMLDivElement>}
                                         value={selectedRoomId}
                                         onChange={(e) => {
                                             const newRoomId = e.target.value;
@@ -652,6 +655,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Add Folder Button */}
                                         <div className="text-center">
                                             <button
+                                                data-testid="create-folder-btn"
                                                 className="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center"
                                                 onClick={handleCreateFolder}
                                             >
@@ -792,6 +796,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Create Room Section */}
                                         {!showCreateRoom ? (
                                             <button
+                                                data-testid="create-room-btn"
                                                 className="btn btn-outline-primary btn-sm w-100 mb-3 d-flex align-items-center justify-content-center"
                                                 onClick={() => setShowCreateRoom(true)}
                                             >
@@ -804,6 +809,7 @@ const DashboardV2: React.FC = () => {
                                         ) : (
                                             <div className="mb-3">
                                                 <input
+                                                    data-testid="room-name-input"
                                                     type="text"
                                                     className="form-control form-control-sm mb-2"
                                                     placeholder="Nom de la salle"

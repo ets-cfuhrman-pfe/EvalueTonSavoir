@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FolderType } from '../../../Types/FolderType';
-import './share.css';
 import { Button, NativeSelect, Typography, Box } from '@mui/material';
-import ReturnButton from 'src/components/ReturnButton/ReturnButton';
+import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import ApiService from '../../../services/ApiService';
 import SaveIcon from '@mui/icons-material/Save';
 
@@ -22,7 +21,7 @@ const Share: React.FC = () => {
             try {
                 if (!id) {
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
 
@@ -101,7 +100,7 @@ const Share: React.FC = () => {
         return (
             <div className='quizImport'>
                 <div className='importHeader'>
-                    <ReturnButton />
+                    <ReturnButtonV2 />
                     <div className='titleContainer'>
                         <div className='mainTitle'>Quiz déjà existant</div>
                     </div>
@@ -142,7 +141,7 @@ const Share: React.FC = () => {
     return (
         <div className='quizImport'>
             <div className='importHeader'>
-                <ReturnButton />
+                <ReturnButtonV2 />
                 <div className='titleContainer'>
                     <div className='mainTitle'>Importation du Quiz: {quizTitle}</div>
                     <div className='subTitle'>

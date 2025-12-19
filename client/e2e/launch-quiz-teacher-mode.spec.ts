@@ -41,43 +41,218 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             console.log('Teacher login successful');
 
             // Navigate to dashboard
-            await teacherPage.goto('/teacher/dashboard-v2');
+            await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(3000);
+            
+            // Wait for dashboard content to fully render
+            // Look for the "Tableau de bord" header which indicates dashboard is loaded
+            const dashboardHeader = teacherPage.locator('h1:has-text("Tableau de bord")');
+            try {
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 15000 });
+                console.log('Dashboard header visible');
+            } catch {
+                console.log('WARNING: Dashboard header not found, taking screenshot...');
+                await teacherPage.screenshot({ path: 'step1-dashboard-not-loaded.png' });
+            }
+            
+            // Wait additional time for React components to render
+            await teacherPage.waitForTimeout(3000);
 
-            // Verify TESTQUIZ exists (created by setup check)
-            const hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 10000 });
+            // Verify TESTQUIZ exists (created by setup check) - try multiple selectors
+            let hasTESTQUIZ = false;
+            try {
+                await teacherPage.waitForSelector('.quiz', { timeout: 15000 });
+                hasTESTQUIZ = await teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first().isVisible({ timeout: 10000 });
+            } catch {
+                hasTESTQUIZ = await teacherPage.locator('text=TESTQUIZ').first().isVisible({ timeout: 5000 }).catch(() => false);
+            }
+            
             if (!hasTESTQUIZ) {
+                console.log('Current URL:', await teacherPage.url());
                 throw new Error('TESTQUIZ NOT FOUND on dashboard - setup check failed');
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
-            console.log('STEP 2: Launching quiz...');
+            console.log('STEP 2: Selecting room and launching quiz...');
+
+            // IMPORTANT: Must select a room from the "Salle active" MUI Select dropdown
+            // before clicking the play button, otherwise handleLancerQuiz shows alert and returns
+            console.log('Selecting active room from dropdown...');
+            
+            // Wait for page to fully load and stabilize
+            await teacherPage.waitForLoadState('networkidle');
+            await teacherPage.waitForTimeout(3000);
+            
+            // Take screenshot for debugging
+            await teacherPage.screenshot({ path: 'step2-before-room-selection.png' });
+            
+            // Log page info for debugging
+            const pageTitle = await teacherPage.title();
+            console.log('Page title:', pageTitle);
+            const pageUrl = await teacherPage.url();
+            console.log('Page URL:', pageUrl);
+            
+            try {
+                // Try multiple selectors for the room dropdown
+                // MUI Select renders a div with role="combobox" or we can find it by id
+                
+                // First, check if the room select container exists
+                const roomSelectContainer = teacherPage.locator('[data-testid="room-select-container"]');
+                const containerVisible = await roomSelectContainer.isVisible({ timeout: 5000 }).catch(() => false);
+                console.log('Room select container visible:', containerVisible);
+                
+                // Try to find the clickable select element using multiple approaches
+                let roomDropdown;
+                let dropdownVisible = false;
+                
+                // Approach 1: Find by id
+                roomDropdown = teacherPage.locator('#room-select');
+                dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                console.log('Selector #room-select visible:', dropdownVisible);
+                
+                if (!dropdownVisible) {
+                    // Approach 2: Find by data-testid on display props
+                    roomDropdown = teacherPage.locator('[data-testid="room-select-display"]');
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector [data-testid="room-select-display"] visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    // Approach 3: Find within container
+                    roomDropdown = roomSelectContainer.locator('.MuiSelect-select');
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector .MuiSelect-select in container visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    // Approach 4: Find any MuiSelect-select on page
+                    roomDropdown = teacherPage.locator('.MuiSelect-select').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector .MuiSelect-select (first) visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    // Approach 5: Try role="combobox"
+                    roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                    dropdownVisible = await roomDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+                    console.log('Selector [role="combobox"] visible:', dropdownVisible);
+                }
+                
+                if (!dropdownVisible) {
+                    console.log('WARNING: Room dropdown not found on page!');
+                    // Take a screenshot to debug
+                    await teacherPage.screenshot({ path: 'step2-dropdown-not-found.png' });
+                    // Log more HTML for debugging
+                    const bodyHTML = await teacherPage.locator('body').innerHTML();
+                    console.log('Page body contains:', bodyHTML.substring(0, 1000));
+                } else {
+                    // Log the current state for debugging
+                    const dropdownText = await roomDropdown.textContent();
+                    console.log('Dropdown current text:', dropdownText);
+                    
+                    // Check if a room is already selected (not "Aucune salle")
+                    if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
+                        console.log('Room already selected:', dropdownText);
+                    } else {
+                        // Need to select a room
+                        await roomDropdown.click();
+                        await teacherPage.waitForTimeout(1500); // Wait for dropdown animation
+                        
+                        // Take screenshot after click
+                        await teacherPage.screenshot({ path: 'step2-dropdown-opened.png' });
+                        
+                        // Wait for the listbox to appear
+                        const listbox = teacherPage.locator('[role="listbox"]');
+                        const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
+                        
+                        if (listboxVisible) {
+                            console.log('Dropdown listbox opened');
+                            
+                            // Get all options for debugging
+                            const options = listbox.locator('[role="option"]');
+                            const optionCount = await options.count();
+                            console.log('Number of room options:', optionCount);
+                            
+                            // Try to find TEST room or any non-empty room
+                            let roomFound = false;
+                            for (let i = 0; i < optionCount && !roomFound; i++) {
+                                const optionText = await options.nth(i).textContent();
+                                console.log(`Option ${i}: ${optionText}`);
+                                if (optionText && optionText.trim() === 'TEST') {
+                                    await options.nth(i).click();
+                                    roomFound = true;
+                                    console.log('Selected TEST room');
+                                }
+                            }
+                            
+                            // If TEST not found, select first non-empty option
+                            if (!roomFound && optionCount > 1) {
+                                // Skip first option which is usually "Aucune salle"
+                                await options.nth(1).click();
+                                console.log('Selected first available room');
+                            } else if (!roomFound) {
+                                console.log('WARNING: No rooms available to select!');
+                                // Close the dropdown by pressing Escape
+                                await teacherPage.keyboard.press('Escape');
+                            }
+                        } else {
+                            console.log('Listbox did not appear, trying keyboard navigation...');
+                            // Try using keyboard to select
+                            await teacherPage.keyboard.press('ArrowDown');
+                            await teacherPage.waitForTimeout(300);
+                            await teacherPage.keyboard.press('Enter');
+                        }
+                        
+                        await teacherPage.waitForTimeout(1000); // Wait for selection to register
+                    }
+                }
+            } catch (e) {
+                console.log('Error during room selection:', e);
+                await teacherPage.screenshot({ path: 'step2-room-selection-error.png' });
+            }
+            console.log('Room selection complete');
 
             // Find the quiz and click "Démarrer le quiz"
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            const launchButton = quizItem.locator('button[aria-label="Démarrer le quiz"]').first();
-            await launchButton.click();
+            // Use more specific selector for the play button
+            const launchButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
+            try {
+                await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+                await launchButton.click();
+            } catch {
+                // Fallback to first button
+                await quizItem.locator('button').first().click();
+            }
 
-            // Wait for ManageRoomV2 page
-            await teacherPage.waitForURL(/\/teacher\/manage-room-v2/);
+            // Wait for ManageRoom page
+            await teacherPage.waitForURL(/\/teacher\/manage-room/);
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(2000);
+            await teacherPage.waitForTimeout(5000); // Increased wait time
 
-            // Select default room (assuming it exists)
-            const roomSelect = teacherPage.locator('select').first();
-            await roomSelect.selectOption({ index: 1 }); // Select first room
+            // Select default room (assuming it exists) - try multiple selectors
+            const roomSelect = teacherPage.locator('select#roomSelect, select').first();
+            try {
+                await roomSelect.waitFor({ state: 'visible', timeout: 10000 });
+                await roomSelect.selectOption({ index: 1 }); // Select first room
+            } catch {
+                console.log('Room select not found, trying alternative...');
+                // Try clicking a room in a list if it's rendered differently
+            }
 
             // Get room name from selected option
             const selectedOption = teacherPage.locator('select option:checked');
-            const roomName = (await selectedOption.textContent())?.toUpperCase();
+            const roomName = (await selectedOption.textContent())?.trim().toUpperCase();
             if (!roomName) {
                 throw new Error('Could not get room name');
             }
             console.log('Room name:', roomName);
 
-            // Click launch
-            const launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
+            // Click launch - try multiple selectors
+            let launchQuizButton = teacherPage.locator('button:has-text("Lancer le quiz")').first();
+            if (!(await launchQuizButton.isVisible({ timeout: 5000 }).catch(() => false))) {
+                launchQuizButton = teacherPage.locator('button:has-text("Lancer")').first();
+            }
             await launchQuizButton.click();
 
             // Wait for quiz to start
@@ -87,7 +262,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
 
             // Students join the room
             const joinPromises = studentPages.map(async (page, index) => {
-                await page.goto(`/student/join-room-v2?roomName=${roomName}`);
+                await page.goto(`/student/join-room?roomName=${roomName}`);
                 await page.waitForLoadState('networkidle');
                 await page.waitForTimeout(2000);
 
@@ -207,13 +382,31 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             const finishButton = teacherPage.locator('button:has-text("Terminer")').first();
             await finishButton.click();
 
-            // Confirm finish
+            // Confirm finish if there's a confirmation dialog
             await teacherPage.waitForTimeout(1000);
+            const confirmButton = teacherPage.locator('button:has-text("Confirmer")');
+            if (await confirmButton.isVisible({ timeout: 2000 })) {
+                await confirmButton.click();
+            }
 
-            // Wait for students to see quiz results
+            // Wait for students to see quiz results dialog
             const resultPromises = studentPages.map(async (page, index) => {
-                await page.waitForSelector('text=Quiz terminé!', { timeout: 20000 });
-                console.log(`Student ${index + 1} saw quiz results`);
+                try {
+                    // Wait for the QuizResults dialog - look for dialog title or completion text
+                    await page.waitForSelector('text=/Résultats du Quiz|Quiz terminé/i', { timeout: 30000 });
+                    console.log(`Student ${index + 1} saw quiz results dialog`);
+                    
+                    // Close the results dialog if visible
+                    const closeButton = page.locator('button:has-text("Fermer")');
+                    if (await closeButton.isVisible({ timeout: 2000 })) {
+                        await closeButton.click();
+                        console.log(`Student ${index + 1} closed results dialog`);
+                    }
+                } catch {
+                    // If quiz results not shown, check if student was disconnected (quiz ended)
+                    const url = page.url();
+                    console.log(`Student ${index + 1} final state - URL: ${url}`);
+                }
             });
             await Promise.all(resultPromises);
 

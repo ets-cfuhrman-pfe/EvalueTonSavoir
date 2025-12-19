@@ -129,7 +129,7 @@ const EditorQuizV2: React.FC = () => {
                 if (!quiz || typeof quiz === 'string') {
                     window.alert(`Une erreur est survenue.\n Le quiz ${id} n'a pas été trouvé\nVeuillez réessayer plus tard`)
                     console.error('Quiz not found for id:', id);
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
                 setQuiz(quiz as QuizType);
@@ -158,7 +158,7 @@ const EditorQuizV2: React.FC = () => {
             } catch (error) {
                 window.alert(`Une erreur est survenue.\n Veuillez réessayer plus tard`)
                 console.error('Error fetching quiz:', error);
-                navigate('/teacher/dashboard-v2');
+                navigate('/teacher/dashboard');
             }
         };
 
@@ -223,7 +223,7 @@ const EditorQuizV2: React.FC = () => {
                         setQuiz(createdQuiz);
                         setIsNewQuiz(false);
                         // Update URL without causing a page reload
-                        navigate(`/teacher/editor-quiz-v2/${quizId}`, { replace: true });
+                        navigate(`/teacher/editor-quiz/${quizId}`, { replace: true });
                         setSaveNotification({
                             open: true,
                             message: 'Quiz créé avec succès !',
@@ -319,7 +319,7 @@ const EditorQuizV2: React.FC = () => {
                     });
 
                     // Navigate after successful save
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                 }
             } else if (quiz) {
                 const updateResult = await ApiService.updateQuiz(quiz._id, quizTitle, filteredValue);
@@ -346,7 +346,7 @@ const EditorQuizV2: React.FC = () => {
                     });
 
                     // Navigate after successful save
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                 }
             }
         } catch (error) {
@@ -423,7 +423,7 @@ const EditorQuizV2: React.FC = () => {
                                 <ReturnButtonV2
                                     hasUnsavedChanges={() => hasUnsavedChanges}
                                     onSaveAndQuit={handleQuizSaveAndExit}
-                                    onDontSaveAndQuit={() => navigate('/teacher/dashboard-v2')}
+                                    onDontSaveAndQuit={() => navigate('/teacher/dashboard')}
                                 />
                             </div>
                         </div>

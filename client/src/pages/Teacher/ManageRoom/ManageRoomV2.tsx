@@ -33,7 +33,6 @@ import {
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
-import './manageRoom.css';
 
 const isStudentConnected = (student: Student) => student.isConnected !== false;
 
@@ -64,7 +63,7 @@ const ManageRoomV2: React.FC = () => {
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
 
-    const roomUrl = `${window.location.origin}/student/join-room-v2?roomName=${previewRoomName || formattedRoomName}`;
+    const roomUrl = `${window.location.origin}/student/join-room?roomName=${previewRoomName || formattedRoomName}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(roomUrl).then(() => {
@@ -144,7 +143,7 @@ const ManageRoomV2: React.FC = () => {
                         `Une erreur est survenue.\n Le quiz ${quizId} n'a pas été trouvé\nVeuillez réessayer plus tard`
                     );
                     console.error('Quiz not found for id:', quizId);
-                    navigate('/teacher/dashboard-v2');
+                    navigate('/teacher/dashboard');
                     return;
                 }
 
@@ -157,7 +156,7 @@ const ManageRoomV2: React.FC = () => {
                 `Une erreur est survenue.\n Le quiz n'a pas été spécifié\nVeuillez réessayer plus tard`
             );
             console.error('Quiz ID not provided');
-            navigate('/teacher/dashboard-v2');
+            navigate('/teacher/dashboard');
         }
     }, [quizId]);
 
@@ -450,7 +449,7 @@ const ManageRoomV2: React.FC = () => {
     const handleFinishConfirm = () => {
         setShowFinishConfirm(false);
         disconnectWebSocket();
-        navigate('/teacher/dashboard-v2');
+        navigate('/teacher/dashboard');
     };
 
     const handleFinishCancel = () => {
@@ -459,7 +458,7 @@ const ManageRoomV2: React.FC = () => {
 
     const handleReturn = () => {
         disconnectWebSocket();
-        navigate('/teacher/dashboard-v2');
+        navigate('/teacher/dashboard');
     };
 
     const handleLaunchQuiz = () => {

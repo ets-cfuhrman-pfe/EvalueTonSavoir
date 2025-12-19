@@ -1,6 +1,5 @@
 import React from 'react';
 import { ENV_VARIABLES } from '../../../../constants';
-import '../css/buttonAuth.css';
 
 interface ButtonAuthContainerProps {
     providerName: string;

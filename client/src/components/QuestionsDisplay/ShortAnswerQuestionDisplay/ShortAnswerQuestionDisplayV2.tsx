@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { ShortAnswerQuestion } from 'gift-pegjs';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import ValidatedTextField from '../../ValidatedTextField/ValidatedTextField';
 
 const noop = () => {};
