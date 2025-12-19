@@ -33,7 +33,8 @@ class AuthConfig {
       if (process.env.NODE_ENV === 'test') {
         throw new Error(`Test configuration loading failed: ${error.message}`);
       }
-      throw error;
+      // Do not throw in other environments to allow startup without config
+      return this.config;
     }
     return this.config
   }
