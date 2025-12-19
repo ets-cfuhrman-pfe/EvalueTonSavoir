@@ -71,13 +71,20 @@ test.describe('Room Persistence', () => {
             // ========================================
             console.log('STEP 3: Launching quiz...');
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            const launchButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
+            
+            // The play button is an IconButton with rounded-circle class containing PlayArrow icon
+            const launchButton = quizItem.locator('button.rounded-circle, button:has(svg[data-testid="PlayArrowIcon"])').first();
             
             try {
                 await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+                console.log('Launch button found, clicking...');
                 await launchButton.click();
-            } catch {
-                await quizItem.locator('button').first().click();
+            } catch (e) {
+                console.log('Primary selector failed, trying fallback...');
+                // Fallback: first button in the quiz item (should be the play button)
+                const fallbackButton = quizItem.locator('button').first();
+                await fallbackButton.waitFor({ state: 'visible', timeout: 5000 });
+                await fallbackButton.click();
             }
 
             // Wait for ManageRoom page
@@ -412,7 +419,10 @@ test.describe('Room Persistence', () => {
                 throw new Error('TESTQUIZ not found');
             }
 
-            const launchButton = quizItem.locator('button').first();
+            // The play button is an IconButton with rounded-circle class
+            const launchButton = quizItem.locator('button.rounded-circle, button:has(svg)').first();
+            await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+            console.log('Launch button found, clicking...');
             await launchButton.click();
 
             await teacherPage.waitForURL(/\/teacher\/manage-room/);
