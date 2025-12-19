@@ -40,10 +40,10 @@ jobs:
           docker compose down || true
           
           # Backup current code
-          sudo cp -r ${{ env.PREPROD_PATH }} ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} || true
+          cp -r ${{ env.PREPROD_PATH }} ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} || true
           
           # Copy PR code to preprod path
-          sudo rsync -av --delete \
+          rsync -av --delete \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='logs' \
@@ -201,8 +201,8 @@ jobs:
           
           # Restore backup
           if [ -d "${{ env.PREPROD_PATH }}.backup-${{ github.run_id }}" ]; then
-            sudo rm -rf ${{ env.PREPROD_PATH }}
-            sudo mv ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} ${{ env.PREPROD_PATH }}
+            rm -rf ${{ env.PREPROD_PATH }}
+            mv ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} ${{ env.PREPROD_PATH }}
             
             # Restart original preprod services
             cd ${{ env.PREPROD_PATH }}
@@ -215,6 +215,6 @@ jobs:
         if: always()
         run: |
           # Clean up temporary test files and images only
-          sudo rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
+          rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
-          sudo rm -rf ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} 2>/dev/null || true
+          rm -rf ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} 2>/dev/null || true
