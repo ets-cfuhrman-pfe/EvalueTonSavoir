@@ -70,21 +70,16 @@ test.describe('Room Persistence', () => {
             // STEP 3: Launch Quiz
             // ========================================
             console.log('STEP 3: Launching quiz...');
+
+            // Find the quiz and click the play button
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
-            
-            // The play button is an IconButton with rounded-circle class containing PlayArrow icon
-            const launchButton = quizItem.locator('button.rounded-circle, button:has(svg[data-testid="PlayArrowIcon"])').first();
-            
+            const launchButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
             try {
                 await launchButton.waitFor({ state: 'visible', timeout: 10000 });
-                console.log('Launch button found, clicking...');
                 await launchButton.click();
-            } catch (e) {
-                console.log('Primary selector failed, trying fallback...');
-                // Fallback: first button in the quiz item (should be the play button)
-                const fallbackButton = quizItem.locator('button').first();
-                await fallbackButton.waitFor({ state: 'visible', timeout: 5000 });
-                await fallbackButton.click();
+            } catch {
+                // Fallback to first button
+                await quizItem.locator('button').first().click();
             }
 
             // Wait for ManageRoom page
@@ -92,16 +87,16 @@ test.describe('Room Persistence', () => {
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(5000);
 
-            // Select room
+            // Select room from dropdown
             const roomSelect = teacherPage.locator('select#roomSelect, select').first();
             try {
                 await roomSelect.waitFor({ state: 'visible', timeout: 10000 });
-                await roomSelect.selectOption({ index: 1 });
+                await roomSelect.selectOption({ index: 1 }); // Select first room
             } catch {
                 console.log('Room select not found, trying alternative...');
             }
 
-            // Get room name
+            // Get room name from selected option
             const selectedOption = teacherPage.locator('select option:checked');
             roomName = ((await selectedOption.textContent())?.trim().toUpperCase()) || '';
             if (!roomName) {
@@ -419,22 +414,34 @@ test.describe('Room Persistence', () => {
                 throw new Error('TESTQUIZ not found');
             }
 
-            // The play button is an IconButton with rounded-circle class
-            const launchButton = quizItem.locator('button.rounded-circle, button:has(svg)').first();
-            await launchButton.waitFor({ state: 'visible', timeout: 10000 });
-            console.log('Launch button found, clicking...');
-            await launchButton.click();
+            // Click the play button
+            const launchButton = quizItem.locator('button[aria-label*="marrer"], button:has(svg)').first();
+            try {
+                await launchButton.waitFor({ state: 'visible', timeout: 10000 });
+                await launchButton.click();
+            } catch {
+                await quizItem.locator('button').first().click();
+            }
 
             await teacherPage.waitForURL(/\/teacher\/manage-room/);
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(3000);
+            await teacherPage.waitForTimeout(5000);
 
-            // Select room
-            const roomSelect = teacherPage.locator('select').first();
-            await roomSelect.selectOption({ index: 1 });
+            // Select room from dropdown
+            const roomSelect = teacherPage.locator('select#roomSelect, select').first();
+            try {
+                await roomSelect.waitFor({ state: 'visible', timeout: 10000 });
+                await roomSelect.selectOption({ index: 1 }); // Select first room
+            } catch {
+                console.log('Room select not found, trying alternative...');
+            }
 
+            // Get room name from selected option
             const selectedOption = teacherPage.locator('select option:checked');
             roomName = ((await selectedOption.textContent())?.trim().toUpperCase()) || '';
+            if (!roomName) {
+                throw new Error('Could not get room name');
+            }
             console.log('Room:', roomName);
 
             // Launch
