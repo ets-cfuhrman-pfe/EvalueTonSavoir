@@ -49,7 +49,19 @@ test.describe('Room Persistence', () => {
             console.log('STEP 2: Navigating to dashboard...');
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(5000);
+            await teacherPage.waitForTimeout(3000);
+            
+            // Wait for dashboard content to fully render
+            const dashboardHeader = teacherPage.locator('h1:has-text("Tableau de bord")');
+            try {
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 15000 });
+                console.log('Dashboard header visible');
+            } catch {
+                console.log('WARNING: Dashboard header not found');
+                await teacherPage.screenshot({ path: 'room-persistence-dashboard-not-loaded.png' });
+            }
+            
+            await teacherPage.waitForTimeout(3000);
 
             // Verify TESTQUIZ exists
             let hasTESTQUIZ = false;
@@ -507,7 +519,19 @@ test.describe('Room Persistence', () => {
 
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(5000);
+            await teacherPage.waitForTimeout(3000);
+            
+            // Wait for dashboard content to fully render
+            const dashboardHeader = teacherPage.locator('h1:has-text("Tableau de bord")');
+            try {
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 15000 });
+                console.log('Dashboard header visible');
+            } catch {
+                console.log('WARNING: Dashboard header not found');
+                await teacherPage.screenshot({ path: 'delayed-test-dashboard-not-loaded.png' });
+            }
+            
+            await teacherPage.waitForTimeout(3000);
 
             // Find and launch TESTQUIZ
             await teacherPage.waitForSelector('.quiz', { timeout: 15000 });

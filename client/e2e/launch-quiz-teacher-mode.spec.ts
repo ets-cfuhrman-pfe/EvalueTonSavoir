@@ -43,7 +43,21 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             // Navigate to dashboard
             await teacherPage.goto('/teacher/dashboard');
             await teacherPage.waitForLoadState('networkidle');
-            await teacherPage.waitForTimeout(5000); // Increased wait time
+            await teacherPage.waitForTimeout(3000);
+            
+            // Wait for dashboard content to fully render
+            // Look for the "Tableau de bord" header which indicates dashboard is loaded
+            const dashboardHeader = teacherPage.locator('h1:has-text("Tableau de bord")');
+            try {
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 15000 });
+                console.log('Dashboard header visible');
+            } catch {
+                console.log('WARNING: Dashboard header not found, taking screenshot...');
+                await teacherPage.screenshot({ path: 'step1-dashboard-not-loaded.png' });
+            }
+            
+            // Wait additional time for React components to render
+            await teacherPage.waitForTimeout(3000);
 
             // Verify TESTQUIZ exists (created by setup check) - try multiple selectors
             let hasTESTQUIZ = false;

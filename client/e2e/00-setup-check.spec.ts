@@ -46,7 +46,26 @@ test.describe('E2E Setup Check', () => {
             // Now on dashboard, check folder
             await page.goto('/teacher/dashboard');
             await page.waitForLoadState('networkidle');
-            await page.waitForTimeout(5000); // Increased wait time for dashboard to fully load
+            await page.waitForTimeout(3000);
+            
+            // Wait for dashboard content to fully render
+            // Look for the "Tableau de bord" header which indicates dashboard is loaded
+            const dashboardHeader = page.locator('h1:has-text("Tableau de bord")');
+            try {
+                await dashboardHeader.waitFor({ state: 'visible', timeout: 20000 });
+                console.log('Dashboard header visible');
+            } catch {
+                console.log('WARNING: Dashboard header not found, taking screenshot...');
+                await page.screenshot({ path: 'setup-check-dashboard-not-loaded.png' });
+                // Log current URL to debug
+                console.log('Current URL:', await page.url());
+            }
+            
+            // Wait for React components to render
+            await page.waitForTimeout(3000);
+            
+            // Take screenshot of dashboard state
+            await page.screenshot({ path: 'setup-check-dashboard-loaded.png' });
 
             console.log('Checking default folder...');
 
