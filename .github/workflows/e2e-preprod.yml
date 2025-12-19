@@ -31,19 +31,30 @@ jobs:
           docker --version
           docker compose version
       
-      - name: Verify preprod environment is running
+      - name: Update preprod with PR code
         run: |
-          echo "Checking if preprod services are running..."
+          echo "Updating preprod environment with PR code..."
           
-          # Check if services are running
-          if ! docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps | grep -q "Up"; then
-            echo "Preprod services are not running. Please start them manually or ensure they are running."
-            echo "Run: cd ${{ env.PREPROD_PATH }} && docker compose up -d"
-            exit 1
-          fi
+          # Stop existing services
+          cd ${{ env.PREPROD_PATH }}
+          docker compose down || true
           
-          echo "Preprod services are running:"
-          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+          # Backup current code
+          sudo cp -r ${{ env.PREPROD_PATH }} ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} || true
+          
+          # Copy PR code to preprod path
+          sudo rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='logs' \
+            ${{ github.workspace }}/ ${{ env.PREPROD_PATH }}/
+          
+          # Rebuild and start services with PR code
+          cd ${{ env.PREPROD_PATH }}
+          docker compose build --no-cache
+          docker compose up -d
+          
+          echo "Preprod updated and services restarted with PR code"
         
       - name: Copy test files to runner workspace
         run: |
@@ -179,9 +190,31 @@ jobs:
           path: client/playwright-report/
           retention-days: 7
       
+      - name: Restore preprod environment
+        if: always()
+        run: |
+          echo "Restoring original preprod environment..."
+          
+          # Stop services running PR code
+          cd ${{ env.PREPROD_PATH }}
+          docker compose down || true
+          
+          # Restore backup
+          if [ -d "${{ env.PREPROD_PATH }}.backup-${{ github.run_id }}" ]; then
+            sudo rm -rf ${{ env.PREPROD_PATH }}
+            sudo mv ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} ${{ env.PREPROD_PATH }}
+            
+            # Restart original preprod services
+            cd ${{ env.PREPROD_PATH }}
+            docker compose up -d
+            
+            echo "Original preprod environment restored"
+          fi
+      
       - name: Cleanup test artifacts
         if: always()
         run: |
           # Clean up temporary test files and images only
           sudo rm -rf /tmp/e2e-client-${{ github.run_id }} 2>/dev/null || true
           docker rmi evaluetonsavoir-e2e-${{ github.run_id }} 2>/dev/null || true
+          sudo rm -rf ${{ env.PREPROD_PATH }}.backup-${{ github.run_id }} 2>/dev/null || true
