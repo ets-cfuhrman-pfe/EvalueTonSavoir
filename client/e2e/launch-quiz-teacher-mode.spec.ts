@@ -60,7 +60,27 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
             }
             console.log('Dashboard loaded, TESTQUIZ found');
 
-            console.log('STEP 2: Launching quiz...');
+            console.log('STEP 2: Selecting room and launching quiz...');
+
+            // IMPORTANT: Must select a room from the "Salle active" MUI Select dropdown
+            // before clicking the play button, otherwise handleLancerQuiz shows alert and returns
+            console.log('Selecting active room from dropdown...');
+            const roomDropdown = teacherPage.locator('[role="combobox"]').first();
+            await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
+            await roomDropdown.click();
+            await teacherPage.waitForTimeout(1000);
+            
+            // Select TEST room from the dropdown options
+            const roomOption = teacherPage.locator('[role="option"]').filter({ hasText: /^TEST$/ }).first();
+            // If exact TEST not found, try any non-empty option
+            if (!(await roomOption.isVisible({ timeout: 2000 }).catch(() => false))) {
+                const anyRoomOption = teacherPage.locator('[role="option"]:not(:has-text("Aucune"))').first();
+                await anyRoomOption.click();
+            } else {
+                await roomOption.click();
+            }
+            await teacherPage.waitForTimeout(1000);
+            console.log('Room selected on dashboard');
 
             // Find the quiz and click "Démarrer le quiz"
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
