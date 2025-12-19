@@ -1,6 +1,5 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
-import './loadingCircle.css';
 
 interface Props {
     text: string;

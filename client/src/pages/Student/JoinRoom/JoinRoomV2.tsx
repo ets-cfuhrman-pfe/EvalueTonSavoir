@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Socket } from 'socket.io-client';
 import { ENV_VARIABLES } from 'src/constants';
-import { useBeforeUnload, useSearchParams } from 'react-router-dom';
+import { useBeforeUnload, useSearchParams, useNavigate } from 'react-router-dom';
 
 import StudentModeQuizV2 from 'src/components/StudentModeQuiz/StudentModeQuizV2';
 import TeacherModeQuizV2 from 'src/components/TeacherModeQuiz/TeacherModeQuizV2';
@@ -13,8 +13,7 @@ import '../../../styles/main.scss';
 import { QuestionType } from '../../../Types/QuestionType';
 import LoadingButton from '@mui/lab/LoadingButton';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
-
-import LoginContainerV2 from 'src/components/LoginContainer/LoginContainerV2';
+import LoginContainer from 'src/components/LoginContainer/LoginContainer';
 
 import ApiService from '../../../services/ApiService';
 import ValidationService from '../../../services/ValidationService';
@@ -23,6 +22,7 @@ import { setCurrentRoomName, clearCurrentRoomName } from '../../../utils/roomUti
 export type AnswerType = Array<string | number | boolean>;
 
 const JoinRoomV2: React.FC = () => {
+    const navigate = useNavigate();
     const [roomName, setRoomName] = useState('');
     const [username, setUsername] = useState(ApiService.getUsername());
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -40,6 +40,7 @@ const JoinRoomV2: React.FC = () => {
     const [searchParams] = useSearchParams();
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [quizTitle, setQuizTitle] = useState<string>('Quiz');
+    const disconnectingRef = React.useRef(false);
 
     useEffect(() => {
         const roomFromUrl = searchParams.get('roomName');
@@ -50,9 +51,7 @@ const JoinRoomV2: React.FC = () => {
                 setRoomName(roomFromUrl);
                 setIsQRCodeJoin(true);
                 setIsRoomNameValid(true);
-                console.log('Mode QR Code détecté, salle:', roomFromUrl);
             } else {
-                console.error('Nom de salle invalide dans l\'URL QR code:', roomFromUrl, 'Erreurs:', validationResult.errors);
                 setConnectionError(`Nom de salle invalide: ${validationResult.errors[0]}`);
                 setIsRoomNameValid(false);
             }
@@ -70,7 +69,7 @@ const JoinRoomV2: React.FC = () => {
     useEffect(() => {
         handleCreateSocket();
         return () => {
-            disconnect();
+            webSocketService.disconnect();
         };
     }, []);
 
@@ -79,17 +78,17 @@ const JoinRoomV2: React.FC = () => {
         // Find and hide potential header elements
         const possibleHeaders = document.querySelectorAll('header, .header, .app-header, .main-header, .navbar, nav, .top-header, .site-header');
         
-        possibleHeaders.forEach((header) => {
+        for (const header of possibleHeaders) {
             (header as HTMLElement).style.display = 'none';
-        });
+        }
         
         document.body.classList.add('hide-header');
         
         return () => {
             // Restore headers when leaving
-            possibleHeaders.forEach((header) => {
+            for (const header of possibleHeaders) {
                 (header as HTMLElement).style.display = '';
-            });
+            }
             document.body.classList.remove('hide-header');
         };
     }, []);
@@ -99,7 +98,7 @@ const JoinRoomV2: React.FC = () => {
         React.useCallback((event) => {
             if (isWaitingForTeacher || quizMode) {
                 event.preventDefault();
-                event.returnValue = "Êtes-vous sûr de vouloir quitter? Votre progression sera perdue.";
+                (event as any).returnValue = "Êtes-vous sûr de vouloir quitter? Votre progression sera perdue.";
             }
         }, [isWaitingForTeacher, quizMode])
     );
@@ -108,26 +107,26 @@ const JoinRoomV2: React.FC = () => {
     useEffect(() => {
         const handlePopState = (_event: PopStateEvent) => {
             if (isWaitingForTeacher || quizMode) {
-                const shouldLeave = window.confirm(
+                const shouldLeave = globalThis.confirm(
                     "Êtes-vous sûr de vouloir quitter? Votre progression dans le questionnaire sera perdue."
                 );
-                if (!shouldLeave) {
-                    // Push the state back to prevent navigation
-                    window.history.pushState(null, '', window.location.href);
-                } else {
+                if (shouldLeave) {
                     disconnect();
+                } else {
+                    // Push the state back to prevent navigation
+                    globalThis.history.pushState(null, '', globalThis.location.href);
                 }
             }
         };
 
         // Add initial state to enable popstate detection
         if (isWaitingForTeacher || quizMode) {
-            window.history.pushState(null, '', window.location.href);
-            window.addEventListener('popstate', handlePopState);
+            globalThis.history.pushState(null, '', globalThis.location.href);
+            globalThis.addEventListener('popstate', handlePopState);
         }
 
         return () => {
-            window.removeEventListener('popstate', handlePopState);
+            globalThis.removeEventListener('popstate', handlePopState);
         };
     }, [isWaitingForTeacher, quizMode]);
 
@@ -139,9 +138,35 @@ const JoinRoomV2: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        setAnswers(questions ? Array(questions.length).fill({} as AnswerSubmissionToBackendType) : []);
+        setAnswers(questions ? Array.from({ length: questions.length }, () => ({} as AnswerSubmissionToBackendType)) : []);
     }, [questions]);
 
+
+    const disconnect = () => {
+        if (disconnectingRef.current) return;
+        disconnectingRef.current = true;
+        try {
+            webSocketService.disconnect();
+            setSocket(null);
+            setQuestion(undefined);
+            setIsWaitingForTeacher(false);
+            setQuizMode('');
+            setQuestions([]);
+            setAnswers([]);
+            setQuizCompleted(false);
+            clearCurrentRoomName();
+            // Reset to initial login state
+            setUsername(ApiService.getUsername());
+            setConnectionError('');
+            setIsConnecting(false);
+
+            setRoomName('');
+            setIsQRCodeJoin(false);
+            navigate('/student/join-room', { replace: true });
+        } catch (error) {
+            console.error('JoinRoomV2: disconnect error:', error);
+        }
+    };
 
     const handleCreateSocket = () => {
         const socket = webSocketService.connect(ENV_VARIABLES.VITE_BACKEND_URL);
@@ -153,13 +178,11 @@ const JoinRoomV2: React.FC = () => {
             setCurrentRoomName(roomJoinedName);
         });
         socket.on('next-question', (question: QuestionType) => {
-            // console.log('JoinRoomV2: on(next-question): Received next-question:', question);
             setQuizMode('teacher');
             setIsWaitingForTeacher(false);
             setQuestion(question);
         });
         socket.on('launch-teacher-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
-            // console.log('on(launch-teacher-mode): Received launch-teacher-mode:', questions);
             setQuizMode('teacher');
             setIsWaitingForTeacher(true);
             setQuestions([]);  
@@ -167,8 +190,6 @@ const JoinRoomV2: React.FC = () => {
             setQuizTitle(quizTitle);
         });
         socket.on('launch-student-mode', ({ questions, quizTitle }: { questions: QuestionType[], quizTitle: string }) => {
-            // console.log('on(launch-student-mode): Received launch-student-mode:', questions);
-
             setQuizMode('student');
             setIsWaitingForTeacher(false);
             setQuestions([]);  // clear out from last time (in case quiz is repeated)
@@ -177,28 +198,20 @@ const JoinRoomV2: React.FC = () => {
             setQuizTitle(quizTitle);
         });
         socket.on('end-quiz', () => {
-            setQuizCompleted(true);
+            disconnect();
         });
         socket.on('join-failure', (message) => {
-            console.log('Failed to join the room.');
-            console.log('Join failure message:', message);
-
             // Check if this is a QR code join by looking at URL parameter directly
             const roomFromUrl = searchParams.get('roomName');
             const isQRCodeMode = !!roomFromUrl;
-            
-            // console.log('roomFromUrl:', roomFromUrl);
-            // console.log('isQRCodeMode:', isQRCodeMode);
 
             // If room doesn't exist and it's QR code mode, show waiting page instead of error
             if (message === "Le nom de la salle n'existe pas" && isQRCodeMode) {
-                // console.log('Showing waiting page for QR code join');
                 setIsWaitingForTeacher(true);
                 setIsConnecting(false);
                 // Set the room name in global storage for header display
                 setCurrentRoomName(roomFromUrl);
             } else {
-                console.log('Showing error message');
                 setConnectionError(`Erreur de connexion : ${message}`);
                 setIsConnecting(false);
             }
@@ -213,29 +226,20 @@ const JoinRoomV2: React.FC = () => {
                     break;
             }
             setIsConnecting(false);
-            console.log('Connection Error:', error.message);
+        });
+
+        socket.on('disconnect', (reason) => {
+            if (reason === "io server disconnect") {
+                disconnect();
+                setConnectionError("Le professeur a fermé la salle.");
+            }
         });
 
         setSocket(socket);
     };
 
-    const disconnect = () => {
-        webSocketService.disconnect();
-        setSocket(null);
-        setQuestion(undefined);
-        setIsWaitingForTeacher(false);
-        setQuizMode('');
-        setQuestions([]);
-        setAnswers([]);
-        setQuizCompleted(false);
-        clearCurrentRoomName();
-        // Reset to initial login state
-        setUsername(ApiService.getUsername());
-        setConnectionError('');
-        setIsConnecting(false);
-    };
-
     const handleSocket = () => {
+        disconnectingRef.current = false;
         setIsConnecting(true);
         setConnectionError('');
         if (!socket?.connected) {
@@ -243,14 +247,11 @@ const JoinRoomV2: React.FC = () => {
         }
 
         if (username && roomName) {
-            // console.log(`Tentative de rejoindre : ${roomName}, utilisateur : ${username}`);
-
             webSocketService.joinRoom(roomName, username);
         }
     };
 
     const handleOnSubmitAnswer = (answer: AnswerType, idQuestion: number) => {
-        // console.info(`JoinRoomV2: handleOnSubmitAnswer: answer: ${answer}, idQuestion: ${idQuestion}`);
         const answerData: AnswerSubmissionToBackendType = {
             roomName: roomName,
             answer: answer,
@@ -258,12 +259,10 @@ const JoinRoomV2: React.FC = () => {
             idQuestion: idQuestion
         };
         setAnswers((prevAnswers) => {
-            // console.log(`JoinRoomV2: handleOnSubmitAnswer: prevAnswers: ${JSON.stringify(prevAnswers)}`);
             const newAnswers = [...prevAnswers]; // Create a copy of the previous answers array
             newAnswers[idQuestion - 1] = answerData; // Update the specific answer
             return newAnswers; // Return the new array
         });
-        // console.log(`JoinRoomV2: handleOnSubmitAnswer: answers: ${JSON.stringify(answers)}`);
         webSocketService.submitAnswer(answerData);
     };
 
@@ -346,73 +345,65 @@ const JoinRoomV2: React.FC = () => {
         default:
             return (
                 <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
-                    <div className="w-100" style={{ maxWidth: '400px' }}>
-                        <LoginContainerV2
-                            title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
-                            error={connectionError}
-                        >
-                            <div className="card-form">
-                                {/* Afficher champ salle SEULEMENT si pas de QR code */}
-                                {!isQRCodeJoin && (
-                                    <div className="mb-3">
-                                        <ValidatedTextField
-                                            fieldPath="room.name"
-                                            label="Nom de la salle"
-                                            variant="outlined"
-                                            initialValue={roomName}
-                                            onValueChange={(value, isValid) => {
-                                                setRoomName(value.toUpperCase());
-                                                setIsManualRoomNameValid(isValid);
-                                            }}
-                                            placeholder="Nom de la salle"
-                                            fullWidth={true}
-                                            onKeyDown={handleReturnKey}
-                                            required={true}
-                                        />
-                                    </div>
-                                )}
-
-                                {/* Champ username toujours visible */}
+                    <LoginContainer
+                        title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
+                        error={connectionError}
+                    >
+                        <div className="card-form">
+                            {/* Afficher champ salle SEULEMENT si pas de QR code */}
+                            {!isQRCodeJoin && (
                                 <div className="mb-3">
                                     <ValidatedTextField
-                                        fieldPath="user.username"
-                                        label="Nom d'utilisateur"
+                                        fieldPath="room.name"
+                                        label="Nom de la salle"
                                         variant="outlined"
-                                        initialValue={username}
+                                        initialValue={roomName}
                                         onValueChange={(value, isValid) => {
-                                            setUsername(value);
-                                            setIsUsernameValid(isValid);
+                                            setRoomName(value.toUpperCase());
+                                            setIsManualRoomNameValid(isValid);
                                         }}
-                                        placeholder="Nom d'utilisateur"
+                                        placeholder="Nom de la salle"
                                         fullWidth={true}
                                         onKeyDown={handleReturnKey}
                                         required={true}
                                     />
                                 </div>
+                            )}
 
-                                <LoadingButton
-                                    loading={isConnecting}
-                                    onClick={handleSocket}
-                                    variant="contained"
-                                    className="btn-primary"
-                                    disabled={
-                                        !username ||
-                                        !isUsernameValid ||
-                                        (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
-                                        (isQRCodeJoin && (!roomName || !isRoomNameValid))
-                                    }
-                                >
-                                    {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
-                                </LoadingButton>
-
-                                {connectionError && (
-                                    <div className="alert-error">
-                                        {connectionError}
-                                    </div>
-                                )}
+                            {/* Champ username toujours visible */}
+                            <div className="mb-3">
+                                <ValidatedTextField
+                                    fieldPath="user.username"
+                                    label="Nom d'utilisateur"
+                                    variant="outlined"
+                                    initialValue={username}
+                                    onValueChange={(value, isValid) => {
+                                        setUsername(value);
+                                        setIsUsernameValid(isValid);
+                                    }}
+                                    placeholder="Nom d'utilisateur"
+                                    fullWidth={true}
+                                    onKeyDown={handleReturnKey}
+                                    required={true}
+                                />
                             </div>
-                        </LoginContainerV2>
-                    </div>
+
+                            <LoadingButton
+                                loading={isConnecting}
+                                onClick={handleSocket}
+                                variant="contained"
+                                className="btn-primary"
+                                disabled={
+                                    !username ||
+                                    !isUsernameValid ||
+                                    (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
+                                    (isQRCodeJoin && (!roomName || !isRoomNameValid))
+                                }
+                            >
+                                {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                            </LoadingButton>
+                        </div>
+                    </LoginContainer>
                 </div>
             );
     }

@@ -1,0 +1,122 @@
+name: Create Staging Release (RC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Which package to release'
+        required: true
+        default: client
+        type: choice
+        options:
+          - client
+          - server
+      release_type:
+        description: 'Version bump type'
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release-rc:
+    runs-on: ubuntu-latest
+    # Only allow running from staging branch
+    if: github.ref == 'refs/heads/staging'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_ORG_PAT }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure Git
+        run: |
+          git config user.name "${{ secrets.GH_ORG_NAME }}"
+          git config user.email "${{ secrets.GH_ORG_EMAIL }}"
+      - name: Install dependencies
+        run: |
+          cd ${{ github.event.inputs.package }}
+          npm ci
+      - name: Bump version to RC
+        id: version
+        run: |
+          cd ${{ github.event.inputs.package }}
+          PACKAGE="${{ github.event.inputs.package }}"
+          RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          
+          # Bump to prerelease with -rc suffix, respecting release_type input
+          # prepatch: 1.0.0 -> 1.0.1-rc.0
+          # preminor: 1.0.0 -> 1.1.0-rc.0
+          # premajor: 1.0.0 -> 2.0.0-rc.0
+          npm version "pre${RELEASE_TYPE}" --preid=rc --git-tag-version=false
+          
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="${PACKAGE}-v${VERSION}"
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "TAG=${TAG}" >> $GITHUB_OUTPUT
+          echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
+          echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
+      - name: Commit version bump
+        run: |
+          git add ${{ github.event.inputs.package }}/package.json
+          git add ${{ github.event.inputs.package }}/package-lock.json
+          git commit -m "chore(${{ steps.version.outputs.PACKAGE }}): release ${{ steps.version.outputs.VERSION }} [skip ci]"
+      - name: Create Git tag
+        run: |
+          git tag ${{ steps.version.outputs.TAG }}
+      - name: Set remote URL for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_ORG_PAT }}@github.com/ets-cfuhrman-pfe/EvalueTonSavoir.git
+      - name: Push changes and tags
+        run: |
+          git push origin staging
+          git push origin ${{ steps.version.outputs.TAG }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GH_ORG_NAME }}
+          password: ${{ secrets.GH_ORG_PAT }}
+
+      - name: Build & push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          # Use repo root as context so Dockerfile can COPY both client/ and server/shared
+          context: .
+          # Specify the Dockerfile depending on selected package
+          file: ${{ github.event.inputs.package == 'client' && 'client/Dockerfile' || 'server/Dockerfile' }}
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release (Pre-release)
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: "${{ steps.version.outputs.PACKAGE }} ${{ steps.version.outputs.VERSION }}"
+          body: |
+            Release Candidate for ${{ steps.version.outputs.PACKAGE }}
+            
+            **Version:** ${{ steps.version.outputs.VERSION }}
+            **Docker Image:** `ghcr.io/${{ steps.version.outputs.REPO_LOWER }}-${{ steps.version.outputs.PACKAGE == 'client' && 'frontend' || 'backend' }}:${{ steps.version.outputs.VERSION }}`
+            **Branch:** staging
+          prerelease: true
+          draft: false

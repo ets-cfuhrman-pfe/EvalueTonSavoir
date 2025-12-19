@@ -32,6 +32,8 @@ const quizController = require('./controllers/quiz.js');
 const quizControllerInstance = new quizController(quizModel, foldersModel);
 const imagesController = require('./controllers/images.js');
 const imagesControllerInstance = new imagesController(imageModel);
+const adminDataController = require('./controllers/adminData.js');
+const adminDataControllerInstance = new adminDataController(db);
 
 // export the controllers
 module.exports.users = usersControllerInstance;
@@ -39,6 +41,7 @@ module.exports.rooms = roomsControllerInstance;
 module.exports.folders = foldersControllerInstance;
 module.exports.quizzes = quizControllerInstance;
 module.exports.images = imagesControllerInstance;
+module.exports.adminData = adminDataControllerInstance;
 
 //import routers (instantiate controllers as side effect)
 const userRouter = require('./routers/users.js');
@@ -46,8 +49,10 @@ const roomRouter = require('./routers/room.js');
 const folderRouter = require('./routers/folders.js');
 const quizRouter = require('./routers/quiz.js');
 const imagesRouter = require('./routers/images.js')
+const adminRouter = require('./routers/admin.js');
 const AuthManager = require('./auth/auth-manager.js')
 const authRouter = require('./routers/auth.js')
+const healthRouter = require('./routers/health.js');
 
 // Setup environment
 dotenv.config();
@@ -108,7 +113,14 @@ app.use('/api/room', roomRouter);
 app.use('/api/folder', folderRouter);
 app.use('/api/quiz', quizRouter);
 app.use('/api/image', imagesRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/health', healthRouter);
+
+const packageJson = require('./package.json');
+app.get('/api/version', (req, res) => {
+  res.json({ version: packageJson.version });
+});
 
 // Add Auths methods
 const session = require('express-session');
@@ -161,4 +173,10 @@ process.on('SIGINT', async () => {
   }
 });
 
-start();
+// Export the app for testing
+module.exports = app;
+
+// Start server only if not in test
+if (require.main === module) {
+  start();
+}

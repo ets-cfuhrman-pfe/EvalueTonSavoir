@@ -1,0 +1,19 @@
+# Use the official Playwright Docker image
+FROM mcr.microsoft.com/playwright:v1.56.1
+
+WORKDIR /app/client
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy client source code (including E2E tests)
+COPY . .
+
+# Install Playwright browsers
+RUN npx playwright install
+
+# Run the tests
+CMD ["npx", "playwright", "test"]

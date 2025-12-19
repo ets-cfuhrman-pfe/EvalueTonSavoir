@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 import { TrueFalseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from 'src/components/GiftTemplate/templates/TextTypeTemplate';
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { Student } from 'src/Types/StudentType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
@@ -18,10 +18,11 @@ interface PropsV2 {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    showCorrectnessBanner?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false, showCorrectnessBanner = true } = props;
 
     const statsContainerClass = 'ms-auto d-flex align-items-center gap-2 px-2 choice-button-content';
 
@@ -52,8 +53,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    // In teacher mode rhythm, hide validation when hideAnswerFeedback is true
-    const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer !== undefined);
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer !== undefined);
     const selectedTrue = answer === true ? 'selected' : '';
     const selectedFalse = answer === false ? 'selected' : '';
 
@@ -76,8 +76,23 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     const answerStatistics = showStatistics ? calculateAnswerStatistics(students, Number(question.id)) : {};
     const totalWhoAnswered = showStatistics ? getTotalStudentsWhoAnswered(students, Number(question.id)) : 0;
 
+    const isUserAnswerCorrect = shouldShowValidation && answer !== undefined
+        ? answer === question.isTrue
+        : undefined;
+
     return (
-        <div className="quiz-question-area">
+        <div className="quiz-question-area true-false-question">
+            {/* Overall correctness banner */}
+            {shouldShowValidation && showCorrectnessBanner && (
+                <div
+                    className={`alert d-flex align-items-center fw-bold mb-3 quiz-correctness-banner ${
+                        isUserAnswerCorrect ? 'alert-success' : 'alert-danger'
+                    }`}
+                >
+                    {isUserAnswerCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                </div>
+            )}
+
             {/* Question text */}
             <div className="mb-4">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -174,7 +189,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             answer !== undefined && handleOnSubmitAnswer?.([answer])
                         }
                         disabled={buttonText !== 'Voir les résultats' && answer === undefined}
-                        className="btn-primary"
+                        className="quiz-submit-btn"
                     >
                         {buttonText}
                     </Button>

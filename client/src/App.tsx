@@ -6,25 +6,27 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home/Home';
 
 // Pages espace enseignant
-import Dashboard from './pages/Teacher/Dashboard/Dashboard';
 import DashboardV2 from './pages/Teacher/Dashboard/DashboardV2';
 import Share from './pages/Teacher/Share/Share';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
-import ManageRoom from './pages/Teacher/ManageRoom/ManageRoom';
 import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
-import QuizForm from './pages/Teacher/EditorQuiz/EditorQuiz';
 import EditorQuizV2 from './pages/Teacher/EditorQuiz/EditorQuizV2';
 
 // Pages espace étudiant
-import JoinRoom from './pages/Student/JoinRoom/JoinRoom';
 import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
 
 // Pages authentification selection
 import AuthDrawer from './pages/AuthManager/AuthDrawer';
 
+// Pages admin
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminUserDetails from './pages/Admin/AdminUserDetails';
+
+// Status Page
+import StatusPage from './pages/Status/Status';
+
 // Components
-import InterfaceToggle from './components/InterfaceToggle/InterfaceToggle';
 
 // Header/Footer import
 import Header from './components/Header/Header';
@@ -38,6 +40,7 @@ import OAuthCallback from './pages/AuthManager/callback/AuthCallback';
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(ApiService.isLoggedIn());
     const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(ApiService.isLoggedInTeacher());
+    const [isAdmin, setIsAdmin] = useState(ApiService.isAdmin());
     const [isRoomRequireAuthentication, setRoomsRequireAuth] = useState(null);
     const location = useLocation();
 
@@ -46,6 +49,7 @@ const App: React.FC = () => {
         const checkLoginStatus = () => {
             setIsAuthenticated(ApiService.isLoggedIn());
             setIsTeacherAuthenticated(ApiService.isLoggedInTeacher());
+            setIsAdmin(ApiService.isAdmin());
         };
 
         const fetchAuthenticatedRooms = async () => {
@@ -61,39 +65,30 @@ const App: React.FC = () => {
         ApiService.logout();
         setIsAuthenticated(false);
         setIsTeacherAuthenticated(false);
-    };
-
-    // Determine if we should show interface toggle based on current route
-    const shouldShowInterfaceToggle = () => {
-        const path = location.pathname;
-        return path === '/teacher/dashboard-v2' || path === '/teacher/dashboard';
-    };
-
-    // Determine current interface version
-    const getCurrentVersion = (): 'v2' | 'v1' => {
-        return location.pathname.includes('-v2') ? 'v2' : 'v1';
+        setIsAdmin(false);
     };
 
     return (
         <>
-            <Header isLoggedIn={isAuthenticated} handleLogout={handleLogout} />
-            {shouldShowInterfaceToggle() && (
-                <InterfaceToggle currentVersion={getCurrentVersion()} />
-            )}
+            <Header 
+                isLoggedIn={isAuthenticated} 
+                isTeacherAuthenticated={isTeacherAuthenticated} 
+                isAdmin={isAdmin}
+                handleLogout={handleLogout}
+            />
             <div className="content">
                 <div className="app">
                     <main>
                         <Routes>
                             {/* Page main */}
                             <Route path="/" element={<Home />} />
+                            
+                            {/* Status Page */}
+                            <Route path="/status" element={<StatusPage />} />
 
                             {/* Pages espace enseignant */}
                         <Route
                             path="/teacher/dashboard"
-                            element={isTeacherAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/teacher/dashboard-v2"
                             element={isTeacherAuthenticated ? <DashboardV2 /> : <Navigate to="/login" />}
                         />
                         <Route
@@ -102,28 +97,26 @@ const App: React.FC = () => {
                         />
                         <Route
                             path="/teacher/editor-quiz/:id"
-                            element={isTeacherAuthenticated ? <QuizForm /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/teacher/editor-quiz-v2/:id"
                             element={isTeacherAuthenticated ? <EditorQuizV2 /> : <Navigate to="/login" />}
                         />
                         <Route
-                            path="/teacher/manage-room/:quizId/:roomName"
-                            element={isTeacherAuthenticated ? <ManageRoom /> : <Navigate to="/login" />}
+                            path="/teacher/manage-room/:quizId"
+                            element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
+                        />
+
+                        {/* Pages admin */}
+                        <Route
+                            path="/admin/dashboard"
+                            element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" />}
                         />
                         <Route
-                            path="/teacher/manage-room-v2/:quizId"
-                            element={isTeacherAuthenticated ? <ManageRoomV2 /> : <Navigate to="/login" />}
+                            path="/admin/user/:id"
+                            element={isAdmin ? <AdminUserDetails /> : <Navigate to="/login" />}
                         />
 
                         {/* Pages espace étudiant */}
                         <Route
                             path="/student/join-room"
-                            element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoom /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/student/join-room-v2"
                             element={( !isRoomRequireAuthentication || isAuthenticated ) ? <JoinRoomV2 /> : <Navigate to="/login" />}
                         />
 

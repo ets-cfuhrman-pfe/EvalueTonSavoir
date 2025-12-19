@@ -51,15 +51,6 @@ jest.mock('src/components/LiveResults/LiveResultsV2', () => {
     );
   };
 });
-jest.mock('src/components/QuestionsDisplay/QuestionDisplay', () => {
-  return function MockQuestionDisplay({ question }: any) {
-    return (
-      <div data-testid="question-display">
-        Question: {question?.stem || 'No question'}
-      </div>
-    );
-  };
-});
 jest.mock('src/components/QRCodeModal', () => {
   return function MockQRCodeModal({ open, onClose, roomName, roomUrl }: any) {
     return open ? (
@@ -215,7 +206,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz quiz1 n\'a pas été trouvé')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
 
@@ -226,7 +217,7 @@ describe('ManageRoomV2 Component', () => {
         expect(mockAlert).toHaveBeenCalledWith(
           expect.stringContaining('Le quiz n\'a pas été spécifié')
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard-v2');
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
       });
     });
 
@@ -557,11 +548,41 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        const reconnectButton = screen.getByText('Reconnecter');
-        expect(reconnectButton).toBeInTheDocument();
+        const returnButton = screen.getByText('Retour au tableau de bord');
+        expect(returnButton).toBeInTheDocument();
         
-        fireEvent.click(reconnectButton);
-        expect(mockWebSocketService.connect).toHaveBeenCalledTimes(2);
+        fireEvent.click(returnButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+      });
+    });
+
+    test('should handle create-failure event', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const roomSelect = screen.getByRole('combobox');
+        fireEvent.change(roomSelect, { target: { value: 'room1' } });
+      });
+
+      await waitFor(() => {
+        const launchButton = screen.getAllByText('Lancer le quiz')[0];
+        fireEvent.click(launchButton);
+      });
+
+      // Simulate create-failure event
+      const createFailureCallback = mockSocket.on.mock.calls.find(
+        call => call[0] === 'create-failure'
+      )?.[1];
+
+      if (createFailureCallback) {
+        act(() => {
+          createFailureCallback('Room already exists');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('Room already exists')).toBeInTheDocument();
+        expect(screen.getByText('Retour au tableau de bord')).toBeInTheDocument();
       });
     });
   });

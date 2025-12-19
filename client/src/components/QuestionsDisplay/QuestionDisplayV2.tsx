@@ -5,7 +5,7 @@ import TrueFalseQuestionDisplayV2 from './TrueFalseQuestionDisplay/TrueFalseQues
 import MultipleChoiceQuestionDisplayV2 from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplayV2';
 import NumericalQuestionDisplayV2 from './NumericalQuestionDisplay/NumericalQuestionDisplayV2';
 import ShortAnswerQuestionDisplayV2 from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplayV2';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { Student } from 'src/Types/StudentType';
 
 interface QuestionV2Props {
@@ -18,6 +18,7 @@ interface QuestionV2Props {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    showCorrectnessBanner?: boolean;
 }
 
 const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
@@ -30,7 +31,13 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     students = [],
     showStatistics = false,
     hideAnswerFeedback = false,
+    showCorrectnessBanner = true,
 }) => {
+    const forceShowFeedback = question?.type === 'Numerical' || question?.type === 'Short';
+
+    // For numerical and short answers we always show feedback once answered; override hideAnswerFeedback
+    const appliedHideAnswerFeedback = forceShowFeedback ? false : hideAnswerFeedback;
+
     let questionTypeComponent = null;
     switch (question?.type) {
         case 'TF':
@@ -44,7 +51,8 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
+                    showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
             break;
@@ -59,7 +67,8 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     disabled={disabled}
                     students={students}
                     showStatistics={showStatistics}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
+                    showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
             break;
@@ -73,7 +82,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                             passedAnswer={answer}
                             buttonText={buttonText}
                             disabled={disabled}
-                            hideAnswerFeedback={hideAnswerFeedback}
+                            hideAnswerFeedback={appliedHideAnswerFeedback}
                         />
                     );
             }
@@ -87,7 +96,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                     passedAnswer={answer}
                     buttonText={buttonText}
                     disabled={disabled}
-                    hideAnswerFeedback={hideAnswerFeedback}
+                    hideAnswerFeedback={appliedHideAnswerFeedback}
                 />
             );
             break;

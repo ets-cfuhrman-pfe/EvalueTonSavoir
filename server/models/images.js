@@ -38,7 +38,8 @@ class Images {
         return {
             file_name: result.file_name,
             file_content: Buffer.from(result.file_content, 'base64'),
-            mime_type: result.mime_type
+            mime_type: result.mime_type,
+            userId: result.userId
         };
     }
 

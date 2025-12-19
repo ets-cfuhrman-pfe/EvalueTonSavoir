@@ -1,0 +1,103 @@
+name: API Integration Tests on Preprod
+on:
+  push:
+    branches: [ staging ]
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    name: Run API Integration Tests Against Preprod
+    runs-on: [self-hosted, preprod]
+    
+    env:
+      PREPROD_PATH: ${{ vars.PREPROD_PATH || '/opt/EvalueTonSavoir' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Verify runner environment
+        run: |
+          echo "=== Runner Information ==="
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner Architecture: $RUNNER_ARCH"
+          echo "Runner Name: $RUNNER_NAME"
+          echo "Runner Workspace: $RUNNER_WORKSPACE"
+          echo "=== System Information ==="
+          uname -a
+          whoami
+          pwd
+      
+      - name: Validate PREPROD_PATH
+        run: |
+          if [ ! -d "$PREPROD_PATH" ]; then
+            echo "Error: PREPROD_PATH directory '$PREPROD_PATH' does not exist."
+            echo "Please set the PREPROD_PATH variable in repository variables or ensure the default directory exists."
+            exit 1
+          fi
+      
+      - name: Verify preprod environment is running
+        run: |
+          echo "Checking if preprod services are running..."
+          
+          if ! docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps | grep -q "Up"; then
+            echo "ERROR: Preprod services are not running. Please start them before running this workflow."
+            exit 1
+          fi
+          
+          echo "Preprod services are running:"
+          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
+      
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to start..."
+          
+          # Wait for MongoDB
+          if ! timeout 60 bash -c 'until docker exec mongo mongosh --eval "db.runCommand({ping: 1})" > /dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 3; done'; then
+            echo "MongoDB failed to start"
+            exit 1
+          fi
+          
+          # Wait for backend
+          if ! timeout 60 bash -c 'until nc -z localhost 3000; do echo "Waiting for backend..."; sleep 3; done'; then
+            echo "Backend failed to start"
+            exit 1
+          fi
+          
+          echo "Services ready for API tests"
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm install
+      
+      - name: Create test auth config
+        run: |
+          cd server
+          echo '{"auth": {"simpleauth": {"enabled": true}}}' > auth_config.json
+      
+      - name: Run API integration tests
+        run: |
+          cd server
+          npm run test:api
+        env:
+          MONGO_URI: mongodb://localhost:27017/evaluetonsavoir
+          MONGO_DATABASE: evaluetonsavoir
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SESSION_Secret: ${{ secrets.SESSION_SECRET }}
+          NODE_ENV: test
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      
+      - name: Show API test logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend logs ==="
+          docker logs backend --tail 50
+          echo "=== MongoDB logs ==="
+          docker logs mongo --tail 20

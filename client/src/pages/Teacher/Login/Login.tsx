@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 
-import './Login.css';
 import { TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -31,7 +30,7 @@ const Login: React.FC = () => {
             return;
         }
         else {
-            navigate("/teacher/dashboard-v2")
+            navigate("/teacher/dashboard")
         }
 
     };

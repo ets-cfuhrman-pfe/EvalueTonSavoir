@@ -1,10 +1,10 @@
 // MultipleChoiceQuestionDisplayV2.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@mui/material';
 import { FormattedTextTemplate } from '../../GiftTemplate/templates/TextTypeTemplate';
 import { MultipleChoiceQuestion } from 'gift-pegjs';
 import ProgressOverlay from '../ProgressOverlay/ProgressOverlay';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { Student } from 'src/Types/StudentType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 
@@ -18,10 +18,11 @@ interface PropsV2 {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    showCorrectnessBanner?: boolean;
 }
 
 const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false, showCorrectnessBanner = true } = props;
     // console.log('MultipleChoiceQuestionDisplayV2: passedAnswer', JSON.stringify(passedAnswer));
 
     const [answer, setAnswer] = useState<AnswerType>(() => {
@@ -48,7 +49,16 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
     // Prevent validation styling from showing immediately on question change
     // For teacher view (no handleOnSubmitAnswer), show validation when showAnswer is true
     // For student view, only show validation after they've submitted an answer
-    const shouldShowValidation = showAnswer && !hideAnswerFeedback && (handleOnSubmitAnswer === undefined || answer.length > 0);
+    const shouldShowValidation = showAnswer && (handleOnSubmitAnswer === undefined || answer.length > 0);
+
+    // Determine overall correctness of the submitted answer for an immediate visual cue
+    const isUserAnswerCorrect = useMemo(() => {
+        if (!shouldShowValidation) return undefined;
+        const correctChoices = question.choices.filter((c) => c.isCorrect).map((c) => c.formattedText.text);
+        if (correctChoices.length !== answer.length) return false;
+        const correctSet = new Set(correctChoices);
+        return answer.every((choice) => correctSet.has(String(choice)));
+    }, [answer, question.choices, shouldShowValidation]);
 
     const handleOnClickAnswer = (choice: string) => {
         setAnswer((prevAnswer) => {
@@ -80,6 +90,17 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
     return (
         <div className="quiz-question-area">
+            {/* Overall correctness banner */}
+            {shouldShowValidation && showCorrectnessBanner && (
+                <div
+                    className={`alert d-flex align-items-center fw-bold mb-3 quiz-correctness-banner ${
+                        isUserAnswerCorrect ? 'alert-success' : 'alert-danger'
+                    }`}
+                >
+                    {isUserAnswerCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                </div>
+            )}
+
             {/* Question text */}
             <div className="mb-4">
                 <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedStem) }} />
@@ -180,7 +201,7 @@ const MultipleChoiceQuestionDisplayV2: React.FC<PropsV2> = (props) => {
                             answer.length > 0 && handleOnSubmitAnswer?.(answer)
                         }
                         disabled={buttonText !== 'Voir les résultats' && answer.length === 0}
-                        className="btn-primary"
+                        className="quiz-submit-btn"
                     >
                         {buttonText}
                     </Button>

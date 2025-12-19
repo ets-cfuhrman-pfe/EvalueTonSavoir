@@ -3,7 +3,7 @@ import { RoomType } from 'src/Types/RoomType';
 import { createContext } from 'react';
 import { MultipleNumericalAnswer, NumericalAnswer, ParsedGIFTQuestion } from 'gift-pegjs';
 import { QuestionType } from 'src/Types/QuestionType';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import {
   isSimpleNumericalAnswer,
   isRangeNumericalAnswer,

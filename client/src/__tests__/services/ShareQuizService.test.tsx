@@ -14,8 +14,9 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
             const result = await ApiService.getSharedQuiz(quizId);
 
+            const expectedUrl = `${ENV_VARIABLES.VITE_BACKEND_URL.replace(/\/$/, '')}/api/quiz/getShare/${quizId}`;
             expect(mockedAxios.get).toHaveBeenCalledWith(
-                `${ENV_VARIABLES.VITE_BACKEND_URL}/api/quiz/getShare/${quizId}`,
+                expectedUrl,
                 { headers: expect.any(Object) }
             );
             expect(result).toBe(quizData);

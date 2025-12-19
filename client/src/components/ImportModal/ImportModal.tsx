@@ -1,5 +1,4 @@
 import React, { useState, DragEvent, useRef, useEffect } from 'react';
-import './importModal.css';
 
 import {
     Button,
