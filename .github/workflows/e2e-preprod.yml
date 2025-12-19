@@ -45,10 +45,6 @@ jobs:
           # Remove hardcoded container names to avoid conflicts with existing preprod
           sed -i '/container_name:/d' $TEST_DIR/docker-compose.yaml
           
-          # Remove watchtower services (not needed for testing)
-          sed -i '/watchtower:/,/^[^ ]/{ /^[^ ]/!d; /watchtower:/d; }' $TEST_DIR/docker-compose.yaml
-          sed -i '/watchtower-once:/,/^[^ ]/{ /^[^ ]/!d; /watchtower-once:/d; }' $TEST_DIR/docker-compose.yaml
-          
           # Use different ports to avoid conflicts with existing preprod services
           # Change nginx port from 80 to 10080
           sed -i 's/"80:80"/"10080:80"/g' $TEST_DIR/docker-compose.yaml
