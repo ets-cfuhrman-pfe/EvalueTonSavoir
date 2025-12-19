@@ -45,17 +45,8 @@ jobs:
           # Remove hardcoded container names to avoid conflicts with existing preprod
           sed -i '/container_name:/d' $TEST_DIR/docker-compose.yaml
           
-          # Use different ports to avoid conflicts with existing preprod services
-          # Change nginx port from 80 to 10080
-          sed -i 's/"80:80"/"10080:80"/g' $TEST_DIR/docker-compose.yaml
-          # Change backend port from 3000 to 13000
-          sed -i 's/"3000:3000"/"13000:3000"/g' $TEST_DIR/docker-compose.yaml
-          # Change frontend port from 5173 to 15173
-          sed -i 's/"5173:5173"/"15173:5173"/g' $TEST_DIR/docker-compose.yaml
-          # Change keycloak port from 8080 to 18080
-          sed -i 's/"8080:8080"/"18080:8080"/g' $TEST_DIR/docker-compose.yaml
-          # Change MongoDB port from 27017 to 17017 (keep it for debugging if needed)
-          sed -i 's/"27017:27017"/"17017:27017"/g' $TEST_DIR/docker-compose.yaml
+          # Remove all external port mappings - services will communicate on Docker network
+          sed -i '/ports:/,/^[^ ]/{ /^[^ ]/!d; /ports:/d; }' $TEST_DIR/docker-compose.yaml
           
           # Copy production config files (auth, etc.) if they exist
           if [ -f "${{ env.PREPROD_PATH }}/server/auth_config.json" ]; then
@@ -67,13 +58,9 @@ jobs:
           docker compose -p e2e-test-${{ github.run_id }} build --no-cache
           docker compose -p e2e-test-${{ github.run_id }} up -d
           
-          # Store test directory path and ports for later steps
+          # Store test directory path for later steps
           echo "TEST_DIR=$TEST_DIR" >> $GITHUB_ENV
           echo "TEST_PROJECT=e2e-test-${{ github.run_id }}" >> $GITHUB_ENV
-          echo "TEST_NGINX_PORT=10080" >> $GITHUB_ENV
-          echo "TEST_BACKEND_PORT=13000" >> $GITHUB_ENV
-          echo "TEST_FRONTEND_PORT=15173" >> $GITHUB_ENV
-          echo "TEST_KEYCLOAK_PORT=18080" >> $GITHUB_ENV
           
           echo "Test environment created at $TEST_DIR"
         
@@ -125,15 +112,8 @@ jobs:
           
           echo "Nginx is responding"
           
-          # Wait for Keycloak to respond (longer timeout, it's slower to start)
-          echo "Waiting for Keycloak (this can take 2-3 minutes)..."
-          if ! timeout 180 bash -c "until docker exec ${PROJECT}-keycloak-1 curl -f http://localhost:8080 > /dev/null 2>&1; do echo 'Waiting for Keycloak...'; sleep 5; done"; then
-            echo "WARNING: Keycloak failed to start within timeout"
-            echo "Continuing anyway - OAuth tests may fail but simple auth tests should work"
-            docker logs ${PROJECT}-keycloak-1 --tail 100
-          else
-            echo "Keycloak is responding"
-          fi
+          # Skip Keycloak - tests use simple auth, not OAuth
+          echo "Skipping Keycloak health check (not needed for simple auth tests)"
           
           echo "Services status check:"
           docker compose -p ${{ env.TEST_PROJECT }} ps
@@ -198,14 +178,20 @@ jobs:
       
       - name: Run Playwright tests in Docker
         run: |
+          # Get the network name for the test environment
+          NETWORK_NAME="${{ env.TEST_PROJECT }}_default"
+          
+          echo "Running Playwright tests on network: $NETWORK_NAME"
+          echo "Base URL: http://${{ env.TEST_PROJECT }}-nginx-1"
+          
           docker run --rm \
-            --add-host host.docker.internal:host-gateway \
+            --network $NETWORK_NAME \
             -v /tmp/e2e-client-${{ github.run_id }}/playwright-report:/app/client/playwright-report \
             -v /tmp/e2e-client-${{ github.run_id }}/test-results:/app/client/test-results \
-            -e PLAYWRIGHT_BASE_URL=http://host.docker.internal:${{ env.TEST_NGINX_PORT }} \
-            -e PLAYWRIGHT_BACKEND_URL=http://host.docker.internal:${{ env.TEST_BACKEND_PORT }} \
-            -e PLAYWRIGHT_FRONTEND_URL=http://host.docker.internal:${{ env.TEST_FRONTEND_PORT }} \
-            -e PLAYWRIGHT_KEYCLOAK_URL=http://host.docker.internal:${{ env.TEST_KEYCLOAK_PORT }} \
+            -e PLAYWRIGHT_BASE_URL=http://${{ env.TEST_PROJECT }}-nginx-1 \
+            -e PLAYWRIGHT_BACKEND_URL=http://${{ env.TEST_PROJECT }}-backend-1:3000 \
+            -e PLAYWRIGHT_FRONTEND_URL=http://${{ env.TEST_PROJECT }}-frontend-1:5173 \
+            -e PLAYWRIGHT_KEYCLOAK_URL=http://${{ env.TEST_PROJECT }}-keycloak-1:8080 \
             -e E2E_TEST_USER_EMAIL=${{ secrets.E2E_TEST_USER_EMAIL }} \
             -e E2E_TEST_USER_PASSWORD=${{ secrets.E2E_TEST_USER_PASSWORD }} \
             -e TEST_USER_EMAIL=${{ secrets.E2E_TEST_USER_EMAIL }} \
