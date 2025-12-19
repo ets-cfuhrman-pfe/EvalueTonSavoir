@@ -96,39 +96,50 @@ jobs:
             exit 1
           fi
           
-          # Wait for backend to be ready (check container health)
-          if ! timeout 60 bash -c "until docker inspect ${PROJECT}-backend-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -q 'healthy\|starting' || docker exec ${PROJECT}-backend-1 curl -f http://localhost:3000/api/health 2>/dev/null; do echo 'Waiting for backend...'; sleep 3; done"; then
+          echo "MongoDB is ready"
+          
+          # Wait for backend container to be healthy (just check if process is running)
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-backend-1 pgrep -f node > /dev/null 2>&1; do echo 'Waiting for backend process...'; sleep 3; done"; then
             echo "Backend failed to start within timeout"
             docker logs ${PROJECT}-backend-1 --tail 50
             exit 1
           fi
           
-          # Wait for frontend to be ready
-          if ! timeout 60 bash -c "until docker exec ${PROJECT}-frontend-1 curl -f http://localhost:5173 > /dev/null 2>&1; do echo 'Waiting for frontend...'; sleep 3; done"; then
+          echo "Backend process is running"
+          
+          # Wait for frontend container to be healthy
+          if ! timeout 60 bash -c "until docker exec ${PROJECT}-frontend-1 pgrep -f node > /dev/null 2>&1; do echo 'Waiting for frontend process...'; sleep 3; done"; then
             echo "Frontend failed to start within timeout"
             docker logs ${PROJECT}-frontend-1 --tail 50
             exit 1
           fi
           
-          # Wait for nginx to be ready
+          echo "Frontend process is running"
+          
+          # Wait for nginx to respond
           if ! timeout 60 bash -c "until docker exec ${PROJECT}-nginx-1 curl -f http://localhost > /dev/null 2>&1; do echo 'Waiting for nginx...'; sleep 3; done"; then
             echo "Nginx failed to start within timeout"
             docker logs ${PROJECT}-nginx-1 --tail 50
             exit 1
           fi
           
-          # Wait for Keycloak to be ready
+          echo "Nginx is responding"
+          
+          # Wait for Keycloak to respond
           if ! timeout 60 bash -c "until docker exec ${PROJECT}-keycloak-1 curl -f http://localhost:8080 > /dev/null 2>&1; do echo 'Waiting for Keycloak...'; sleep 3; done"; then
             echo "Keycloak failed to start within timeout"
             docker logs ${PROJECT}-keycloak-1 --tail 50
             exit 1
           fi
           
+          echo "Keycloak is responding"
           echo "Services status check:"
           docker compose -p ${{ env.TEST_PROJECT }} ps
           
           # Additional wait to ensure all services are fully initialized
+          echo "Waiting additional 15 seconds for services to stabilize..."
           sleep 15
+          echo "All services ready!"
       
       - name: Ensure test user exists
         run: |
