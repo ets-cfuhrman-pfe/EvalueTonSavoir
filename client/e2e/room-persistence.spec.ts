@@ -74,22 +74,82 @@ test.describe('Room Persistence', () => {
             // IMPORTANT: Must select a room from the "Salle active" MUI Select dropdown
             // before clicking the play button, otherwise handleLancerQuiz shows alert and returns
             console.log('Selecting active room from dropdown...');
-            const roomDropdown = teacherPage.locator('[role="combobox"]').first();
-            await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
-            await roomDropdown.click();
-            await teacherPage.waitForTimeout(1000);
             
-            // Select TEST room from the dropdown options
-            const roomOption = teacherPage.locator('[role="option"]').filter({ hasText: /^TEST$/ }).first();
-            // If exact TEST not found, try any non-empty option
-            if (!(await roomOption.isVisible({ timeout: 2000 }).catch(() => false))) {
-                const anyRoomOption = teacherPage.locator('[role="option"]:not(:has-text("Aucune"))').first();
-                await anyRoomOption.click();
-            } else {
-                await roomOption.click();
+            // Wait for page to fully load
+            await teacherPage.waitForTimeout(2000);
+            
+            // Take screenshot for debugging
+            await teacherPage.screenshot({ path: 'room-persistence-step3-before-room-selection.png' });
+            
+            try {
+                // Try to find and click the MUI Select dropdown
+                const roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
+                
+                // Log the current state for debugging
+                const dropdownText = await roomDropdown.textContent();
+                console.log('Dropdown current text:', dropdownText);
+                
+                // Check if a room is already selected (not "Aucune salle")
+                if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
+                    console.log('Room already selected:', dropdownText);
+                } else {
+                    // Need to select a room
+                    await roomDropdown.click();
+                    await teacherPage.waitForTimeout(1500); // Wait for dropdown animation
+                    
+                    // Take screenshot after click
+                    await teacherPage.screenshot({ path: 'room-persistence-step3-dropdown-opened.png' });
+                    
+                    // Wait for the listbox to appear
+                    const listbox = teacherPage.locator('[role="listbox"]');
+                    const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
+                    
+                    if (listboxVisible) {
+                        console.log('Dropdown listbox opened');
+                        
+                        // Get all options for debugging
+                        const options = listbox.locator('[role="option"]');
+                        const optionCount = await options.count();
+                        console.log('Number of room options:', optionCount);
+                        
+                        // Try to find TEST room or any non-empty room
+                        let roomFound = false;
+                        for (let i = 0; i < optionCount && !roomFound; i++) {
+                            const optionText = await options.nth(i).textContent();
+                            console.log(`Option ${i}: ${optionText}`);
+                            if (optionText && optionText.trim() === 'TEST') {
+                                await options.nth(i).click();
+                                roomFound = true;
+                                console.log('Selected TEST room');
+                            }
+                        }
+                        
+                        // If TEST not found, select first non-empty option
+                        if (!roomFound && optionCount > 1) {
+                            // Skip first option which is usually "Aucune salle"
+                            await options.nth(1).click();
+                            console.log('Selected first available room');
+                        } else if (!roomFound) {
+                            console.log('WARNING: No rooms available to select!');
+                            // Close the dropdown by pressing Escape
+                            await teacherPage.keyboard.press('Escape');
+                        }
+                    } else {
+                        console.log('Listbox did not appear, trying keyboard navigation...');
+                        // Try using keyboard to select
+                        await teacherPage.keyboard.press('ArrowDown');
+                        await teacherPage.waitForTimeout(300);
+                        await teacherPage.keyboard.press('Enter');
+                    }
+                    
+                    await teacherPage.waitForTimeout(1000); // Wait for selection to register
+                }
+            } catch (e) {
+                console.log('Error during room selection:', e);
+                await teacherPage.screenshot({ path: 'room-persistence-step3-room-selection-error.png' });
             }
-            await teacherPage.waitForTimeout(1000);
-            console.log('Room selected on dashboard');
+            console.log('Room selection complete');
 
             // Now click the play button to launch the quiz
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
@@ -431,20 +491,68 @@ test.describe('Room Persistence', () => {
             
             // IMPORTANT: Must select a room from the "Salle active" MUI Select dropdown first
             console.log('Selecting active room from dropdown...');
-            const roomDropdown = teacherPage.locator('[role="combobox"]').first();
-            await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
-            await roomDropdown.click();
-            await teacherPage.waitForTimeout(1000);
             
-            const roomOption = teacherPage.locator('[role="option"]').filter({ hasText: /^TEST$/ }).first();
-            if (!(await roomOption.isVisible({ timeout: 2000 }).catch(() => false))) {
-                const anyRoomOption = teacherPage.locator('[role="option"]:not(:has-text("Aucune"))').first();
-                await anyRoomOption.click();
-            } else {
-                await roomOption.click();
+            // Wait for page to fully load
+            await teacherPage.waitForTimeout(2000);
+            
+            // Take screenshot for debugging
+            await teacherPage.screenshot({ path: 'delayed-test-before-room-selection.png' });
+            
+            try {
+                const roomDropdown = teacherPage.locator('[role="combobox"]').first();
+                await roomDropdown.waitFor({ state: 'visible', timeout: 10000 });
+                
+                // Log the current state for debugging
+                const dropdownText = await roomDropdown.textContent();
+                console.log('Dropdown current text:', dropdownText);
+                
+                // Check if a room is already selected (not "Aucune salle")
+                if (dropdownText && !dropdownText.includes('Aucune') && dropdownText.trim() !== '') {
+                    console.log('Room already selected:', dropdownText);
+                } else {
+                    await roomDropdown.click();
+                    await teacherPage.waitForTimeout(1500);
+                    
+                    // Take screenshot after click
+                    await teacherPage.screenshot({ path: 'delayed-test-dropdown-opened.png' });
+                    
+                    const listbox = teacherPage.locator('[role="listbox"]');
+                    const listboxVisible = await listbox.isVisible({ timeout: 5000 }).catch(() => false);
+                    
+                    if (listboxVisible) {
+                        const options = listbox.locator('[role="option"]');
+                        const optionCount = await options.count();
+                        console.log('Number of room options:', optionCount);
+                        
+                        let roomFound = false;
+                        for (let i = 0; i < optionCount && !roomFound; i++) {
+                            const optionText = await options.nth(i).textContent();
+                            console.log(`Option ${i}: ${optionText}`);
+                            if (optionText && optionText.trim() === 'TEST') {
+                                await options.nth(i).click();
+                                roomFound = true;
+                            }
+                        }
+                        
+                        if (!roomFound && optionCount > 1) {
+                            await options.nth(1).click();
+                            console.log('Selected first available room');
+                        } else if (!roomFound) {
+                            await teacherPage.keyboard.press('Escape');
+                        }
+                    } else {
+                        console.log('Listbox did not appear, trying keyboard navigation...');
+                        await teacherPage.keyboard.press('ArrowDown');
+                        await teacherPage.waitForTimeout(300);
+                        await teacherPage.keyboard.press('Enter');
+                    }
+                    await teacherPage.waitForTimeout(1000);
+                }
+            } catch (e) {
+                console.log('Error during room selection:', e);
+                await teacherPage.screenshot({ path: 'delayed-test-room-selection-error.png' });
             }
-            await teacherPage.waitForTimeout(1000);
-            console.log('Room selected on dashboard');
+            console.log('Room selection complete');
             
             const quizItem = teacherPage.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).first();
             

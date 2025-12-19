@@ -53,28 +53,35 @@ test.describe('E2E Setup Check', () => {
             // Check if "Dossier par défaut" exists in folders - try multiple selectors
             let folderExists = false;
             try {
-                folderExists = await page.getByRole('button', { name: /Dossier par défaut/i }).isVisible({ timeout: 5000 });
+                // Wait for folders section to load
+                await page.waitForTimeout(2000);
+                folderExists = await page.locator('text=Dossier par défaut').first().isVisible({ timeout: 5000 });
             } catch {
-                // Try alternative selector
-                folderExists = await page.locator('text=Dossier par défaut').isVisible({ timeout: 3000 }).catch(() => false);
+                folderExists = false;
             }
             
             if (!folderExists) {
                 console.log('Creating default folder...');
 
-                // Click create folder button
+                // Click create folder button - it's inside the folders section
                 const createFolderBtn = page.locator('button').filter({ hasText: 'Nouveau dossier' }).first();
+                await createFolderBtn.waitFor({ state: 'visible', timeout: 10000 });
                 await createFolderBtn.click();
 
-                // Wait for dialog
-                await page.waitForTimeout(1000);
-
-                // Fill folder name
-                const folderInput = page.getByLabel('Titre du dossier');
+                // Wait for dialog to open
+                await page.waitForTimeout(1500);
+                
+                // The dialog uses ValidatedTextField, need to find the input inside it
+                const folderDialog = page.locator('[role="dialog"]').filter({ hasText: 'Créer un nouveau dossier' });
+                await folderDialog.waitFor({ state: 'visible', timeout: 5000 });
+                
+                // Find input inside the dialog
+                const folderInput = folderDialog.locator('input').first();
+                await folderInput.waitFor({ state: 'visible', timeout: 5000 });
                 await folderInput.fill('Dossier par défaut');
 
-                // Click create
-                const confirmBtn = page.locator('button').filter({ hasText: 'Créer' }).first();
+                // Click create button inside dialog
+                const confirmBtn = folderDialog.locator('button').filter({ hasText: 'Créer' }).first();
                 await confirmBtn.click();
 
                 await page.waitForTimeout(2000);
@@ -85,28 +92,59 @@ test.describe('E2E Setup Check', () => {
 
             console.log('Checking TEST room...');
 
-            // Check rooms section
-            const roomsExpandedAttr = await page.locator('button').filter({ hasText: 'Salles' }).first().getAttribute('aria-expanded');
-            if (roomsExpandedAttr !== 'true') {
-                const roomsBtn = page.locator('button').filter({ hasText: 'Salles' }).first();
-                await roomsBtn.click();
-                await page.waitForTimeout(1000);
+            // Take screenshot for debugging
+            await page.screenshot({ path: 'setup-check-before-room.png' });
+
+            // Check rooms section - expand if collapsed
+            const roomsSectionBtn = page.locator('button').filter({ hasText: 'Salles' }).first();
+            try {
+                const roomsExpandedAttr = await roomsSectionBtn.getAttribute('aria-expanded');
+                console.log('Rooms section expanded:', roomsExpandedAttr);
+                if (roomsExpandedAttr !== 'true') {
+                    await roomsSectionBtn.click();
+                    await page.waitForTimeout(1500);
+                    console.log('Expanded rooms section');
+                }
+            } catch (e) {
+                // Rooms section might be in a different state, continue anyway
+                console.log('Could not check rooms section state:', e);
             }
 
-            // Check if TEST room exists
-            const testRoomExists = await page.getByRole('list').getByText('TEST', { exact: true }).isVisible({ timeout: 5000 });
+            // Check if TEST room exists in the rooms list
+            let testRoomExists = false;
+            try {
+                testRoomExists = await page.locator('li').filter({ hasText: /^TEST$/ }).first().isVisible({ timeout: 5000 });
+            } catch {
+                testRoomExists = false;
+            }
+            console.log('TEST room exists:', testRoomExists);
+            
             if (!testRoomExists) {
                 console.log('Creating TEST room...');
 
-                // Click create room
-                const createRoomBtn = page.locator('button').filter({ hasText: 'Nouvelle salle' }).first();
+                // Click create room button - try multiple selectors
+                let createRoomBtn = page.locator('button').filter({ hasText: 'Nouvelle salle' }).first();
+                if (!(await createRoomBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+                    createRoomBtn = page.locator('button').filter({ hasText: /salle/i }).first();
+                }
+                await createRoomBtn.waitFor({ state: 'visible', timeout: 10000 });
                 await createRoomBtn.click();
+                await page.waitForTimeout(1500);
+                
+                // Take screenshot after clicking create room
+                await page.screenshot({ path: 'setup-check-room-create-clicked.png' });
 
-                // Fill room name
+                // Fill room name - the input appears inline
                 const roomInput = page.locator('input[placeholder="Nom de la salle"]').first();
-                await roomInput.fill('TEST');
+                if (!(await roomInput.isVisible({ timeout: 3000 }).catch(() => false))) {
+                    // Try alternative selectors
+                    const altInput = page.locator('input').filter({ hasNotText: '' }).last();
+                    await altInput.fill('TEST');
+                } else {
+                    await roomInput.fill('TEST');
+                }
 
-                // Click create
+                // Click create button
                 const createBtn = page.locator('button').filter({ hasText: 'Créer' }).first();
                 await createBtn.click();
 
@@ -124,43 +162,55 @@ test.describe('E2E Setup Check', () => {
                 await page.waitForSelector('.quiz', { timeout: 10000 });
                 testQuizExists = await page.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).isVisible({ timeout: 5000 });
             } catch {
-                // Try alternative selector
-                testQuizExists = await page.locator('text=TESTQUIZ').isVisible({ timeout: 3000 }).catch(() => false);
+                testQuizExists = await page.locator('text=TESTQUIZ').first().isVisible({ timeout: 3000 }).catch(() => false);
             }
             
             if (!testQuizExists) {
                 console.log('Creating TESTQUIZ...');
 
-                // Click "Nouveau quiz" - try multiple selectors
-                let newQuizBtn = page.locator('button:has-text("Nouveau quiz")').first();
-                if (!(await newQuizBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-                    // Try finding button with span containing text
-                    newQuizBtn = page.locator('button').filter({ hasText: 'Nouveau quiz' }).first();
-                }
+                // Click "Nouveau quiz"
+                const newQuizBtn = page.locator('button').filter({ hasText: 'Nouveau quiz' }).first();
+                await newQuizBtn.waitFor({ state: 'visible', timeout: 10000 });
                 await newQuizBtn.click();
                 await page.waitForTimeout(3000);
+                await page.waitForLoadState('networkidle');
 
-                // Fill title
-                const titleInput = page.getByLabel('Titre').or(page.locator('input[placeholder*="titre"]')).first();
+                // Fill title - uses ValidatedTextField, find the input
+                const titleInput = page.locator('input[placeholder*="Titre"]').first();
+                await titleInput.waitFor({ state: 'visible', timeout: 5000 });
                 await titleInput.fill('TESTQUIZ');
 
-                // Select folder
+                // Select folder using MUI Select
                 const folderSelect = page.locator('[role="combobox"]').first();
                 await folderSelect.click();
-                await page.locator('li').filter({ hasText: 'Dossier par défaut' }).click();
+                await page.waitForTimeout(1000);
+                
+                // Click on "Dossier par défaut" option
+                const folderOption = page.locator('[role="option"]').filter({ hasText: 'Dossier par défaut' }).first();
+                if (await folderOption.isVisible({ timeout: 3000 }).catch(() => false)) {
+                    await folderOption.click();
+                } else {
+                    // Select first non-empty option
+                    const anyOption = page.locator('[role="option"]:not(:has-text("Choisir"))').first();
+                    await anyOption.click();
+                }
+                await page.waitForTimeout(1000);
 
-                // Add GIFT
-                const giftEditor = page.locator('textarea').or(page.locator('[contenteditable="true"]')).first();
+                // Add GIFT content
+                const giftEditor = page.locator('textarea').first();
+                await giftEditor.waitFor({ state: 'visible', timeout: 5000 });
                 await giftEditor.fill('::Q1:: What is 1+1? {=2}');
                 await page.keyboard.press('Tab');
+                await page.waitForTimeout(1000);
 
                 // Save
-                const saveBtn = page.locator('button:has-text("Enregistrer")').first();
+                const saveBtn = page.locator('button').filter({ hasText: 'Enregistrer' }).first();
+                await saveBtn.waitFor({ state: 'visible', timeout: 5000 });
                 await saveBtn.click();
                 await page.waitForTimeout(3000);
 
                 // Back to dashboard
-                const backBtn = page.locator('button:has-text("retour")').first();
+                const backBtn = page.locator('button').filter({ hasText: /retour/i }).first();
                 await backBtn.click();
                 await page.waitForURL(/\/dashboard/);
                 await page.waitForTimeout(2000);
