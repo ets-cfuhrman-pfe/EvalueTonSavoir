@@ -531,6 +531,7 @@ const DashboardV2: React.FC = () => {
                                 <span className="h5 fw-bold">Salle active :</span>
                                 <FormControl size="small" className="pb-2">
                                     <Select
+                                        data-testid="room-select"
                                         value={selectedRoomId}
                                         onChange={(e) => {
                                             const newRoomId = e.target.value;
@@ -652,6 +653,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Add Folder Button */}
                                         <div className="text-center">
                                             <button
+                                                data-testid="create-folder-btn"
                                                 className="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center"
                                                 onClick={handleCreateFolder}
                                             >
@@ -792,6 +794,7 @@ const DashboardV2: React.FC = () => {
                                         {/* Create Room Section */}
                                         {!showCreateRoom ? (
                                             <button
+                                                data-testid="create-room-btn"
                                                 className="btn btn-outline-primary btn-sm w-100 mb-3 d-flex align-items-center justify-content-center"
                                                 onClick={() => setShowCreateRoom(true)}
                                             >
@@ -804,6 +807,7 @@ const DashboardV2: React.FC = () => {
                                         ) : (
                                             <div className="mb-3">
                                                 <input
+                                                    data-testid="room-name-input"
                                                     type="text"
                                                     className="form-control form-control-sm mb-2"
                                                     placeholder="Nom de la salle"
