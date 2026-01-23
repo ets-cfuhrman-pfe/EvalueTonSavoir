@@ -5,7 +5,7 @@ import TrueFalseQuestionDisplayV2 from './TrueFalseQuestionDisplay/TrueFalseQues
 import MultipleChoiceQuestionDisplayV2 from './MultipleChoiceQuestionDisplay/MultipleChoiceQuestionDisplayV2';
 import NumericalQuestionDisplayV2 from './NumericalQuestionDisplay/NumericalQuestionDisplayV2';
 import ShortAnswerQuestionDisplayV2 from './ShortAnswerQuestionDisplay/ShortAnswerQuestionDisplayV2';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { Student } from 'src/Types/StudentType';
 
 interface QuestionV2Props {

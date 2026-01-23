@@ -1,4 +1,4 @@
-import { AnswerType } from "src/pages/Student/JoinRoom/JoinRoom";
+import { AnswerType } from "src/pages/Student/JoinRoom/JoinRoomV2";
 
 export class Answer {
     answer: AnswerType;

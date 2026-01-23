@@ -443,7 +443,7 @@ describe('AdminUserDetails', () => {
     await waitFor(() => expect(screen.getByText(quizTitle)).toBeInTheDocument());
 
     const quizLink = screen.getByRole('link', { name: quizTitle });
-    expect(quizLink).toHaveAttribute('href', `/teacher/editor-quiz-v2/${quiz._id}`);
+    expect(quizLink).toHaveAttribute('href', `/teacher/editor-quiz/${quiz._id}`);
   });
 
   test('back button navigates to dashboard', async () => {

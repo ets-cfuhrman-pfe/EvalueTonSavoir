@@ -32,7 +32,7 @@ jest.mock('src/components/ValidatedTextField/ValidatedTextField', () => ({ onVal
     onChange={(e) => onValueChange(e.target.value, true)}
   />
 ));
-jest.mock('src/components/LoginContainer/LoginContainerV2', () => ({ children, title, error }: any) => (
+jest.mock('src/components/LoginContainer/LoginContainer', () => ({ children, title, error }: any) => (
   <div data-testid="login-container">
     <h1>{title}</h1>
     {error && <div data-testid="error-message">{error}</div>}
@@ -85,7 +85,7 @@ describe('JoinRoomV2 Component', () => {
 
     await waitFor(() => {
       expect(webSocketService.disconnect).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room-v2', { replace: true });
+      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room', { replace: true });
     });
   });
 
@@ -151,7 +151,7 @@ describe('JoinRoomV2 Component', () => {
 
     await waitFor(() => {
       expect(webSocketService.disconnect).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room-v2', { replace: true });
+      expect(mockNavigate).toHaveBeenCalledWith('/student/join-room', { replace: true });
       expect(screen.getByTestId('login-container')).toBeInTheDocument();
     });
   });

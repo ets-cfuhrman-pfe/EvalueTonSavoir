@@ -1,27 +1,27 @@
 import * as React from 'react';
-import './loginContainer.css';
 
 interface LoginContainerProps {
     title: string;
-    error: string;
+    error?: string;
     children: React.ReactNode;
 }
 
-const LoginContainer: React.FC<LoginContainerProps> = ({ title, error, children}) => {
+const LoginContainer: React.FC<LoginContainerProps> = ({ title, error, children }) => {
     return (
-        <div className="login-container">
+        <div className="w-100" style={{ maxWidth: '400px' }}>
+            <div className="card shadow-sm">
+                <div className="card-body text-center">
+                    <h1 className="card-title h4 mb-4">{title}</h1>
+                    <div className="d-flex flex-column align-items-center gap-3">
+                        <img className="rounded-circle" src="./people.svg" alt="Avatar" style={{ maxHeight: '50px' }} />
 
-            <h1 className="title">{title}</h1>
-
-            <div className="inputs">
-                <img className="avatar" src="./people.svg"></img>
-
-                <div className="error-text">{error}</div>
-
-                {children}
-
+                        <div className="w-100">
+                            {error && <div className="alert alert-danger">{error}</div>}
+                            {children}
+                        </div>
+                    </div>
+                </div>
             </div>
-            
         </div>
     );
 };

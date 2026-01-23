@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ImageGalleryModal from "../../../components/ImageGallery/ImageGalleryModal/ImageGalleryModal";
+import ImageGalleryModalV2 from "../../../components/ImageGallery/ImageGalleryModal/ImageGalleryModalV2";
 import "@testing-library/jest-dom";
 
 jest.mock("../../../components/ImageGallery/ImageGallery", () => ({
@@ -8,17 +8,17 @@ jest.mock("../../../components/ImageGallery/ImageGallery", () => ({
   default: jest.fn(() => <div data-testid="image-gallery" />),
 }));
 
-describe("ImageGalleryModal", () => {
+describe("ImageGalleryModalV2", () => {
 
   it("renders button correctly", () => {
-    render(<ImageGalleryModal />);
+    render(<ImageGalleryModalV2 />);
 
     const button = screen.getByLabelText(/images-open/i);
     expect(button).toBeInTheDocument();
   });
 
   it("opens the modal when button is clicked", () => {
-    render(<ImageGalleryModal />);
+    render(<ImageGalleryModalV2 />);
     
     const button = screen.getByRole("button", { name: /images/i });
     fireEvent.click(button);
@@ -29,7 +29,7 @@ describe("ImageGalleryModal", () => {
 
 
   it("closes the modal when close button is clicked", async () => {
-    render(<ImageGalleryModal />);
+    render(<ImageGalleryModalV2 />);
     
     fireEvent.click(screen.getByRole("button", { name: /images/i }));
     

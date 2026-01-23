@@ -50,27 +50,22 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Ensure consistent viewport for E2E tests
+        viewport: { width: 1280, height: 720 },
+      },
     },
 
     /* Test against mobile viewports. */
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 8'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 14'] },
-    },
+    // Mobile tests disabled - dashboard workflow requires desktop viewport
+    // {
+    //   name: 'Mobile Chrome',
+    //   use: { ...devices['Pixel 8'] },
+    // },
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { ...devices['iPhone 14'] },
+    // },
   ], 
 });

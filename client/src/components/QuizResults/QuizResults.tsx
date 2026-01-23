@@ -97,7 +97,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
                             <div className="card shadow">
                                 <div className="card-body">
                                     <h5 className="card-title fw-bold mb-4">
-                                        Résultats finaux
+                                        Résultat
                                     </h5>
 
                                     <div className="table-responsive">
@@ -105,10 +105,10 @@ const QuizResults: React.FC<QuizResultsProps> = ({
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="fw-bold">
-                                                        {isStudentView ? 'Votre résultat' : 'Étudiant'}
+                                                        Nom
                                                     </th>
                                                     <th className="text-center fw-bold">
-                                                        Score (%)
+                                                        %
                                                     </th>
                                                     <th className="text-center fw-bold">
                                                         Correct / Total

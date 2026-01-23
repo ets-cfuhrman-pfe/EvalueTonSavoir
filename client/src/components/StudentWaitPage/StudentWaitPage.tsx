@@ -4,7 +4,6 @@ import { Student } from '../../Types/StudentType';
 import { PlayArrow } from '@mui/icons-material';
 import LaunchQuizDialog from '../LaunchQuizDialog/LaunchQuizDialog';
 import { useState } from 'react';
-import './studentWaitPage.css';
 
 interface Props {
     students: Student[];

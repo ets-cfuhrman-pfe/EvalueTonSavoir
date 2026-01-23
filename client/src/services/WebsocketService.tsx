@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { QuestionType } from 'src/Types/QuestionType';
 
 // Must (manually) sync these types to server/socket/socket.js

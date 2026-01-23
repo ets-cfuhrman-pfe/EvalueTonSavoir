@@ -2,9 +2,9 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Editor from 'src/components/Editor/Editor';
+import EditorV2 from 'src/components/Editor/EditorV2';
 
-describe('Editor Component', () => {
+describe('EditorV2 Component', () => {
     const mockOnEditorChange = jest.fn();
 
     const sampleProps = {
@@ -14,7 +14,7 @@ describe('Editor Component', () => {
     };
 
     beforeEach(() => {
-        render(<Editor {...sampleProps} />);
+        render(<EditorV2 {...sampleProps} />);
     });
 
     it('renders correctly with initial value', () => {
@@ -36,7 +36,7 @@ describe('Editor Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<Editor {...updatedProps} />);
+        render(<EditorV2 {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];
@@ -51,7 +51,7 @@ describe('Editor Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<Editor {...updatedProps} />);
+        render(<EditorV2 {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];
@@ -67,7 +67,7 @@ describe('Editor Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<Editor {...updatedProps} />);
+        render(<EditorV2 {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];

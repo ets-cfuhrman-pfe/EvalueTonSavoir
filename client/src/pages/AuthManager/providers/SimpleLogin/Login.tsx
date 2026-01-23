@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 // JoinRoom.tsx
 import React, { useEffect, useState } from 'react';
 
-import '../css/simpleLogin.css';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { TextField } from '@mui/material';
 
-import LoginContainer from '../../../../components/LoginContainer/LoginContainer'
 import ApiService from '../../../../services/ApiService';
 import ValidatedTextField from '../../../../components/ValidatedTextField/ValidatedTextField';
 
@@ -36,9 +34,8 @@ const SimpleLogin: React.FC = () => {
 
 
     return (
-        <LoginContainer
-            title=''
-            error={connectionError}>
+        <>
+            {connectionError && <div className="error-text">{connectionError}</div>}
 
             <ValidatedTextField
                 fieldPath="user.email"
@@ -47,7 +44,6 @@ const SimpleLogin: React.FC = () => {
                 label="Email"
                 variant="outlined"
                 sx={{ marginBottom: '1rem' }}
-                fullWidth
             />
 
             <TextField
@@ -57,7 +53,6 @@ const SimpleLogin: React.FC = () => {
                 variant="outlined"
                 type="password"
                 sx={{ marginBottom: '1rem' }}
-                fullWidth
             />
 
             <LoadingButton
@@ -83,7 +78,7 @@ const SimpleLogin: React.FC = () => {
 
             </div>
 
-        </LoginContainer>
+        </>
     );
 };
 

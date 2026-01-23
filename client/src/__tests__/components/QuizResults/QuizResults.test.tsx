@@ -62,7 +62,7 @@ describe('QuizResults Component', () => {
 
         expect(screen.getByText('Quiz terminé!')).toBeInTheDocument();
         expect(screen.getByText('Sample Quiz')).toBeInTheDocument();
-        expect(screen.getByText('Résultats finaux')).toBeInTheDocument();
+        expect(screen.getByText('Résultat')).toBeInTheDocument();
     });
 
     it('renders the table with student results', () => {
@@ -99,7 +99,7 @@ describe('QuizResults Component', () => {
             />
         );
 
-        expect(screen.getByText('Votre résultat')).toBeInTheDocument();
+        expect(screen.getByText('Résultat')).toBeInTheDocument();
         expect(screen.getByText('Alice')).toBeInTheDocument();
         expect(screen.getByText('67%')).toBeInTheDocument();
         expect(screen.queryByText('Bob')).not.toBeInTheDocument();

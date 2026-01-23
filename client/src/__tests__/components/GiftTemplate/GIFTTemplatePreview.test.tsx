@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import GIFTTemplatePreview from 'src/components/GiftTemplate/GIFTTemplatePreview';
+import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePreviewV2';
 
 const validQuestions = [
   '::TFTitle::[markdown]Troo statement {TRUE}',
@@ -16,17 +16,17 @@ const unsupportedQuestions = [
   '$CATEGORY a/b/c'
 ];
 
-describe('GIFTTemplatePreview Component', () => {
+describe('GIFTTemplatePreviewV2 Component', () => {
   it('renders error message when questions contain invalid syntax', () => {
-    render(<GIFTTemplatePreview questions={['T{']} hideAnswers={false} />);
+    render(<GIFTTemplatePreviewV2 questions={['T{']} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
-    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
+    const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).toBeInTheDocument();
   });
 
   it('renders preview when valid questions are provided, including answers, has no errors', () => {
-    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={false} />);
+    render(<GIFTTemplatePreviewV2 questions={validQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
     // Check that all question titles are rendered inside the previewContainer
@@ -35,7 +35,7 @@ describe('GIFTTemplatePreview Component', () => {
       expect(previewContainer).toHaveTextContent(title);
     });
     // There should be no errors
-    const errorMessage = previewContainer.querySelector('div[label="error-message"]');
+    const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).not.toBeInTheDocument();
     // Check that some stems and answers are rendered inside the previewContainer
     expect(previewContainer).toHaveTextContent('Troo statement');
@@ -61,7 +61,7 @@ describe('GIFTTemplatePreview Component', () => {
  });
 
  it('hides answers when hideAnswers prop is true', () => {
-    render(<GIFTTemplatePreview questions={validQuestions} hideAnswers={true} />);
+    render(<GIFTTemplatePreviewV2 questions={validQuestions} hideAnswers={true} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
     expect(previewContainer).toHaveTextContent('Troo statement');
@@ -78,11 +78,11 @@ describe('GIFTTemplatePreview Component', () => {
   });
 
   it('should indicate in the preview that unsupported GIFT questions are not supported', () => {
-    render(<GIFTTemplatePreview questions={unsupportedQuestions} hideAnswers={false} />);
+    render(<GIFTTemplatePreviewV2 questions={unsupportedQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
     // find all unsupported errors (should be 4)
-    const unsupportedMessages = previewContainer.querySelectorAll('div[label="error-message"]');
+    const unsupportedMessages = previewContainer.querySelectorAll('.alert.alert-danger');
     expect(unsupportedMessages).toHaveLength(4);
   });
 

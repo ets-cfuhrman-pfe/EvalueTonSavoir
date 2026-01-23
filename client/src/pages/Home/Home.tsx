@@ -8,7 +8,7 @@ const Home: React.FC = () => {
         <div className="home-page">
             <div className="home-btn-container">
 
-                <Link to="/student/join-room-v2" className="home-role-btn student-btn">
+                <Link to="/student/join-room" className="home-role-btn student-btn">
                     <div className="home-big-title">
                         Espace
                         <br />
@@ -19,7 +19,7 @@ const Home: React.FC = () => {
                     </div>
                 </Link>
 
-                <Link to="/teacher/dashboard-v2" className="home-role-btn teacher-btn">
+                <Link to="/teacher/dashboard" className="home-role-btn teacher-btn">
                     <div>
                         <img src="teacher.svg" alt="Icône enseignant" />
                     </div>

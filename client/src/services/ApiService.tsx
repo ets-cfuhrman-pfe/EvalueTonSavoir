@@ -284,7 +284,7 @@ public async login(email: string, password: string): Promise<any> {
         if (result.status === 200) {
             this.saveToken(result.data.token);
             this.saveUsername(result.data.username);
-            globalThis.location.href = '/teacher/dashboard-v2';
+            globalThis.location.href = '/teacher/dashboard';
             return true;
         } else {
             throw new Error(`La connexion a échoué. Statut: ${result.status}`);
@@ -463,7 +463,7 @@ public async login(email: string, password: string): Promise<any> {
      * @returns folder array if successful 
      * @returns A error string if unsuccessful,
      */
-    public async getUserFolders(): Promise<FolderType[] | string> {
+    public async getUserFolders(): Promise<FolderType[]> {
         try {
 
             // No params
@@ -482,14 +482,17 @@ public async login(email: string, password: string): Promise<any> {
         } catch (error) {
             console.log("Error details: ", error);
 
+            let theThrownMessage : string = '';
+
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 const data = err.response?.data as { error: string } | undefined;
                 const url = err.config?.url || 'URL inconnue';
-                return data?.error || `Erreur serveur inconnue lors de la requête (${url}).`;
+                theThrownMessage = data?.error || `Erreur serveur inconnue lors de la requête (${url}).`;
+            } else {
+                theThrownMessage = `Une erreur inattendue s'est produite.`;
             }
-
-            return `Une erreur inattendue s'est produite.`
+            throw new Error(theThrownMessage);
         }
     }
 

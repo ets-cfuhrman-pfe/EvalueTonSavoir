@@ -1,3 +1,122 @@
+@use '../variables' as *;
+
+// Login container
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  .inputs {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid $login-container-border-color;
+    border-radius: 10px;
+    padding: $spacing-xl;
+
+    .title {
+      text-align: center;
+      margin: 0 0 $spacing-md 0;
+      font-size: 1.5rem;
+    }
+
+    .avatar {
+      max-height: 50px;
+      margin-bottom: $spacing-sm;
+    }
+
+    // Ensure forms inside are also centered
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    // Constrain form elements width within the card
+    .MuiTextField-root,
+    .MuiFormControl-root {
+      width: 250px;
+    }
+
+    .MuiButton-root,
+    .MuiLoadingButton-root {
+      width: auto;
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    .inputs {
+      width: $login-container-mobile-width;
+      margin: $login-container-mobile-margin;
+
+      .MuiTextField-root,
+      .MuiFormControl-root {
+        width: 90%;
+      }
+    }
+  }
+}
+
+.error-text {
+  color: red;
+  font-size: 20px;
+  font-weight: bold;
+  padding: $spacing-md;
+}
+
+.login-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: $spacing-md;
+
+  a {
+    padding: 4px;
+    color: #333;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Auth selection page (login page)
+.auth-selection-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+
+  h1 {
+    margin-bottom: 20px;
+  }
+}
+
+.form-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.home-button-container {
+  background: none;
+  color: black;
+  
+  &:hover {
+    background: none;
+    color: black;
+    text-decoration: underline;
+  }
+}
+
 // Main content container
 
 .content-container {

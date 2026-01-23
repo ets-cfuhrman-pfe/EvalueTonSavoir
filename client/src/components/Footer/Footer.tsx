@@ -1,7 +1,6 @@
 import * as React from 'react';
 import packageJson from '../../../package.json';
 import { ENV_VARIABLES } from '../../constants';
-import './footer.css';
 
 type FooterProps = object; //empty object
 

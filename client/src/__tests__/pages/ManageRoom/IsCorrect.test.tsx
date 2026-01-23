@@ -1,6 +1,6 @@
 import { checkIfIsCorrect } from 'src/pages/Teacher/ManageRoom/useRooms';
 import { HighLowNumericalAnswer, MultipleChoiceQuestion, MultipleNumericalAnswer, NumericalQuestion, RangeNumericalAnswer, ShortAnswerQuestion, SimpleNumericalAnswer, TrueFalseQuestion } from 'gift-pegjs';
-import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoom';
+import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import { QuestionType } from 'src/Types/QuestionType';
 
 describe('checkIfIsCorrect', () => {
