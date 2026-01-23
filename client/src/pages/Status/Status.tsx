@@ -43,7 +43,23 @@ const StatusPage: React.FC = () => {
         setLoading(true);
         const newStatuses: Record<string, StatusData | null> = {};
         
-        let baseUrl = ENV_VARIABLES.VITE_BACKEND_URL || 'http://localhost:4400';
+        // Determine the backend URL
+        let baseUrl: string;
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Priority: configured URLs (non-empty), then check if we're in local development
+        if (ENV_VARIABLES.BACKEND_URL && ENV_VARIABLES.BACKEND_URL.trim().length > 0) {
+            baseUrl = ENV_VARIABLES.BACKEND_URL;
+        } else if (ENV_VARIABLES.VITE_BACKEND_URL && ENV_VARIABLES.VITE_BACKEND_URL.trim().length > 0) {
+            baseUrl = ENV_VARIABLES.VITE_BACKEND_URL;
+        } else if (isLocalhost) {
+            // Local development - use backend port
+            baseUrl = 'http://localhost:4400';
+        } else {
+            // Production - use current domain (nginx routes to backend)
+            baseUrl = window.location.origin;
+        }
+        
         baseUrl = baseUrl.replace(/\/$/, '');
 
         await Promise.all(CHECKS.map(async (check) => {
