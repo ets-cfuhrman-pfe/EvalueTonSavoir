@@ -51,10 +51,15 @@ const getCachedAuthProviders = () => {
             cachedAuthProvidersConfig = checks;
             lastConfigLoad = now;
         } catch (_e) {
-            // If config fails to load, return cached value or empty array
+            // If config fails to load, return cached value or empty array,
+            // and back off further load attempts for CONFIG_CACHE_MS.
+            if (logger && typeof logger.error === 'function') {
+                logger.error('Failed to load auth config in health check; using cached value if available.', _e);
+            }
             if (!cachedAuthProvidersConfig) {
                 cachedAuthProvidersConfig = [];
             }
+            lastConfigLoad = now;
         }
     }
     return cachedAuthProvidersConfig;
@@ -71,10 +76,6 @@ const resetAuthProvidersCache = () => {
 
 // Helper to sanitize error details for external exposure
 const sanitizeError = (errorDetails, context) => {
-    if (process.env.NODE_ENV === 'development') {
-        return errorDetails; // Return full details in development
-    }
-    
     // Log detailed error server-side
     logger.warn('Health check failure', {
         context,
@@ -82,8 +83,39 @@ const sanitizeError = (errorDetails, context) => {
         module: 'health-router'
     });
     
-    // Return generic message to client
-    return 'Service unavailable';
+    if (process.env.NODE_ENV === 'development') {
+        // Return full details in development with consistent shape
+        return {
+            message: typeof errorDetails === 'string' ? errorDetails : (errorDetails?.message || 'Unknown error'),
+            details: errorDetails
+        };
+    }
+    
+    // Return generic message to client in consistent shape
+    return { message: 'Service unavailable' };
+};
+
+// Helper to sanitize auth provider details for external exposure
+const sanitizeAuthProviderDetails = (details) => {
+    if (!details) return null;
+    
+    if (process.env.NODE_ENV === 'development') {
+        // Return full details in development
+        return details;
+    }
+    
+    // Log detailed provider status server-side
+    logger.info('Auth provider health check', {
+        details,
+        module: 'health-router'
+    });
+    
+    // In production, only return generic up/down status without error details
+    const sanitized = {};
+    Object.keys(details).forEach(provider => {
+        sanitized[provider] = details[provider] === 'up' ? 'up' : 'down';
+    });
+    return sanitized;
 };
 
 // Helper to check DB connection
@@ -175,12 +207,14 @@ router.get('/', asyncHandler(async (req, res) => {
         services.auth = authCheck.ok && authLoginCheck.ok ? 'up' : 'down';
     }
 
+    const sanitizedAuthProviders = sanitizeAuthProviderDetails(authCheck.details);
+    
     const response = {
         status: dbCheck.ok && (authCheck.ok !== false) && authLoginCheck.ok ? 'ok' : 'error',
         timestamp: new Date().toISOString(),
         services,
         checks: {
-            ...(authCheck.details && { auth_providers: authCheck.details }),
+            ...(sanitizedAuthProviders && { auth_providers: sanitizedAuthProviders }),
             auth_login: authLoginCheck.ok ? 'ok' : 'failed'
         }
     };
