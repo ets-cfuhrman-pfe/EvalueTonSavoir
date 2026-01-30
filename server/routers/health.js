@@ -5,6 +5,7 @@ const AuthConfig = require('../config/auth');
 const http = require('http');
 const https = require('https');
 const asyncHandler = require('./routerUtils');
+const healthFlags = require('../utils/healthFlags');
 
 const rateLimit = require('express-rate-limit');
 
@@ -109,29 +110,32 @@ const checkCollection = async (collectionName) => {
 router.get('/', asyncHandler(async (req, res) => {
     const dbCheck = await checkDB();
     const authCheck = await checkAuthProviders();
+    const authLoginCheck = healthFlags.getAuthLoginStatus();
 
     const services = {
         database: dbCheck.ok ? 'up' : 'down',
         server: 'up'
     };
 
-    if (authCheck.details || !authCheck.ok) {
-        services.auth = authCheck.ok ? 'up' : 'down';
+    if (authCheck.details || !authCheck.ok || !authLoginCheck.ok) {
+        services.auth = authCheck.ok && authLoginCheck.ok ? 'up' : 'down';
     }
 
     const response = {
-        status: dbCheck.ok && (authCheck.ok !== false) ? 'ok' : 'error',
+        status: dbCheck.ok && (authCheck.ok !== false) && authLoginCheck.ok ? 'ok' : 'error',
         timestamp: new Date().toISOString(),
         services,
         checks: {
-            ...(authCheck.details && { auth_providers: authCheck.details })
+            ...(authCheck.details && { auth_providers: authCheck.details }),
+            auth_login: authLoginCheck.ok ? 'ok' : 'failed'
         }
     };
     
-    if (!dbCheck.ok || !authCheck.ok) {
+    if (!dbCheck.ok || !authCheck.ok || !authLoginCheck.ok) {
         response.errors = {};
         if (!dbCheck.ok) response.errors.database = dbCheck.error;
         if (!authCheck.ok) response.errors.auth = authCheck.details || authCheck.error;
+        if (!authLoginCheck.ok) response.errors.auth_login = authLoginCheck.error;
         return res.status(503).json(response);
     }
     
@@ -182,6 +186,26 @@ router.get('/login', asyncHandler(async (req, res) => {
         return res.status(503).json(response);
     }
     
+    res.json(response);
+}));
+
+// Check authentication login health flag only
+router.get('/auth-login', asyncHandler(async (req, res) => {
+    const authLoginCheck = healthFlags.getAuthLoginStatus();
+
+    const response = {
+        status: authLoginCheck.ok ? 'ok' : 'error',
+        timestamp: new Date().toISOString(),
+        checks: {
+            auth_login: authLoginCheck.ok ? 'ok' : 'failed'
+        }
+    };
+
+    if (!authLoginCheck.ok) {
+        response.errors = { auth_login: authLoginCheck.error };
+        return res.status(503).json(response);
+    }
+
     res.json(response);
 }));
 
