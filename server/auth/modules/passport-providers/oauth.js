@@ -89,13 +89,18 @@ class PassportOAuth {
 
         app.get(`${endpoint}/${name}/callback`,
             (req, res, next) => {
-                passport.authenticate(name, { failureRedirect: '/login' }, (err, user) => {
+                passport.authenticate(name, (err, user) => {
                     if (err || !user) {
                         healthFlags.setAuthLoginError(err || "OAuth authentication failed");
                         return res.redirect('/login');
                     }
-                    req.user = user;
-                    return next();
+                    req.logIn(user, (err) => {
+                        if (err) {
+                            healthFlags.setAuthLoginError(err);
+                            return res.redirect('/login');
+                        }
+                        return next();
+                    });
                 })(req, res, next);
             },
             (req, res) => {
