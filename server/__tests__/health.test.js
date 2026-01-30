@@ -133,7 +133,8 @@ describe('Health Router', () => {
             expect(res.status).toBe(503);
             expect(res.body.status).toBe('error');
             expect(res.body.services.database).toBe('down');
-            expect(res.body.errors.database).toBe('DB Connection Failed');
+            expect(res.body.errors.database.message).toBe('DB Connection Failed');
+            expect(res.body.errors.database.details).toBe('DB Connection Failed');
         });
 
         describe('Auth Provider Checks', () => {
@@ -224,7 +225,9 @@ describe('Health Router', () => {
                 expect(res.status).toBe(503);
                 expect(res.body.status).toBe('error');
                 expect(res.body.services.auth).toBe('down');
-                expect(res.body.errors.auth['fail_provider']).toBe('Network Error');
+                // In development mode, full error details are shown
+                expect(res.body.checks.auth_providers['fail_provider']).toBe('Network Error');
+                expect(res.body.errors.auth.message).toBeDefined();
             });
 
             it('should return 503 when Auth Provider returns 500', async () => {
@@ -246,7 +249,9 @@ describe('Health Router', () => {
 
                 expect(res.status).toBe(503);
                 expect(res.body.services.auth).toBe('down');
-                expect(res.body.errors.auth['error_provider']).toBe('Status 500');
+                // In development mode, full error details are shown
+                expect(res.body.checks.auth_providers['error_provider']).toBe('Status 500');
+                expect(res.body.errors.auth.message).toBeDefined();
             });
 
             it('should return 503 when Auth Provider timeouts', async () => {
@@ -267,7 +272,9 @@ describe('Health Router', () => {
                 const res = await request(app).get('/api/health');
 
                 expect(res.status).toBe(503);
-                expect(res.body.errors.auth['timeout_provider']).toBe('Timeout');
+                // In development mode, full error details are shown
+                expect(res.body.checks.auth_providers['timeout_provider']).toBe('Timeout');
+                expect(res.body.errors.auth.message).toBeDefined();
             });
         });
     });
@@ -306,7 +313,8 @@ describe('Health Router', () => {
             expect(res.body.status).toBe('error');
             expect(res.body.checks.quizzes).toBe('failed');
             expect(res.body.checks.folders).toBe('ok');
-            expect(res.body.errors.quizzes).toBe('Quizzes Error');
+            expect(res.body.errors.quizzes.message).toBe('Quizzes Error');
+            expect(res.body.errors.quizzes.details).toBe('Quizzes Error');
         });
 
         it('should return 503 when folders collection is inaccessible', async () => {
@@ -326,7 +334,8 @@ describe('Health Router', () => {
             expect(res.status).toBe(503);
             expect(res.body.checks.quizzes).toBe('ok');
             expect(res.body.checks.folders).toBe('failed');
-            expect(res.body.errors.folders).toBe('Folders Error');
+            expect(res.body.errors.folders.message).toBe('Folders Error');
+            expect(res.body.errors.folders.details).toBe('Folders Error');
         });
     });
 
@@ -350,7 +359,8 @@ describe('Health Router', () => {
             expect(res.status).toBe(503);
             expect(res.body.status).toBe('error');
             expect(res.body.checks.users_collection).toBe('failed');
-            expect(res.body.errors.users_collection).toBe('Users Error');
+            expect(res.body.errors.users_collection.message).toBe('Users Error');
+            expect(res.body.errors.users_collection.details).toBe('Users Error');
         });
     });
 
@@ -395,7 +405,8 @@ describe('Health Router', () => {
             expect(res.status).toBe(503);
             expect(res.body.status).toBe('error');
             expect(res.body.checks.rooms_collection).toBe('failed');
-            expect(res.body.errors.rooms_collection).toBe('Rooms Error');
+            expect(res.body.errors.rooms_collection.message).toBe('Rooms Error');
+            expect(res.body.errors.rooms_collection.details).toBe('Rooms Error');
         });
     });
 });
