@@ -164,8 +164,13 @@ class PassportOpenIDConnect {
         app.get(`${endpoint}/${name}/callback`,
             (req, res, next) => {
                 passport.authenticate(name, (err, user) => {
-                    if (err || !user) {
-                        healthFlags.setAuthLoginError(err || 'OIDC authentication failed');
+                    if (err) {
+                        // Only set health flag for actual provider/system errors
+                        healthFlags.setAuthLoginError(err);
+                        return res.redirect('/login');
+                    }
+                    if (!user) {
+                        // Normal auth failure (e.g., user denied consent) - don't affect health
                         return res.redirect('/login');
                     }
                     req.logIn(user, (err) => {
@@ -181,7 +186,7 @@ class PassportOpenIDConnect {
                 if (req.user) {
                     self.passportjs.authenticate(req.user, req, res)
                 } else {
-                    healthFlags.setAuthLoginError('OIDC authentication failed');
+                    // User not authenticated - normal failure, don't affect health
                     res.status(401).json({ error: "Authentication failed" });
                 }
             }

@@ -84,7 +84,10 @@ class SimpleAuth {
                 stack: error.stack,
                 module: 'simpleauth'
             });
-            healthFlags.setAuthLoginError(error);
+            // Only set health flag for server/provider failures, not client errors
+            if (statusCode >= 500) {
+                healthFlags.setAuthLoginError(error);
+            }
             return res.status(statusCode).json({ message });
         }
     }
