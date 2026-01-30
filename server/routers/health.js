@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const AuthConfig = require('../config/auth');
+const http = require('http');
+const https = require('https');
 const asyncHandler = require('./routerUtils');
 
 const rateLimit = require('express-rate-limit');
@@ -27,7 +30,71 @@ const checkDB = async () => {
     }
 };
 
+// Helper to check Auth Providers
+const checkAuthProviders = async () => {
+    try {
+        const authConfig = new AuthConfig().loadConfig();
+        const checks = [];
+
+        // Navigate structure to find OIDC_CONFIG_URL
+        if (authConfig && authConfig.auth && Array.isArray(authConfig.auth.passportjs)) {
+             authConfig.auth.passportjs.forEach(providerGroup => {
+                // providerGroup is like { "oidc_local": { ... } }
+                Object.keys(providerGroup).forEach(key => {
+                    const config = providerGroup[key];
+                    if (config && config.OIDC_CONFIG_URL) {
+                        checks.push({
+                            name: key,
+                            url: config.OIDC_CONFIG_URL
+                        });
+                    }
+                });
+             });
+        }
+
+        if (checks.length === 0) {
+            // No OIDC providers configured to check
+            return { ok: true };
+        }
+
+        const results = await Promise.all(checks.map(async (check) => {
+            return new Promise((resolve) => {
+                const lib = check.url.startsWith('https') ? https : http;
+                const req = lib.get(check.url, { timeout: 5000 }, (res) => {
+                     // 200-299 is success for discovery
+                     if (res.statusCode >= 200 && res.statusCode < 300) {
+                         resolve({ ok: true, name: check.name });
+                     } else {
+                         resolve({ ok: false, name: check.name, error: `Status ${res.statusCode}` });
+                     }
+                     res.resume();
+                });
+                
+                req.on('error', (err) => {
+                     resolve({ ok: false, name: check.name, error: err.message });
+                });
+
+                req.on('timeout', () => {
+                    req.destroy();
+                    resolve({ ok: false, name: check.name, error: 'Timeout' });
+                });
+            });
+        }));
+
+        const allOk = results.every(r => r.ok);
+        const details = {};
+        results.forEach(r => details[r.name] = r.ok ? 'up' : r.error);
+        
+        return { ok: allOk, details, code: allOk ? 200 : 503 };
+
+    } catch (e) {
+        // If config fails to load entirely
+        return { ok: false, error: e.message, code: 503 };
+    }
+};
+
 // Helper to check collection access
+
 const checkCollection = async (collectionName) => {
     try {
         const connection = db.getConnection();
@@ -41,17 +108,30 @@ const checkCollection = async (collectionName) => {
 
 router.get('/', asyncHandler(async (req, res) => {
     const dbCheck = await checkDB();
+    const authCheck = await checkAuthProviders();
+
+    const services = {
+        database: dbCheck.ok ? 'up' : 'down',
+        server: 'up'
+    };
+
+    if (authCheck.details || !authCheck.ok) {
+        services.auth = authCheck.ok ? 'up' : 'down';
+    }
+
     const response = {
-        status: dbCheck.ok ? 'ok' : 'error',
+        status: dbCheck.ok && (authCheck.ok !== false) ? 'ok' : 'error',
         timestamp: new Date().toISOString(),
-        services: {
-            database: dbCheck.ok ? 'up' : 'down',
-            server: 'up'
+        services,
+        checks: {
+            ...(authCheck.details && { auth_providers: authCheck.details })
         }
     };
     
-    if (!dbCheck.ok) {
-        response.errors = { database: dbCheck.error };
+    if (!dbCheck.ok || !authCheck.ok) {
+        response.errors = {};
+        if (!dbCheck.ok) response.errors.database = dbCheck.error;
+        if (!authCheck.ok) response.errors.auth = authCheck.details || authCheck.error;
         return res.status(503).json(response);
     }
     

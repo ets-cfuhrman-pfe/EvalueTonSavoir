@@ -1,12 +1,22 @@
 const request = require('supertest');
 const express = require('express');
 const db = require('../config/db');
+const AuthConfig = require('../config/auth');
+const http = require('http');
+const https = require('https');
+const EventEmitter = require('events');
 
 // Mock dependencies
 jest.mock('../config/db', () => ({
     getConnection: jest.fn(),
     connect: jest.fn(),
 }));
+
+jest.mock('../config/auth');
+// Do NOT mock http/https entirely as it breaks express/supertest
+// We will spyOn checks inside the tests
+
+
 jest.mock('express-rate-limit', () => {
     return jest.fn((options) => {
         // Return a middleware that attaches the options to the request for inspection
@@ -41,6 +51,11 @@ describe('Health Router', () => {
 
         // Setup mock DB connection
         db.getConnection.mockReturnValue(mockConnection);
+        
+        // Default: Empty Auth Config
+        AuthConfig.mockImplementation(() => ({
+            loadConfig: jest.fn().mockReturnValue({})
+        }));
 
         // Setup Express app
         app = express();
@@ -68,7 +83,7 @@ describe('Health Router', () => {
     });
 
     describe('GET /api/health', () => {
-        it('should return 200 OK when DB is healthy', async () => {
+        it('should return 200 OK when DB is healthy and no auth providers', async () => {
             mockConnection.command.mockResolvedValue({ ok: 1 });
 
             const res = await request(app).get('/api/health');
@@ -88,6 +103,125 @@ describe('Health Router', () => {
             expect(res.body.status).toBe('error');
             expect(res.body.services.database).toBe('down');
             expect(res.body.errors.database).toBe('DB Connection Failed');
+        });
+
+        describe('Auth Provider Checks', () => {
+            const mockOidcUrl = 'http://test-oidc/.well-known/openid-configuration';
+
+            beforeEach(() => {
+                // Determine logic for http/https get
+                const mockGet = (url, options, cb) => {
+                    const req = new EventEmitter();
+                    req.destroy = jest.fn();
+                    
+                    // Handle options as cb if needed (http.get signature variance)
+                    const callback = typeof options === 'function' ? options : cb;
+
+                    // Simulate async response
+                    process.nextTick(() => {
+                        if (url.includes('fail')) {
+                            req.emit('error', new Error('Network Error'));
+                        } else if (url.includes('timeout')) {
+                            req.emit('timeout');
+                        } else if (url.includes('500')) {
+                             const res = new EventEmitter();
+                             res.statusCode = 500;
+                             res.resume = jest.fn();
+                             if(callback) callback(res);
+                        } else {
+                            const res = new EventEmitter();
+                            res.statusCode = 200;
+                            res.resume = jest.fn();
+                            if(callback) callback(res);
+                        }
+                    });
+                    return req;
+                };
+
+                jest.spyOn(http, 'get').mockImplementation(mockGet);
+                jest.spyOn(https, 'get').mockImplementation(mockGet);
+
+                // Setup Auth Config with a provider
+                AuthConfig.mockImplementation(() => ({
+                    loadConfig: jest.fn().mockReturnValue({
+                        auth: {
+                            passportjs: [{
+                                "test_provider": {
+                                    "OIDC_CONFIG_URL": mockOidcUrl
+                                }
+                            }]
+                        }
+                    })
+                }));
+            });
+
+            it('should return 200 OK when Auth Provider is reachable', async () => {
+                mockConnection.command.mockResolvedValue({ ok: 1 });
+
+                const res = await request(app).get('/api/health');
+
+                expect(res.status).toBe(200);
+                expect(res.body.status).toBe('ok');
+                expect(res.body.services.auth).toBe('up');
+                expect(res.body.checks.auth_providers.test_provider).toBe('up');
+            });
+
+            it('should return 503 when Auth Provider fails (Network Error)', async () => {
+                mockConnection.command.mockResolvedValue({ ok: 1 });
+                AuthConfig.mockImplementation(() => ({
+                    loadConfig: jest.fn().mockReturnValue({
+                        auth: {
+                            passportjs: [{
+                                "fail_provider": { "OIDC_CONFIG_URL": "http://fail" }
+                            }]
+                        }
+                    })
+                }));
+
+                const res = await request(app).get('/api/health');
+
+                expect(res.status).toBe(503);
+                expect(res.body.status).toBe('error');
+                expect(res.body.services.auth).toBe('down');
+                expect(res.body.errors.auth['fail_provider']).toBe('Network Error');
+            });
+
+            it('should return 503 when Auth Provider returns 500', async () => {
+                mockConnection.command.mockResolvedValue({ ok: 1 });
+                AuthConfig.mockImplementation(() => ({
+                    loadConfig: jest.fn().mockReturnValue({
+                        auth: {
+                            passportjs: [{
+                                "error_provider": { "OIDC_CONFIG_URL": "http://500" }
+                            }]
+                        }
+                    })
+                }));
+
+                const res = await request(app).get('/api/health');
+
+                expect(res.status).toBe(503);
+                expect(res.body.services.auth).toBe('down');
+                expect(res.body.errors.auth['error_provider']).toBe('Status 500');
+            });
+
+            it('should return 503 when Auth Provider timeouts', async () => {
+                mockConnection.command.mockResolvedValue({ ok: 1 });
+                AuthConfig.mockImplementation(() => ({
+                    loadConfig: jest.fn().mockReturnValue({
+                        auth: {
+                            passportjs: [{
+                                "timeout_provider": { "OIDC_CONFIG_URL": "http://timeout" }
+                            }]
+                        }
+                    })
+                }));
+
+                const res = await request(app).get('/api/health');
+
+                expect(res.status).toBe(503);
+                expect(res.body.errors.auth['timeout_provider']).toBe('Timeout');
+            });
         });
     });
 
