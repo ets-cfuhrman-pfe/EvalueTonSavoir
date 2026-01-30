@@ -5,6 +5,7 @@ const emailer = require('../config/email.js');
 const { MISSING_REQUIRED_PARAMETER } = require('../constants/errorCodes.js');
 const AppError = require('../middleware/AppError.js');
 const logger = require('../config/logger');
+const healthFlags = require('../utils/healthFlags');
 
 class AuthManager{
     constructor(expressapp,configs=null,userModel){
@@ -70,6 +71,7 @@ class AuthManager{
     // eslint-disable-next-line no-unused-vars
     async login(userInfo,req,res,next){ //passport and simpleauth use next
         const tokenToSave = jwt.create(userInfo.email, userInfo._id, userInfo.roles);
+        healthFlags.clearAuthLoginError();
         res.redirect(`/auth/callback?user=${tokenToSave}&username=${userInfo.name}`);
         logger.info(`L'utilisateur '${userInfo.name}' vient de se connecter`, {
             userId: userInfo._id,
@@ -90,6 +92,7 @@ class AuthManager{
             userId: userInfo._id,
             userEmail: userInfo.email
         });
+        healthFlags.clearAuthLoginError();
         if (!userInfo.roles || !Array.isArray(userInfo.roles) || userInfo.roles.length === 0) {
             userInfo.roles = ['teacher']; // default role for backward compatibility
         }

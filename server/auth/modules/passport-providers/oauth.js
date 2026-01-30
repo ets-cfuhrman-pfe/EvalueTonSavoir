@@ -2,6 +2,7 @@ var OAuth2Strategy = require('passport-oauth2')
 var authUserAssoc = require('../../../models/authUserAssociation')
 var { hasNestedValue } = require('../../../utils')
 const logger = require('../../../config/logger')
+const healthFlags = require('../../../utils/healthFlags')
 
 class PassportOAuth {
     constructor(passportjs, auth_name) {
@@ -75,6 +76,7 @@ class PassportOAuth {
                         stack: error.stack,
                         module: 'passport-oauth'
                     });
+                    healthFlags.setAuthLoginError(error);
                     return done(error);
                 }
             }));
@@ -87,12 +89,20 @@ class PassportOAuth {
 
         app.get(`${endpoint}/${name}/callback`,
             (req, res, next) => {
-                passport.authenticate(name, { failureRedirect: '/login' })(req, res, next);
+                passport.authenticate(name, { failureRedirect: '/login' }, (err, user) => {
+                    if (err || !user) {
+                        healthFlags.setAuthLoginError(err || "OAuth authentication failed");
+                        return res.redirect('/login');
+                    }
+                    req.user = user;
+                    return next();
+                })(req, res, next);
             },
             (req, res) => {
                 if (req.user) {
                     self.passportjs.authenticate(req.user, req, res)
                 } else {
+                    healthFlags.setAuthLoginError("OAuth authentication failed");
                     res.status(401).json({ error: "L'authentification a échoué" });
                 }
             }

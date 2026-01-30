@@ -6,6 +6,7 @@ const AppError = require('../../middleware/AppError.js');
 const { MISSING_REQUIRED_PARAMETER, LOGIN_CREDENTIALS_ERROR, GENERATE_PASSWORD_ERROR, UPDATE_PASSWORD_ERROR } = require('../../constants/errorCodes');
 const { name } = require('../../models/authProvider.js');
 const logger = require('../../config/logger');
+const healthFlags = require('../../utils/healthFlags');
 
 class SimpleAuth {
     constructor(authmanager, settings) {
@@ -83,6 +84,7 @@ class SimpleAuth {
                 stack: error.stack,
                 module: 'simpleauth'
             });
+            healthFlags.setAuthLoginError(error);
             return res.status(statusCode).json({ message });
         }
     }

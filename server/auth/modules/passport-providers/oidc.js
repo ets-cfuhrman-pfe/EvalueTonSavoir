@@ -5,6 +5,7 @@ const { MISSING_OIDC_PARAMETER } = require('../../../constants/errorCodes.js');
 const AppError = require('../../../middleware/AppError.js');
 const expressListEndpoints = require('express-list-endpoints');
 const logger = require('../../../config/logger');
+const healthFlags = require('../../../utils/healthFlags');
 
 class PassportOpenIDConnect {
     constructor(passportjs, auth_name) {
@@ -149,6 +150,8 @@ class PassportOpenIDConnect {
                         module: 'passport-oidc',
                         providerName: name
                     });
+                    healthFlags.setAuthLoginError(error);
+                    return done(error);
                 }
             }));
 
@@ -160,12 +163,20 @@ class PassportOpenIDConnect {
 
         app.get(`${endpoint}/${name}/callback`,
             (req, res, next) => {
-                passport.authenticate(name, { failureRedirect: '/login' })(req, res, next);
+                passport.authenticate(name, { failureRedirect: '/login' }, (err, user) => {
+                    if (err || !user) {
+                        healthFlags.setAuthLoginError(err || 'OIDC authentication failed');
+                        return res.redirect('/login');
+                    }
+                    req.user = user;
+                    return next();
+                })(req, res, next);
             },
             (req, res) => {
                 if (req.user) {
                     self.passportjs.authenticate(req.user, req, res)
                 } else {
+                    healthFlags.setAuthLoginError('OIDC authentication failed');
                     res.status(401).json({ error: "Authentication failed" });
                 }
             }
