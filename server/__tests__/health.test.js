@@ -2,9 +2,6 @@ const request = require('supertest');
 const express = require('express');
 const db = require('../config/db');
 const AuthConfig = require('../config/auth');
-const http = require('http');
-const https = require('https');
-const EventEmitter = require('events');
 const healthFlags = require('../utils/healthFlags');
 
 // Mock dependencies
