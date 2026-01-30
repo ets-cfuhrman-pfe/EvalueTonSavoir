@@ -1,4 +1,5 @@
-const AUTH_LOGIN_ERROR = Math.trunc(1);
+const AUTH_LOGIN_ERROR = 1 << 0;  
+const AUTH_ERROR_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
 let authHealthBitmask = 0;
 let lastAuthLoginError = null;
@@ -28,6 +29,20 @@ const clearAuthLoginError = () => {
 
 const getAuthLoginStatus = () => {
     const hasError = (authHealthBitmask & AUTH_LOGIN_ERROR) !== 0;
+    
+    // Auto-clear expired errors
+    if (hasError && lastAuthLoginError) {
+        const errorAge = Date.now() - new Date(lastAuthLoginError.timestamp).getTime();
+        if (errorAge > AUTH_ERROR_EXPIRY_MS) {
+            clearAuthLoginError();
+            return {
+                ok: true,
+                error: null,
+                bitmask: authHealthBitmask
+            };
+        }
+    }
+    
     return {
         ok: !hasError,
         error: hasError ? lastAuthLoginError : null,
