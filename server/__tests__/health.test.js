@@ -17,6 +17,12 @@ jest.mock('../config/auth');
 // Do NOT mock http/https entirely as it breaks express/supertest
 // We will spyOn checks inside the tests
 
+jest.mock('../config/logger', () => ({
+    warn: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn()
+}));
 
 jest.mock('express-rate-limit', () => {
     return jest.fn((options) => {
@@ -35,9 +41,20 @@ describe('Health Router', () => {
     let app;
     let mockCollection;
     let mockConnection;
+    let originalNodeEnv;
+
+    beforeAll(() => {
+        originalNodeEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'development';
+    });
+
+    afterAll(() => {
+        process.env.NODE_ENV = originalNodeEnv;
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.restoreAllMocks();
         healthFlags.clearAuthLoginError();
 
         // Setup mock collection
@@ -169,7 +186,14 @@ describe('Health Router', () => {
                 }));
             });
 
+            afterEach(() => {
+                jest.restoreAllMocks();
+            });
+
             it('should return 200 OK when Auth Provider is reachable', async () => {
+                // Force cache reload with current config
+                healthRouter.resetAuthProvidersCache();
+                
                 mockConnection.command.mockResolvedValue({ ok: 1 });
 
                 const res = await request(app).get('/api/health');
@@ -181,6 +205,9 @@ describe('Health Router', () => {
             });
 
             it('should return 503 when Auth Provider fails (Network Error)', async () => {
+                // Force cache reload with updated config
+                healthRouter.resetAuthProvidersCache();
+                
                 mockConnection.command.mockResolvedValue({ ok: 1 });
                 AuthConfig.mockImplementation(() => ({
                     loadConfig: jest.fn().mockReturnValue({
@@ -201,6 +228,9 @@ describe('Health Router', () => {
             });
 
             it('should return 503 when Auth Provider returns 500', async () => {
+                // Force cache reload with updated config
+                healthRouter.resetAuthProvidersCache();
+                
                 mockConnection.command.mockResolvedValue({ ok: 1 });
                 AuthConfig.mockImplementation(() => ({
                     loadConfig: jest.fn().mockReturnValue({
@@ -220,6 +250,9 @@ describe('Health Router', () => {
             });
 
             it('should return 503 when Auth Provider timeouts', async () => {
+                // Force cache reload with updated config
+                healthRouter.resetAuthProvidersCache();
+                
                 mockConnection.command.mockResolvedValue({ ok: 1 });
                 AuthConfig.mockImplementation(() => ({
                     loadConfig: jest.fn().mockReturnValue({
