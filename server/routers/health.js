@@ -6,6 +6,7 @@ const http = require('http');
 const https = require('https');
 const asyncHandler = require('./routerUtils');
 const healthFlags = require('../utils/healthFlags');
+const logger = require('../config/logger');
 
 const rateLimit = require('express-rate-limit');
 
@@ -19,6 +20,71 @@ const healthLimiter = rateLimit({
     }
 });
 router.use(healthLimiter);
+
+// Cache auth config to avoid blocking fs.readFileSync on every health check
+let cachedAuthProvidersConfig = null;
+let lastConfigLoad = 0;
+const CONFIG_CACHE_MS = 60000; // Cache for 1 minute
+
+const getCachedAuthProviders = () => {
+    const now = Date.now();
+    if (!cachedAuthProvidersConfig || (now - lastConfigLoad > CONFIG_CACHE_MS)) {
+        try {
+            const authConfig = new AuthConfig().loadConfig();
+            const checks = [];
+
+            // Navigate structure to find OIDC_CONFIG_URL
+            if (authConfig && authConfig.auth && Array.isArray(authConfig.auth.passportjs)) {
+                authConfig.auth.passportjs.forEach(providerGroup => {
+                    Object.keys(providerGroup).forEach(key => {
+                        const config = providerGroup[key];
+                        if (config && config.OIDC_CONFIG_URL) {
+                            checks.push({
+                                name: key,
+                                url: config.OIDC_CONFIG_URL
+                            });
+                        }
+                    });
+                });
+            }
+            
+            cachedAuthProvidersConfig = checks;
+            lastConfigLoad = now;
+        } catch (_e) {
+            // If config fails to load, return cached value or empty array
+            if (!cachedAuthProvidersConfig) {
+                cachedAuthProvidersConfig = [];
+            }
+        }
+    }
+    return cachedAuthProvidersConfig;
+};
+
+// Initialize cache at module load to avoid blocking during first health check
+getCachedAuthProviders();
+
+// Export for testing - allows tests to reset the cache
+const resetAuthProvidersCache = () => {
+    cachedAuthProvidersConfig = null;
+    lastConfigLoad = 0;
+};
+
+// Helper to sanitize error details for external exposure
+const sanitizeError = (errorDetails, context) => {
+    if (process.env.NODE_ENV === 'development') {
+        return errorDetails; // Return full details in development
+    }
+    
+    // Log detailed error server-side
+    logger.warn('Health check failure', {
+        context,
+        details: errorDetails,
+        module: 'health-router'
+    });
+    
+    // Return generic message to client
+    return 'Service unavailable';
+};
 
 // Helper to check DB connection
 const checkDB = async () => {
@@ -34,24 +100,7 @@ const checkDB = async () => {
 // Helper to check Auth Providers
 const checkAuthProviders = async () => {
     try {
-        const authConfig = new AuthConfig().loadConfig();
-        const checks = [];
-
-        // Navigate structure to find OIDC_CONFIG_URL
-        if (authConfig && authConfig.auth && Array.isArray(authConfig.auth.passportjs)) {
-             authConfig.auth.passportjs.forEach(providerGroup => {
-                // providerGroup is like { "oidc_local": { ... } }
-                Object.keys(providerGroup).forEach(key => {
-                    const config = providerGroup[key];
-                    if (config && config.OIDC_CONFIG_URL) {
-                        checks.push({
-                            name: key,
-                            url: config.OIDC_CONFIG_URL
-                        });
-                    }
-                });
-             });
-        }
+        const checks = getCachedAuthProviders();
 
         if (checks.length === 0) {
             // No OIDC providers configured to check
@@ -60,25 +109,30 @@ const checkAuthProviders = async () => {
 
         const results = await Promise.all(checks.map(async (check) => {
             return new Promise((resolve) => {
-                const lib = check.url.startsWith('https') ? https : http;
-                const req = lib.get(check.url, { timeout: 5000 }, (res) => {
-                     // 200-299 is success for discovery
-                     if (res.statusCode >= 200 && res.statusCode < 300) {
-                         resolve({ ok: true, name: check.name });
-                     } else {
-                         resolve({ ok: false, name: check.name, error: `Status ${res.statusCode}` });
-                     }
-                     res.resume();
-                });
-                
-                req.on('error', (err) => {
-                     resolve({ ok: false, name: check.name, error: err.message });
-                });
+                try {
+                    const lib = check.url.startsWith('https') ? https : http;
+                    const req = lib.get(check.url, { timeout: 5000 }, (res) => {
+                         // 200-299 is success for discovery
+                         if (res.statusCode >= 200 && res.statusCode < 300) {
+                             resolve({ ok: true, name: check.name });
+                         } else {
+                             resolve({ ok: false, name: check.name, error: `Status ${res.statusCode}` });
+                         }
+                         res.resume();
+                    });
+                    
+                    req.on('error', (err) => {
+                         resolve({ ok: false, name: check.name, error: err.message });
+                    });
 
-                req.on('timeout', () => {
-                    req.destroy();
-                    resolve({ ok: false, name: check.name, error: 'Timeout' });
-                });
+                    req.on('timeout', () => {
+                        req.destroy();
+                        resolve({ ok: false, name: check.name, error: 'Timeout' });
+                    });
+                } catch (err) {
+                    // Handle synchronous errors (e.g., invalid URL)
+                    resolve({ ok: false, name: check.name, error: err.message });
+                }
             });
         }));
 
@@ -133,9 +187,9 @@ router.get('/', asyncHandler(async (req, res) => {
     
     if (!dbCheck.ok || !authCheck.ok || !authLoginCheck.ok) {
         response.errors = {};
-        if (!dbCheck.ok) response.errors.database = dbCheck.error;
-        if (!authCheck.ok) response.errors.auth = authCheck.details || authCheck.error;
-        if (!authLoginCheck.ok) response.errors.auth_login = authLoginCheck.error;
+        if (!dbCheck.ok) response.errors.database = sanitizeError(dbCheck.error, 'database');
+        if (!authCheck.ok) response.errors.auth = sanitizeError(authCheck.details || authCheck.error, 'auth_providers');
+        if (!authLoginCheck.ok) response.errors.auth_login = sanitizeError(authLoginCheck.error, 'auth_login');
         return res.status(503).json(response);
     }
     
@@ -161,8 +215,8 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
 
     if (!quizzesCheck.ok || !foldersCheck.ok) {
         response.errors = {};
-        if (!quizzesCheck.ok) response.errors.quizzes = quizzesCheck.error;
-        if (!foldersCheck.ok) response.errors.folders = foldersCheck.error;
+        if (!quizzesCheck.ok) response.errors.quizzes = sanitizeError(quizzesCheck.error, 'quizzes_collection');
+        if (!foldersCheck.ok) response.errors.folders = sanitizeError(foldersCheck.error, 'folders_collection');
         return res.status(503).json(response);
     }
 
@@ -182,7 +236,7 @@ router.get('/login', asyncHandler(async (req, res) => {
     };
 
     if (!usersCheck.ok) {
-        response.errors = { users_collection: usersCheck.error };
+        response.errors = { users_collection: sanitizeError(usersCheck.error, 'users_collection') };
         return res.status(503).json(response);
     }
     
@@ -202,7 +256,7 @@ router.get('/auth-login', asyncHandler(async (req, res) => {
     };
 
     if (!authLoginCheck.ok) {
-        response.errors = { auth_login: authLoginCheck.error };
+        response.errors = { auth_login: sanitizeError(authLoginCheck.error, 'auth_login_flag') };
         return res.status(503).json(response);
     }
 
@@ -222,7 +276,7 @@ router.get('/join-room', asyncHandler(async (req, res) => {
     };
 
     if (!roomsCheck.ok) {
-        response.errors = { rooms_collection: roomsCheck.error };
+        response.errors = { rooms_collection: sanitizeError(roomsCheck.error, 'rooms_collection') };
         return res.status(503).json(response);
     }
     
@@ -230,3 +284,8 @@ router.get('/join-room', asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
+
+// Export reset function for testing
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+    module.exports.resetAuthProvidersCache = resetAuthProvidersCache;
+}
