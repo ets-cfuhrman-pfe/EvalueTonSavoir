@@ -148,7 +148,7 @@ describe('Health Router', () => {
 
             beforeEach(() => {
                 // Mock global fetch
-                global.fetch = jest.fn((url, options) => {
+                global.fetch = jest.fn((url) => {
                     if (url.includes('fail')) {
                         return Promise.reject(new Error('fetch failed'));
                     } else if (url.includes('timeout')) {
