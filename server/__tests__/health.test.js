@@ -139,39 +139,36 @@ describe('Health Router', () => {
 
         describe('Auth Provider Checks', () => {
             const mockOidcUrl = 'http://test-oidc/.well-known/openid-configuration';
+            const mockOidcResponse = {
+                issuer: 'http://test-oidc',
+                authorization_endpoint: 'http://test-oidc/authorize',
+                token_endpoint: 'http://test-oidc/token',
+                userinfo_endpoint: 'http://test-oidc/userinfo'
+            };
 
             beforeEach(() => {
-                // Determine logic for http/https get
-                const mockGet = (url, options, cb) => {
-                    const req = new EventEmitter();
-                    req.destroy = jest.fn();
-                    
-                    // Handle options as cb if needed (http.get signature variance)
-                    const callback = typeof options === 'function' ? options : cb;
-
-                    // Simulate async response
-                    process.nextTick(() => {
-                        if (url.includes('fail')) {
-                            req.emit('error', new Error('Network Error'));
-                        } else if (url.includes('timeout')) {
-                            req.emit('timeout');
-                        } else if (url.includes('500')) {
-                             const res = new EventEmitter();
-                             res.statusCode = 500;
-                             res.resume = jest.fn();
-                             if(callback) callback(res);
-                        } else {
-                            const res = new EventEmitter();
-                            res.statusCode = 200;
-                            res.resume = jest.fn();
-                            if(callback) callback(res);
-                        }
-                    });
-                    return req;
-                };
-
-                jest.spyOn(http, 'get').mockImplementation(mockGet);
-                jest.spyOn(https, 'get').mockImplementation(mockGet);
+                // Mock global fetch
+                global.fetch = jest.fn((url, options) => {
+                    if (url.includes('fail')) {
+                        return Promise.reject(new Error('fetch failed'));
+                    } else if (url.includes('timeout')) {
+                        const abortError = new Error('This operation was aborted');
+                        abortError.name = 'AbortError';
+                        return Promise.reject(abortError);
+                    } else if (url.includes('500')) {
+                        return Promise.resolve({
+                            ok: false,
+                            status: 500,
+                            json: () => Promise.reject(new Error('Invalid JSON'))
+                        });
+                    } else {
+                        return Promise.resolve({
+                            ok: true,
+                            status: 200,
+                            json: () => Promise.resolve(mockOidcResponse)
+                        });
+                    }
+                });
 
                 // Setup Auth Config with a provider
                 AuthConfig.mockImplementation(() => ({
@@ -188,6 +185,7 @@ describe('Health Router', () => {
             });
 
             afterEach(() => {
+                delete global.fetch;
                 jest.restoreAllMocks();
             });
 
@@ -226,7 +224,7 @@ describe('Health Router', () => {
                 expect(res.body.status).toBe('error');
                 expect(res.body.services.auth).toBe('down');
                 // In development mode, full error details are shown
-                expect(res.body.checks.auth_providers['fail_provider']).toBe('Network Error');
+                expect(res.body.checks.auth_providers['fail_provider']).toBe('fetch failed');
                 expect(res.body.errors.auth.message).toBeDefined();
             });
 
