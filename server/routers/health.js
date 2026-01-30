@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const AuthConfig = require('../config/auth');
-const http = require('http');
-const https = require('https');
 const asyncHandler = require('./routerUtils');
 const healthFlags = require('../utils/healthFlags');
 const logger = require('../config/logger');
@@ -104,17 +102,23 @@ const sanitizeAuthProviderDetails = (details) => {
         return details;
     }
     
-    // Log detailed provider status server-side
-    logger.info('Auth provider health check', {
-        details,
-        module: 'health-router'
-    });
-    
     // In production, only return generic up/down status without error details
     const sanitized = {};
+    let hasFailure = false;
     Object.keys(details).forEach(provider => {
-        sanitized[provider] = details[provider] === 'up' ? 'up' : 'down';
+        const isDown = details[provider] !== 'up';
+        if (isDown) hasFailure = true;
+        sanitized[provider] = isDown ? 'down' : 'up';
     });
+    
+    // Only log when a provider is down to avoid high-volume logs from frequent health checks
+    if (hasFailure) {
+        logger.warn('Auth provider health check failure detected', {
+            details,
+            module: 'health-router'
+        });
+    }
+    
     return sanitized;
 };
 
@@ -141,30 +145,69 @@ const checkAuthProviders = async () => {
 
         const results = await Promise.all(checks.map(async (check) => {
             return new Promise((resolve) => {
-                try {
-                    const lib = check.url.startsWith('https') ? https : http;
-                    const req = lib.get(check.url, { timeout: 5000 }, (res) => {
-                         // 200-299 is success for discovery
-                         if (res.statusCode >= 200 && res.statusCode < 300) {
-                             resolve({ ok: true, name: check.name });
-                         } else {
-                             resolve({ ok: false, name: check.name, error: `Status ${res.statusCode}` });
-                         }
-                         res.resume();
-                    });
-                    
-                    req.on('error', (err) => {
-                         resolve({ ok: false, name: check.name, error: err.message });
-                    });
+                (async () => {
+                    try {
+                    // Use fetch to follow redirects and validate OIDC discovery JSON
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        controller.abort();
+                    }, 5000);
 
-                    req.on('timeout', () => {
-                        req.destroy();
-                        resolve({ ok: false, name: check.name, error: 'Timeout' });
-                    });
+                    let res;
+                    try {
+                        res = await fetch(check.url, {
+                            method: 'GET',
+                            redirect: 'follow',
+                            signal: controller.signal,
+                        });
+                    } catch (err) {
+                        clearTimeout(timeoutId);
+                        const errorMessage = err.name === 'AbortError' ? 'Timeout' : err.message;
+                        return resolve({ ok: false, name: check.name, error: errorMessage });
+                    }
+
+                    clearTimeout(timeoutId);
+
+                    if (!res.ok) {
+                        return resolve({ ok: false, name: check.name, error: `Status ${res.status}` });
+                    }
+
+                    let json;
+                    try {
+                        json = await res.json();
+                    } catch (_err) {
+                        return resolve({
+                            ok: false,
+                            name: check.name,
+                            error: 'Invalid JSON in OIDC discovery document',
+                        });
+                    }
+
+                    const missingFields = [];
+                    if (!json || typeof json.issuer !== 'string') {
+                        missingFields.push('issuer');
+                    }
+                    if (!json || typeof json.authorization_endpoint !== 'string') {
+                        missingFields.push('authorization_endpoint');
+                    }
+                    if (!json || typeof json.token_endpoint !== 'string') {
+                        missingFields.push('token_endpoint');
+                    }
+
+                    if (missingFields.length > 0) {
+                        return resolve({
+                            ok: false,
+                            name: check.name,
+                            error: `Missing OIDC discovery fields: ${missingFields.join(', ')}`,
+                        });
+                    }
+
+                    return resolve({ ok: true, name: check.name });
                 } catch (err) {
                     // Handle synchronous errors (e.g., invalid URL)
-                    resolve({ ok: false, name: check.name, error: err.message });
+                    return resolve({ ok: false, name: check.name, error: err.message });
                 }
+                })();
             });
         }));
 
@@ -210,7 +253,7 @@ router.get('/', asyncHandler(async (req, res) => {
     const sanitizedAuthProviders = sanitizeAuthProviderDetails(authCheck.details);
     
     const response = {
-        status: dbCheck.ok && (authCheck.ok !== false) && authLoginCheck.ok ? 'ok' : 'error',
+        status: dbCheck.ok && authCheck.ok && authLoginCheck.ok ? 'ok' : 'error',
         timestamp: new Date().toISOString(),
         services,
         checks: {
