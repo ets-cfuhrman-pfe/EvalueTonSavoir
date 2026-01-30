@@ -5,6 +5,7 @@ const AuthConfig = require('../config/auth');
 const http = require('http');
 const https = require('https');
 const EventEmitter = require('events');
+const healthFlags = require('../utils/healthFlags');
 
 // Mock dependencies
 jest.mock('../config/db', () => ({
@@ -37,6 +38,7 @@ describe('Health Router', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        healthFlags.clearAuthLoginError();
 
         // Setup mock collection
         mockCollection = {
@@ -92,6 +94,18 @@ describe('Health Router', () => {
             expect(res.body.status).toBe('ok');
             expect(res.body.services.database).toBe('up');
             expect(res.body.services.server).toBe('up');
+        });
+
+        it('should return 503 when auth login flag is set', async () => {
+            mockConnection.command.mockResolvedValue({ ok: 1 });
+            healthFlags.setAuthLoginError(new Error('Auth login failed'));
+
+            const res = await request(app).get('/api/health');
+
+            expect(res.status).toBe(503);
+            expect(res.body.status).toBe('error');
+            expect(res.body.checks.auth_login).toBe('failed');
+            expect(res.body.errors.auth_login.message).toBe('Auth login failed');
         });
 
         it('should return 503 Service Unavailable when DB is down', async () => {
@@ -304,6 +318,27 @@ describe('Health Router', () => {
             expect(res.body.status).toBe('error');
             expect(res.body.checks.users_collection).toBe('failed');
             expect(res.body.errors.users_collection).toBe('Users Error');
+        });
+    });
+
+    describe('GET /api/health/auth-login', () => {
+        it('should return 200 OK when auth login flag is clear', async () => {
+            const res = await request(app).get('/api/health/auth-login');
+
+            expect(res.status).toBe(200);
+            expect(res.body.status).toBe('ok');
+            expect(res.body.checks.auth_login).toBe('ok');
+        });
+
+        it('should return 503 when auth login flag is set', async () => {
+            healthFlags.setAuthLoginError('OIDC authentication failed');
+
+            const res = await request(app).get('/api/health/auth-login');
+
+            expect(res.status).toBe(503);
+            expect(res.body.status).toBe('error');
+            expect(res.body.checks.auth_login).toBe('failed');
+            expect(res.body.errors.auth_login.message).toBe('OIDC authentication failed');
         });
     });
 
