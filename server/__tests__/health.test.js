@@ -7,6 +7,11 @@ jest.mock('../config/db', () => ({
     getConnection: jest.fn(),
     connect: jest.fn(),
 }));
+
+jest.mock('../config/health', () => ({
+    getOAuthStatus: jest.fn(),
+}));
+
 jest.mock('express-rate-limit', () => {
     return jest.fn((options) => {
         // Return a middleware that attaches the options to the request for inspection
@@ -19,6 +24,7 @@ jest.mock('express-rate-limit', () => {
 
 // Import router after mocking
 const healthRouter = require('../routers/health');
+const healthConfig = require('../config/health');
 
 describe('Health Router', () => {
     let app;
@@ -194,6 +200,38 @@ describe('Health Router', () => {
             expect(res.body.status).toBe('error');
             expect(res.body.checks.rooms_collection).toBe('failed');
             expect(res.body.errors.rooms_collection).toBe('Rooms Error');
+        });
+    });
+
+    describe('GET /api/health/auth-login', () => {
+        it('should return 200 OK when OAuth is up', async () => {
+            healthConfig.getOAuthStatus.mockReturnValue({ status: 'up', error: null });
+
+            const res = await request(app).get('/api/health/auth-login');
+            
+            expect(res.status).toBe(200);
+            expect(res.body.status).toBe('up');
+        });
+
+        it('should return 503 Service Unavailable when OAuth is down', async () => {
+            const errorTimestamp = new Date();
+            healthConfig.getOAuthStatus.mockReturnValue({
+                status: 'down',
+                error: {
+                    timestamp: errorTimestamp,
+                    provider: 'oidc',
+                    message: 'Some error'
+                }
+            });
+
+            const res = await request(app).get('/api/health/auth-login');
+            
+            expect(res.status).toBe(503);
+            expect(res.body.status).toBe('down');
+            expect(res.body.timestamp).toBe(errorTimestamp.toISOString());
+            // Ensure allowed fields are not leaked
+            expect(res.body.provider).toBeUndefined();
+            expect(res.body.message).toBeUndefined();
         });
     });
 });
