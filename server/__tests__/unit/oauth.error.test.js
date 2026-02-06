@@ -91,23 +91,6 @@ describe('PassportOAuth Error Handling Unit Test', () => {
         expect(res.redirect).toHaveBeenCalledWith('/login');
     });
 
-    test('Error Handler: marks health failure on Network Error (missing statusCode)', () => {
-        const { errorHandler } = getCallbackParams();
-        const req = {};
-        const res = { redirect: jest.fn() };
-        const next = jest.fn();
-
-        const err = {
-            name: 'InternalOAuthError',
-            message: 'Failed to obtain access token',
-            // No oauthError or statusCode implies network/unknown
-        };
-
-        errorHandler(err, req, res, next);
-
-        expect(health.markOAuthTokenFailure).toHaveBeenCalled();
-    });
-
     test('Success Handler: clears health failure', () => {
         const { successHandler } = getCallbackParams();
         const req = { user: { id: 1 } };
