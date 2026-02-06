@@ -122,7 +122,7 @@ describe('PassportOAuth Error Handling Unit Test', () => {
 
         const err = {
             name: 'InternalOAuthError',
-            message: 'Failed to obtain access token'
+            message: 'Failed to obtain access token',
             // No oauthError or statusCode implies network/unknown
         };
 
