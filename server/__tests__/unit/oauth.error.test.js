@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const PassportOAuth = require('../../auth/modules/passport-providers/oauth');
 const health = require('../../config/health');
 
