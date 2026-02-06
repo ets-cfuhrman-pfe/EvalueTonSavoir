@@ -102,29 +102,13 @@ class PassportOAuth {
 
             // Error handler: mark health failure on token errors
             (err, req, res, _next) => {
-                const isInternalError =
-                    err?.name === 'InternalOAuthError' &&
-                    /Failed to obtain access token/i.test(err.message);
-
-                // Exclude client errors like expired code, reused code, invalid grant
-                // only want to restart on server errors or network errors 
-                const isClientSideError = err?.oauthError?.statusCode >= 400 && err?.oauthError?.statusCode < 500;
-                
-                if (isInternalError && !isClientSideError) {
-                    health.markOAuthTokenFailure({
-                        provider: name,
-                        message: err.message,
-                        statusCode: err.statusCode,
-                        oauthErrorData: err?.oauthError?.data
-                    })
-                }
+                health.checkAndMarkOAuthTokenFailure(err, name);
 
                 logger.error(`Erreur OAuth2 dans le callback '${name}'`, {
                     providerName: name,
                     message: err.message,
                     stack: err.stack,
-                    statusCode: err.statusCode,
-                    oauthErrorData: err?.oauthError?.data,
+                    statusCode: err?.oauthError?.statusCode || err.statusCode,
                     module: 'passport-oauth'
                 })
                 return res.redirect('/login');
