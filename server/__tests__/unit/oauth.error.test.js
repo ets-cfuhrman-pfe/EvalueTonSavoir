@@ -9,7 +9,8 @@ jest.mock('../../config/logger', () => ({
 
 jest.mock('../../config/health', () => ({
     markOAuthTokenFailure: jest.fn(),
-    clearOAuthTokenFailure: jest.fn()
+    clearOAuthTokenFailure: jest.fn(),
+    checkAndMarkOAuthTokenFailure: jest.fn()
 }));
 
 jest.mock('../../models/authUserAssociation');
@@ -72,7 +73,7 @@ describe('PassportOAuth Error Handling Unit Test', () => {
         };
     };
 
-    test('Error Handler: marks health failure on InternalOAuthError (500)', () => {
+    test('Error Handler: delegates to health.checkAndMarkOAuthTokenFailure', () => {
         const { errorHandler } = getCallbackParams();
         const req = {};
         const res = { redirect: jest.fn() };
@@ -80,55 +81,14 @@ describe('PassportOAuth Error Handling Unit Test', () => {
 
         const err = {
             name: 'InternalOAuthError',
-            message: 'Failed to obtain access token',
-            statusCode: 500,
-            oauthError: { statusCode: 500, data: 'internal server error' }
-        };
-
-        errorHandler(err, req, res, next);
-
-        expect(health.markOAuthTokenFailure).toHaveBeenCalledWith(expect.objectContaining({
-            provider: 'oauth',
             message: 'Failed to obtain access token',
             statusCode: 500
-        }));
-        expect(res.redirect).toHaveBeenCalledWith('/login');
-    });
-
-    test('Error Handler: DOES NOT mark health failure on Client Error (400)', () => {
-        const { errorHandler } = getCallbackParams();
-        const req = {};
-        const res = { redirect: jest.fn() };
-        const next = jest.fn();
-
-        const err = {
-            name: 'InternalOAuthError',
-            message: 'Failed to obtain access token',
-            statusCode: 400,
-            oauthError: { statusCode: 400, data: 'invalid grant' }
         };
 
         errorHandler(err, req, res, next);
 
-        expect(health.markOAuthTokenFailure).not.toHaveBeenCalled();
+        expect(health.checkAndMarkOAuthTokenFailure).toHaveBeenCalledWith(err, 'oauth');
         expect(res.redirect).toHaveBeenCalledWith('/login');
-    });
-
-    test('Error Handler: marks health failure on Network Error (missing statusCode)', () => {
-        const { errorHandler } = getCallbackParams();
-        const req = {};
-        const res = { redirect: jest.fn() };
-        const next = jest.fn();
-
-        const err = {
-            name: 'InternalOAuthError',
-            message: 'Failed to obtain access token'
-            // No oauthError or statusCode implies network/unknown
-        };
-
-        errorHandler(err, req, res, next);
-
-        expect(health.markOAuthTokenFailure).toHaveBeenCalled();
     });
 
     test('Success Handler: clears health failure', () => {
