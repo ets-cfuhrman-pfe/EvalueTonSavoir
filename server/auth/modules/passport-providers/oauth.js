@@ -1,7 +1,8 @@
-var OAuth2Strategy = require('passport-oauth2')
-var authUserAssoc = require('../../../models/authUserAssociation')
-var { hasNestedValue } = require('../../../utils')
+const OAuth2Strategy = require('passport-oauth2')
+const authUserAssoc = require('../../../models/authUserAssociation')
+const { hasNestedValue } = require('../../../utils')
 const logger = require('../../../config/logger')
+const health = require('../../../config/health')
 
 class PassportOAuth {
     constructor(passportjs, auth_name) {
@@ -86,15 +87,47 @@ class PassportOAuth {
         });
 
         app.get(`${endpoint}/${name}/callback`,
-            (req, res, next) => {
-                passport.authenticate(name, { failureRedirect: '/login' })(req, res, next);
-            },
+            // Forward failures as errors instead of auto-redirect
+            (req, res, next) => passport.authenticate(name, { failWithError: true })(req, res, next),
+
+            // Success handler: clear health flag and proceed
             (req, res) => {
                 if (req.user) {
+                    health.clearOAuthTokenFailure()
                     self.passportjs.authenticate(req.user, req, res)
                 } else {
                     res.status(401).json({ error: "L'authentification a échoué" });
                 }
+            },
+
+            // Error handler: mark health failure on token errors
+            (err, req, res, _next) => {
+                const isInternalError =
+                    err?.name === 'InternalOAuthError' &&
+                    /Failed to obtain access token/i.test(err.message);
+
+                // Exclude client errors like expired code, reused code, invalid grant
+                // only want to restart on server errors or network errors 
+                const isClientSideError = err?.oauthError?.statusCode >= 400 && err?.oauthError?.statusCode < 500;
+                
+                if (isInternalError && !isClientSideError) {
+                    health.markOAuthTokenFailure({
+                        provider: name,
+                        message: err.message,
+                        statusCode: err.statusCode,
+                        oauthErrorData: err?.oauthError?.data
+                    })
+                }
+
+                logger.error(`Erreur OAuth2 dans le callback '${name}'`, {
+                    providerName: name,
+                    message: err.message,
+                    stack: err.stack,
+                    statusCode: err.statusCode,
+                    oauthErrorData: err?.oauthError?.data,
+                    module: 'passport-oauth'
+                })
+                return res.redirect('/login');
             }
         );
         logger.info(`Ajout de la connexion : ${name}(OAuth)`, {
