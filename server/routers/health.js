@@ -43,9 +43,13 @@ const checkCollection = async (collectionName) => {
 router.get('/auth-login', (req, res) => {
     const oauthStatus = healthConfig.getOAuthStatus();
     if (oauthStatus.status === 'down') {
-        return res.status(503).json(oauthStatus);
+        // Only expose status and timestamp, hiding potentially sensitive error details
+        return res.status(503).json({
+            status: oauthStatus.status,
+            timestamp: oauthStatus.error?.timestamp
+        });
     }
-    return res.status(200).json(oauthStatus);
+    return res.status(200).json({ status: oauthStatus.status });
 });
 
 router.get('/', asyncHandler(async (req, res) => {
