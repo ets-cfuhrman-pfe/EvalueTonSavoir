@@ -165,10 +165,12 @@ describe("Users API Integration Tests", () => {
         message: "Utilisateur créé avec succès.",
       });
 
-      expect(mockUsersModel.register).toHaveBeenCalledWith(
-        "newuser@example.com",
-        "ValidPass123"
-      );
+      expect(mockUsersModel.register).toHaveBeenCalledWith({
+        email: "newuser@example.com",
+        password: "ValidPass123",
+        name: "newuser",
+        roles: undefined
+      });
 
       // Verify logging
       expect(logger.logDatabaseOperation).toHaveBeenCalledWith(

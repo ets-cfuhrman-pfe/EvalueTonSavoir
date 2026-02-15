@@ -126,7 +126,7 @@ class QuizController {
                         reason: 'quiz_not_found'
                     });
                 }
-                throw new AppError(GETTING_QUIZ_ERROR);
+                throw new AppError(QUIZ_NOT_FOUND);
             }
     
             // Is this quiz mine OR is the current user an admin?
