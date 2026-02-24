@@ -401,3 +401,85 @@
 .progress-overlay-default {
   background-color: rgba(33, 150, 243, 0.35) !important;
 }
+
+// ── Manage Room V2: scoped font-size overrides ──
+// All 4 question types (MultipleChoice, TrueFalse, ShortAnswer, Numerical)
+// use .quiz-question-area for the stem and the CSS vars below for choice
+// buttons. Re-declaring them here is sufficient — no component edits needed.
+// The student-facing quiz is fully unaffected.
+.manage-room-v2 {
+  // Choice button text (MultipleChoice + TrueFalse)
+  --quiz-choice-letter-size: 0.875rem;
+  --quiz-choice-text-size:   1rem;
+  --quiz-button-text-size:   1rem;
+
+  // KaTeX inside choice options (e.g. math answer choices)
+  --quiz-katex-text-size: 1.05rem;
+
+  // Question stem — applies to ALL 4 question types
+  .quiz-question-area {
+    font-size: 1.1rem;
+
+    @media (max-width: #{vars.$breakpoint-md - 1px}) {
+      font-size: 1rem;
+    }
+
+    // KaTeX in the question stem
+    .katex {
+      font-size: 1.1em !important;
+    }
+  }
+
+  .choice-button {
+    min-height: 2.5rem !important;
+    padding:    0.5rem 0.75rem !important;
+  }
+
+  // Scale the letter badge down to match (buttons.scss hardcodes 2.5rem).
+  .choice-letter {
+    width:     2rem !important;
+    height:    2rem !important;
+    min-width: 2rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+// ── Manage Room V2 active session layout ──
+
+.manage-room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: vars.$spacing-md vars.$spacing-xl;
+  background: #ffffff;
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  box-shadow: vars.$box-shadow-sm;
+
+  @media (max-width: #{vars.$breakpoint-md - 1px}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-md;
+  }
+}
+
+.manage-room-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: vars.$spacing-sm vars.$spacing-xl;
+  background-color: var(--bs-light, #f8f9fa);
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+
+  @media (max-width: #{vars.$breakpoint-md - 1px}) {
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-sm vars.$spacing-md;
+  }
+}
+
+.manage-room-pagination {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+}
