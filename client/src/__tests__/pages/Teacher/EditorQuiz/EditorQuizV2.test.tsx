@@ -38,8 +38,8 @@ jest.mock('../../../../components/GIFTCheatSheet/GiftCheatSheetV2', () => ({
 
 jest.mock('../../../../components/GiftTemplate/GIFTTemplatePreviewV2', () => ({
   __esModule: true,
-  default: ({ questions }: any) => (
-    <div data-testid="gift-preview">
+  default: ({ questions, hideAnswers }: any) => (
+    <div data-testid="gift-preview" data-hide-answers={hideAnswers}>
       {questions.map((q: string, i: number) => (
         <div key={`question-${q}-${i}`} data-testid={`question-${i}`}>{q}</div>
       ))}
@@ -855,6 +855,52 @@ describe('EditorQuizV2 Component', () => {
         
         expect(displayedFolderNames).toEqual(expectedOrder);
       });
+    });
+  });
+
+  describe('Print Feature', () => {
+    test('should call window.print when print button is clicked', async () => {
+      const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      
+      renderComponent();
+      
+      const printButton = screen.getByRole('button', { name: /imprimer/i });
+      fireEvent.click(printButton);
+      
+      expect(printSpy).toHaveBeenCalledTimes(1);
+      
+      printSpy.mockRestore();
+    });
+
+    test('should render quiz title in print-only element', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      
+      renderComponent();
+      
+      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      fireEvent.change(titleInput, { target: { value: 'My Print Quiz Title' } });
+      
+      const printTitleElement = screen.getByText('My Print Quiz Title', { selector: '.editor-quiz-print-title' });
+      expect(printTitleElement).toBeInTheDocument();
+    });
+
+    test('should toggle hideAnswers state when switch is clicked', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      
+      renderComponent();
+      
+      const giftPreview = screen.getByTestId('gift-preview');
+      expect(giftPreview).toHaveAttribute('data-hide-answers', 'false');
+      
+      const hideAnswersSwitch = screen.getByRole('checkbox', { name: /masquer les réponses/i });
+      fireEvent.click(hideAnswersSwitch);
+      
+      expect(giftPreview).toHaveAttribute('data-hide-answers', 'true');
+      
+      fireEvent.click(hideAnswersSwitch);
+      
+      expect(giftPreview).toHaveAttribute('data-hide-answers', 'false');
     });
   });
 });
