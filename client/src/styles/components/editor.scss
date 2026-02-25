@@ -51,3 +51,91 @@
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
+
+// Print-only quiz title 
+.editor-quiz-print-title {
+  display: none;
+}
+
+// ===== PRINT STYLES =====
+@media print {
+  // Show the print-only quiz title at the top of the page
+  .editor-quiz-print-title {
+    display: block !important;
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #333;
+  }
+
+  // Hide the GIFT text-editor column entirely
+  .editor-quiz-editor-col {
+    display: none !important;
+  }
+
+  // Expand the preview column to fill the page
+  .editor-quiz-preview-col {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  // Remove fixed-height / scroll constraints on the main content wrapper
+  .editor-main-content {
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  // Remove the overflow-hidden / fixed-height wrapper that constrains the column
+  .editor-main-content > .flex-grow-1 {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  // Remove Bootstrap row gutters that would offset the preview column
+  .editor-main-content .row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  // Strip inner card-like wrapper padding (the border rounded p-3 div)
+  .editor-quiz-preview-col > div {
+    padding: 0 !important;
+    height: auto !important;
+    border: none !important;
+    background-color: transparent !important;
+  }
+
+  // Remove the scrollable overflow div wrapping the preview (flex-grow-1 p-3 bg-light)
+  .editor-quiz-preview-col .overflow-auto {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    background-color: #fff !important;
+    padding: 0 !important;
+  }
+
+  // Remove decorative shadows / borders that look bad on paper
+  .editor-quiz-preview-col .border,
+  .editor-quiz-preview-col .shadow-sm {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  // Each question is a <section> from QuestionContainerTemplate.
+  // Prevent a single question from being split across two pages.
+  .preview-container section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
