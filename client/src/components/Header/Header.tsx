@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({
     }, []);
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top w-100">
+        <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top w-100 no-print">
             <div className="container-fluid px-2 px-sm-3 px-lg-4">
                 {/* Brand/Logo */}
                 <button 
