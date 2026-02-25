@@ -84,3 +84,10 @@
     display: none;
   }
 }
+
+// Print utility — hide elements from browser print / Ctrl+P
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
