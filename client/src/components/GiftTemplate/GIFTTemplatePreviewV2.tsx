@@ -56,7 +56,7 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                 setError('Une erreur est survenue durant le chargement de la prévisualisation.');
             }
         }
-    }, [questions]);
+    }, [questions, hideAnswers]);
 
     const PreviewComponent = () => {
         if (error) {
