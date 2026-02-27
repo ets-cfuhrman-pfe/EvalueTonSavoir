@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const asyncHandler = require('./routerUtils');
+const healthConfig = require('../config/health');
 
 const rateLimit = require('express-rate-limit');
 
@@ -38,6 +39,18 @@ const checkCollection = async (collectionName) => {
         return { ok: false, error: e.message, code: 503 };
     }
 };
+
+router.get('/auth-login', (req, res) => {
+    const oauthStatus = healthConfig.getOAuthStatus();
+    if (oauthStatus.status === 'down') {
+        // Only expose status and timestamp, hiding potentially sensitive error details
+        return res.status(503).json({
+            status: oauthStatus.status,
+            timestamp: oauthStatus.error?.timestamp
+        });
+    }
+    return res.status(200).json({ status: oauthStatus.status });
+});
 
 router.get('/', asyncHandler(async (req, res) => {
     const dbCheck = await checkDB();
