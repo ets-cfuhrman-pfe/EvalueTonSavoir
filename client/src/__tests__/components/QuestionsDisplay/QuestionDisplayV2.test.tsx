@@ -6,6 +6,16 @@ import QuestionDisplayV2 from 'src/components/QuestionsDisplay/QuestionDisplayV2
 import { parse, Question } from 'gift-pegjs';
 import { Student, Answer } from 'src/Types/StudentType';
 
+// Helper: craft a question whose formattedStem contains an <img> tag so the
+// side-image layout path is exercised without relying on GIFT markdown parsing.
+const withImageStem = (base: Question, imgHtml: string): Question => ({
+    ...base,
+    formattedStem: {
+        format: 'html',
+        text: `${(base as any).formattedStem?.text ?? 'Question text'} ${imgHtml}`,
+    },
+} as Question);
+
 describe('QuestionDisplayV2 Component', () => {
     const mockHandleSubmitAnswer = jest.fn();
 
@@ -388,6 +398,156 @@ describe('QuestionDisplayV2 Component', () => {
 
             // The component should render and pass props correctly
             expect(screen.getByText(/Sample Multiple Choice Question/)).toBeInTheDocument();
+        });
+    });
+
+    
+    // Side-by-side image layout  (sideImageLayout prop)
+    describe('sideImageLayout', () => {
+        const IMG_SRC = 'http://example.com/test.jpg';
+        const IMG_TAG = `<img src="${IMG_SRC}" alt="test image" />`;
+
+        it('renders the side-image-layout wrapper when the stem contains an image and sideImageLayout=true', () => {
+            const questionWithImage = withImageStem(sampleMultipleChoiceQuestion, IMG_TAG);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            expect(container.querySelector('.side-image-layout')).toBeInTheDocument();
+        });
+
+        it('puts the question content in the __content column', () => {
+            const questionWithImage = withImageStem(sampleMultipleChoiceQuestion, IMG_TAG);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            const contentCol = container.querySelector('.side-image-layout__content');
+            expect(contentCol).toBeInTheDocument();
+            // Both choice buttons should live inside the content column
+            expect(within(contentCol as HTMLElement).getByText('Choice 1')).toBeInTheDocument();
+            expect(within(contentCol as HTMLElement).getByText('Choice 2')).toBeInTheDocument();
+        });
+
+        it('puts the extracted image in the __images column', () => {
+            const questionWithImage = withImageStem(sampleMultipleChoiceQuestion, IMG_TAG);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            const imagesCol = container.querySelector('.side-image-layout__images');
+            expect(imagesCol).toBeInTheDocument();
+            const img = within(imagesCol as HTMLElement).getByRole('img');
+            expect(img).toHaveAttribute('src', IMG_SRC);
+        });
+
+        it('removes the image from the __content column', () => {
+            const questionWithImage = withImageStem(sampleMultipleChoiceQuestion, IMG_TAG);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            const contentCol = container.querySelector('.side-image-layout__content');
+            expect(contentCol?.querySelector('img')).not.toBeInTheDocument();
+        });
+
+        it('places multiple images in the __images column', () => {
+            const twoImgTags = `<img src="http://example.com/a.jpg" alt="a" /><img src="http://example.com/b.jpg" alt="b" />`;
+            const questionWithImages = withImageStem(sampleMultipleChoiceQuestion, twoImgTags);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImages}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            const imagesCol = container.querySelector('.side-image-layout__images');
+            const imgs = imagesCol?.querySelectorAll('img');
+            expect(imgs).toHaveLength(2);
+        });
+
+        it('falls back to normal layout when the stem has no image and sideImageLayout=true', () => {
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={sampleMultipleChoiceQuestion}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            expect(container.querySelector('.side-image-layout')).not.toBeInTheDocument();
+            // Standard Bootstrap wrapper should be used instead
+            expect(container.querySelector('.container-fluid')).toBeInTheDocument();
+        });
+
+        it('uses normal layout when sideImageLayout is false (default), even if stem contains an image', () => {
+            const questionWithImage = withImageStem(sampleMultipleChoiceQuestion, IMG_TAG);
+
+            const { container } = render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    // sideImageLayout not set : defaults to false
+                />
+            );
+
+            expect(container.querySelector('.side-image-layout')).not.toBeInTheDocument();
+            expect(container.querySelector('.container-fluid')).toBeInTheDocument();
+        });
+
+        it('still renders the question text and choices in side-image layout for TrueFalse questions', () => {
+            const questionWithImage = withImageStem(sampleTrueFalseQuestion, IMG_TAG);
+
+            render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    sideImageLayout={true}
+                />
+            );
+
+            expect(screen.getByText('Vrai')).toBeInTheDocument();
+            expect(screen.getByText('Faux')).toBeInTheDocument();
+        });
+
+        it('shows statistics in the side-image layout', () => {
+            const questionWithImage = withImageStem(sampleTrueFalseQuestion, IMG_TAG);
+            (questionWithImage as any).id = 1;
+
+            render(
+                <QuestionDisplayV2
+                    question={questionWithImage}
+                    {...sampleProps}
+                    students={mockStudents}
+                    showStatistics={true}
+                    sideImageLayout={true}
+                />
+            );
+
+            expect(screen.getByText('67%')).toBeInTheDocument();
+            expect(screen.getByText('33%')).toBeInTheDocument();
         });
     });
 });
