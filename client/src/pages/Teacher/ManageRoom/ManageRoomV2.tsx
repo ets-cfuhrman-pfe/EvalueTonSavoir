@@ -25,8 +25,6 @@ import {
     Collapse,
     Typography,
     Box,
-    Menu,
-    MenuItem,
     Chip,
 } from '@mui/material';
 import {
@@ -36,12 +34,10 @@ import {
     ChevronRight,
     Stop,
     PeopleAlt,
-    Tune,
     CheckBox,
     CheckBoxOutlineBlank,
     ExpandMore,
     ExpandLess,
-    Check
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -74,7 +70,6 @@ const ManageRoomV2: React.FC = () => {
     const [showResults, setShowResults] = useState(false);
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
-    const [optionsMenuAnchor, setOptionsMenuAnchor] = useState<null | HTMLElement>(null);
 
     const roomUrl = `${window.location.origin}/student/join-room?roomName=${previewRoomName || formattedRoomName}`;
 
