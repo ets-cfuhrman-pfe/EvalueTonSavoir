@@ -1060,4 +1060,122 @@ describe('ManageRoomV2 Component', () => {
       expect(total).toBe(0);
     });
   });
+
+  describe('Collapsible Question Card', () => {
+    /** Helper: bring the component into the live-quiz state. */
+    async function startQuiz() {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+    }
+
+    test('should render question header with question ID when quiz is live', async () => {
+      await startQuiz();
+
+      expect(screen.getByText(/Question \d+/i)).toBeInTheDocument();
+    });
+
+    test('should render QuestionDisplayV2 by default (card starts expanded)', async () => {
+      await startQuiz();
+
+      expect(screen.getByTestId('question-display-v2')).toBeInTheDocument();
+    });
+
+    test('should show ExpandLess icon when card is expanded', async () => {
+      await startQuiz();
+
+      expect(screen.queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+      expect(screen.queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+    });
+
+    test('should collapse the question content when the header is clicked', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should show ExpandMore icon after collapsing', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+        expect(screen.queryByTestId('ExpandLessIcon')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should re-expand the question content when the header is clicked again', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+
+      fireEvent.click(header);
+
+      await screen.findByTestId('question-display-v2');
+    });
+
+    test('should keep the card header visible when card is collapsed', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/Question \d+/i)).toBeInTheDocument();
+    });
+
+    test('should restore ExpandLess icon after re-expanding', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header); // collapse
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+      });
+
+      fireEvent.click(header); // expand
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+        expect(screen.queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should not show a "Questions" option in the Options dropdown', async () => {
+      await startQuiz();
+
+      const optionsButton = await screen.findByRole('button', { name: /Options/i });
+      fireEvent.click(optionsButton);
+
+      expect(screen.queryByRole('menuitem', { name: /^Questions$/i })).not.toBeInTheDocument();
+    });
+  });
 });
