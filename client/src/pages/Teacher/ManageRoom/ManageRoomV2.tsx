@@ -28,7 +28,6 @@ import {
     Menu,
     MenuItem,
     Chip,
-    Divider
 } from '@mui/material';
 import {
     ArrowBack,
@@ -41,7 +40,8 @@ import {
     CheckBox,
     CheckBoxOutlineBlank,
     ExpandMore,
-    ExpandLess
+    ExpandLess,
+    Check
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -768,42 +768,29 @@ const ManageRoomV2: React.FC = () => {
                     {/* Control Bar */}
                     {quizQuestions && currentQuestion && (
                         <div className="manage-room-control-bar">
-                            {/* Left: display options dropdown */}
+                            {/* Left: display options */}
                             <Box>
                                 <Button
                                     variant="outlined"
                                     size="small"
-                                    startIcon={<Tune />}
-                                    onClick={(e) => setOptionsMenuAnchor(e.currentTarget)}
-                                >
-                                    Options d'affichage
-                                </Button>
-                                <Menu
-                                    anchorEl={optionsMenuAnchor}
-                                    open={Boolean(optionsMenuAnchor)}
-                                    onClose={() => setOptionsMenuAnchor(null)}
-                                >
-    
-                                    <MenuItem onClick={() => setShowResults(!showResults)}>
-                                        {showResults
-                                            ? <CheckBox fontSize="small" color="primary" sx={{ mr: 1 }} />
-                                            : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
-                                        Résultats
-                                    </MenuItem>
-                                    <Divider />
-                                    <MenuItem onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}>
-                                        {showCorrectAnswers
+                                    onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
+                                    sx={{ mr: 1 }}
+                                >{showCorrectAnswers
                                             ? <CheckBox fontSize="small" color="success" sx={{ mr: 1 }} />
                                             : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
-                                        Réponses correctes
-                                    </MenuItem>
-                                    <MenuItem onClick={() => setShowStatistics(!showStatistics)}>
-                                        {showStatistics
-                                            ? <CheckBox fontSize="small" color="primary" sx={{ mr: 1 }} />
+                                    Réponses
+                                </Button>
+
+                                 <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => setShowStatistics(!showStatistics)}
+                                    sx={{ mr: 1 }}
+                                >{showStatistics
+                                            ? <CheckBox fontSize="small" color="success" sx={{ mr: 1 }} />
                                             : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
-                                        Progression étudiants
-                                    </MenuItem>
-                                </Menu>
+                                    Progression
+                                </Button>
                             </Box>
 
                             {/* Center: pagination */}
@@ -882,19 +869,38 @@ const ManageRoomV2: React.FC = () => {
                                         </Box>
 
                                         {/* Results Box */}
-                                        {showResults && (
-                                            <Box width="100%">
-                                                <LiveResultsComponent
-                                                    quizMode={quizMode}
-                                                    socket={socket}
-                                                    questions={quizQuestions}
-                                                    showSelectedQuestion={showSelectedQuestion}
-                                                    students={students}
-                                                    quizTitle={quiz?.title}
-                                                    selectedQuestionIndex={currentQuestion ? Number(currentQuestion.question.id) - 1 : undefined}
-                                                />
-                                            </Box>
-                                        )}
+                                        <Box width="100%">
+                                            <div className="quiz-results-card">
+                                                <Card elevation={2}>
+                                                    <CardActionArea
+                                                        onClick={() => setShowResults(!showResults)}
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            px: 2,
+                                                            py: 1,
+                                                            borderBottom: showResults ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                                                        }}
+                                                    >
+                                                        <Typography variant="subtitle1" fontWeight="bold">
+                                                            Résultats
+                                                        </Typography>
+                                                        {showResults ? <ExpandLess /> : <ExpandMore />}
+                                                    </CardActionArea>
+                                                    <Collapse in={showResults} unmountOnExit>
+                                                        <CardContent sx={{ p: 0 }}>
+                                                            <LiveResultsComponent
+                                                                questions={quizQuestions}
+                                                                showSelectedQuestion={showSelectedQuestion}
+                                                                students={students}                                                            
+                                                                selectedQuestionIndex={currentQuestion ? Number(currentQuestion.question.id) - 1 : undefined}
+                                                            />
+                                                        </CardContent>
+                                                    </Collapse>
+                                                </Card>
+                                            </div>
+                                        </Box>
                                     </Box>
                                 ) : (
                                     <Box textAlign="center" py={8}>
