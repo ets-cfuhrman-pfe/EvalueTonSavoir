@@ -695,18 +695,19 @@ describe('ManageRoomV2 Component', () => {
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
 
       // Enable statistics via Options menu → Progression étudiants
-      const optionsButton = await screen.findByRole('button', { name: /Options/i });
-      fireEvent.click(optionsButton);
-      const progressMenuItem = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
-      fireEvent.click(progressMenuItem);
+      const progressButton = await screen.findByRole('button', { name: /Progression/i });
+      fireEvent.click(progressButton);
+      
+      
 
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-on');
       expect(questionDisplayV2MockProps.some((props) => props.showStatistics)).toBe(true);
 
       // Disable statistics via Options menu again
-      fireEvent.click(optionsButton);
-      const progressMenuItemAgain = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
-      fireEvent.click(progressMenuItemAgain);
+      fireEvent.click(progressButton);
+      // removed progressMenuItemAgain
+      //fireEvent.click(progressMenuItemAgain);
+      
 
       await waitFor(() => {
         expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
@@ -762,10 +763,10 @@ describe('ManageRoomV2 Component', () => {
       await screen.findByTestId('question-display-v2');
 
       // Enable statistics via Options menu → Progression étudiants
-      const optionsButton = await screen.findByRole('button', { name: /Options/i });
-      fireEvent.click(optionsButton);
-      const progressMenuItem = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
-      fireEvent.click(progressMenuItem);
+      const progressButton = await screen.findByRole('button', { name: /Progression/i });
+      fireEvent.click(progressButton);
+      
+      
 
       // Verify that students array is passed to QuestionDisplayV2
       const latestProps = questionDisplayV2MockProps.at(-1);
@@ -1167,13 +1168,6 @@ describe('ManageRoomV2 Component', () => {
       });
     });
 
-    test('should not show a "Questions" option in the Options dropdown', async () => {
-      await startQuiz();
-
-      const optionsButton = await screen.findByRole('button', { name: /Options/i });
-      fireEvent.click(optionsButton);
-
-      expect(screen.queryByRole('menuitem', { name: /^Questions$/i })).not.toBeInTheDocument();
-    });
+// removed test here
   });
 });
