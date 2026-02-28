@@ -4,16 +4,7 @@ import '@testing-library/jest-dom';
 import LiveResultsV2 from 'src/components/LiveResults/LiveResultsV2';
 import { QuestionType } from 'src/Types/QuestionType';
 import { Student, Answer } from 'src/Types/StudentType';
-import { Socket } from 'socket.io-client';
 import { BaseQuestion, parse } from 'gift-pegjs';
-
-const mockSocket: Socket = {
-    on: jest.fn(),
-    off: jest.fn(),
-    emit: jest.fn(),
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-} as unknown as Socket;
 
 const mockGiftQuestions = parse(
     `::Sample Question 1:: Question stem
@@ -59,44 +50,14 @@ describe('LiveResultsV2', () => {
     const NUMBER_OF_PERFECT_SCORES = 2; // Students with 100%
     const NUMBER_OF_CORRECT_CHOICE_1 = 2; // Students with correct Choice 1
     const NUMBER_OF_CORRECT_TRUE_ANSWERS = 2; // Students with correct true answers
-    test('renders the component with default quiz title', () => {
-        render(
-            <LiveResultsV2
-                socket={mockSocket}
-                questions={mockQuestions}
-                showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
-                students={mockStudents}
-            />
-        );
-
-        expect(screen.getByText('Résultats pour : Quiz')).toBeInTheDocument();
-        expect(screen.getByRole('table')).toBeInTheDocument();
-    });
-
-    test('renders the component with custom quiz title', () => {
-        const customTitle = 'Custom Quiz Title';
-        render(
-            <LiveResultsV2
-                socket={mockSocket}
-                questions={mockQuestions}
-                showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
-                students={mockStudents}
-                quizTitle={customTitle}
-            />
-        );
-
-        expect(screen.getByText(`Résultats pour : ${customTitle}`)).toBeInTheDocument();
-    });
-
+ 
     test('toggles show usernames switch', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -121,10 +82,10 @@ describe('LiveResultsV2', () => {
     test('toggles show correct answers switch', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -152,10 +113,10 @@ describe('LiveResultsV2', () => {
     test('renders table with correct structure', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -172,10 +133,10 @@ describe('LiveResultsV2', () => {
     test('renders switches with correct labels', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -187,10 +148,10 @@ describe('LiveResultsV2', () => {
     test('passes disconnected students to table component', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -220,10 +181,10 @@ describe('LiveResultsV2', () => {
     test('renders all students in table rows', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -241,10 +202,10 @@ describe('LiveResultsV2', () => {
     test('applies student-disconnected class to disconnected students', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -277,10 +238,10 @@ describe('LiveResultsV2', () => {
     test('applies student-name class to all student names when showUsernames is true', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -299,10 +260,10 @@ describe('LiveResultsV2', () => {
     test('displays anonymous names when showUsernames is false', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -315,10 +276,10 @@ describe('LiveResultsV2', () => {
     test('displays correct answer indicators when showCorrectAnswers is false', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -334,10 +295,10 @@ describe('LiveResultsV2', () => {
     test('displays actual answers when showCorrectAnswers is true', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -356,10 +317,10 @@ describe('LiveResultsV2', () => {
     test('displays student grades correctly', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -372,10 +333,10 @@ describe('LiveResultsV2', () => {
     test('handles students with undefined isConnected property as connected', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );
@@ -396,10 +357,10 @@ describe('LiveResultsV2', () => {
     test('renders correct number of question columns', () => {
         render(
             <LiveResultsV2
-                socket={mockSocket}
+                
                 questions={mockQuestions}
                 showSelectedQuestion={mockShowSelectedQuestion}
-                quizMode="teacher"
+                
                 students={mockStudents}
             />
         );

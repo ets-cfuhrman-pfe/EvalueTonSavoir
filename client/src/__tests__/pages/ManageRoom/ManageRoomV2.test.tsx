@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import ManageRoomV2 from 'src/pages/Teacher/ManageRoom/ManageRoomV2';
@@ -393,7 +393,7 @@ describe('ManageRoomV2 Component', () => {
       jest.runAllTimers();
 
       await waitFor(() => {
-  expect(screen.getByText(/0\/1 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/0 \/ 1 ont répondu/)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -692,28 +692,25 @@ describe('ManageRoomV2 Component', () => {
 
       await screen.findByTestId('question-display-v2');
 
-      const showProgressButton = await screen.findByRole('button', {
-        name: /Afficher progression/i,
-      });
-
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
 
-      fireEvent.click(showProgressButton);
-
-      const hideProgressButton = await screen.findByRole('button', {
-        name: /Masquer progression/i,
-      });
+      // Enable statistics via Options menu → Progression étudiants
+      const optionsButton = await screen.findByRole('button', { name: /Options/i });
+      fireEvent.click(optionsButton);
+      const progressMenuItem = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
+      fireEvent.click(progressMenuItem);
 
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-on');
       expect(questionDisplayV2MockProps.some((props) => props.showStatistics)).toBe(true);
 
-      fireEvent.click(hideProgressButton);
+      // Disable statistics via Options menu again
+      fireEvent.click(optionsButton);
+      const progressMenuItemAgain = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
+      fireEvent.click(progressMenuItemAgain);
 
-      await screen.findByRole('button', {
-        name: /Afficher progression/i,
+      await waitFor(() => {
+        expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
       });
-      expect(screen.getByRole('button', { name: /Afficher progression/i })).toBeInTheDocument();
-      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
       expect(questionDisplayV2MockProps.at(-1)?.showStatistics).toBe(false);
     });
 
@@ -764,11 +761,11 @@ describe('ManageRoomV2 Component', () => {
 
       await screen.findByTestId('question-display-v2');
 
-      const showProgressButton = await screen.findByRole('button', {
-        name: /Afficher progression/i,
-      });
-
-      fireEvent.click(showProgressButton);
+      // Enable statistics via Options menu → Progression étudiants
+      const optionsButton = await screen.findByRole('button', { name: /Options/i });
+      fireEvent.click(optionsButton);
+      const progressMenuItem = await screen.findByRole('menuitem', { name: /Progression étudiants/i });
+      fireEvent.click(progressMenuItem);
 
       // Verify that students array is passed to QuestionDisplayV2
       const latestProps = questionDisplayV2MockProps.at(-1);
@@ -805,7 +802,7 @@ describe('ManageRoomV2 Component', () => {
 
       // Should show that 2 out of 3 students answered
       await waitFor(() => {
-        expect(screen.getByText(/2\/3 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/2 \/ 3 ont répondu/)).toBeInTheDocument();
       });
     });
 
@@ -853,7 +850,7 @@ describe('ManageRoomV2 Component', () => {
 
       // Should now show 1/1 students answered
       await waitFor(() => {
-        expect(screen.getByText(/1\/1 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/1 \/ 1 ont répondu/)).toBeInTheDocument();
       });
     });
   });
@@ -890,7 +887,7 @@ describe('ManageRoomV2 Component', () => {
 
       await screen.findByTestId('question-display-v2');
 
-      expect(screen.getByText('0/60')).toBeInTheDocument();
+      expect(screen.getByText(/0 \/ 60 participants/)).toBeInTheDocument();
     });
 
     test('should increment counter as students join', async () => {
@@ -905,7 +902,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('1/60')).toBeInTheDocument();
+        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
       });
 
       if (userJoinedCallback) {
@@ -915,7 +912,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('2/60')).toBeInTheDocument();
+        expect(screen.getByText(/2 \/ 60 participants/)).toBeInTheDocument();
       });
     });
 
@@ -932,7 +929,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('2/60')).toBeInTheDocument();
+        expect(screen.getByText(/2 \/ 60 participants/)).toBeInTheDocument();
       });
 
       if (userDisconnectedCallback) {
@@ -942,7 +939,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('1/60')).toBeInTheDocument();
+        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
       });
     });
 
@@ -967,7 +964,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('1/60')).toBeInTheDocument();
+        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
       });
     });
   });
@@ -1096,8 +1093,9 @@ describe('ManageRoomV2 Component', () => {
     test('should show ExpandLess icon when card is expanded', async () => {
       await startQuiz();
 
-      expect(screen.queryByTestId('ExpandLessIcon')).toBeInTheDocument();
-      expect(screen.queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      expect(within(header).queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+      expect(within(header).queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
     });
 
     test('should collapse the question content when the header is clicked', async () => {
@@ -1118,8 +1116,8 @@ describe('ManageRoomV2 Component', () => {
       fireEvent.click(header);
 
       await waitFor(() => {
-        expect(screen.queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
-        expect(screen.queryByTestId('ExpandLessIcon')).not.toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandLessIcon')).not.toBeInTheDocument();
       });
     });
 
@@ -1158,14 +1156,14 @@ describe('ManageRoomV2 Component', () => {
       fireEvent.click(header); // collapse
 
       await waitFor(() => {
-        expect(screen.queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
       });
 
       fireEvent.click(header); // expand
 
       await waitFor(() => {
-        expect(screen.queryByTestId('ExpandLessIcon')).toBeInTheDocument();
-        expect(screen.queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
       });
     });
 
