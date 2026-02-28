@@ -402,51 +402,58 @@
   background-color: rgba(33, 150, 243, 0.35) !important;
 }
 
-// ── Manage Room V2: scoped font-size overrides ──
-// All 4 question types (MultipleChoice, TrueFalse, ShortAnswer, Numerical)
+// Manage Room font and layout adjustments 
 // use .quiz-question-area for the stem and the CSS vars below for choice
-// buttons. Re-declaring them here is sufficient — no component edits needed.
-// The student-facing quiz is fully unaffected.
 .manage-room-v2 {
+  &.content-container {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin-left: -47.5vw !important;
+    margin-right: -47.5vw !important;
+  }
+
   // Choice button text (MultipleChoice + TrueFalse)
-  --quiz-choice-letter-size: 0.875rem;
-  --quiz-choice-text-size:   1rem;
-  --quiz-button-text-size:   1rem;
+  --quiz-choice-letter-size: 1rem;
+  --quiz-choice-text-size:   1.3rem;
+  --quiz-button-text-size:   1.3rem;
 
-  // KaTeX inside choice options (e.g. math answer choices)
-  --quiz-katex-text-size: 1.05rem;
+  // KaTeX inside choice options 
+  --quiz-katex-text-size: 1.3rem;
 
-  // Question stem — applies to ALL 4 question types
+  // Applies to all question types
   .quiz-question-area {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    font-weight: bold;
 
     @media (max-width: #{vars.$breakpoint-md - 1px}) {
-      font-size: 1rem;
+      font-size: 1.3rem;
     }
 
     // KaTeX in the question stem
     .katex {
-      font-size: 1.1em !important;
+      font-size: 1.2em !important;
+      
     }
   }
 
   .choice-button {
-    min-height: 2.5rem !important;
-    padding:    0.5rem 0.75rem !important;
+    min-height: 3rem !important;
+    padding:    0.6rem 0.75rem !important;
   }
 
-  // Scale the letter badge down to match (buttons.scss hardcodes 2.5rem).
+  // Scale the letter badge to match the increased text size.
   .choice-letter {
-    width:     2rem !important;
-    height:    2rem !important;
-    min-width: 2rem !important;
-    font-size: 0.875rem !important;
+    width:     2.3rem !important;
+    height:    2.3rem !important;
+    min-width: 2.3rem !important;
+    font-size: 1.3rem !important;
   }
 }
 
-// ── Manage Room V2 active session layout ──
-
 .manage-room-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -482,4 +489,44 @@
   display: flex;
   align-items: center;
   gap: vars.$spacing-md;
+}
+
+// Side-by-side image layout 
+.side-image-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+
+  &__content {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  &__images {
+    flex: 0 0 38%;
+    max-width: 38%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 0.25rem;
+    }
+  }
+
+  // On narrow screens stack vertically: image above, question below
+  @media (max-width: #{vars.$breakpoint-md - 1px}) {
+    flex-direction: column;
+
+    &__images {
+      flex: 0 0 auto;
+      max-width: 100%;
+      width: 100%;
+    }
+  }
 }
