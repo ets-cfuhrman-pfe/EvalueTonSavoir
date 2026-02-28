@@ -858,6 +858,120 @@ describe('ManageRoomV2 Component', () => {
     });
   });
 
+  describe('Student Counter Display', () => {
+    const launchQuizAndGetCallbacks = async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      const userJoinedCallback = mockSocket.on.mock.calls.find(
+        (call) => call[0] === 'user-joined'
+      )?.[1];
+
+      const userDisconnectedCallback = mockSocket.on.mock.calls.find(
+        (call) => call[0] === 'user-disconnected'
+      )?.[1];
+
+      return { userJoinedCallback, userDisconnectedCallback };
+    };
+
+    test('should display "0/60" when no students are connected', async () => {
+      await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      expect(screen.getByText('0/60')).toBeInTheDocument();
+    });
+
+    test('should increment counter as students join', async () => {
+      const { userJoinedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('1/60')).toBeInTheDocument();
+      });
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('2/60')).toBeInTheDocument();
+      });
+    });
+
+    test('should decrement counter when a student disconnects', async () => {
+      const { userJoinedCallback, userDisconnectedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('2/60')).toBeInTheDocument();
+      });
+
+      if (userDisconnectedCallback) {
+        act(() => {
+          userDisconnectedCallback('student1');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('1/60')).toBeInTheDocument();
+      });
+    });
+
+    test('should only count connected students in the counter', async () => {
+      const { userJoinedCallback, userDisconnectedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student3', name: 'Charlie', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      if (userDisconnectedCallback) {
+        act(() => {
+          userDisconnectedCallback('student2');
+          userDisconnectedCallback('student3');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('1/60')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('Answer Statistics Features', () => {
     const mockStudents: Student[] = [
       new Student('John Doe', 'student1', 'TestRoom', [new Answer(['Choice A'], true, 1)]),

@@ -29,7 +29,8 @@ import {
     QrCode,
     ChevronLeft,
     ChevronRight,
-    Stop
+    Stop,
+    Person
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -821,6 +822,12 @@ const ManageRoomV2: React.FC = () => {
                                                                     return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu`;
                                                                 })()}
                                                             </Typography>
+                                                            <Box display="flex" alignItems="center" ml={2}>
+                                                                <Person color="action" />
+                                                                <Typography variant="body1" color="text.secondary" ml={0.5}>
+                                                                    {students.filter(isStudentConnected).length}/60
+                                                                </Typography>
+                                                            </Box>
                                                         </div>
                                                     )}
 
