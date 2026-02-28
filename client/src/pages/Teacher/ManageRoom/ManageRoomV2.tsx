@@ -21,6 +21,8 @@ import {
     Alert,
     Card,
     CardContent,
+    CardActionArea,
+    Collapse,
     Typography,
     Box,
     Menu,
@@ -37,7 +39,9 @@ import {
     PeopleAlt,
     Tune,
     CheckBox,
-    CheckBoxOutlineBlank
+    CheckBoxOutlineBlank,
+    ExpandMore,
+    ExpandLess
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -714,9 +718,9 @@ const ManageRoomV2: React.FC = () => {
             <div className="content-container manage-room-v2">
                 <div className="w-100 p-0 content-full-width">
 
-                    {/* ── Zone 1: Top Header Bar ── */}
+                    {/*Top Header Bar*/}
                     <div className="manage-room-header">
-                        {/* Left: quiz title + live stat chips */}
+                        {/* Left: quiz title + live stats */}
                         <Box display="flex" flexDirection="column" gap={0.75}>
                             {quiz?.title && (
                                 <Typography variant="h5" component="h1" fontWeight="bold" color="primary">
@@ -761,7 +765,7 @@ const ManageRoomV2: React.FC = () => {
                         </Box>
                     </div>
 
-                    {/* ── Zone 2: Control Bar (Options dropdown + Pagination) ── */}
+                    {/* Control Bar */}
                     {quizQuestions && currentQuestion && (
                         <div className="manage-room-control-bar">
                             {/* Left: display options dropdown */}
@@ -779,12 +783,7 @@ const ManageRoomV2: React.FC = () => {
                                     open={Boolean(optionsMenuAnchor)}
                                     onClose={() => setOptionsMenuAnchor(null)}
                                 >
-                                    <MenuItem onClick={() => setShowQuestions(!showQuestions)}>
-                                        {showQuestions
-                                            ? <CheckBox fontSize="small" color="primary" sx={{ mr: 1 }} />
-                                            : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
-                                        Questions
-                                    </MenuItem>
+    
                                     <MenuItem onClick={() => setShowResults(!showResults)}>
                                         {showResults
                                             ? <CheckBox fontSize="small" color="primary" sx={{ mr: 1 }} />
@@ -837,18 +836,34 @@ const ManageRoomV2: React.FC = () => {
                         </div>
                     )}
 
-                    {/* ── Zone 3: Main Content ── */}
+                    {/* Main Content */}
                     <div className="row g-0">
                         <div className="col-12 bg-white shadow-sm">
                             <div className="p-4">
                                 {quizQuestions ? (
                                     <Box display="flex" flexDirection="column" gap={3}>
                                         {/* Questions Box */}
-                                        {showQuestions && (
-                                            <Box width="100%">
-                                                <div className="quiz-question-card">
-                                                    {currentQuestion && (
-                                                        <Card elevation={2}>
+                                        <Box width="100%">
+                                            <div className="quiz-question-card">
+                                                {currentQuestion && (
+                                                    <Card elevation={2}>
+                                                        <CardActionArea
+                                                            onClick={() => setShowQuestions(!showQuestions)}
+                                                            sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                px: 2,
+                                                                py: 1,
+                                                                borderBottom: showQuestions ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                                                            }}
+                                                        >
+                                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                                Question {currentQuestion.question.id}
+                                                            </Typography>
+                                                            {showQuestions ? <ExpandLess /> : <ExpandMore />}
+                                                        </CardActionArea>
+                                                        <Collapse in={showQuestions}>
                                                             <CardContent>
                                                                 <QuestionDisplayV2
                                                                     key={currentQuestion.question.id}
@@ -857,13 +872,14 @@ const ManageRoomV2: React.FC = () => {
                                                                     students={students}
                                                                     showStatistics={showStatistics}
                                                                     showCorrectnessBanner={false}
+                                                                    sideImageLayout={true}
                                                                 />
                                                             </CardContent>
-                                                        </Card>
-                                                    )}
-                                                </div>
-                                            </Box>
-                                        )}
+                                                        </Collapse>
+                                                    </Card>
+                                                )}
+                                            </div>
+                                        </Box>
 
                                         {/* Results Box */}
                                         {showResults && (
