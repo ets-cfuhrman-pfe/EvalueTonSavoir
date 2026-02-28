@@ -863,7 +863,7 @@ const ManageRoomV2: React.FC = () => {
                                                             </Typography>
                                                             {showQuestions ? <ExpandLess /> : <ExpandMore />}
                                                         </CardActionArea>
-                                                        <Collapse in={showQuestions}>
+                                                        <Collapse in={showQuestions} unmountOnExit>
                                                             <CardContent>
                                                                 <QuestionDisplayV2
                                                                     key={currentQuestion.question.id}
