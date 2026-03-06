@@ -705,10 +705,9 @@ describe('ManageRoomV2 Component', () => {
 
       // Disable statistics via Options menu again
       fireEvent.click(progressButton);
-      // removed progressMenuItemAgain
-      //fireEvent.click(progressMenuItemAgain);
       
-
+      
+ 
       await waitFor(() => {
         expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
       });
@@ -1167,7 +1166,5 @@ describe('ManageRoomV2 Component', () => {
         expect(within(header).queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
       });
     });
-
-// removed test here
   });
 });
