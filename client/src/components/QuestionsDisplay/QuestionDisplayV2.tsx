@@ -181,9 +181,9 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
                         {cleanedComponent ?? <div className="alert alert-warning">Question de type inconnue</div>}
                     </div>
                     <div className="side-image-layout__images">
-                        {images.map((imgHtml) => (
+                        {images.map((imgHtml, index) => (
                             <div
-                                key={imgHtml}
+                                key={index}
                                 dangerouslySetInnerHTML={{ __html: imgHtml }}
                             />
                         ))}
