@@ -6,6 +6,8 @@ const ENV_VARIABLES = {
     FRONTEND_URL: process.env.SITE_URL != undefined ? `${process.env.SITE_URL}${process.env.USE_PORTS ? `:${process.env.PORT}` : ''}` : ''
 };
 
+const MAX_PARTICIPANTS = 60;
+
 console.log(`ENV_VARIABLES.VITE_BACKEND_URL=${ENV_VARIABLES.VITE_BACKEND_URL}`);
 
-export { ENV_VARIABLES };
+export { ENV_VARIABLES, MAX_PARTICIPANTS };

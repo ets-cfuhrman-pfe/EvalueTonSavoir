@@ -9,6 +9,7 @@ import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 import { Student, Answer } from 'src/Types/StudentType';
+import { MAX_PARTICIPANTS } from 'src/constants';
 
 
 const questionDisplayV2MockProps: any[] = [];
@@ -882,12 +883,12 @@ describe('ManageRoomV2 Component', () => {
       return { userJoinedCallback, userDisconnectedCallback };
     };
 
-    test('should display "0/60" when no students are connected', async () => {
+    test(`should display "0/${MAX_PARTICIPANTS}" when no students are connected`, async () => {
       await launchQuizAndGetCallbacks();
 
       await screen.findByTestId('question-display-v2');
 
-      expect(screen.getByText(/0 \/ 60 participants/)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`0 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
     });
 
     test('should increment counter as students join', async () => {
@@ -902,7 +903,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
 
       if (userJoinedCallback) {
@@ -912,7 +913,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText(/2 \/ 60 participants/)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(`2 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
     });
 
@@ -929,7 +930,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText(/2 \/ 60 participants/)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(`2 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
 
       if (userDisconnectedCallback) {
@@ -939,7 +940,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
     });
 
@@ -964,7 +965,7 @@ describe('ManageRoomV2 Component', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText(/1 \/ 60 participants/)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
     });
   });

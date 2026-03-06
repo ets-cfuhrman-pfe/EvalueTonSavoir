@@ -7,7 +7,7 @@ import webSocketService, {
     AnswerReceptionFromBackendType
 } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
-import { ENV_VARIABLES } from 'src/constants';
+import { ENV_VARIABLES, MAX_PARTICIPANTS } from 'src/constants';
 import { Student, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 
@@ -725,7 +725,7 @@ const ManageRoomV2: React.FC = () => {
                             <Box display="flex" gap={1} flexWrap="wrap">
                                 <Chip
                                     icon={<PeopleAlt fontSize="small" />}
-                                    label={`${connectedCount} / 60 participants`}
+                                    label={`${connectedCount} / ${MAX_PARTICIPANTS} participants`}
                                     size="small"
                                     variant="outlined"
                                 />
