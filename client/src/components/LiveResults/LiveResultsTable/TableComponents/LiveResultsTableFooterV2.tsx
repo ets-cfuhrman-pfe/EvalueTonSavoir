@@ -47,7 +47,7 @@ const LiveResultsTableFooterV2: React.FC<LiveResultsTableFooterProps> = ({
         });
 
         return classTotal / studentsWithAnswers.length;
-    }, [students]);
+    }, [students, getStudentGrade]);
 
     return (
         <tbody className="table-secondary">
