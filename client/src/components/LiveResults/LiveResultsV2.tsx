@@ -72,16 +72,14 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
                     </Box>
                 </Box>
 
-                <Box className="table-responsive">
-                    <LiveResultsTableV2
-                        students={sortedStudents}
-                        questions={questions}
-                        showCorrectAnswers={showCorrectAnswers}
-                        showSelectedQuestion={showSelectedQuestion}
-                        showUsernames={showUsernames}
-                        selectedQuestionIndex={selectedQuestionIndex}
-                    />
-                </Box>
+                <LiveResultsTableV2
+                    students={sortedStudents}
+                    questions={questions}
+                    showCorrectAnswers={showCorrectAnswers}
+                    showSelectedQuestion={showSelectedQuestion}
+                    showUsernames={showUsernames}
+                    selectedQuestionIndex={selectedQuestionIndex}
+                />
         </Box>
     );
 };
