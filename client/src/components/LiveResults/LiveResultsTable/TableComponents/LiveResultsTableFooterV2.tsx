@@ -50,7 +50,7 @@ const LiveResultsTableFooterV2: React.FC<LiveResultsTableFooterProps> = ({
     }, [students]);
 
     return (
-        <tfoot className="table-secondary">
+        <tbody className="table-secondary">
             <tr>
                 <td className="sticky-column bg-white fw-bold">
                     % réussite
@@ -69,7 +69,7 @@ const LiveResultsTableFooterV2: React.FC<LiveResultsTableFooterProps> = ({
                     {students.length > 0 ? `${classAverage.toFixed()} %` : '-'}
                 </td>
             </tr>
-        </tfoot>
+        </tbody>
     );
 };
 
