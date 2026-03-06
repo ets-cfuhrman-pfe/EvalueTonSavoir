@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import ManageRoomV2 from 'src/pages/Teacher/ManageRoom/ManageRoomV2';
@@ -9,6 +9,7 @@ import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 import { calculateAnswerStatistics, getAnswerPercentage, getAnswerCount, getTotalStudentsWhoAnswered } from 'src/utils/answerStatistics';
 import { Student, Answer } from 'src/Types/StudentType';
+import { MAX_PARTICIPANTS } from 'src/constants';
 
 
 const questionDisplayV2MockProps: any[] = [];
@@ -393,7 +394,7 @@ describe('ManageRoomV2 Component', () => {
       jest.runAllTimers();
 
       await waitFor(() => {
-  expect(screen.getByText(/0\/1 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/0 \/ 1 ont répondu/)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -692,28 +693,25 @@ describe('ManageRoomV2 Component', () => {
 
       await screen.findByTestId('question-display-v2');
 
-      const showProgressButton = await screen.findByRole('button', {
-        name: /Afficher progression/i,
-      });
-
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
 
-      fireEvent.click(showProgressButton);
-
-      const hideProgressButton = await screen.findByRole('button', {
-        name: /Masquer progression/i,
-      });
+      // Enable statistics via Options menu → Progression étudiants
+      const progressButton = await screen.findByRole('button', { name: /Progression/i });
+      fireEvent.click(progressButton);
+      
+      
 
       expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-on');
       expect(questionDisplayV2MockProps.some((props) => props.showStatistics)).toBe(true);
 
-      fireEvent.click(hideProgressButton);
-
-      await screen.findByRole('button', {
-        name: /Afficher progression/i,
+      // Disable statistics via Options menu again
+      fireEvent.click(progressButton);
+      
+      
+ 
+      await waitFor(() => {
+        expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
       });
-      expect(screen.getByRole('button', { name: /Afficher progression/i })).toBeInTheDocument();
-      expect(screen.getByTestId('question-display-v2')).toHaveTextContent('stats-off');
       expect(questionDisplayV2MockProps.at(-1)?.showStatistics).toBe(false);
     });
 
@@ -764,11 +762,11 @@ describe('ManageRoomV2 Component', () => {
 
       await screen.findByTestId('question-display-v2');
 
-      const showProgressButton = await screen.findByRole('button', {
-        name: /Afficher progression/i,
-      });
-
-      fireEvent.click(showProgressButton);
+      // Enable statistics via Options menu → Progression étudiants
+      const progressButton = await screen.findByRole('button', { name: /Progression/i });
+      fireEvent.click(progressButton);
+      
+      
 
       // Verify that students array is passed to QuestionDisplayV2
       const latestProps = questionDisplayV2MockProps.at(-1);
@@ -805,7 +803,7 @@ describe('ManageRoomV2 Component', () => {
 
       // Should show that 2 out of 3 students answered
       await waitFor(() => {
-        expect(screen.getByText(/2\/3 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/2 \/ 3 ont répondu/)).toBeInTheDocument();
       });
     });
 
@@ -853,7 +851,121 @@ describe('ManageRoomV2 Component', () => {
 
       // Should now show 1/1 students answered
       await waitFor(() => {
-        expect(screen.getByText(/1\/1 étudiants? ont répondu/)).toBeInTheDocument();
+        expect(screen.getByText(/1 \/ 1 ont répondu/)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Student Counter Display', () => {
+    const launchQuizAndGetCallbacks = async () => {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      const userJoinedCallback = mockSocket.on.mock.calls.find(
+        (call) => call[0] === 'user-joined'
+      )?.[1];
+
+      const userDisconnectedCallback = mockSocket.on.mock.calls.find(
+        (call) => call[0] === 'user-disconnected'
+      )?.[1];
+
+      return { userJoinedCallback, userDisconnectedCallback };
+    };
+
+    test(`should display "0/${MAX_PARTICIPANTS}" when no students are connected`, async () => {
+      await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      expect(screen.getByText(new RegExp(`0 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
+    });
+
+    test('should increment counter as students join', async () => {
+      const { userJoinedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
+      });
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(new RegExp(`2 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
+      });
+    });
+
+    test('should decrement counter when a student disconnects', async () => {
+      const { userJoinedCallback, userDisconnectedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(new RegExp(`2 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
+      });
+
+      if (userDisconnectedCallback) {
+        act(() => {
+          userDisconnectedCallback('student1');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
+      });
+    });
+
+    test('should only count connected students in the counter', async () => {
+      const { userJoinedCallback, userDisconnectedCallback } = await launchQuizAndGetCallbacks();
+
+      await screen.findByTestId('question-display-v2');
+
+      if (userJoinedCallback) {
+        act(() => {
+          userJoinedCallback({ id: 'student1', name: 'Alice', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student2', name: 'Bob', room: 'ROOM1', answers: [], isConnected: true });
+          userJoinedCallback({ id: 'student3', name: 'Charlie', room: 'ROOM1', answers: [], isConnected: true });
+        });
+      }
+
+      if (userDisconnectedCallback) {
+        act(() => {
+          userDisconnectedCallback('student2');
+          userDisconnectedCallback('student3');
+        });
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(new RegExp(`1 \/ ${MAX_PARTICIPANTS} participants`))).toBeInTheDocument();
       });
     });
   });
@@ -944,6 +1056,116 @@ describe('ManageRoomV2 Component', () => {
       
       expect(stats).toEqual({});
       expect(total).toBe(0);
+    });
+  });
+
+  describe('Collapsible Question Card', () => {
+    /** Helper: bring the component into the live-quiz state. */
+    async function startQuiz() {
+      renderComponent();
+
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+    }
+
+    test('should render question header with question ID when quiz is live', async () => {
+      await startQuiz();
+
+      expect(screen.getByText(/Question \d+/i)).toBeInTheDocument();
+    });
+
+    test('should render QuestionDisplayV2 by default (card starts expanded)', async () => {
+      await startQuiz();
+
+      expect(screen.getByTestId('question-display-v2')).toBeInTheDocument();
+    });
+
+    test('should show ExpandLess icon when card is expanded', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      expect(within(header).queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+      expect(within(header).queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+    });
+
+    test('should collapse the question content when the header is clicked', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should show ExpandMore icon after collapsing', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(within(header).queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandLessIcon')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should re-expand the question content when the header is clicked again', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+
+      fireEvent.click(header);
+
+      await screen.findByTestId('question-display-v2');
+    });
+
+    test('should keep the card header visible when card is collapsed', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('question-display-v2')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/Question \d+/i)).toBeInTheDocument();
+    });
+
+    test('should restore ExpandLess icon after re-expanding', async () => {
+      await startQuiz();
+
+      const header = screen.getByRole('button', { name: /Question \d+/i });
+      fireEvent.click(header); // collapse
+
+      await waitFor(() => {
+        expect(within(header).queryByTestId('ExpandMoreIcon')).toBeInTheDocument();
+      });
+
+      fireEvent.click(header); // expand
+
+      await waitFor(() => {
+        expect(within(header).queryByTestId('ExpandLessIcon')).toBeInTheDocument();
+        expect(within(header).queryByTestId('ExpandMoreIcon')).not.toBeInTheDocument();
+      });
     });
   });
 });

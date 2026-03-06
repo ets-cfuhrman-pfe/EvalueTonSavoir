@@ -6,6 +6,11 @@ const ENV_VARIABLES = {
     FRONTEND_URL: process.env.SITE_URL != undefined ? `${process.env.SITE_URL}${process.env.USE_PORTS ? `:${process.env.PORT}` : ''}` : ''
 };
 
+// This mirrors MAX_USERS_PER_ROOM in the backend.
+const MAX_PARTICIPANTS = process.env.VITE_MAX_USERS_PER_ROOM 
+    ? parseInt(process.env.VITE_MAX_USERS_PER_ROOM, 10) 
+    : 60;
+
 console.log(`ENV_VARIABLES.VITE_BACKEND_URL=${ENV_VARIABLES.VITE_BACKEND_URL}`);
 
-export { ENV_VARIABLES };
+export { ENV_VARIABLES, MAX_PARTICIPANTS };

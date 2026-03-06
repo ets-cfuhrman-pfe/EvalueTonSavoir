@@ -7,7 +7,7 @@ import webSocketService, {
     AnswerReceptionFromBackendType
 } from '../../../services/WebsocketService';
 import { QuizType } from '../../../Types/QuizType';
-import { ENV_VARIABLES } from 'src/constants';
+import { ENV_VARIABLES, MAX_PARTICIPANTS } from 'src/constants';
 import { Student, Answer } from '../../../Types/StudentType';
 import LoadingCircle from 'src/components/LoadingCircle/LoadingCircle';
 
@@ -21,15 +21,23 @@ import {
     Alert,
     Card,
     CardContent,
+    CardActionArea,
+    Collapse,
     Typography,
-    Box
+    Box,
+    Chip,
 } from '@mui/material';
 import {
     ArrowBack,
     QrCode,
     ChevronLeft,
     ChevronRight,
-    Stop
+    Stop,
+    PeopleAlt,
+    CheckBox,
+    CheckBoxOutlineBlank,
+    ExpandMore,
+    ExpandLess,
 } from '@mui/icons-material';
 import QRCodeModal from '../../../components/QRCodeModal';
 import ConfirmDialog from '../../../components/ConfirmDialog/ConfirmDialog';
@@ -690,178 +698,205 @@ const ManageRoomV2: React.FC = () => {
         );
     }
 
+    // Derived stats for header chips
+    const connectedStudents = students.filter(isStudentConnected);
+    const connectedCount = connectedStudents.length;
+    const studentsWhoAnswered = currentQuestion
+        ? connectedStudents.filter(student =>
+              student.answers.some(answer => answer.idQuestion === Number(currentQuestion.question.id))
+          ).length
+        : 0;
+
     // Main room management interface
     return (
         <>
             <div className="content-container manage-room-v2">
                 <div className="w-100 p-0 content-full-width">
-                    {/* Top Header */}
-                    <div className="bg-white border-bottom shadow-sm">
-                        <div className="container-fluid px-2 py-3 content-full-width">
-                            {/* Quiz title row */}
-                            <div className="d-flex px-3 justify-content-center align-items-center mb-3">
-                                <Box>
-                                    {quiz?.title && (
-                                        <Typography variant="h4" component="h1" fontWeight="bold" color="primary">
-                                            {quiz.title}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            </div>
 
-                            {/* Toggle buttons and action buttons row */}
-                            <div className="d-flex px-3 justify-content-between align-items-center mb-2">
-                                {/* Toggle buttons on left */}
-                                <Box display="flex" gap={2}>
-                                    <Button
+                    {/*Top Header Bar*/}
+                    <div className="manage-room-header">
+                        {/* Left: quiz title + live stats */}
+                        <Box display="flex" flexDirection="column" gap={0.75}>
+                            {quiz?.title && (
+                                <Typography variant="h5" component="h1" fontWeight="bold" color="primary">
+                                    {quiz.title}
+                                </Typography>
+                            )}
+                            <Box display="flex" gap={1} flexWrap="wrap">
+                                <Chip
+                                    icon={<PeopleAlt fontSize="small" />}
+                                    label={`${connectedCount} / ${MAX_PARTICIPANTS} participants`}
+                                    size="small"
+                                    variant="outlined"
+                                />
+                                {currentQuestion && (
+                                    <Chip
+                                        label={`${studentsWhoAnswered} / ${connectedCount} ont répondu`}
+                                        size="small"
                                         variant="outlined"
-                                        onClick={() => setShowResults(!showResults)}
-                                    >
-                                        {showResults
-                                            ? 'Masquer les résultats'
-                                            : 'Afficher les résultats'}
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => setShowQuestions(!showQuestions)}
-                                    >
-                                        {showQuestions
-                                            ? 'Masquer les questions'
-                                            : 'Afficher les questions'}
-                                    </Button>
-                                </Box>
+                                        color="info"
+                                    />
+                                )}
+                            </Box>
+                        </Box>
 
-                                {/* Action buttons on right */}
-                                <Box display="flex" gap={2}>
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        startIcon={<Stop />}
-                                        onClick={finishQuiz}
-                                    >
-                                        Terminer le quiz
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<QrCode />}
-                                        onClick={() => setShowQrModal(true)}
-                                    >
-                                        Lien de participation
-                                    </Button>
-                                </Box>
-                            </div>
-                        </div>
+                        {/* Right: global action buttons */}
+                        <Box display="flex" gap={2} alignItems="center">
+                            <Button
+                                variant="contained"
+                                startIcon={<QrCode />}
+                                onClick={() => setShowQrModal(true)}
+                            >
+                                Lien de participation
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                startIcon={<Stop />}
+                                onClick={finishQuiz}
+                            >
+                                Terminer le quiz
+                            </Button>
+                        </Box>
                     </div>
+
+                    {/* Control Bar */}
+                    {quizQuestions && currentQuestion && (
+                        <div className="manage-room-control-bar">
+                            {/* Left: display options */}
+                            <Box>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
+                                    sx={{ mr: 1 }}
+                                >{showCorrectAnswers
+                                            ? <CheckBox fontSize="small" color="success" sx={{ mr: 1 }} />
+                                            : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
+                                    Réponses
+                                </Button>
+
+                                 <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => setShowStatistics(!showStatistics)}
+                                    sx={{ mr: 1 }}
+                                >{showStatistics
+                                            ? <CheckBox fontSize="small" color="success" sx={{ mr: 1 }} />
+                                            : <CheckBoxOutlineBlank fontSize="small" sx={{ mr: 1 }} />}
+                                    Progression
+                                </Button>
+                            </Box>
+
+                            {/* Center: pagination */}
+                            <Box display="flex" alignItems="center" gap={2} className="manage-room-pagination">
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<ChevronLeft />}
+                                    onClick={previousQuestion}
+                                    disabled={Number(currentQuestion.question.id) <= 1}
+                                >
+                                    Précédente
+                                </Button>
+                                <Typography variant="body1" fontWeight="bold" color="text.primary">
+                                    {currentQuestion.question.id} / {quizQuestions.length}
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    endIcon={<ChevronRight />}
+                                    onClick={nextQuestion}
+                                    disabled={Number(currentQuestion.question.id) >= quizQuestions.length}
+                                >
+                                    Suivante
+                                </Button>
+                            </Box>
+
+                            {/* Right: spacer to keep pagination truly centered */}
+                            <Box sx={{ minWidth: 180 }} />
+                        </div>
+                    )}
 
                     {/* Main Content */}
                     <div className="row g-0">
                         <div className="col-12 bg-white shadow-sm">
                             <div className="p-4">
                                 {quizQuestions ? (
-                                    <div>
-                                        {/* Navigation buttons and question counter */}
-                                        {quizQuestions && currentQuestion && (
-                                            <div className="d-flex px-3 justify-content-center align-items-center gap-4 mb-3">
-                                                <Button
-                                                    variant="outlined"
-                                                    startIcon={<ChevronLeft />}
-                                                    onClick={previousQuestion}
-                                                    disabled={Number(currentQuestion?.question.id) <= 1}
-                                                >
-                                                    Précédente
-                                                </Button>
-                                                
-                                                <Typography variant="h6" fontWeight="bold" color="text.primary">
-                                                    {currentQuestion?.question.id} / {quizQuestions.length}
-                                                </Typography>
-                                                
-                                                <Button
-                                                    variant="outlined"
-                                                    endIcon={<ChevronRight />}
-                                                    onClick={nextQuestion}
-                                                    disabled={Number(currentQuestion?.question.id) >= quizQuestions.length}
-                                                >
-                                                    Suivante
-                                                </Button>
-                                            </div>
-                                        )}
-
-                                        <Box display="flex" flexDirection="column" gap={3}>
-                                            {/* Questions Box */}
-                                            {showQuestions && (
-                                                <Box width="100%">
-                                                    {/* Show answers button and student counter*/}
-                                                    {quizQuestions && currentQuestion && (
-                                                        <div className="d-flex align-items-center justify-content-center mb-2 px-2 py-2">
-                                                            <Button
-                                                                variant="outlined"
-                                                                color="success"
-                                                                className='me-3'
-                                                                onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
-                                                            >
-                                                                {showCorrectAnswers ? 'Masquer les réponses' : 'Afficher les réponses'}
-                                                            </Button>
-                                                            <Button
-                                                                variant="outlined"
-                                                                className='me-3'
-                                                                onClick={() => setShowStatistics(!showStatistics)}
-                                                            >
-                                                                {showStatistics ? ' Masquer progression' : 'Afficher progression'}
-                                                            </Button>
-                                                            
-                                                            <Typography variant="body1" color="text.secondary">
-                                                                {(() => {
-        
-                                                                    const connectedStudents = students.filter(isStudentConnected);
-                                                                    const studentsWhoAnswered = connectedStudents.filter(student => 
-                                                                        student.answers.some(answer => answer.idQuestion === Number(currentQuestion?.question.id))
-                                                                    ).length;
-                                                                    const totalStudents = connectedStudents.length;
-
-                                                                    return `${studentsWhoAnswered}/${totalStudents} étudiant${totalStudents !== 1 ? 's' : ''} ont répondu`;
-                                                                })()}
+                                    <Box display="flex" flexDirection="column" gap={3}>
+                                        {/* Questions Box */}
+                                        <Box width="100%">
+                                            <div className="quiz-question-card">
+                                                {currentQuestion && (
+                                                    <Card elevation={2}>
+                                                        <CardActionArea
+                                                            onClick={() => setShowQuestions(!showQuestions)}
+                                                            sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                px: 2,
+                                                                py: 1,
+                                                                borderBottom: showQuestions ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                                                            }}
+                                                        >
+                                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                                Question {currentQuestion.question.id}
                                                             </Typography>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Current Question Display */}
-                                                    <div className="quiz-question-card">
-                                                    {currentQuestion && (
-                                                        <Card elevation={2}>
+                                                            {showQuestions ? <ExpandLess /> : <ExpandMore />}
+                                                        </CardActionArea>
+                                                        <Collapse in={showQuestions} unmountOnExit>
                                                             <CardContent>
                                                                 <QuestionDisplayV2
                                                                     key={currentQuestion.question.id}
                                                                     showAnswer={showCorrectAnswers}
-                                                                    question={
-                                                                        currentQuestion?.question as Question
-                                                                    }
+                                                                    question={currentQuestion.question as Question}
                                                                     students={students}
                                                                     showStatistics={showStatistics}
                                                                     showCorrectnessBanner={false}
-                                                                />                                                       
+                                                                    sideImageLayout={true}
+                                                                />
                                                             </CardContent>
-                                                        </Card>
-                                                    )}
-                                                   </div> 
-                                                </Box>
-                                            )}
-
-                                              {/* Results Box */}
-                                            {showResults && (
-                                                <Box width="100%">
-                                                    <LiveResultsComponent
-                                                        quizMode={quizMode}
-                                                        socket={socket}
-                                                        questions={quizQuestions}
-                                                        showSelectedQuestion={showSelectedQuestion}
-                                                        students={students}
-                                                        quizTitle={quiz?.title}
-                                                        selectedQuestionIndex={currentQuestion ? Number(currentQuestion.question.id) - 1 : undefined}
-                                                    />
-                                                </Box>
-                                            )}
+                                                        </Collapse>
+                                                    </Card>
+                                                )}
+                                            </div>
                                         </Box>
-                                    </div>
+
+                                        {/* Results Box */}
+                                        <Box width="100%">
+                                            <div className="quiz-results-card">
+                                                <Card elevation={2}>
+                                                    <CardActionArea
+                                                        onClick={() => setShowResults(!showResults)}
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            px: 2,
+                                                            py: 1,
+                                                            borderBottom: showResults ? '1px solid rgba(0,0,0,0.1)' : 'none'
+                                                        }}
+                                                    >
+                                                        <Typography variant="subtitle1" fontWeight="bold">
+                                                            Résultats
+                                                        </Typography>
+                                                        {showResults ? <ExpandLess /> : <ExpandMore />}
+                                                    </CardActionArea>
+                                                    <Collapse in={showResults} unmountOnExit>
+                                                        <CardContent sx={{ p: 0 }}>
+                                                            <LiveResultsComponent
+                                                                questions={quizQuestions}
+                                                                showSelectedQuestion={showSelectedQuestion}
+                                                                students={students}                                                            
+                                                                selectedQuestionIndex={currentQuestion ? Number(currentQuestion.question.id) - 1 : undefined}
+                                                            />
+                                                        </CardContent>
+                                                    </Collapse>
+                                                </Card>
+                                            </div>
+                                        </Box>
+                                    </Box>
                                 ) : (
                                     <Box textAlign="center" py={8}>
                                         <LoadingCircle text="Préparation du quiz..." />
