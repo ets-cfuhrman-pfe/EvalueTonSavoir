@@ -72,7 +72,7 @@ const LiveResultsV2: React.FC<LiveResultsProps> = ({ questions, showSelectedQues
                     </Box>
                 </Box>
 
-                <Box className="table-responsive" sx={{ maxHeight: '600px', overflowY: 'auto' }}>
+                <Box className="table-responsive">
                     <LiveResultsTableV2
                         students={sortedStudents}
                         questions={questions}

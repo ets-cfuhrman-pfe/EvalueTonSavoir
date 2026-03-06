@@ -54,8 +54,7 @@
 
 // Responsive table styles
 .table-responsive {
-  max-height: 600px;
-  overflow-y: auto;
+  overflow-x: auto;
 }
 
 // Custom table cell styling
@@ -94,10 +93,5 @@
   .sticky-column,
   .sticky-header {
     position: static;
-  }
-
-  .table-responsive {
-    max-height: none;
-    overflow-y: visible;
   }
 }
