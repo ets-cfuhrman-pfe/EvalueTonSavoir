@@ -1,17 +1,22 @@
 import { test } from '@playwright/test';
-import { getE2ECredentials } from './helpers';
+import {
+    loginAsTeacher,
+    TIMEOUTS,
+    TEST_QUIZ_NAME,
+    TEST_ROOM_NAME,
+    DEFAULT_FOLDER_NAME,
+    DEBUG_SNIPPET_CHARS,
+} from './helpers';
 
 test.describe('E2E Setup Check', () => {
     test('Ensure test prerequisites exist: user, folder, room, quiz', async ({
         browser
     }) => {
-        test.setTimeout(120000); // 2 minutes
+        test.setTimeout(TIMEOUTS.SETUP_CHECK_WORKFLOW);
 
-        // Create browser context
         const context = await browser.newContext();
         const page = await context.newPage();
 
-        // Handle dialogs
         page.on('dialog', async dialog => {
             console.log('Dialog:', dialog.message());
             await dialog.accept();
@@ -20,273 +25,233 @@ test.describe('E2E Setup Check', () => {
         try {
             console.log('Checking test user...');
 
-            // Try to login
-            await page.goto('/login');
-            await page.waitForLoadState('networkidle');
+            await loginAsTeacher(page);
+            console.log('Test user exists and login successful');
 
-            const { email, password } = getE2ECredentials();
-
-            const emailInput = page.getByLabel('Email').or(page.locator('input[type="email"]')).first();
-            await emailInput.fill(email);
-
-            const passwordInput = page.locator('input[type="password"]').first();
-            await passwordInput.fill(password);
-
-            const loginButton = page.locator('button:has-text("Login")').or(page.locator('button:has-text("Se connecter")')).first();
-            await loginButton.click();
-
-            // Check if login successful
-            try {
-                await page.waitForURL(/\/dashboard|\/teacher/, { timeout: 10000 });
-                console.log('Test user exists and login successful');
-            } catch {
-                throw new Error('Test user does not exist. Please ensure TEST_USER_EMAIL and TEST_USER_PASSWORD are set and user is created.');
-            }
-
-            // Now on dashboard, check folder
             await page.goto('/teacher/dashboard');
             await page.waitForLoadState('networkidle');
-            await page.waitForTimeout(3000);
-            
-            // Check if we got redirected to login (auth issue)
+            await page.waitForTimeout(TIMEOUTS.PAGE_STABILIZE);
+
+            // If auth expired mid-session, the goto above may redirect to /login
             const currentUrl = await page.url();
             console.log('Current URL after dashboard navigation:', currentUrl);
             if (currentUrl.includes('login')) {
-                console.log('ERROR: Got redirected to login - auth may have failed');
-                // Try to login again
-                const { email, password } = getE2ECredentials();
-                const emailInput = page.getByLabel('Email').or(page.locator('input[type="email"]')).first();
-                await emailInput.fill(email);
-                const passwordInput = page.locator('input[type="password"]').first();
-                await passwordInput.fill(password);
-                const loginButton = page.locator('button:has-text("Login")').or(page.locator('button:has-text("Se connecter")')).first();
-                await loginButton.click();
-                await page.waitForURL(/\/dashboard|\/teacher/, { timeout: 15000 });
-                await page.waitForTimeout(3000);
+                console.log('ERROR: Got redirected to login - auth may have failed, retrying...');
+                await loginAsTeacher(page);
+                await page.goto('/teacher/dashboard');
+                await page.waitForLoadState('networkidle');
+                await page.waitForTimeout(TIMEOUTS.PAGE_STABILIZE);
             }
-            
-            // Wait for dashboard content to fully render
+
             await page.waitForLoadState('networkidle');
-            await page.waitForTimeout(3000);
-            
-            // Wait for dashboard content to fully render
-            // Look for the "Tableau de bord" header which indicates dashboard is loaded
-            const dashboardHeader = page.locator('h1:has-text("Tableau de bord")');
+            await page.waitForTimeout(TIMEOUTS.PAGE_STABILIZE);
+
+            // Verify the dashboard is fully rendered
+            const dashboardHeader = page.getByRole('heading', { name: /tableau de bord/i });
             try {
-                await dashboardHeader.waitFor({ state: 'visible', timeout: 30000 });
+                await dashboardHeader.waitFor({ state: 'visible', timeout: TIMEOUTS.DASHBOARD_HEADER });
                 console.log('Dashboard header visible');
             } catch {
                 console.log('WARNING: Dashboard header not found, taking screenshot...');
                 await page.screenshot({ path: 'setup-check-dashboard-not-loaded.png' });
-                // Log current URL to debug
                 console.log('Current URL:', await page.url());
-                // Log what we can see on the page
                 const bodyHTML = await page.locator('body').innerHTML();
-                console.log('Page body (first 1500 chars):', bodyHTML.substring(0, 1500));
+                console.log(`Page body (first ${DEBUG_SNIPPET_CHARS} chars):`, bodyHTML.substring(0, DEBUG_SNIPPET_CHARS));
             }
-            
-            // Wait for React components to render - give it more time
-            await page.waitForTimeout(5000);
-            
-            // Take screenshot of dashboard state
+
+            // Extra wait for heavy React component renders
+            await page.waitForTimeout(TIMEOUTS.MANAGE_ROOM_LOAD);
+
             await page.screenshot({ path: 'setup-check-dashboard-loaded.png' });
-            
-            // Also check for the room select container as another indicator
+
             const roomSelectContainer = page.locator('[data-testid="room-select-container"]');
-            const roomSelectVisible = await roomSelectContainer.isVisible({ timeout: 3000 }).catch(() => false);
+            const roomSelectVisible = await roomSelectContainer
+                .isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE })
+                .catch(() => false);
             console.log('Room select container visible:', roomSelectVisible);
+
+            // Check default folder
 
             console.log('Checking default folder...');
 
-            // Check if "Dossier par défaut" exists in folders - try multiple selectors
             let folderExists = false;
             try {
-                // Wait for folders section to load
-                await page.waitForTimeout(2000);
-                folderExists = await page.locator('text=Dossier par défaut').first().isVisible({ timeout: 5000 });
+                await page.waitForTimeout(TIMEOUTS.ACTION_SETTLE);
+                folderExists = await page
+                    .locator(`text=${DEFAULT_FOLDER_NAME}`)
+                    .first()
+                    .isVisible({ timeout: TIMEOUTS.ELEMENT_OPTIONAL });
             } catch {
                 folderExists = false;
             }
-            
-            if (!folderExists) {
-                console.log('Creating default folder...');
 
-                // Click create folder button - try data-testid first, then fallback
+            if (!folderExists) {
+                console.log('Creating default folder');
+
                 let createFolderBtn = page.locator('[data-testid="create-folder-btn"]');
-                if (!(await createFolderBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+                if (!(await createFolderBtn.isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE }).catch(() => false))) {
                     console.log('data-testid not found, trying text selector...');
-                    createFolderBtn = page.locator('button').filter({ hasText: 'Nouveau dossier' }).first();
+                    createFolderBtn = page.getByRole('button', { name: /nouveau dossier/i }).first();
                 }
-                
-                // If still not visible, might need to expand folder section first
-                if (!(await createFolderBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+
+                if (!(await createFolderBtn.isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE }).catch(() => false))) {
                     console.log('Button not visible, trying to expand folders section...');
-                    const expandBtn = page.locator('button').filter({ hasText: 'Dossiers' }).first();
-                    if (await expandBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+                    const expandBtn = page.getByRole('button', { name: /dossiers/i }).first();
+                    if (await expandBtn.isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE }).catch(() => false)) {
                         await expandBtn.click();
-                        await page.waitForTimeout(1000);
+                        await page.waitForTimeout(TIMEOUTS.SELECTION_REGISTER);
                     }
                 }
-                
-                await createFolderBtn.waitFor({ state: 'visible', timeout: 10000 });
+
+                await createFolderBtn.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_VISIBLE });
                 await createFolderBtn.click();
 
-                // Wait for dialog to open
-                await page.waitForTimeout(1500);
-                
-                // The dialog uses ValidatedTextField with label="Titre du dossier"
+                await page.waitForTimeout(TIMEOUTS.DROPDOWN_ANIMATION);
+
                 const folderDialog = page.locator('[role="dialog"]');
-                await folderDialog.waitFor({ state: 'visible', timeout: 5000 });
-                
-                // Take screenshot for debugging
+                await folderDialog.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_OPTIONAL });
+
                 await page.screenshot({ path: 'setup-check-folder-dialog.png' });
-                
-                // Find input inside the dialog - try multiple selectors
+
                 let folderInput = folderDialog.locator('input').first();
-                if (!(await folderInput.isVisible({ timeout: 2000 }).catch(() => false))) {
-                    // Try finding by label
-                    folderInput = page.getByLabel('Titre du dossier');
+                if (!(await folderInput.isVisible({ timeout: TIMEOUTS.ACTION_SETTLE }).catch(() => false))) {
+                    folderInput = page.getByLabel(/titre du dossier/i);
                 }
-                await folderInput.waitFor({ state: 'visible', timeout: 5000 });
-                await folderInput.fill('Dossier par défaut');
+                await folderInput.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_OPTIONAL });
+                await folderInput.fill(DEFAULT_FOLDER_NAME);
 
-                // Click create button inside dialog
-                const confirmBtn = folderDialog.locator('button').filter({ hasText: 'Créer' }).first();
-                await confirmBtn.click();
+                await folderDialog.getByRole('button', { name: /cr[eé]er/i }).first().click();
 
-                await page.waitForTimeout(2000);
+                await page.waitForTimeout(TIMEOUTS.ACTION_SETTLE);
                 console.log('Default folder created');
             } else {
                 console.log('Default folder exists');
             }
 
-            console.log('Checking TEST room...');
+            //Check TEST room
+            console.log(`Checking ${TEST_ROOM_NAME} room`);
 
-            // Take screenshot for debugging
             await page.screenshot({ path: 'setup-check-before-room.png' });
 
-            // Check rooms section - expand if collapsed
-            const roomsSectionBtn = page.locator('button').filter({ hasText: 'Salles' }).first();
+            const roomsSectionBtn = page.getByRole('button', { name: /salles/i }).first();
             try {
                 const roomsExpandedAttr = await roomsSectionBtn.getAttribute('aria-expanded');
                 console.log('Rooms section expanded:', roomsExpandedAttr);
                 if (roomsExpandedAttr !== 'true') {
                     await roomsSectionBtn.click();
-                    await page.waitForTimeout(1500);
+                    await page.waitForTimeout(TIMEOUTS.DROPDOWN_ANIMATION);
                     console.log('Expanded rooms section');
                 }
             } catch (e) {
-                // Rooms section might be in a different state, continue anyway
                 console.log('Could not check rooms section state:', e);
             }
 
-            // Check if TEST room exists in the rooms list
             let testRoomExists = false;
             try {
-                testRoomExists = await page.locator('li').filter({ hasText: /^TEST$/ }).first().isVisible({ timeout: 5000 });
+                testRoomExists = await page
+                    .locator('li')
+                    .filter({ hasText: new RegExp(`^${TEST_ROOM_NAME}$`) })
+                    .first()
+                    .isVisible({ timeout: TIMEOUTS.ELEMENT_OPTIONAL });
             } catch {
                 testRoomExists = false;
             }
-            console.log('TEST room exists:', testRoomExists);
-            
-            if (!testRoomExists) {
-                console.log('Creating TEST room...');
+            console.log(`${TEST_ROOM_NAME} room exists:`, testRoomExists);
 
-                // Click create room button - try data-testid first
+            if (!testRoomExists) {
+                console.log(`Creating ${TEST_ROOM_NAME} room...`);
+
                 let createRoomBtn = page.locator('[data-testid="create-room-btn"]');
-                if (!(await createRoomBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-                    console.log('data-testid not found, trying text selector...');
-                    createRoomBtn = page.locator('button').filter({ hasText: 'Nouvelle salle' }).first();
+                if (!(await createRoomBtn.isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE }).catch(() => false))) {
+                    console.log('data-testid not found, trying text selector');
+                    createRoomBtn = page.getByRole('button', { name: /nouvelle salle/i }).first();
                 }
-                await createRoomBtn.waitFor({ state: 'visible', timeout: 10000 });
+                await createRoomBtn.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_VISIBLE });
                 await createRoomBtn.click();
-                await page.waitForTimeout(1500);
-                
-                // Take screenshot after clicking create room
+                await page.waitForTimeout(TIMEOUTS.DROPDOWN_ANIMATION);
+
                 await page.screenshot({ path: 'setup-check-room-create-clicked.png' });
 
-                // Fill room name - try data-testid first, then placeholder
                 let roomInput = page.locator('[data-testid="room-name-input"]');
-                if (!(await roomInput.isVisible({ timeout: 2000 }).catch(() => false))) {
-                    roomInput = page.locator('input[placeholder="Nom de la salle"]').first();
+                if (!(await roomInput.isVisible({ timeout: TIMEOUTS.ACTION_SETTLE }).catch(() => false))) {
+                    roomInput = page.getByPlaceholder(/nom de la salle/i).first();
                 }
-                await roomInput.waitFor({ state: 'visible', timeout: 5000 });
-                await roomInput.fill('TEST');
+                await roomInput.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_OPTIONAL });
+                await roomInput.fill(TEST_ROOM_NAME);
 
-                // Click create button
-                const createBtn = page.locator('button').filter({ hasText: 'Créer' }).first();
-                await createBtn.click();
+                await page.getByRole('button', { name: /cr[eé]er/i }).first().click();
 
-                await page.waitForTimeout(2000);
-                console.log('TEST room created');
+                await page.waitForTimeout(TIMEOUTS.ACTION_SETTLE);
+                console.log(`${TEST_ROOM_NAME} room created`);
             } else {
-                console.log('TEST room exists');
+                console.log(`${TEST_ROOM_NAME} room exists`);
             }
 
-            console.log('Checking TESTQUIZ...');
+            // Check TESTQUIZ
 
-            // Check if TESTQUIZ exists - wait for quiz list to load first
+            console.log(`Checking ${TEST_QUIZ_NAME}`);
+
             let testQuizExists = false;
             try {
-                await page.waitForSelector('.quiz', { timeout: 10000 });
-                testQuizExists = await page.locator('.quiz').filter({ hasText: 'TESTQUIZ' }).isVisible({ timeout: 5000 });
+                await page.waitForSelector('.quiz', { timeout: TIMEOUTS.ELEMENT_VISIBLE });
+                testQuizExists = await page
+                    .locator('.quiz')
+                    .filter({ hasText: TEST_QUIZ_NAME })
+                    .isVisible({ timeout: TIMEOUTS.ELEMENT_OPTIONAL });
             } catch {
-                testQuizExists = await page.locator('text=TESTQUIZ').first().isVisible({ timeout: 3000 }).catch(() => false);
+                testQuizExists = await page
+                    .locator(`text=${TEST_QUIZ_NAME}`)
+                    .first()
+                    .isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE })
+                    .catch(() => false);
             }
-            
-            if (!testQuizExists) {
-                console.log('Creating TESTQUIZ...');
 
-                // Click "Nouveau quiz"
-                const newQuizBtn = page.locator('button').filter({ hasText: 'Nouveau quiz' }).first();
-                await newQuizBtn.waitFor({ state: 'visible', timeout: 10000 });
+            if (!testQuizExists) {
+                console.log(`Creating ${TEST_QUIZ_NAME}`);
+
+                const newQuizBtn = page.getByRole('button', { name: /nouveau quiz/i }).first();
+                await newQuizBtn.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_VISIBLE });
                 await newQuizBtn.click();
-                await page.waitForTimeout(3000);
+                await page.waitForTimeout(TIMEOUTS.QUIZ_START);
                 await page.waitForLoadState('networkidle');
 
-                // Fill title - uses ValidatedTextField, find the input
-                const titleInput = page.locator('input[placeholder*="Titre"]').first();
-                await titleInput.waitFor({ state: 'visible', timeout: 5000 });
-                await titleInput.fill('TESTQUIZ');
+                const titleInput = page.getByPlaceholder(/titre/i).first();
+                await titleInput.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_OPTIONAL });
+                await titleInput.fill(TEST_QUIZ_NAME);
 
-                // Select folder using MUI Select
+                // Select folder from MUI combobox
                 const folderSelect = page.locator('[role="combobox"]').first();
                 await folderSelect.click();
-                await page.waitForTimeout(1000);
-                
-                // Click on "Dossier par défaut" option
-                const folderOption = page.locator('[role="option"]').filter({ hasText: 'Dossier par défaut' }).first();
-                if (await folderOption.isVisible({ timeout: 3000 }).catch(() => false)) {
+                await page.waitForTimeout(TIMEOUTS.SELECTION_REGISTER);
+
+                const folderOption = page
+                    .locator('[role="option"]')
+                    .filter({ hasText: new RegExp(DEFAULT_FOLDER_NAME, 'i') })
+                    .first();
+                if (await folderOption.isVisible({ timeout: TIMEOUTS.PAGE_STABILIZE }).catch(() => false)) {
                     await folderOption.click();
                 } else {
-                    // Select first non-empty option
-                    const anyOption = page.locator('[role="option"]:not(:has-text("Choisir"))').first();
-                    await anyOption.click();
+                    // Skip the placeholder option and pick the firstfolder
+                    await page.locator('[role="option"]').nth(1).click();
                 }
-                await page.waitForTimeout(1000);
+                await page.waitForTimeout(TIMEOUTS.SELECTION_REGISTER);
 
-                // Add GIFT content
                 const giftEditor = page.locator('textarea').first();
-                await giftEditor.waitFor({ state: 'visible', timeout: 5000 });
+                await giftEditor.waitFor({ state: 'visible', timeout: TIMEOUTS.ELEMENT_OPTIONAL });
                 await giftEditor.fill('::Q1:: What is 1+1? {=2}');
                 await page.keyboard.press('Tab');
-                await page.waitForTimeout(1000);
+                await page.waitForTimeout(TIMEOUTS.SELECTION_REGISTER);
 
-                // Save
-                const saveBtn = page.locator('button').filter({ hasText: 'Enregistrer' }).first();
-                await saveBtn.waitFor({ state: 'visible', timeout: 5000 });
-                await saveBtn.click();
-                await page.waitForTimeout(3000);
+                await page.getByRole('button', { name: /enregistrer/i }).first().click();
+                await page.waitForTimeout(TIMEOUTS.QUIZ_START);
 
-                // Back to dashboard
-                const backBtn = page.locator('button').filter({ hasText: /retour/i }).first();
-                await backBtn.click();
+                await page.locator('button, a').filter({ hasText: /retour/i }).first().click();
                 await page.waitForURL(/\/dashboard/);
-                await page.waitForTimeout(2000);
+                await page.waitForTimeout(TIMEOUTS.ACTION_SETTLE);
 
-                console.log('TESTQUIZ created');
+                console.log(`${TEST_QUIZ_NAME} created`);
             } else {
-                console.log('TESTQUIZ exists');
+                console.log(`${TEST_QUIZ_NAME} exists`);
             }
 
             console.log('Setup check completed successfully');
