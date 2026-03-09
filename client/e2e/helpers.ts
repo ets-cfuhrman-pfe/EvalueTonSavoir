@@ -67,7 +67,7 @@ export function getE2ECredentials(): { email: string; password: string } {
 
     if (!email || !password) {
         throw new Error(
-            'E2E credentials are not set. Provide E2E_TEST_USER_EMAIL and E2E_TEST_USER_PASSWORD environment variables.',
+            'E2E credentials are not set. Provide either E2E_TEST_USER_EMAIL and E2E_TEST_USER_PASSWORD or TEST_USER_EMAIL and TEST_USER_PASSWORD .',
         );
     }
 
@@ -75,10 +75,18 @@ export function getE2ECredentials(): { email: string; password: string } {
 }
 
 export function maskedEmail(email: string) {
-    // Mask the middle of the address for safer logging 
-    if (email.indexOf('@') < 2) {
-        return '***' + email.substring(email.indexOf('@'));
+    // Mask the middle of the address for safer logging
+    const atIndex = email.indexOf('@');
+
+    // If the input is malformed (no '@'), avoid leaking it and return a fixed mask
+    if (atIndex === -1) {
+        return '***';
     }
+
+    if (atIndex < 2) {
+        return '***' + email.substring(atIndex);
+    }
+
     return email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
 }
 

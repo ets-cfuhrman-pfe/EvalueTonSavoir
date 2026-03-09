@@ -22,7 +22,7 @@ test.describe('Room Persistence', () => {
 
         const studentContexts = [];
         const studentPages = [];
-        const studentNames = ['Alice', 'Bob', 'Charlie'];
+        const studentNames = Array.from({ length: STUDENT_COUNT }, (_, i) => `Student${i + 1}`);
 
         for (let i = 0; i < STUDENT_COUNT; i++) {
             const context = await browser.newContext();
@@ -180,7 +180,7 @@ test.describe('Room Persistence', () => {
             });
 
             await Promise.all(joinPromises);
-            console.log(`All ${studentNames.length} students have joined the room`);
+            console.log(`All ${studentPages.length} students have joined the room`);  
 
             // Verify Room Persistence
             console.log('STEP 5: Verifying initial room persistence...');
@@ -395,7 +395,7 @@ test.describe('Room Persistence', () => {
 
         const studentContexts = [];
         const studentPages = [];
-        const studentNames = ['SlowStudent1', 'SlowStudent2', 'SlowStudent3'];
+        const studentNames = Array.from({ length: STUDENT_COUNT }, (_, i) => `SlowStudent${i + 1}`);
 
         for (let i = 0; i < STUDENT_COUNT; i++) {
             const context = await browser.newContext();
