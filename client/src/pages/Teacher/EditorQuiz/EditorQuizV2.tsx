@@ -12,7 +12,8 @@ import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
 import { QuizType } from '../../../Types/QuizType';
 import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Button, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
+import { Button, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Snackbar, Alert, Switch } from '@mui/material';
 import ImageGalleryModalV2 from 'src/components/ImageGallery/ImageGalleryModal/ImageGalleryModalV2';
 
 import ApiService from '../../../services/ApiService';
@@ -40,6 +41,7 @@ const EditorQuizV2: React.FC = () => {
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [hideAnswers, setHideAnswers] = useState(false);
     const [initialQuizState, setInitialQuizState] = useState<{
         title: string;
         content: string;
@@ -392,7 +394,7 @@ const EditorQuizV2: React.FC = () => {
         <div className="content-container">
             <div className="w-100 p-0 content-full-width">
                 {/* Top Header */}
-                <div className="bg-white border-bottom shadow-sm">
+                <div className="bg-white border-bottom shadow-sm no-print">
                     <div className="container-fluid px-2 py-4 content-full-width">
                         <div className="d-flex justify-content-between align-items-center px-4">
                             <div className="d-flex align-items-center gap-3">
@@ -433,7 +435,7 @@ const EditorQuizV2: React.FC = () => {
                 {/* Main Content */}
                 <div className="container-fluid py-2 editor-main-content">
                     {/* Quiz Configuration Card */}
-                    <div className="card mb-3 flex-shrink-0">
+                    <div className="card mb-3 flex-shrink-0 no-print">
                         <div className="card-body py-3">
                             <div className="row g-3">
                                 <div className="col-md-6">
@@ -478,7 +480,7 @@ const EditorQuizV2: React.FC = () => {
                     <div className="flex-grow-1 overflow-hidden">
                         <div className="row g-4 h-100">
                             {/* Editor Column */}
-                            <div className="border rounded col-lg-6 d-flex flex-column h-100">
+                            <div className="border rounded col-lg-6 d-flex flex-column h-100 editor-quiz-editor-col">
                                 <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                  
                                     <div className="overflow-auto flex-grow-1 pe-2">
@@ -549,13 +551,35 @@ const EditorQuizV2: React.FC = () => {
                             </div>
 
                             {/* Preview Column */}
-                            <div className="col-lg-6 d-flex flex-column h-100">
+                            <div className="col-lg-6 d-flex flex-column h-100 editor-quiz-preview-col">
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
-                                    <div className="mb-3 flex-shrink-0">
-                                        <h4>Prévisualisation</h4>
+                                    <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
+                                        <h4 className="mb-0">Prévisualisation</h4>
+                                        <div className="d-flex align-items-center gap-2">
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={hideAnswers}
+                                                        onChange={(e) => setHideAnswers(e.target.checked)}
+                                                        size="small"
+                                                    />
+                                                }
+                                                label="Masquer les réponses"
+                                                sx={{ margin: 0 }}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                startIcon={<PrintIcon />}
+                                                onClick={() => window.print()}
+                                            >
+                                                Imprimer
+                                            </Button>
+                                        </div>
                                     </div>
                                     <div className="flex-grow-1  p-3 bg-light overflow-auto pe-2">
-                                        <GIFTTemplatePreviewV2 questions={filteredValue} />
+                                        <div className="editor-quiz-print-title">{quizTitle}</div>
+                                        <GIFTTemplatePreviewV2 questions={filteredValue} hideAnswers={hideAnswers} />
                                     </div>
                                 </div>
                             </div>
