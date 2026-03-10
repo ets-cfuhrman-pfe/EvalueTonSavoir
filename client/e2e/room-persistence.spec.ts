@@ -203,6 +203,7 @@ test.describe('Room Persistence', () => {
 
         
             const counterLocator = teacherPage
+                .locator('.manage-room-pagination')
                 .locator(String.raw`text=/[0-9]+ \/ [0-9]+/`)
                 .first();
             const counterText = await counterLocator.textContent();
@@ -514,6 +515,7 @@ test.describe('Room Persistence', () => {
             // Get question count
             await teacherPage.waitForTimeout(TIMEOUTS.QUESTION_TRANSITION);
             const counterLocator = teacherPage
+                .locator('.manage-room-pagination')
                 .locator(String.raw`text=/[0-9]+ \/ [0-9]+/`)
                 .first();
             const counterText = await counterLocator.textContent();
