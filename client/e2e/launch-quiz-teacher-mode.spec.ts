@@ -181,6 +181,7 @@ test.describe('Teacher Launch Quiz with Students in Teacher Mode', () => {
 
             
             const counterLocator = teacherPage
+                .locator('.manage-room-pagination')
                 .locator(String.raw`text=/[0-9]+ \/ [0-9]+/`)
                 .first();
             const counterText = await counterLocator.textContent();
