@@ -86,3 +86,37 @@ body.hide-header {
     visibility: visible !important;
   }
 }
+// Remove browser-generated print headers (date, app name) and footer (URL).
+@page {
+  margin: 0;
+}
+
+// ===== GLOBAL PRINT STYLES =====
+// Hides global chrome (navbar, footer) and resets page-level wrappers so the
+// editor quiz handout fills the printed page cleanly. Applies to any @media
+// print trigger (Ctrl+P or window.print()).
+@media print {
+  // Hide the global navigation header and footer
+  nav.navbar,
+  .footer,
+  footer {
+    display: none !important;
+  }
+
+  // Remove the top padding that <main> adds (defined in index.css)
+  main {
+    padding: 0 !important;
+  }
+
+  // Remove max-width cap and margin centering on the .content wrapper (index.css)
+  .content {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  // With @page { margin: 0 } the body itself provides the whitespace around content
+  html, body {
+    margin: 0 !important;
+    padding: 12mm !important;
+  }
+}
