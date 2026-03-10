@@ -57,6 +57,11 @@ const LiveResultsTableV2: React.FC<LiveResultsTableProps> = ({
                     showSelectedQuestion={showSelectedQuestion}
                     selectedQuestionIndex={selectedQuestionIndex}
                 />
+                 <LiveResultsTableFooterV2
+                    students={students}
+                    maxQuestions={maxQuestions}
+                    getStudentGrade={getStudentGrade}
+                />
                 <LiveResultsTableBodyV2
                     maxQuestions={maxQuestions}
                     students={students}
@@ -64,11 +69,7 @@ const LiveResultsTableV2: React.FC<LiveResultsTableProps> = ({
                     showCorrectAnswers={showCorrectAnswers}
                     getStudentGrade={getStudentGrade}
                 />
-                <LiveResultsTableFooterV2
-                    students={students}
-                    maxQuestions={maxQuestions}
-                    getStudentGrade={getStudentGrade}
-                />
+               
             </Table>
         </TableContainer>
     );
