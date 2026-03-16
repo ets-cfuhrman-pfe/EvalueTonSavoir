@@ -30,7 +30,6 @@
 
 // Editor main content layout
 .editor-main-content {
-  height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   
@@ -46,10 +45,41 @@
   padding-right: 0 !important;
 }
 
+// Resizable panes
+.resizable-pane {
+  width: var(--pane-width, 50%);
+  max-width: var(--pane-width, 50%);
+  min-width: 20%;
+  
+  @media (max-width: 991px) {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem;
+  }
+}
+
 // Override any row gutters in the editor
 .editor-main-content .row {
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+// Full page width for the editor and preview boxes
+.content-container.editor-quiz-content-container {
+  width: 98vw !important;
+  max-width: 98vw !important;
+  margin-left: -49vw !important;
+  margin-right: -49vw !important;
+}
+
+@media print {
+  .content-container.editor-quiz-content-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+  }
 }
 
 // Print-only quiz title 
