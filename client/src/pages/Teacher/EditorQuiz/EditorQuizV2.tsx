@@ -1,5 +1,5 @@
 // EditorQuizV2.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -56,6 +56,66 @@ const EditorQuizV2: React.FC = () => {
         message: '',
         severity: 'info'
     });
+
+    const leftPaneRef = useRef<HTMLDivElement>(null);
+    const isDraggingRef = useRef(false);
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!isDraggingRef.current) return;
+        let newPercentage = (e.clientX / window.innerWidth) * 100;
+        if (newPercentage < 20) newPercentage = 20;
+        if (newPercentage > 80) newPercentage = 80;
+        
+        if (leftPaneRef.current) {
+            leftPaneRef.current.style.setProperty('--pane-width', `${newPercentage}%`);
+        }
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        isDraggingRef.current = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = '';
+        
+        // Remove iframe pointer-events overlay if it exists
+        const overlay = document.getElementById('iframe-drag-overlay');
+        if (overlay) overlay.remove();
+    }, [handleMouseMove]);
+
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        isDraggingRef.current = true;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        
+        // Add overlay to prevent iframes from stealing mouse events during drag
+        const overlay = document.createElement('div');
+        overlay.id = 'iframe-drag-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.zIndex = '9999';
+        overlay.style.cursor = 'col-resize';
+        document.body.appendChild(overlay);
+
+        e.preventDefault();
+    }, [handleMouseMove, handleMouseUp]);
+
+    useEffect(() => {
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'default';
+            document.body.style.userSelect = '';
+            
+            const overlay = document.getElementById('iframe-drag-overlay');
+            if (overlay) overlay.remove();
+        };
+    }, [handleMouseMove, handleMouseUp]);
 
         const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -366,7 +426,7 @@ const EditorQuizV2: React.FC = () => {
     // Loading state for existing quiz
     if (!isNewQuiz && isLoading) {
         return (
-            <div className="content-container">
+            <div className="content-container editor-quiz-content-container">
                 <div className="d-flex justify-content-center align-items-center vh-100">
                     <div className="text-center">
                         <output className="spinner-border text-primary mb-3" aria-hidden="true"></output>
@@ -391,7 +451,7 @@ const EditorQuizV2: React.FC = () => {
     }
 
     return (
-        <div className="content-container">
+        <div className="content-container editor-quiz-content-container">
             <div className="w-100 p-0 content-full-width">
                 {/* Top Header */}
                 <div className="bg-white border-bottom shadow-sm no-print">
@@ -477,10 +537,14 @@ const EditorQuizV2: React.FC = () => {
                     </div>
 
                     {/* Main Editor Section - Scrollable Content Container */}
-                    <div className="flex-grow-1 overflow-hidden">
-                        <div className="row g-4 h-100">
+                    <div className="flex-grow-1 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className="d-flex flex-column flex-lg-row h-100 w-100">
                             {/* Editor Column */}
-                            <div className="border rounded col-lg-6 d-flex flex-column h-100 editor-quiz-editor-col">
+                            <div 
+                                ref={leftPaneRef}
+                                className="border rounded d-flex flex-column h-100 editor-quiz-editor-col resizable-pane" 
+                                style={{ '--pane-width': '50%' } as React.CSSProperties}
+                            >
                                 <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                  
                                     <div className="overflow-auto flex-grow-1 pe-2">
@@ -550,8 +614,28 @@ const EditorQuizV2: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Draggable Divider */}
+                            <div 
+                                className="d-none d-lg-flex flex-column justify-content-center align-items-center"
+                                style={{
+                                    width: '16px',
+                                    cursor: 'col-resize',
+                                    backgroundColor: 'transparent',
+                                    margin: '0 8px',
+                                    borderRadius: '4px',
+                                    transition: 'background-color 0.2s',
+                                    flexShrink: 0
+                                }}
+                                onMouseDown={handleMouseDown}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e9ecef' }}
+                                onMouseLeave={(e) => { if (!isDraggingRef.current) e.currentTarget.style.backgroundColor = 'transparent' }}
+                                title="Faites glisser pour redimensionner"
+                            >
+                                <div style={{ height: '30px', width: '4px', backgroundColor: '#adb5bd', borderRadius: '2px' }}></div>
+                            </div>
+
                             {/* Preview Column */}
-                            <div className="col-lg-6 d-flex flex-column h-100 editor-quiz-preview-col">
+                            <div className="d-flex flex-column h-100 editor-quiz-preview-col" style={{ flexGrow: 1, minWidth: '20%' }}>
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                     <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
                                         <h4 className="mb-0">Prévisualisation</h4>
