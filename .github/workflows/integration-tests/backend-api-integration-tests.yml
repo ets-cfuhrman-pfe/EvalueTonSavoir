@@ -1,4 +1,4 @@
-name: API Integration Tests on Preprod
+name: Backend API Integration Tests on Preprod
 on:
   push:
     branches: [ staging ]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   api-tests:
-    name: Run API Integration Tests Against Preprod
+    name: Run Backend API Integration Tests Against Preprod
     runs-on: [self-hosted, preprod]
     
     env:
