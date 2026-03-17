@@ -2,66 +2,28 @@
 
 exports[`MultipleChoice snapshot test 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       Sample Stem
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
           &lt;svg data-testid="correct-icon" style="
@@ -80,12 +42,7 @@ exports[`MultipleChoice snapshot test 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -100,16 +57,7 @@ exports[`MultipleChoice snapshot test 1`] = `
           &lt;span class="feedback-container"&gt;InCorrect!&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -117,66 +65,28 @@ exports[`MultipleChoice snapshot test 1`] = `
 
 exports[`MultipleChoice snapshot test with 2 images using markdown text format 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title with Image&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title with Image&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
 
             &lt;/label&gt;
@@ -196,12 +106,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
 
             &lt;/label&gt;
@@ -221,12 +126,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -241,16 +141,7 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
           &lt;span class="feedback-container"&gt;Image Feedback&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback with Image
 &lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
@@ -259,66 +150,28 @@ exports[`MultipleChoice snapshot test with 2 images using markdown text format 1
 
 exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       Sample Stem
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
           &lt;svg data-testid="correct-icon" style="
@@ -337,12 +190,7 @@ exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -357,16 +205,7 @@ exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
           &lt;span class="feedback-container"&gt;InCorrect!&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -374,66 +213,28 @@ exports[`MultipleChoice snapshot test with Moodle text format 1`] = `
 
 exports[`MultipleChoice snapshot test with image 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title with Image&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title with Image&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       Sample Stem with Image
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
           &lt;svg data-testid="correct-icon" style="
@@ -452,12 +253,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -476,12 +272,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -496,16 +287,7 @@ exports[`MultipleChoice snapshot test with image 1`] = `
           &lt;span class="feedback-container"&gt;Image Feedback&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback with Image&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -513,67 +295,29 @@ exports[`MultipleChoice snapshot test with image 1`] = `
 
 exports[`MultipleChoice snapshot test with image using markdown text format 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title with Image&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title with Image&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       Sample Stem with Image
 
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
 
             &lt;/label&gt;
@@ -593,12 +337,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
 
             &lt;/label&gt;
@@ -618,12 +357,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             &lt;img alt="Sample Image" src="https://via.placeholder.com/150"&gt;
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -638,16 +372,7 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
           &lt;span class="feedback-container"&gt;Image Feedback&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback with Image
 &lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
@@ -656,66 +381,28 @@ exports[`MultipleChoice snapshot test with image using markdown text format 1`] 
 
 exports[`MultipleChoice snapshot test with katex 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math display="block" xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span aria-hidden="true" class="katex-html"&gt;&lt;span class="base"&gt;&lt;span style="height:1.988em;vertical-align:-0.8804em;" class="strut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:1.1076em;" class="vlist"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.03588em;" class="mord mathnormal"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span style="border-bottom-width:0.04em;" class="frac-line"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.04398em;" class="mord mathnormal"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:0.8804em;" class="vlist"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
           &lt;svg data-testid="correct-icon" style="
@@ -734,12 +421,7 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -754,16 +436,7 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
           &lt;span class="feedback-container"&gt;Correct!&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -771,66 +444,28 @@ exports[`MultipleChoice snapshot test with katex 1`] = `
 
 exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
 <DocumentFragment>
-  &lt;section style="
-  flex-wrap: wrap;
-  position: relative;
-  padding: 1rem 1rem;
-  margin-bottom: 0.5rem;
-  background-color: hsl(0, 0%, 100%);
-  border: solid hsl(0, 0%, 100%) 2px;
-  border-radius: 6px;
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-"&gt;
-  &lt;div style="
-  display: flex;
-  font-weight: bold;
-"&gt;
+  &lt;section class="gift-preview-question"&gt;
+  &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
-      &lt;span style="
-  color: #5271FF;
-  "&gt;Sample Title&lt;/span&gt;
+      &lt;span class="gift-preview-question-label"&gt;Sample Title&lt;/span&gt;
     &lt;/span&gt;
-    &lt;span style="
-  margin-left: auto;
-  padding-left: 0.75rem;
-  flex: none;
- margin-bottom: 10px;"&gt;
-      &lt;span style="
-  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 4px;
-  background-color: hsl(0, 0%, 100%);
-  color: hsl(180, 15%, 41%);
-"&gt;Choix multiple&lt;/span&gt;
+    &lt;span class="gift-preview-type-badge-wrapper"&gt;
+      &lt;span class="gift-preview-type-badge"&gt;Choix multiple&lt;/span&gt;
     &lt;/span&gt;
   &lt;/div&gt;
 
-  &lt;div style="
-  display: flex;
-"&gt;
+  &lt;div class="gift-preview-stem"&gt;
     &lt;span&gt;
-      &lt;p style="
-  color: hsl(0, 0%, 0%);
-" class="present-question-stem"&gt;
+      &lt;p class="present-question-stem"&gt;
                       &lt;span class="katex-display"&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math display="block" xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mrow&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;\\frac{zzz}{yyy}&lt;/math&gt;&lt;/span&gt;&lt;span aria-hidden="true" class="katex-html"&gt;&lt;span class="base"&gt;&lt;span style="height:1.988em;vertical-align:-0.8804em;" class="strut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:1.1076em;" class="vlist"&gt;&lt;span style="top:-2.314em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.03588em;" class="mord mathnormal"&gt;yyy&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span style="border-bottom-width:0.04em;" class="frac-line"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.677em;"&gt;&lt;span style="height:3em;" class="pstrut"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span style="margin-right:0.04398em;" class="mord mathnormal"&gt;zzz&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span style="height:0.8804em;" class="vlist"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span style="
-  color: hsl(0, 0%, 0%);
-"&gt;Choisir une réponse:&lt;/span&gt;
+&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 1
             &lt;/label&gt;
           &lt;svg data-testid="correct-icon" style="
@@ -849,12 +484,7 @@ exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
         &lt;div class='multiple-choice-answers-container'&gt;
           &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
           &lt;span class="answer-weight-container answer-positive-weight"&gt;1%&lt;/span&gt;
-            &lt;label style="
-          display: inline-block;
-          padding: 0.2em 0 0.2em 0;
-         
-  color: hsl(0, 0%, 0%);
-" for="idmocked-id"&gt;
+            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
             Choice 2
             &lt;/label&gt;
           &lt;svg data-testid="incorrect-icon" style="
@@ -869,16 +499,7 @@ exports[`MultipleChoice snapshot test with katex, using html text format 1`] = `
           &lt;span class="feedback-container"&gt;InCorrect!&lt;/span&gt;
           &lt;/input&gt;
         &lt;/div&gt;
-        &lt;div style="
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  background-color: hsl(43, 100%, 94%);
-  color: hsl(43, 95%, 9%);
-  border: hsl(36, 84%, 93%) 1px solid;
-  border-radius: 6px;
-  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
-"&gt;
+        &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>

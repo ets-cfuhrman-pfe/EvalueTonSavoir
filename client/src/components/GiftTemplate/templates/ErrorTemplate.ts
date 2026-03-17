@@ -1,25 +1,6 @@
-import { theme, ParagraphStyle } from '../constants';
-import { state } from '.';
-
 export default function (questionText: string, errorText: string): string {
-    const Container = `
-    flex-wrap: wrap;
-    position: relative;
-    padding: 1rem 1rem;
-    margin-bottom: 0.5rem;
-    background-color: ${theme(state.theme, 'red100', 'redGray800')};
-    border: solid ${theme(state.theme, 'red300', 'red700')} 2px;
-    border-radius: 6px;
-    box-shadow: 0px 1px 3px ${theme(state.theme, 'gray400', 'black900')};
-  `;
-
-    // const document = removeBackslash(lineRegex(documentRegex(text))).split(/\r?\n/);
-    // return document[0] !== ``
-    //     ? `<section style="${Container}">${document
-    //           .map((i) => `<p style="${ParagraphStyle(state.theme)}">${i}</p>`)
-    //           .join('')}</section>`
-    //     : ``;
-    return `<section style="${Container}"><p style="${ParagraphStyle(state.theme)}">${questionText}<br><em>${errorText}</em></p></section>`;
+    // const document = removeBackslash(lineRegex(documentRegex(text)));
+    return `<section class="gift-preview-error"><p>${questionText}<br><em>${errorText}</em></p></section>`;
 }
 
 // function documentRegex(text: string): string {
