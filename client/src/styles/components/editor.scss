@@ -45,6 +45,23 @@
   padding-right: 0 !important;
 }
 
+// Two-pane layout defaults to 50/50 and is updated via CSS variable during drag.
+.editor-split-pane {
+  --left-pane-width: 50%;
+  --divider-space: 16px;
+}
+
+.editor-split-pane .editor-quiz-editor-col.resizable-pane {
+  width: calc(var(--left-pane-width) - var(--divider-space));
+  max-width: calc(var(--left-pane-width) - var(--divider-space));
+}
+
+.editor-split-pane .editor-quiz-preview-col {
+  width: calc((100% - var(--left-pane-width)) - var(--divider-space));
+  max-width: calc((100% - var(--left-pane-width)) - var(--divider-space));
+  min-width: 20%;
+}
+
 // Resizable panes
 .resizable-pane {
   width: var(--pane-width, 50%);
@@ -55,6 +72,14 @@
     width: 100% !important;
     max-width: 100% !important;
     margin-bottom: 1rem;
+  }
+}
+
+.editor-quiz-preview-col {
+  @media (max-width: 991px) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
   }
 }
 

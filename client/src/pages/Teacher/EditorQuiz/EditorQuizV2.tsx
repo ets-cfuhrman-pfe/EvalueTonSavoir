@@ -57,17 +57,17 @@ const EditorQuizV2: React.FC = () => {
         severity: 'info'
     });
 
-    const leftPaneRef = useRef<HTMLDivElement>(null);
     const isDraggingRef = useRef(false);
+    const splitPaneRef = useRef<HTMLDivElement>(null);
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!isDraggingRef.current) return;
         let newPercentage = (e.clientX / window.innerWidth) * 100;
         if (newPercentage < 20) newPercentage = 20;
         if (newPercentage > 80) newPercentage = 80;
-        
-        if (leftPaneRef.current) {
-            leftPaneRef.current.style.setProperty('--pane-width', `${newPercentage}%`);
+
+        if (splitPaneRef.current) {
+            splitPaneRef.current.style.setProperty('--left-pane-width', `${newPercentage}%`);
         }
     }, []);
 
@@ -538,12 +538,10 @@ const EditorQuizV2: React.FC = () => {
 
                     {/* Main Editor Section - Scrollable Content Container */}
                     <div className="flex-grow-1 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div className="d-flex flex-column flex-lg-row h-100 w-100">
+                        <div ref={splitPaneRef} className="d-flex flex-column flex-lg-row h-100 w-100 editor-split-pane">
                             {/* Editor Column */}
                             <div 
-                                ref={leftPaneRef}
-                                className="border rounded d-flex flex-column h-100 editor-quiz-editor-col resizable-pane" 
-                                style={{ '--pane-width': '50%' } as React.CSSProperties}
+                                className="border rounded d-flex flex-column h-100 editor-quiz-editor-col resizable-pane"
                             >
                                 <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                  
@@ -626,7 +624,9 @@ const EditorQuizV2: React.FC = () => {
                             </div>
 
                             {/* Preview Column */}
-                            <div className="d-flex flex-column h-100 editor-quiz-preview-col" style={{ flexGrow: 1, minWidth: '20%' }}>
+                            <div
+                                className="d-flex flex-column h-100 editor-quiz-preview-col"
+                            >
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                     <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
                                         <h4 className="mb-0">Prévisualisation</h4>
