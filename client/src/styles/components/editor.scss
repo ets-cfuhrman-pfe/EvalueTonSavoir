@@ -58,6 +58,24 @@
   }
 }
 
+// Draggable divider
+.editor-draggable-divider {
+  width: 16px;
+  cursor: col-resize;
+  background-color: transparent;
+  margin: 0 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.editor-draggable-divider-handle {
+  height: 30px;
+  width: 4px;
+  background-color: #adb5bd;
+  border-radius: 2px;
+}
+
 // Override any row gutters in the editor
 .editor-main-content .row {
   margin-left: 0 !important;

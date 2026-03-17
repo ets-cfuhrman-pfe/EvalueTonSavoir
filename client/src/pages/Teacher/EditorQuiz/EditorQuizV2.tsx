@@ -616,22 +616,13 @@ const EditorQuizV2: React.FC = () => {
 
                             {/* Draggable Divider */}
                             <div 
-                                className="d-none d-lg-flex flex-column justify-content-center align-items-center"
-                                style={{
-                                    width: '16px',
-                                    cursor: 'col-resize',
-                                    backgroundColor: 'transparent',
-                                    margin: '0 8px',
-                                    borderRadius: '4px',
-                                    transition: 'background-color 0.2s',
-                                    flexShrink: 0
-                                }}
+                                className="d-none d-lg-flex flex-column justify-content-center align-items-center editor-draggable-divider"
                                 onMouseDown={handleMouseDown}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e9ecef' }}
                                 onMouseLeave={(e) => { if (!isDraggingRef.current) e.currentTarget.style.backgroundColor = 'transparent' }}
                                 title="Faites glisser pour redimensionner"
                             >
-                                <div style={{ height: '30px', width: '4px', backgroundColor: '#adb5bd', borderRadius: '2px' }}></div>
+                                <div className="editor-draggable-divider-handle"></div>
                             </div>
 
                             {/* Preview Column */}
