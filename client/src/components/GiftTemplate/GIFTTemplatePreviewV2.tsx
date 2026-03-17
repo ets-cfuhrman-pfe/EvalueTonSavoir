@@ -64,7 +64,7 @@ function applyHideAnswersMask(previewHtml: string): string {
         choiceLetter.classList.add('text-dark');
     });
 
-    doc.querySelectorAll('.alert.alert-info.small, .true-feedback, .false-feedback, .gift-preview-feedback').forEach((feedbackNode) => {
+    doc.querySelectorAll('.alert.alert-info.small, .true-feedback, .false-feedback, .gift-preview-feedback, .feedback-container').forEach((feedbackNode) => {
         feedbackNode.remove();
     });
 
