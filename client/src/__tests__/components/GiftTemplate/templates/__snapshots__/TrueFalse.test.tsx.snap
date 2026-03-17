@@ -32,7 +32,7 @@ exports[`TrueFalse snapshot test with image 1`] = `
 
 exports[`TrueFalse snapshot test with katex 1`] = `
 <DocumentFragment>
-  &lt;section class="gift-preview-question"&gt;
+  &lt;section class="gift-preview-question true-false-question"&gt;
   &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
       &lt;span class="gift-preview-question-label"&gt;Sample True/False Title&lt;/span&gt;
@@ -49,45 +49,26 @@ exports[`TrueFalse snapshot test with katex 1`] = `
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Vrai
-            &lt;/label&gt;
-          &lt;svg data-testid="correct-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 1em;
-    color: hsl(120, 39%, 54%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Correct!&lt;/span&gt;
-          &lt;/input&gt;
+
+        &lt;div class="row g-3"&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-success text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Vrai&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="true-feedback"&gt;&lt;div&gt;Correct!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-danger text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Faux&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="false-feedback"&gt;&lt;div&gt;Incorrect!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
         &lt;/div&gt;
-        
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Faux
-            &lt;/label&gt;
-          &lt;svg data-testid="incorrect-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 0.75em;
-    color: hsl(2, 64%, 58%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Incorrect!&lt;/span&gt;
-          &lt;/input&gt;
-        &lt;/div&gt;
-        &lt;div class="gift-preview-feedback"&gt;
+    &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -95,7 +76,7 @@ exports[`TrueFalse snapshot test with katex 1`] = `
 
 exports[`TrueFalse snapshot test with moodle 1`] = `
 <DocumentFragment>
-  &lt;section class="gift-preview-question"&gt;
+  &lt;section class="gift-preview-question true-false-question"&gt;
   &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
       &lt;span class="gift-preview-question-label"&gt;Sample True/False Title&lt;/span&gt;
@@ -112,45 +93,26 @@ exports[`TrueFalse snapshot test with moodle 1`] = `
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Vrai
-            &lt;/label&gt;
-          &lt;svg data-testid="correct-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 1em;
-    color: hsl(120, 39%, 54%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Correct!&lt;/span&gt;
-          &lt;/input&gt;
+
+        &lt;div class="row g-3"&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-success text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Vrai&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="true-feedback"&gt;&lt;div&gt;Correct!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-danger text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Faux&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="false-feedback"&gt;&lt;div&gt;Incorrect!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
         &lt;/div&gt;
-        
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Faux
-            &lt;/label&gt;
-          &lt;svg data-testid="incorrect-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 0.75em;
-    color: hsl(2, 64%, 58%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Incorrect!&lt;/span&gt;
-          &lt;/input&gt;
-        &lt;/div&gt;
-        &lt;div class="gift-preview-feedback"&gt;
+    &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
@@ -158,7 +120,7 @@ exports[`TrueFalse snapshot test with moodle 1`] = `
 
 exports[`TrueFalse snapshot test with plain text 1`] = `
 <DocumentFragment>
-  &lt;section class="gift-preview-question"&gt;
+  &lt;section class="gift-preview-question true-false-question"&gt;
   &lt;div class="gift-preview-title"&gt;
     &lt;span&gt;
       &lt;span class="gift-preview-question-label"&gt;Sample True/False Title&lt;/span&gt;
@@ -175,45 +137,26 @@ exports[`TrueFalse snapshot test with plain text 1`] = `
                   &lt;/p&gt;
     &lt;/span&gt;
   &lt;/div&gt;
-&lt;span class="gift-preview-choice-prompt"&gt;Choisir une réponse:&lt;/span&gt;
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Vrai
-            &lt;/label&gt;
-          &lt;svg data-testid="correct-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 1em;
-    color: hsl(120, 39%, 54%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"&gt;&lt;path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Correct!&lt;/span&gt;
-          &lt;/input&gt;
+
+        &lt;div class="row g-3"&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-success text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Vrai&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="true-feedback"&gt;&lt;div&gt;Correct!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="col-6"&gt;
+            &lt;div class="w-100 p-3 d-flex align-items-center choice-button bg-danger text-white"&gt;
+              &lt;div class="d-flex align-items-center choice-button-content flex-grow-1"&gt;
+                &lt;strong&gt;Faux&lt;/strong&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="false-feedback"&gt;&lt;div&gt;Incorrect!&lt;/div&gt;&lt;/div&gt;
+          &lt;/div&gt;
         &lt;/div&gt;
-        
-        &lt;div class='multiple-choice-answers-container'&gt;
-          &lt;input class="gift-input" type="radio" id="idmocked-id" name="idmocked-id"&gt;
-          
-            &lt;label class="gift-preview-choice-label" for="idmocked-id"&gt;
-            Faux
-            &lt;/label&gt;
-          &lt;svg data-testid="incorrect-icon" style="
-  vertical-align: text-bottom;
-  display: inline-block;
-  margin-left: 0.1rem;
-  margin-right: 0.2rem;
- 
-    width: 0.75em;
-    color: hsl(2, 64%, 58%);
-  " role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"&gt;&lt;path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"&gt;&lt;/path&gt;&lt;/svg&gt;
-          &lt;span class="feedback-container"&gt;Incorrect!&lt;/span&gt;
-          &lt;/input&gt;
-        &lt;/div&gt;
-        &lt;div class="gift-preview-feedback"&gt;
+    &lt;div class="gift-preview-feedback"&gt;
         &lt;p&gt;Sample Global Feedback&lt;/p&gt;
       &lt;/div&gt;&lt;/section&gt;
 </DocumentFragment>
