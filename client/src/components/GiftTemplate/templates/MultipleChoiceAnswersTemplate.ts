@@ -1,6 +1,5 @@
 import { TemplateOptions } from './types';
 import {FormattedTextTemplate} from './TextTypeTemplate';
-import AnswerIcon from './AnswerIconTemplate';
 import { MultipleChoiceQuestion, TextChoice } from 'gift-pegjs';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -9,9 +8,6 @@ type MultipleChoiceAnswerOptions = TemplateOptions & Pick<MultipleChoiceQuestion
 
 type AnswerFeedbackOptions = TemplateOptions & Pick<TextChoice, 'formattedFeedback'>;
 
-interface AnswerWeightOptions extends TemplateOptions {
-    weight: TextChoice['weight'];
-}
 export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoiceAnswerOptions) {
     const hasManyCorrectChoices = choices.filter(({ isCorrect }) => isCorrect === true).length > 1;
 
@@ -19,22 +15,21 @@ export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoic
         .map(({ weight, isCorrect, formattedText, formattedFeedback }, i) => {
             const isPositiveWeight = (weight != undefined) && (weight > 0);
             const isCorrectOption = hasManyCorrectChoices ? isPositiveWeight || isCorrect : isCorrect;
+            const answerStateClass = isCorrectOption ? 'bg-success text-white' : 'bg-danger text-white';
 
             const letterClass = isCorrectOption
                 ? 'bg-white text-success border-success'
-                : 'bg-white text-dark';
+                : 'bg-white text-danger border-danger';
 
             return `
         <div class="mb-3">
-          <div class="d-flex align-items-center w-100 p-3 choice-button bg-light text-dark">
+          <div class="d-flex align-items-center w-100 p-3 choice-button ${answerStateClass}">
             <div class="choice-letter d-flex align-items-center justify-content-center me-3 rounded-circle border ${letterClass}">
               ${ALPHABET[i] ?? i + 1}
             </div>
             <div class="flex-grow-1 choice-button-content">
               ${FormattedTextTemplate(formattedText)}
             </div>
-            ${AnswerIcon({ correct: !!isCorrectOption })}
-            ${AnswerWeight({ weight: weight })}
           </div>
           ${AnswerFeedback({ formattedFeedback: formattedFeedback })}
         </div>
@@ -43,10 +38,6 @@ export default function MultipleChoiceAnswersTemplate({ choices }: MultipleChoic
         .join('');
 
     return result;
-}
-
-function AnswerWeight({ weight }: AnswerWeightOptions): string {
-    return weight ? `<span class="answer-weight-container ${weight > 0 ? 'answer-positive-weight' : 'answer-zero-or-less-weight'}">${weight}%</span>` : ``;
 }
 
 function AnswerFeedback({ formattedFeedback }: AnswerFeedbackOptions): string {
