@@ -33,7 +33,7 @@ const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label
         }
     }, [value, isCollapsed, adjustHeight]);
 
-    // Handle container resizes (e.g. from split pane drag or window resize)
+    // Handle container resizes 
     useEffect(() => {
         if (isCollapsed || !editorRef.current) return;
 
