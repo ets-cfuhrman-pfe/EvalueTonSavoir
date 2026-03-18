@@ -33,12 +33,30 @@ const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label
         }
     }, [value, isCollapsed, adjustHeight]);
 
-    // Handle window resizes
+    // Handle container resizes (e.g. from split pane drag or window resize)
     useEffect(() => {
-        const handleResize = () => adjustHeight();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [adjustHeight]);
+        if (isCollapsed || !editorRef.current) return;
+
+        let animationFrameId: number;
+
+        const resizeObserver = new ResizeObserver(() => {
+            // Use requestAnimationFrame to avoid ResizeObserver loop limit errors
+            animationFrameId = requestAnimationFrame(() => {
+                adjustHeight();
+            });
+        });
+
+        // Observe the immediate parent container to catch layout changes
+        const container = editorRef.current.parentElement;
+        if (container) {
+            resizeObserver.observe(container);
+        }
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            resizeObserver.disconnect();
+        };
+    }, [isCollapsed, adjustHeight]);
 
     function handleEditorChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
         const text = event.target.value;
