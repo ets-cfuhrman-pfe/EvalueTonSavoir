@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -21,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({
     handleLogout
 }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [roomName, setRoomName] = useState<string | null>(null);
 
     // Check for room name updates periodically (when students join/leave rooms)
@@ -104,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
                             <span className="d-none d-sm-inline">Déconnexion</span>
                             <span className="d-inline d-sm-none">Sortir</span>
                         </button>
-                    ) : (
+                    ) : location.pathname !== '/login' ? (
                         <Link to="/login" className="text-decoration-none">
                             <button 
                                 type="button" 
@@ -114,7 +115,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <span>Connexion</span>
                             </button>
                         </Link>
-                    )}
+                    ) : null}
                 </div>
             </div>
         </nav>
