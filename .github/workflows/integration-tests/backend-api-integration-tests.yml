@@ -1,4 +1,4 @@
-name: API Integration Tests on Preprod
+name: Backend API Integration Tests on Preprod
 on:
   push:
     branches: [ staging ]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   api-tests:
-    name: Run API Integration Tests Against Preprod
+    name: Run Backend API Integration Tests Against Preprod
     runs-on: [self-hosted, preprod]
     
     env:
@@ -47,24 +47,6 @@ jobs:
           
           echo "Preprod services are running:"
           docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
-      
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services to start..."
-          
-          # Wait for MongoDB
-          if ! timeout 60 bash -c 'until docker exec mongo mongosh --eval "db.runCommand({ping: 1})" > /dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 3; done'; then
-            echo "MongoDB failed to start"
-            exit 1
-          fi
-          
-          # Wait for backend
-          if ! timeout 60 bash -c 'until nc -z localhost 3000; do echo "Waiting for backend..."; sleep 3; done'; then
-            echo "Backend failed to start"
-            exit 1
-          fi
-          
-          echo "Services ready for API tests"
       
       - name: Set up Node.js
         uses: actions/setup-node@v4
