@@ -20,7 +20,7 @@ const ButtonAuth: React.FC<ButtonAuthContainerProps> = ({ providerName, provider
                         className={`provider-btn ${providerType}-btn btn btn-primary btn-lg w-100`} 
                         onClick={() => handleAuthLogin(providerName)}
                     >
-                        Continuer avec {providerName.toUpperCase()}
+                        Continuer avec {providerName}
                     </button>
                 </div>
             </div>
