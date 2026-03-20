@@ -12,14 +12,18 @@ const handleAuthLogin = (provider: string) => {
 
 const ButtonAuth: React.FC<ButtonAuthContainerProps> = ({ providerName, providerType }) => {
     return (
-        <>
-            <div className={`${providerName}-${providerType}-container button-container`}>
-                <h2>Se connecter avec {providerType.toUpperCase()}</h2>
-                <button key={providerName} className={`provider-btn ${providerType}-btn`} onClick={() => handleAuthLogin(providerName)}>
-                    Continuer avec {providerName}
-                </button>
+            <div className={`card shadow-sm ${providerName}-${providerType}-container button-container mb-3`}>
+                <div className="card-body text-center p-4">
+                    {/* <h2 className="card-title h4 mb-4">Se connecter avec {providerType.toUpperCase()}</h2> */}
+                    <button 
+                        key={providerName} 
+                        className={`provider-btn ${providerType}-btn btn btn-primary btn-lg w-100`} 
+                        onClick={() => handleAuthLogin(providerName)}
+                    >
+                        Continuer avec {providerName.toUpperCase()}
+                    </button>
+                </div>
             </div>
-        </>
     );
 };
 

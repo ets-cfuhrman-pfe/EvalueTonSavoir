@@ -21,7 +21,7 @@ const AuthSelection: React.FC = () => {
 
     return (
         <div className="login-container">
-            <h1 className="title">Connexion</h1>
+            <h1 className="title">Connexion à Évalue Ton Savoir</h1>
 
             <div className="inputs">
                 <img className="avatar" src="./people.svg" alt="Avatar"></img>
