@@ -1,4 +1,4 @@
-name: Backend API Integration Tests on Preprod
+name: Integration - Backend API Tests on Preprod
 on:
   push:
     branches: [ staging ]
