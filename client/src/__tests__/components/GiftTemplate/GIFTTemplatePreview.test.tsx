@@ -30,7 +30,7 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
     // Print layout is always applied so each rendered question gets the print layout class.
-    expect(previewContainer.querySelectorAll('.gift-preview-question--print-layout').length).toBe(validQuestions.length);
+    expect(previewContainer.querySelectorAll('.gift-preview-question--print-layout')).toHaveLength(validQuestions.length);
     // There should be no errors
     const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).not.toBeInTheDocument();
