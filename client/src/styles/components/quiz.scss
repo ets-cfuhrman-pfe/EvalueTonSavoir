@@ -617,7 +617,7 @@
 .side-image-layout {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.5rem;
 
   &__content {
@@ -641,6 +641,10 @@
     }
   }
 
+  &__image-wrapper {
+    width: 100%;
+  }
+
   // On narrow screens stack vertically: image above, question below
   @media (max-width: #{vars.$breakpoint-md - 1px}) {
     flex-direction: column;
@@ -649,6 +653,78 @@
       flex: 0 0 auto;
       max-width: 100%;
       width: 100%;
+    }
+  }
+}
+
+@media print {
+  .gift-preview-question,
+  .gift-preview-question--print-layout {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 1.4rem 0 0.3rem !important;
+  }
+
+  .gift-preview-question--print-layout {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .gift-preview-question--print-layout .question-inline-number {
+    font-weight: 700;
+  }
+
+  .gift-preview-question--print-layout .choice-button {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: vars.$dark !important;
+    min-height: 0;
+    padding: 0.2rem 0 !important;
+    filter: none !important;
+  }
+
+  .gift-preview-question--print-layout .choice-button .choice-letter,
+  .gift-preview-question--print-layout .choice-button .choice-marker {
+    width: 1.1rem !important;
+    height: 1.1rem !important;
+    min-width: 1.1rem !important;
+    border: 1.5px solid hsl(0, 0%, 35%) !important;
+    background: transparent !important;
+    color: hsl(0, 0%, 10%) !important;
+    font-size: 0.72rem !important;
+    line-height: 1;
+    font-weight: 600;
+    margin-right: 0.55rem !important;
+  }
+
+  .gift-preview-question--print-layout.true-false-question .row {
+    display: block;
+    margin: 0;
+  }
+
+  .gift-preview-question--print-layout.true-false-question .col-6 {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin-bottom: 0.35rem;
+  }
+
+  .side-image-layout {
+    flex-direction: row !important;
+    align-items: flex-start;
+    gap: 1.25rem;
+
+    &__content {
+      flex: 1 1 56%;
+    }
+
+    &__images {
+      flex: 0 0 44%;
+      max-width: 44%;
     }
   }
 }
