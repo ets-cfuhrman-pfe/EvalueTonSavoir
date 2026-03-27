@@ -22,6 +22,7 @@ export default function TrueFalseTemplate({
         <div class="row g-3">
           <div class="col-6">
             <div class="w-100 p-3 d-flex align-items-center choice-button ${trueClass}">
+              <div class="choice-marker d-flex align-items-center justify-content-center me-2 rounded-circle border"></div>
               <div class="d-flex align-items-center choice-button-content flex-grow-1">
                 <strong>Vrai</strong>
               </div>
@@ -30,6 +31,7 @@ export default function TrueFalseTemplate({
           </div>
           <div class="col-6">
             <div class="w-100 p-3 d-flex align-items-center choice-button ${falseClass}">
+              <div class="choice-marker d-flex align-items-center justify-content-center me-2 rounded-circle border"></div>
               <div class="d-flex align-items-center choice-button-content flex-grow-1">
                 <strong>Faux</strong>
               </div>
