@@ -155,8 +155,12 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             await waitForImages(printDocument);
 
             printWindow.focus();
+            const handleAfterPrint = () => {
+                printWindow.removeEventListener('afterprint', handleAfterPrint);
+                printWindow.close();
+            };
+            printWindow.addEventListener('afterprint', handleAfterPrint);
             printWindow.print();
-            printWindow.close();
         } catch (error) {
             console.error('Error printing quiz:', error);
         }

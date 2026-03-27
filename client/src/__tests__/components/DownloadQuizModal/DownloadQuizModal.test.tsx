@@ -24,19 +24,35 @@ const mockQuiz: QuizType = {
 describe('DownloadQuizModal', () => {
     let windowOpenSpy: jest.SpyInstance;
     let mockPrintWindow: Window;
+    let afterPrintHandler: EventListener | null;
+    let addEventListenerMock: jest.Mock;
+    let removeEventListenerMock: jest.Mock;
 
     beforeEach(() => {
         jest.clearAllMocks();
         (ApiService.getQuiz as jest.Mock).mockResolvedValue(mockQuiz);
         jest.spyOn(console, 'error').mockImplementation(() => {});
+        afterPrintHandler = null;
 
         const mockPrintDocument = document.implementation.createHTMLDocument('print-preview');
+        addEventListenerMock = jest.fn((eventName: string, handler: EventListener) => {
+            if (eventName === 'afterprint') {
+                afterPrintHandler = handler;
+            }
+        });
+        removeEventListenerMock = jest.fn((eventName: string, handler: EventListener) => {
+            if (eventName === 'afterprint' && afterPrintHandler === handler) {
+                afterPrintHandler = null;
+            }
+        });
 
         mockPrintWindow = {
             document: mockPrintDocument,
             focus: jest.fn(),
             print: jest.fn(),
             close: jest.fn(),
+            addEventListener: addEventListenerMock,
+            removeEventListener: removeEventListenerMock,
         } as unknown as Window;
 
         windowOpenSpy = jest.spyOn(globalThis, 'open').mockReturnValue(mockPrintWindow);
@@ -87,9 +103,17 @@ describe('DownloadQuizModal', () => {
         await waitFor(() => {
             expect(ApiService.getQuiz).toHaveBeenCalledWith('123');
             expect(globalThis.open).toHaveBeenCalled();
+            expect(addEventListenerMock).toHaveBeenCalledWith('afterprint', expect.any(Function));
             expect(mockPrintWindow.print).toHaveBeenCalled();
+            expect(mockPrintWindow.close).not.toHaveBeenCalled();
             expect(console.error).not.toHaveBeenCalled();
         });
+
+        expect(afterPrintHandler).toBeTruthy();
+        afterPrintHandler?.(new Event('afterprint'));
+
+        expect(removeEventListenerMock).toHaveBeenCalledWith('afterprint', expect.any(Function));
+        expect(mockPrintWindow.close).toHaveBeenCalled();
     });
 
 });
