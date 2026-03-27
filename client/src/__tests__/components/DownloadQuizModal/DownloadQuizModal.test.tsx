@@ -23,30 +23,17 @@ const mockQuiz: QuizType = {
 
 describe('DownloadQuizModal', () => {
     let windowOpenSpy: jest.SpyInstance;
+    let mockPrintWindow: Window;
 
     beforeEach(() => {
         jest.clearAllMocks();
         (ApiService.getQuiz as jest.Mock).mockResolvedValue(mockQuiz);
         jest.spyOn(console, 'error').mockImplementation(() => {});
 
-        const mockPrintWindow = {
-            document: {
-                open: jest.fn(),
-                write: jest.fn(),
-                close: jest.fn(),
-                head: {
-                    appendChild: jest.fn(),
-                },
-                body: {
-                    innerHTML: '',
-                    appendChild: jest.fn(),
-                },
-                documentElement: {
-                    lang: '',
-                },
-                title: '',
-                querySelectorAll: jest.fn().mockReturnValue([]),
-            },
+        const mockPrintDocument = document.implementation.createHTMLDocument('print-preview');
+
+        mockPrintWindow = {
+            document: mockPrintDocument,
             focus: jest.fn(),
             print: jest.fn(),
             close: jest.fn(),
@@ -100,6 +87,8 @@ describe('DownloadQuizModal', () => {
         await waitFor(() => {
             expect(ApiService.getQuiz).toHaveBeenCalledWith('123');
             expect(globalThis.open).toHaveBeenCalled();
+            expect(mockPrintWindow.print).toHaveBeenCalled();
+            expect(console.error).not.toHaveBeenCalled();
         });
     });
 
