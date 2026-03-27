@@ -1,4 +1,4 @@
-name: Frontend E2E Tests Integration on Preprod
+name: Integration - Frontend E2E Tests  on Preprod
 on:
   push:
     branches: [ staging ]
