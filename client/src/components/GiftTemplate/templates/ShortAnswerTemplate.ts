@@ -3,8 +3,6 @@ import QuestionContainer from './QuestionContainerTemplate';
 import Title from './TitleTemplate';
 import {FormattedTextTemplate} from './TextTypeTemplate';
 import GlobalFeedback from './GlobalFeedbackTemplate';
-import { ParagraphStyle, InputStyle } from '../constants';
-import { state } from './index';
 import { ShortAnswerQuestion } from 'gift-pegjs';
 import StemTemplate from './StemTemplate';
 
@@ -36,11 +34,7 @@ function Answers({ choices }: AnswerOptions): string {
         .join(', ');
     return `
     <div>
-      <span style="${ParagraphStyle(
-          state.theme
-      )}">Réponse: </span><input class="gift-input" type="text" style="${InputStyle(
-        state.theme
-    )}" placeholder="${placeholder}">
+      <span class="gift-preview-answer-label">Réponse: </span><input class="gift-input gift-preview-input" type="text" placeholder="${placeholder}">
         </div>
       `;
 }

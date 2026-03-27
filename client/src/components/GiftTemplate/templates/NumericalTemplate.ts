@@ -2,8 +2,6 @@ import { TemplateOptions } from './types';
 import QuestionContainer from './QuestionContainerTemplate';
 import Title from './TitleTemplate';
 import GlobalFeedback from './GlobalFeedbackTemplate';
-import { ParagraphStyle, InputStyle } from '../constants';
-import { state } from '.';
 import { NumericalAnswer, NumericalQuestion, TextFormat } from 'gift-pegjs';
 import { isHighLowNumericalAnswer, isMultipleNumericalAnswer, isRangeNumericalAnswer, isSimpleNumericalAnswer } from 'gift-pegjs/typeGuards';
 import StemTemplate from './StemTemplate';
@@ -48,9 +46,9 @@ function NumericalAnswers2({ choices }: NumericalAnswerOptions): string {
         const weight = answer.weight ? 
         `<span class="numerical-answer-weight-container ${answer.weight > 0 ? 'answer-positive-weight' : 'answer-zero-or-less-weight'}">${answer.weight}%</span>` : 
         ''
-        result += 
-            `<p style="${ParagraphStyle(state.theme)}">Réponse: </p>`
-            + `<input class="gift-input" type="text" style="${InputStyle(state.theme)};width: 100%" placeholder="${answer.answer}">`
+        result +=
+            `<p class="gift-preview-answer-label">Réponse: </p>`
+            + `<input class="gift-input gift-preview-input" type="text" placeholder="${answer.answer}">`
             + weight
             + (answer.feedback ? `<div class="feedback-container">${FormattedTextTemplate(answer.feedback)}</div>` : '');
     });

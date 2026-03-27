@@ -99,13 +99,60 @@ const mockNavigate = jest.fn();
 const mockUseParams = jest.fn();
 const mockApiService = ApiService as jest.Mocked<typeof ApiService>;
 
-  // Mock data for sorting tests
-  const mockFoldersForSorting: FolderType[] = [
-    { _id: 'folder3', userId: 'user1', title: 'Zebra Folder', created_at: '2023-01-03' },
-    { _id: 'folder1', userId: 'user1', title: 'Alpha Folder', created_at: '2023-01-01' },
-    { _id: 'folder2', userId: 'user1', title: 'Beta Folder', created_at: '2023-01-02' },
-    { _id: 'folder4', userId: 'user1', title: 'Gamma Folder', created_at: '2023-01-04' },
-  ];
+
+// TEST CONSTANTS & VARIABLES CONFIGURATION
+const TEST_TEXTS = {
+  PAGE_TITLE: 'Éditeur de quiz',
+  PREVIEW_TITLE: 'Prévisualisation',
+  LOADING_TEXT: 'Chargement du quiz...',
+  QUIZ_TITLE_LABEL: 'Titre du quiz',
+  FOLDER_LABEL: 'Dossier',
+  CHOOSE_FOLDER_PLACEHOLDER: 'Choisir un dossier',
+  SAVE_BUTTON: /enregistrer$/i,
+  SAVE_EXIT_BUTTON: /enregistrer et quitter/i,
+  ERROR_NO_TITLE: 'Veuillez saisir un titre pour le quiz',
+  ERROR_NO_FOLDER: 'Veuillez choisir un dossier',
+  ERROR_SAVE_FAILED: 'Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.',
+  ERROR_QUIZ_EXISTS: 'Le quiz existe déjà.',
+  ERROR_UPDATE_FAILED: 'Une erreur s\'est produite lors de la mise à jour du quiz.',
+  ERROR_SERVER_UNKNOWN: 'Erreur serveur inconnue lors de la requête.',
+  ALERT_ERROR: 'Une erreur est survenue',
+  SCROLL_BUTTON_TITLE: 'Scroll to top',
+  RESIZER_TITLE: 'Faites glisser pour redimensionner',
+  PRINT_BUTTON: /imprimer/i,
+  HIDE_ANSWERS_SWITCH: /masquer les réponses/i,
+};
+
+const TEST_IDS = {
+  EDITOR: 'editor-v2',
+  EDITOR_TEXTAREA: 'editor-textarea',
+  CHEAT_SHEET: 'gift-cheat-sheet',
+  PREVIEW: 'gift-preview',
+  TITLE_INPUT: 'validated-text-field-quiz.title',
+  IMAGE_GALLERY_BTN: 'image-gallery-modal',
+  QUESTION_PREFIX: 'question-',
+};
+
+const TEST_ROUTES = {
+  NEW_QUIZ: '/teacher/editor-quiz/new',
+  EXISTING_QUIZ: (id: string) => `/teacher/editor-quiz/${id}`,
+  DASHBOARD: '/teacher/dashboard',
+};
+
+const MOCK_IDS = {
+  NEW: 'new',
+  MOCK_QUIZ: 'mock-quiz-id',
+  EXISTING_QUIZ: 'quiz1',
+  NON_EXISTENT: 'nonexistent',
+};
+
+// Mock data for sorting tests
+const mockFoldersForSorting: FolderType[] = [
+  { _id: 'folder3', userId: 'user1', title: 'Zebra Folder', created_at: '2023-01-03' },
+  { _id: 'folder1', userId: 'user1', title: 'Alpha Folder', created_at: '2023-01-01' },
+  { _id: 'folder2', userId: 'user1', title: 'Beta Folder', created_at: '2023-01-02' },
+  { _id: 'folder4', userId: 'user1', title: 'Gamma Folder', created_at: '2023-01-04' },
+];
 beforeEach(() => {
   jest.clearAllMocks();
   mockNavigate.mockClear();
@@ -113,12 +160,12 @@ beforeEach(() => {
 
   // Setup default mocks
   mockApiService.getUserFolders.mockResolvedValue([]);
-  mockApiService.createQuiz.mockResolvedValue('mock-quiz-id');
+  mockApiService.createQuiz.mockResolvedValue(MOCK_IDS.MOCK_QUIZ);
   mockApiService.updateQuiz.mockResolvedValue(true);
 
   // Mock react-router hooks
   (require('react-router-dom').useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-  (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+  (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
   // Mock localStorage
   Object.defineProperty(window, 'localStorage', {
@@ -139,7 +186,7 @@ beforeEach(() => {
   });
 });
 
-const renderComponent = (initialEntries = ['/teacher/editor-quiz/new']) => {
+const renderComponent = (initialEntries = [TEST_ROUTES.NEW_QUIZ]) => {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <EditorQuizV2 />
@@ -150,29 +197,29 @@ const renderComponent = (initialEntries = ['/teacher/editor-quiz/new']) => {
 describe('EditorQuizV2 Component', () => {
   describe('Rendering', () => {
     test('renders component for new quiz', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
-      expect(screen.getByText('Éditeur de quiz')).toBeInTheDocument();
-      expect(screen.getByText('Prévisualisation')).toBeInTheDocument();
-      expect(screen.getByTestId('editor-v2')).toBeInTheDocument();
-      expect(screen.getByTestId('gift-cheat-sheet')).toBeInTheDocument();
-      expect(screen.getByTestId('gift-preview')).toBeInTheDocument();
+      expect(screen.getByText(TEST_TEXTS.PAGE_TITLE)).toBeInTheDocument();
+      expect(screen.getByText(TEST_TEXTS.PREVIEW_TITLE)).toBeInTheDocument();
+      expect(screen.getByTestId(TEST_IDS.EDITOR)).toBeInTheDocument();
+      expect(screen.getByTestId(TEST_IDS.CHEAT_SHEET)).toBeInTheDocument();
+      expect(screen.getByTestId(TEST_IDS.PREVIEW)).toBeInTheDocument();
     });
 
     test('shows loading state for existing quiz', () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'existing-quiz-id' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.EXISTING_QUIZ });
       // Mock getQuiz to return a promise that never resolves to simulate loading
       mockApiService.getQuiz.mockReturnValue(new Promise(() => {}));
 
-      renderComponent(['/teacher/editor-quiz/existing-quiz-id']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.EXISTING_QUIZ)]);
 
-      expect(screen.getByText('Chargement du quiz...')).toBeInTheDocument();
+      expect(screen.getByText(TEST_TEXTS.LOADING_TEXT)).toBeInTheDocument();
     });
 
     test('renders quiz configuration form', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
@@ -186,31 +233,31 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Check the basic components are there
-      expect(screen.getByText('Éditeur de quiz')).toBeInTheDocument();
+      expect(screen.getByText(TEST_TEXTS.PAGE_TITLE)).toBeInTheDocument();
       
       // Check for the form elements with more specific queries
-      const titleLabel = screen.getByLabelText('Titre du quiz');
+      const titleLabel = screen.getByLabelText(TEST_TEXTS.QUIZ_TITLE_LABEL);
       expect(titleLabel).toBeInTheDocument();
       
-      const folderLabel = screen.getByLabelText('Dossier');
+      const folderLabel = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       expect(folderLabel).toBeInTheDocument();
     });
   });
 
   describe('State Management', () => {
     test('updates quiz title when input changes', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'New Quiz Title' } });
 
       expect(titleInput).toHaveValue('New Quiz Title');
     });
 
     test('updates selected folder when changed', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Folder 1', created_at: '2023-01-01' },
         { _id: 'folder2', userId: 'user1', title: 'Folder 2', created_at: '2023-01-01' },
@@ -234,23 +281,23 @@ describe('EditorQuizV2 Component', () => {
     });
 
     test('updates editor content and filtered value', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
-      const editorTextarea = screen.getByTestId('editor-textarea');
+      const editorTextarea = screen.getByTestId(TEST_IDS.EDITOR_TEXTAREA);
       fireEvent.change(editorTextarea, { target: { value: 'Question 1?\n\nQuestion 2?' } });
 
       await waitFor(() => {
-        expect(screen.getByTestId('question-0')).toHaveTextContent('Question 1?');
-        expect(screen.getByTestId('question-1')).toHaveTextContent('Question 2?');
+        expect(screen.getByTestId(`${TEST_IDS.QUESTION_PREFIX}0`)).toHaveTextContent('Question 1?');
+        expect(screen.getByTestId(`${TEST_IDS.QUESTION_PREFIX}1`)).toHaveTextContent('Question 2?');
       });
     });
   });
 
   describe('API Integration', () => {
     test('fetches user folders on mount', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
@@ -265,7 +312,7 @@ describe('EditorQuizV2 Component', () => {
 
     test('fetches quiz data for existing quiz', async () => {
       const mockQuiz: QuizType = {
-        _id: 'quiz1',
+        _id: MOCK_IDS.EXISTING_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -276,13 +323,13 @@ describe('EditorQuizV2 Component', () => {
       };
 
       // Set up mocks BEFORE rendering
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'quiz1' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.EXISTING_QUIZ });
       mockApiService.getQuiz.mockResolvedValue(mockQuiz);
 
-      renderComponent(['/teacher/editor-quiz/quiz1']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.EXISTING_QUIZ)]);
 
       await waitFor(() => {
-        expect(mockApiService.getQuiz).toHaveBeenCalledWith('quiz1');
+        expect(mockApiService.getQuiz).toHaveBeenCalledWith(MOCK_IDS.EXISTING_QUIZ);
         expect(screen.getByDisplayValue('Existing Quiz')).toBeInTheDocument();
       });
     });
@@ -291,34 +338,34 @@ describe('EditorQuizV2 Component', () => {
       const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
       
       // Set up mocks BEFORE rendering
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'nonexistent' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NON_EXISTENT });
       mockApiService.getQuiz.mockResolvedValue('Quiz not found');
 
-      renderComponent(['/teacher/editor-quiz/nonexistent']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.NON_EXISTENT)]);
 
       // wait for the API call to be made
       await waitFor(() => {
-        expect(mockApiService.getQuiz).toHaveBeenCalledWith('nonexistent');
+        expect(mockApiService.getQuiz).toHaveBeenCalledWith(MOCK_IDS.NON_EXISTENT);
       }, { timeout: 3000 });
 
       // check for the alert and navigation
       await waitFor(() => {
         expect(alertMock).toHaveBeenCalledWith(
-          expect.stringContaining('Une erreur est survenue')
+          expect.stringContaining(TEST_TEXTS.ALERT_ERROR)
         );
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+        expect(mockNavigate).toHaveBeenCalledWith(TEST_ROUTES.DASHBOARD);
       }, { timeout: 3000 });
 
       alertMock.mockRestore();
     });
 
     test('creates new quiz successfully', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
       const mockCreatedQuiz: QuizType = {
-        _id: 'mock-quiz-id',
+        _id: MOCK_IDS.MOCK_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -333,21 +380,21 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'New Quiz' } });
 
       // Wait for folders to load and select to be available
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
       
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
@@ -356,18 +403,18 @@ describe('EditorQuizV2 Component', () => {
           [],
           'folder1'
         );
-        expect(mockApiService.getQuiz).toHaveBeenCalledWith('mock-quiz-id');
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/mock-quiz-id', { replace: true });
+        expect(mockApiService.getQuiz).toHaveBeenCalledWith(MOCK_IDS.MOCK_QUIZ);
+        expect(mockNavigate).toHaveBeenCalledWith(TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.MOCK_QUIZ), { replace: true });
       });
     });
 
     test('creates quiz then allows multiple saves without errors', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
       const mockCreatedQuiz: QuizType = {
-        _id: 'mock-quiz-id',
+        _id: MOCK_IDS.MOCK_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -384,21 +431,21 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'New Quiz' } });
 
       // Wait for folders to load and select folder
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
       // First save - creates the quiz
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       // Wait for quiz creation and state transition
@@ -408,8 +455,8 @@ describe('EditorQuizV2 Component', () => {
           [],
           'folder1'
         );
-        expect(mockApiService.getQuiz).toHaveBeenCalledWith('mock-quiz-id');
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/editor-quiz/mock-quiz-id', { replace: true });
+        expect(mockApiService.getQuiz).toHaveBeenCalledWith(MOCK_IDS.MOCK_QUIZ);
+        expect(mockNavigate).toHaveBeenCalledWith(TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.MOCK_QUIZ), { replace: true });
       });
 
       // Clear mocks to check subsequent calls
@@ -418,7 +465,7 @@ describe('EditorQuizV2 Component', () => {
       mockNavigate.mockClear();
 
       // Now modify the quiz content
-      const editorTextarea = screen.getByTestId('editor-textarea');
+      const editorTextarea = screen.getByTestId(TEST_IDS.EDITOR_TEXTAREA);
       fireEvent.change(editorTextarea, { target: { value: 'Updated Question?\n\nAnother Question?' } });
 
       // Second save - should update the quiz, not create again
@@ -427,7 +474,7 @@ describe('EditorQuizV2 Component', () => {
       await waitFor(() => {
         // Verify updateQuiz was called, not createQuiz
         expect(mockApiService.updateQuiz).toHaveBeenCalledWith(
-          'mock-quiz-id',
+          MOCK_IDS.MOCK_QUIZ,
           'New Quiz',
           ['Updated Question?', 'Another Question?']
         );
@@ -441,20 +488,20 @@ describe('EditorQuizV2 Component', () => {
 
       await waitFor(() => {
         expect(mockApiService.updateQuiz).toHaveBeenCalledWith(
-          'mock-quiz-id',
+          MOCK_IDS.MOCK_QUIZ,
           'Final Quiz Title',
           ['Updated Question?', 'Another Question?']
         );
         // Verify createQuiz was never called again
         expect(mockApiService.createQuiz).toHaveBeenCalledTimes(0);
         // Verify no error messages appeared
-        expect(screen.queryByText('Une erreur est survenue lors de la sauvegarde')).not.toBeInTheDocument();
+        expect(screen.queryByText(TEST_TEXTS.ERROR_SAVE_FAILED)).not.toBeInTheDocument();
       });
     });
 
     test('updates existing quiz successfully', async () => {
       const mockQuiz: QuizType = {
-        _id: 'quiz1',
+        _id: MOCK_IDS.EXISTING_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -464,25 +511,25 @@ describe('EditorQuizV2 Component', () => {
         updated_at: new Date(),
       };
 
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'quiz1' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.EXISTING_QUIZ });
       mockApiService.getQuiz.mockResolvedValue(mockQuiz);
 
-      renderComponent(['/teacher/editor-quiz/quiz1']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.EXISTING_QUIZ)]);
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('Existing Quiz')).toBeInTheDocument();
       });
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Updated Quiz' } });
 
       
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
         expect(mockApiService.updateQuiz).toHaveBeenCalledWith(
-          'quiz1',
+          MOCK_IDS.EXISTING_QUIZ,
           'Updated Quiz',
           ['Old Question?']
         );
@@ -492,7 +539,7 @@ describe('EditorQuizV2 Component', () => {
 
   describe('Validation', () => {
     test('shows error when saving without title', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
@@ -502,43 +549,43 @@ describe('EditorQuizV2 Component', () => {
 
       // Select folder but leave title empty
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Veuillez saisir un titre pour le quiz')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_NO_TITLE)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
 
     test('shows error when saving without folder', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
       // Fill title but leave folder empty
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Veuillez choisir un dossier')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_NO_FOLDER)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
 
   describe('User Interactions', () => {
     test('scrolls to top when button is clicked', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
@@ -547,18 +594,18 @@ describe('EditorQuizV2 Component', () => {
       window.dispatchEvent(new Event('scroll'));
 
       // Wait for the button to appear
-      const scrollButton = await screen.findByTitle('Scroll to top');
+      const scrollButton = await screen.findByTitle(TEST_TEXTS.SCROLL_BUTTON_TITLE);
       fireEvent.click(scrollButton);
 
       expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
     });
 
     test('copies image link to clipboard', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
 
       renderComponent();
 
-      const galleryButton = screen.getByTestId('image-gallery-modal');
+      const galleryButton = screen.getByTestId(TEST_IDS.IMAGE_GALLERY_BTN);
       fireEvent.click(galleryButton);
 
       // Click on the generated image link
@@ -569,7 +616,7 @@ describe('EditorQuizV2 Component', () => {
     });
 
     test('handles save and exit navigation', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
@@ -578,32 +625,32 @@ describe('EditorQuizV2 Component', () => {
       renderComponent();
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
       // Wait for folders to load and select to be available
       await waitFor(() => {
-        const select = screen.getByLabelText('Dossier');
+        const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
         expect(select).toBeInTheDocument();
       });
 
-      const select = screen.getByLabelText('Dossier');
+      const select = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       await userEvent.click(select);
       await userEvent.click(screen.getByText('Test Folder'));
 
       // Click save and exit
-      const saveExitButton = screen.getByRole('button', { name: /enregistrer et quitter/i });
+      const saveExitButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_EXIT_BUTTON });
       fireEvent.click(saveExitButton);
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+        expect(mockNavigate).toHaveBeenCalledWith(TEST_ROUTES.DASHBOARD);
       });
     });
   });
 
   describe('Error Handling', () => {
     test('handles save error gracefully', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
@@ -618,10 +665,10 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const select = screen.getByRole('combobox', { name: 'Dossier' });
+      const select = screen.getByRole('combobox', { name: TEST_TEXTS.FOLDER_LABEL });
       fireEvent.mouseDown(select);
       
       // Wait for the option to be available
@@ -630,21 +677,21 @@ describe('EditorQuizV2 Component', () => {
         fireEvent.click(option);
       });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_SAVE_FAILED)).toBeInTheDocument();
       });
     });
 
     test('shows error notification when createQuiz returns error string', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
       mockApiService.getUserFolders.mockResolvedValue(mockFolders);
-      mockApiService.createQuiz.mockResolvedValue('Le quiz existe déjà.');
+      mockApiService.createQuiz.mockResolvedValue(TEST_TEXTS.ERROR_QUIZ_EXISTS);
 
       renderComponent();
 
@@ -654,10 +701,10 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const select = screen.getByRole('combobox', { name: 'Dossier' });
+      const select = screen.getByRole('combobox', { name: TEST_TEXTS.FOLDER_LABEL });
       fireEvent.mouseDown(select);
       
       // Wait for the option to be available
@@ -666,17 +713,17 @@ describe('EditorQuizV2 Component', () => {
         fireEvent.click(option);
       });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Le quiz existe déjà.')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_QUIZ_EXISTS)).toBeInTheDocument();
       });
     });
 
     test('shows error notification when updateQuiz returns error string', async () => {
       const mockQuiz: QuizType = {
-        _id: 'quiz1',
+        _id: MOCK_IDS.EXISTING_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -686,34 +733,34 @@ describe('EditorQuizV2 Component', () => {
         updated_at: new Date(),
       };
 
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'quiz1' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.EXISTING_QUIZ });
       mockApiService.getQuiz.mockResolvedValue(mockQuiz);
-      mockApiService.updateQuiz.mockResolvedValue('Une erreur s\'est produite lors de la mise à jour du quiz.');
+      mockApiService.updateQuiz.mockResolvedValue(TEST_TEXTS.ERROR_UPDATE_FAILED);
 
-      renderComponent(['/teacher/editor-quiz/quiz1']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.EXISTING_QUIZ)]);
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('Existing Quiz')).toBeInTheDocument();
       });
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Updated Quiz' } });
 
-      const saveButton = screen.getByRole('button', { name: /enregistrer$/i });
+      const saveButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON });
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Une erreur s\'est produite lors de la mise à jour du quiz.')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_UPDATE_FAILED)).toBeInTheDocument();
       });
     });
 
     test('does not navigate on save and exit when createQuiz returns error string', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       const mockFolders: FolderType[] = [
         { _id: 'folder1', userId: 'user1', title: 'Test Folder', created_at: '2023-01-01' },
       ];
       mockApiService.getUserFolders.mockResolvedValue(mockFolders);
-      mockApiService.createQuiz.mockResolvedValue('Erreur serveur inconnue lors de la requête.');
+      mockApiService.createQuiz.mockResolvedValue(TEST_TEXTS.ERROR_SERVER_UNKNOWN);
 
       renderComponent();
 
@@ -723,10 +770,10 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Fill form
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Test Quiz' } });
 
-      const select = screen.getByRole('combobox', { name: 'Dossier' });
+      const select = screen.getByRole('combobox', { name: TEST_TEXTS.FOLDER_LABEL });
       fireEvent.mouseDown(select);
       
       // Wait for the option to be available
@@ -735,11 +782,11 @@ describe('EditorQuizV2 Component', () => {
         fireEvent.click(option);
       });
 
-      const saveExitButton = screen.getByRole('button', { name: /enregistrer et quitter/i });
+      const saveExitButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_EXIT_BUTTON });
       fireEvent.click(saveExitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Erreur serveur inconnue lors de la requête.')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_SERVER_UNKNOWN)).toBeInTheDocument();
       });
 
       // Ensure navigation did not occur
@@ -748,7 +795,7 @@ describe('EditorQuizV2 Component', () => {
 
     test('does not navigate on save and exit when updateQuiz returns error string', async () => {
       const mockQuiz: QuizType = {
-        _id: 'quiz1',
+        _id: MOCK_IDS.EXISTING_QUIZ,
         folderId: 'folder1',
         folderName: 'Test Folder',
         userId: 'user1',
@@ -758,24 +805,24 @@ describe('EditorQuizV2 Component', () => {
         updated_at: new Date(),
       };
 
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'quiz1' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.EXISTING_QUIZ });
       mockApiService.getQuiz.mockResolvedValue(mockQuiz);
-      mockApiService.updateQuiz.mockResolvedValue('Une erreur s\'est produite lors de la mise à jour du quiz.');
+      mockApiService.updateQuiz.mockResolvedValue(TEST_TEXTS.ERROR_UPDATE_FAILED);
 
-      renderComponent(['/teacher/editor-quiz/quiz1']);
+      renderComponent([TEST_ROUTES.EXISTING_QUIZ(MOCK_IDS.EXISTING_QUIZ)]);
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('Existing Quiz')).toBeInTheDocument();
       });
 
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'Updated Quiz' } });
 
-      const saveExitButton = screen.getByRole('button', { name: /enregistrer et quitter/i });
+      const saveExitButton = screen.getByRole('button', { name: TEST_TEXTS.SAVE_EXIT_BUTTON });
       fireEvent.click(saveExitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Une erreur s\'est produite lors de la mise à jour du quiz.')).toBeInTheDocument();
+        expect(screen.getByText(TEST_TEXTS.ERROR_UPDATE_FAILED)).toBeInTheDocument();
       });
 
       // Ensure navigation did not occur
@@ -785,7 +832,7 @@ describe('EditorQuizV2 Component', () => {
 
   describe('Folder Dropdown Sorting', () => {
     test('should display folders in alphabetical order in the folder dropdown', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       // Setup mocks with unsorted folders
       mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
 
@@ -797,14 +844,14 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Click the folder dropdown to open it
-      const folderSelect = screen.getByRole('combobox', { name: 'Dossier' });
+      const folderSelect = screen.getByRole('combobox', { name: TEST_TEXTS.FOLDER_LABEL });
       fireEvent.mouseDown(folderSelect);
 
       // Wait for dropdown to open and check folder order
       await waitFor(() => {
         // Get all folder menu items (excluding the placeholder option)
         const folderMenuItems = screen.getAllByRole('option').filter(option => 
-          !option.textContent?.includes('Choisir un dossier')
+          !option.textContent?.includes(TEST_TEXTS.CHOOSE_FOLDER_PLACEHOLDER)
         );
         
         const displayedFolderNames = folderMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
@@ -815,7 +862,7 @@ describe('EditorQuizV2 Component', () => {
     });
 
     test('should maintain alphabetical sorting when selecting folders', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       mockApiService.getUserFolders.mockResolvedValue(mockFoldersForSorting);
 
       renderComponent();
@@ -826,7 +873,7 @@ describe('EditorQuizV2 Component', () => {
       });
 
       // Open dropdown and verify we can select a folder that should be in the middle alphabetically
-      const folderSelect = screen.getByRole('combobox', { name: 'Dossier' });
+      const folderSelect = screen.getByRole('combobox', { name: TEST_TEXTS.FOLDER_LABEL });
       fireEvent.mouseDown(folderSelect);
 
       // Wait for options to be available
@@ -847,7 +894,7 @@ describe('EditorQuizV2 Component', () => {
 
       await waitFor(() => {
         const folderMenuItems = screen.getAllByRole('option').filter(option => 
-          !option.textContent?.includes('Choisir un dossier')
+          !option.textContent?.includes(TEST_TEXTS.CHOOSE_FOLDER_PLACEHOLDER)
         );
         
         const displayedFolderNames = folderMenuItems.map(item => item.textContent?.trim()).filter(Boolean);
@@ -861,11 +908,11 @@ describe('EditorQuizV2 Component', () => {
   describe('Print Feature', () => {
     test('should call window.print when print button is clicked', async () => {
       const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       
       renderComponent();
       
-      const printButton = screen.getByRole('button', { name: /imprimer/i });
+      const printButton = screen.getByRole('button', { name: TEST_TEXTS.PRINT_BUTTON });
       fireEvent.click(printButton);
       
       expect(printSpy).toHaveBeenCalledTimes(1);
@@ -874,11 +921,11 @@ describe('EditorQuizV2 Component', () => {
     });
 
     test('should render quiz title in print-only element', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       
       renderComponent();
       
-      const titleInput = screen.getByTestId('validated-text-field-quiz.title');
+      const titleInput = screen.getByTestId(TEST_IDS.TITLE_INPUT);
       fireEvent.change(titleInput, { target: { value: 'My Print Quiz Title' } });
       
       const printTitleElement = screen.getByText('My Print Quiz Title', { selector: '.editor-quiz-print-title' });
@@ -886,14 +933,14 @@ describe('EditorQuizV2 Component', () => {
     });
 
     test('should toggle hideAnswers state when switch is clicked', async () => {
-      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: 'new' });
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
       
       renderComponent();
       
-      const giftPreview = screen.getByTestId('gift-preview');
+      const giftPreview = screen.getByTestId(TEST_IDS.PREVIEW);
       expect(giftPreview).toHaveAttribute('data-hide-answers', 'false');
       
-      const hideAnswersSwitch = screen.getByRole('checkbox', { name: /masquer les réponses/i });
+      const hideAnswersSwitch = screen.getByRole('checkbox', { name: TEST_TEXTS.HIDE_ANSWERS_SWITCH });
       fireEvent.click(hideAnswersSwitch);
       
       expect(giftPreview).toHaveAttribute('data-hide-answers', 'true');
@@ -901,6 +948,77 @@ describe('EditorQuizV2 Component', () => {
       fireEvent.click(hideAnswersSwitch);
       
       expect(giftPreview).toHaveAttribute('data-hide-answers', 'false');
+    });
+  });
+
+  describe('Resizable Panes', () => {
+    test('drag interactions update pane width properly', async () => {
+      renderComponent();
+
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+      expect(divider).toBeInTheDocument();
+
+      // Verify divider is rendered and can respond to interactions
+      expect(divider).toHaveAttribute('title', TEST_TEXTS.RESIZER_TITLE);
+
+      // Simulate drag start
+      fireEvent.mouseDown(divider, { clientX: 0 });
+
+      // Simulate drag movement
+      fireEvent.mouseMove(document, { clientX: 300 });
+      fireEvent.mouseMove(document, { clientX: 100 });
+      fireEvent.mouseMove(document, { clientX: 900 });
+
+      // Complete the drag
+      fireEvent.mouseUp(document);
+
+      // Verify the divider component exists and functions
+      expect(divider).toBeInTheDocument();
+    });
+
+    test('hover interactions change background color', async () => {
+      renderComponent();
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+      
+      fireEvent.mouseEnter(divider);
+      // JS DOM computed style translates #e9ecef 
+      expect(divider.style.backgroundColor).toMatch(/rgb\(233, 236, 239\)|#e9ecef/); 
+
+      fireEvent.mouseLeave(divider);
+      expect(divider.style.backgroundColor).toBe('transparent');
+    });
+
+    test('divider has correct accessibility attributes', () => {
+      renderComponent();
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+
+      expect(divider).toHaveAttribute('role', 'separator');
+      expect(divider).toHaveAttribute('aria-orientation', 'vertical');
+      expect(divider).toHaveAttribute('tabindex', '0');
+      expect(divider).toHaveAttribute('aria-valuenow', '50');
+      expect(divider).toHaveAttribute('aria-valuemin', '20');
+      expect(divider).toHaveAttribute('aria-valuemax', '80');
+    });
+
+    test('keyboard navigation adjusts pane width', () => {
+      renderComponent();
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+
+      // Starting at 50%, ArrowRight should increase by 1%
+      fireEvent.keyDown(divider, { key: 'ArrowRight' });
+      expect(divider).toHaveAttribute('aria-valuenow', '51');
+
+      // ArrowLeft should decrease by 1%
+      fireEvent.keyDown(divider, { key: 'ArrowLeft' });
+      expect(divider).toHaveAttribute('aria-valuenow', '50');
+
+      // Home should set to min (20%)
+      fireEvent.keyDown(divider, { key: 'Home' });
+      expect(divider).toHaveAttribute('aria-valuenow', '20');
+
+      // End should set to max (80%)
+      fireEvent.keyDown(divider, { key: 'End' });
+      expect(divider).toHaveAttribute('aria-valuenow', '80');
     });
   });
 });

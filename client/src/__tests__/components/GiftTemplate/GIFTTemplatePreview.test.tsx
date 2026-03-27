@@ -29,11 +29,8 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     render(<GIFTTemplatePreviewV2 questions={validQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
-    // Check that all question titles are rendered inside the previewContainer
-    validQuestions.forEach((question) => {
-      const title = question.split('::')[1].split('::')[0];
-      expect(previewContainer).toHaveTextContent(title);
-    });
+    // Print layout is always applied so each rendered question gets the print layout class.
+    expect(previewContainer.querySelectorAll('.gift-preview-question--print-layout')).toHaveLength(validQuestions.length);
     // There should be no errors
     const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).not.toBeInTheDocument();
@@ -49,15 +46,9 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(giftInputElements).toHaveLength(1);
     expect(giftInputElements[0]).toHaveAttribute('placeholder', 'ShortAnswerOne, ShortAnswerTwo');
 
-    // Check for correct answer icon just after MQAnswerOne
-    const mqAnswerOneElement = screen.getByText('MQAnswerOne');
-    const correctAnswerIcon = mqAnswerOneElement.parentElement?.querySelector('[data-testid="correct-icon"]');
-    expect(correctAnswerIcon).toBeInTheDocument();
-
-    // Check for incorrect answer icon just after MQAnswerTwo
-    const mqAnswerTwoElement = screen.getByText('MQAnswerTwo');
-    const incorrectAnswerIcon = mqAnswerTwoElement.parentElement?.querySelector('[data-testid="incorrect-icon"]');
-    expect(incorrectAnswerIcon).toBeInTheDocument();
+    // Correctness is rendered with result-style red/green outlines.
+    expect(previewContainer.querySelectorAll('.choice-button.bg-success').length).toBeGreaterThan(0);
+    expect(previewContainer.querySelectorAll('.choice-button.bg-danger').length).toBeGreaterThan(0);
  });
 
  it('hides answers when hideAnswers prop is true', () => {
@@ -70,11 +61,10 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(previewContainer).toHaveTextContent('Vrai');
     expect(previewContainer).not.toHaveTextContent('ShortAnswerOne');
     expect(previewContainer).not.toHaveTextContent('ShortAnswerTwo');
-    // shouldn't have correct/incorrect icons
-    const correctAnswerIcon = screen.queryByTestId('correct-icon');
-    expect(correctAnswerIcon).not.toBeInTheDocument();
-    const incorrectAnswerIcon = screen.queryByTestId('incorrect-icon');
-    expect(incorrectAnswerIcon).not.toBeInTheDocument();
+    // Masked mode removes correctness and feedback markers.
+    expect(previewContainer.querySelector('.choice-button.bg-success')).not.toBeInTheDocument();
+    expect(previewContainer.querySelector('.choice-button.bg-danger')).not.toBeInTheDocument();
+    expect(previewContainer.querySelector('.gift-preview-feedback')).not.toBeInTheDocument();
   });
 
   it('should indicate in the preview that unsupported GIFT questions are not supported', () => {

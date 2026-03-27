@@ -114,7 +114,7 @@ body.hide-header {
     margin: 0 !important;
   }
 
-  // With @page { margin: 0 } the body itself provides the whitespace around content
+  // With @page { margin: 0 } the body itself provides worksheet whitespace.
   html, body {
     margin: 0 !important;
     padding: 12mm !important;

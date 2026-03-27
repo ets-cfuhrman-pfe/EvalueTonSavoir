@@ -1,4 +1,4 @@
-name: E2E Tests on Preprod
+name: Integration - Frontend E2E Tests  on Preprod
 on:
   push:
     branches: [ staging ]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   e2e-tests:
-    name: Run E2E Tests Against Preprod
+    name: Run Frontend E2E Tests Against Preprod
     runs-on: [self-hosted, preprod]
     
     env:
@@ -49,47 +49,7 @@ jobs:
         run: |
           # Copy the client directory with E2E tests to the runner workspace
           cp -r ${{ github.workspace }}/client /tmp/e2e-client-${{ github.run_id }}
-          
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services to start..."
-          
-          # Wait for MongoDB to be ready
-          if ! timeout 60 bash -c 'until docker exec mongo mongosh --eval "db.runCommand({ping: 1})" > /dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 3; done'; then
-            echo "MongoDB failed to start within timeout"
-            exit 1
-          fi
-          
-          # Wait for backend to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 3000; do echo "Waiting for backend..."; sleep 3; done'; then
-            echo "Backend failed to start within timeout"
-            exit 1
-          fi
-          
-          # Wait for frontend to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 5173; do echo "Waiting for frontend..."; sleep 3; done'; then
-            echo "Frontend failed to start within timeout"
-            exit 1
-          fi
-          
-          # Wait for nginx to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 80; do echo "Waiting for nginx..."; sleep 3; done'; then
-            echo "Nginx failed to start within timeout"
-            exit 1
-          fi
-          
-          # Wait for Keycloak to be ready 
-          if ! timeout 60 bash -c 'until nc -z localhost 8080; do echo "Waiting for Keycloak..."; sleep 3; done'; then
-            echo "Keycloak failed to start within timeout"
-            exit 1
-          fi
-          
-          echo "Services status check:"
-          docker compose -f ${{ env.PREPROD_PATH }}/docker-compose.yaml ps
-          
-          # Additional wait to ensure all services are fully initialized
-          sleep 15
-      
+        
       - name: Ensure test user exists
         run: |
           echo "Ensuring test user exists..."

@@ -1,4 +1,4 @@
-name: Promote Staging to Production
+name: Release - Promote Staging to Production
 
 on:
   workflow_dispatch:
