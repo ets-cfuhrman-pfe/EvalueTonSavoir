@@ -29,11 +29,8 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     render(<GIFTTemplatePreviewV2 questions={validQuestions} hideAnswers={false} />);
     const previewContainer = screen.getByTestId('preview-container');
     expect(previewContainer).toBeInTheDocument();
-    // Check that all question titles are rendered inside the previewContainer
-    validQuestions.forEach((question) => {
-      const title = question.split('::')[1].split('::')[0];
-      expect(previewContainer).toHaveTextContent(title);
-    });
+    // Print layout is always applied so each rendered question gets the print layout class.
+    expect(previewContainer.querySelectorAll('.gift-preview-question--print-layout').length).toBe(validQuestions.length);
     // There should be no errors
     const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).not.toBeInTheDocument();

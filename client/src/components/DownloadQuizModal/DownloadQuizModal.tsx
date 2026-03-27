@@ -6,11 +6,8 @@ import { FileDownload, Print } from '@mui/icons-material';
 import { QuizType } from '../../Types/QuizType';
 import ApiService from '../../services/ApiService';
 
-import { parse } from 'gift-pegjs';
 import DOMPurify from 'dompurify';
-import Template, { ErrorTemplate } from '../GiftTemplate/templates';
-import { applyQuestionPrintLayout } from '../GiftTemplate/printLayout';
-import { applyHideAnswersMask } from '../GiftTemplate/hideAnswersMask';
+import { buildGiftPreviewHtml } from '../GiftTemplate/buildGiftPreviewHtml';
 
 interface DownloadQuizModalProps {
     quiz: QuizType;
@@ -60,31 +57,11 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
     };
 
     const buildPreviewHtml = (quizData: QuizType, withAnswers: boolean): string => {
-        let previewHtml = '';
-
-        quizData.content.forEach((giftQuestion) => {
-            try {
-                const question = parse(giftQuestion);
-                previewHtml += Template(question[0], {
-                    preview: true,
-                    theme: 'light',
-                });
-            } catch (error) {
-                if (error instanceof Error) {
-                    previewHtml += ErrorTemplate(giftQuestion, error.message);
-                } else {
-                    previewHtml += ErrorTemplate(giftQuestion, 'Erreur inconnue');
-                }
-            }
+        return buildGiftPreviewHtml(quizData.content, {
+            printLayout: true,
+            hideAnswers: !withAnswers,
+            errorMode: 'plain',
         });
-
-        previewHtml = applyQuestionPrintLayout(previewHtml);
-
-        if (!withAnswers) {
-            previewHtml = applyHideAnswersMask(previewHtml);
-        }
-
-        return previewHtml;
     };
 
     const createPrintableMarkup = (targetDocument: Document, title: string, sanitizedHtml: string): HTMLElement => {

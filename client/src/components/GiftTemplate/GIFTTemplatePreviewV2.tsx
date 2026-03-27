@@ -1,9 +1,7 @@
 // GIFTTemplatePreviewV2.tsx
 import React, { useEffect, useState } from 'react';
-import Template, { ErrorTemplate, UnsupportedQuestionTypeError } from './templates';
-import { parse } from 'gift-pegjs';
 import { FormattedTextTemplate } from './templates/TextTypeTemplate';
-import { applyHideAnswersMask } from './hideAnswersMask';
+import { buildGiftPreviewHtml } from './buildGiftPreviewHtml';
 
 interface GIFTTemplatePreviewV2Props {
     questions: string[];
@@ -20,30 +18,11 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
 
     useEffect(() => {
         try {
-            let previewHTML = '';
-            questions.forEach((giftQuestion) => {
-                try {
-                    const question = parse(giftQuestion);
-                    previewHTML += Template(question[0], {
-                        preview: true,
-                        theme: 'light'
-                    });
-                } catch (error) {
-                    let errorMsg: string;
-                    if (error instanceof UnsupportedQuestionTypeError) {
-                        errorMsg = ErrorTemplate(giftQuestion, `Erreur: ${error.message}`);
-                    } else if (error instanceof Error) {
-                        errorMsg = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
-                    } else {
-                        errorMsg = ErrorTemplate(giftQuestion, 'Erreur inconnue');
-                    }
-                    previewHTML += `<div class="alert alert-danger" role="alert">${errorMsg}</div>`;
-                }
+            const previewHTML = buildGiftPreviewHtml(questions, {
+                hideAnswers,
+                printLayout: true,
+                errorMode: 'preview',
             });
-
-            if (hideAnswers) {
-                previewHTML = applyHideAnswersMask(previewHTML);
-            }
 
             setItems(previewHTML);
             setIsPreviewReady(true);
