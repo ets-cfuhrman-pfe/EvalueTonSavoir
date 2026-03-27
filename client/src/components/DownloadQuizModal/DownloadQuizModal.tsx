@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 
 import { Dialog, DialogTitle, DialogActions, Button, Tooltip, IconButton } from '@mui/material';
-import { FileDownload } from '@mui/icons-material';
+import { FileDownload, Print } from '@mui/icons-material';
 
 import { QuizType } from '../../Types/QuizType';
 import ApiService from '../../services/ApiService';
 
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { parse } from 'gift-pegjs';
 import DOMPurify from 'dompurify';
 import Template, { ErrorTemplate } from '../GiftTemplate/templates';
+import { applyQuestionPrintLayout } from '../GiftTemplate/printLayout';
 
 interface DownloadQuizModalProps {
     quiz: QuizType;
@@ -18,21 +17,22 @@ interface DownloadQuizModalProps {
 
 const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
     const [open, setOpen] = useState(false);
+    const parser = new DOMParser();
 
     const handleOpenModal = () => setOpen(true);
 
     const handleCloseModal = () => setOpen(false);
 
-    const handleDownload = async (format: 'txt' | 'pdf-with-answers' | 'pdf-without-answers') => {
+    const handleDownload = async (format: 'txt' | 'print-with-answers' | 'print-without-answers') => {
         switch (format) {
             case 'txt':
                 await downloadTxtFile(quiz);
                 break;
-            case 'pdf-with-answers':
-                await downloadPdfFile(quiz, true);
+            case 'print-with-answers':
+                await printQuizFile(quiz, true, globalThis.open('', '_blank', 'width=1024,height=768'));
                 break;
-            case 'pdf-without-answers':
-                await downloadPdfFile(quiz, false);
+            case 'print-without-answers':
+                await printQuizFile(quiz, false, globalThis.open('', '_blank', 'width=1024,height=768'));
                 break;
         }
         handleCloseModal();
@@ -52,101 +52,137 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
             const blob = new Blob([quizContent], { type: 'text/plain' });
             const a = document.createElement('a');
             a.download = `${selectedQuiz.title}.gift`;
-            a.href = window.URL.createObjectURL(blob);
+            a.href = globalThis.URL.createObjectURL(blob);
             a.click();
         } catch (error) {
             console.error('Error exporting quiz:', error);
         }
     };
 
-    const downloadPdfFile = async (quiz: QuizType, withAnswers: boolean) => {
+    const applyHideAnswersMask = (previewHtml: string): string => {
+        const doc = parser.parseFromString(previewHtml, 'text/html');
+
+        doc.querySelectorAll('.choice-button').forEach((button) => {
+            button.classList.remove('bg-success', 'bg-danger', 'text-white');
+            button.classList.add('bg-light', 'text-dark');
+        });
+
+        doc.querySelectorAll('.choice-letter, .choice-marker').forEach((marker) => {
+            marker.classList.remove('text-success', 'text-danger', 'border-success', 'border-danger');
+            marker.classList.add('text-dark');
+        });
+
+        doc
+            .querySelectorAll('.alert.alert-info.small, .true-feedback, .false-feedback, .gift-preview-feedback, .feedback-container')
+            .forEach((node) => node.remove());
+
+        doc.querySelectorAll('input.gift-preview-input').forEach((input) => {
+            input.setAttribute('placeholder', '');
+        });
+
+        return doc.body.innerHTML;
+    };
+
+    const buildPreviewHtml = (quizData: QuizType, withAnswers: boolean): string => {
+        let previewHtml = '';
+
+        quizData.content.forEach((giftQuestion) => {
+            try {
+                const question = parse(giftQuestion);
+                previewHtml += Template(question[0], {
+                    preview: true,
+                    theme: 'light',
+                });
+            } catch (error) {
+                if (error instanceof Error) {
+                    previewHtml += ErrorTemplate(giftQuestion, error.message);
+                } else {
+                    previewHtml += ErrorTemplate(giftQuestion, 'Erreur inconnue');
+                }
+            }
+        });
+
+        previewHtml = applyQuestionPrintLayout(previewHtml);
+
+        if (!withAnswers) {
+            previewHtml = applyHideAnswersMask(previewHtml);
+        }
+
+        return previewHtml;
+    };
+
+    const createPrintableMarkup = (targetDocument: Document, title: string, sanitizedHtml: string): HTMLElement => {
+        const main = targetDocument.createElement('main');
+        main.className = 'download-quiz-print';
+
+        const heading = targetDocument.createElement('h1');
+        heading.className = 'editor-quiz-print-title';
+        heading.textContent = title;
+
+        const previewContainer = targetDocument.createElement('div');
+        previewContainer.className = 'preview-container';
+        previewContainer.innerHTML = sanitizedHtml;
+
+        main.appendChild(heading);
+        main.appendChild(previewContainer);
+
+        return main;
+    };
+
+    const cloneCurrentStyles = (targetWindow: Window) => {
+        const styleNodes = document.querySelectorAll('link[rel="stylesheet"], style');
+        styleNodes.forEach((styleNode) => {
+            targetWindow.document.head.appendChild(styleNode.cloneNode(true));
+        });
+    };
+
+    const waitForImageLoad = (img: HTMLImageElement): Promise<void> => {
+        return new Promise<void>((resolve) => {
+            if (img.complete) {
+                resolve();
+                return;
+            }
+
+            img.addEventListener('load', () => resolve(), { once: true });
+            img.addEventListener('error', () => resolve(), { once: true });
+        });
+    };
+
+    const waitForImages = async (container: ParentNode): Promise<void> => {
+        const images = Array.from(container.querySelectorAll<HTMLImageElement>('img'));
+        if (images.length === 0) {
+            return;
+        }
+
+        await Promise.all(images.map((img) => waitForImageLoad(img)));
+    };
+
+    const printQuizFile = async (quiz: QuizType, withAnswers: boolean, printWindow: Window | null) => {
         try {
+            if (!printWindow) {
+                throw new Error('Unable to open print window');
+            }
+
             const selectedQuiz = await ApiService.getQuiz(quiz._id) as QuizType;
             if (!selectedQuiz) throw new Error('Quiz not found');
 
+            const previewHtml = buildPreviewHtml(selectedQuiz, withAnswers);
+            const sanitizedHtml = DOMPurify.sanitize(previewHtml);
 
-            let previewHTML = '<h2>' + selectedQuiz.title + '</h2>';
-            selectedQuiz.content.forEach((giftQuestion) => {
-                try {
-                    const question = parse(giftQuestion);
+            const printDocument = printWindow.document;
+            printDocument.documentElement.lang = 'fr';
+            printDocument.title = selectedQuiz.title;
+            printDocument.body.innerHTML = '';
+            printDocument.body.appendChild(createPrintableMarkup(printDocument, selectedQuiz.title, sanitizedHtml));
+            cloneCurrentStyles(printWindow);
 
-                    previewHTML += Template(question[0], {
-                        preview: true,
-                        theme: 'light',
-                    });
-                } catch (error) {
-                    if (error instanceof Error) {
-                        previewHTML += ErrorTemplate(giftQuestion, error.message );
-                    } else {
-                        previewHTML += ErrorTemplate(giftQuestion, 'Erreur inconnue');
-                    }
-                }
-            });
+            await waitForImages(printDocument);
 
-            if (!withAnswers) {
-                const svgRegex = /<svg[^>]*>([\s\S]*?)<\/svg>/gi;
-                previewHTML = previewHTML.replace(svgRegex, '');
-                const placeholderRegex = /(placeholder=")[^"]*(")/gi;
-                previewHTML = previewHTML.replace(placeholderRegex, '$1$2');
-                const feedbackContainerRegex = /<(div|span)[^>]*class="feedback-container"[^>]*>[\s\S]*?<\/div>/gi;
-                previewHTML = previewHTML.replace(feedbackContainerRegex, '');
-                const answerClassRegex = /<(div|span)[^>]*class="[^"]*answer[^"]*"[^>]*>[\s\S]*?<\/\1>/gi;
-                previewHTML = previewHTML.replace(answerClassRegex, '');
-                const bonneReponseRegex = /<p[^>]*>[^<]*bonne réponse[^<]*<\/p>/gi;
-                previewHTML = previewHTML.replace(bonneReponseRegex, '');
-                const AllAnswersFieldRegex = /<(p|span)[^>]*>\s*Réponse:\s*<\/\1>\s*<input[^>]*>/gi
-                previewHTML = previewHTML.replace(AllAnswersFieldRegex, '');
-
-            }
-
-            const sanitizedHTML = DOMPurify.sanitize(previewHTML);
-
-            console.log('previewHTML:', sanitizedHTML);
-
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = sanitizedHTML;
-            document.body.appendChild(tempDiv);
-
-            // allowTaint and useCORS are set to true to allow cross-origin images to be used in the canvas
-            const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true });
-
-            document.body.removeChild(tempDiv);
-
-            const pdf = new jsPDF('p', 'mm', 'letter');
-            const pageWidth = pdf.internal.pageSize.width;
-            const pageHeight = pdf.internal.pageSize.height;
-            const margin = 10;
-            const imgWidth = pageWidth - 2 * margin;
-            
-            let yOffset = 0;
-
-            while (yOffset < canvas.height) {
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = canvas.width;
-                pageCanvas.height = Math.min(canvas.height - yOffset, (pageHeight - 2 * margin) * (canvas.width / imgWidth));
-
-                const pageCtx = pageCanvas.getContext('2d');
-                if (pageCtx) {
-                    pageCtx.drawImage(canvas, 0, yOffset, canvas.width, pageCanvas.height, 0, 0, pageCanvas.width, pageCanvas.height);
-                }
-
-                const pageImgData = pageCanvas.toDataURL('image/png');
-
-               if (yOffset > 0) pdf.addPage();
-
-                pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, (pageCanvas.height * imgWidth) / pageCanvas.width);
-
-                yOffset += pageCanvas.height;
-            }
-
-
-            const filename = withAnswers
-                ? `${selectedQuiz.title}_avec_reponses.pdf`
-                : `${selectedQuiz.title}_sans_reponses.pdf`;
-
-            pdf.save(filename);
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
         } catch (error) {
-            console.error('Error exporting quiz as PDF:', error);
+            console.error('Error printing quiz:', error);
         }
     };
 
@@ -162,8 +198,8 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
                 <DialogTitle sx={{ textAlign: "center" }}>Choisissez un format de téléchargement</DialogTitle>
                 <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
                     <Button onClick={() => handleDownload('txt')}>GIFT</Button>
-                    <Button onClick={() => handleDownload('pdf-with-answers')}> PDF avec réponses</Button>
-                    <Button onClick={() => handleDownload('pdf-without-answers')}>PDF sans réponses</Button>
+                    <Button startIcon={<Print />} onClick={() => handleDownload('print-with-answers')}>Imprimer avec réponses</Button>
+                    <Button startIcon={<Print />} onClick={() => handleDownload('print-without-answers')}>Imprimer sans réponses</Button>
                 </DialogActions>
             </Dialog>
         </>
