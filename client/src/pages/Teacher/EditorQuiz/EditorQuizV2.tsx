@@ -454,7 +454,10 @@ const EditorQuizV2: React.FC = () => {
         <div className="content-container editor-quiz-content-container">
             <div className="w-100 p-0 content-full-width">
                 {/* Top Header */}
-                <div className="bg-white border-bottom shadow-sm no-print">
+                <div
+                    className="bg-white border-bottom shadow-sm no-print position-sticky top-0"
+                    style={{ zIndex: 1030 }}
+                >
                     <div className="container-fluid px-2 py-4 content-full-width">
                         <div className="d-flex justify-content-between align-items-center px-4">
                             <div className="d-flex align-items-center gap-3">
