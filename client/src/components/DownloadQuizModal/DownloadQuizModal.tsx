@@ -10,6 +10,7 @@ import { parse } from 'gift-pegjs';
 import DOMPurify from 'dompurify';
 import Template, { ErrorTemplate } from '../GiftTemplate/templates';
 import { applyQuestionPrintLayout } from '../GiftTemplate/printLayout';
+import { applyHideAnswersMask } from '../GiftTemplate/hideAnswersMask';
 
 interface DownloadQuizModalProps {
     quiz: QuizType;
@@ -17,7 +18,6 @@ interface DownloadQuizModalProps {
 
 const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
     const [open, setOpen] = useState(false);
-    const parser = new DOMParser();
 
     const handleOpenModal = () => setOpen(true);
 
@@ -57,30 +57,6 @@ const DownloadQuizModal: React.FC<DownloadQuizModalProps> = ({ quiz }) => {
         } catch (error) {
             console.error('Error exporting quiz:', error);
         }
-    };
-
-    const applyHideAnswersMask = (previewHtml: string): string => {
-        const doc = parser.parseFromString(previewHtml, 'text/html');
-
-        doc.querySelectorAll('.choice-button').forEach((button) => {
-            button.classList.remove('bg-success', 'bg-danger', 'text-white');
-            button.classList.add('bg-light', 'text-dark');
-        });
-
-        doc.querySelectorAll('.choice-letter, .choice-marker').forEach((marker) => {
-            marker.classList.remove('text-success', 'text-danger', 'border-success', 'border-danger');
-            marker.classList.add('text-dark');
-        });
-
-        doc
-            .querySelectorAll('.alert.alert-info.small, .true-feedback, .false-feedback, .gift-preview-feedback, .feedback-container')
-            .forEach((node) => node.remove());
-
-        doc.querySelectorAll('input.gift-preview-input').forEach((input) => {
-            input.setAttribute('placeholder', '');
-        });
-
-        return doc.body.innerHTML;
     };
 
     const buildPreviewHtml = (quizData: QuizType, withAnswers: boolean): string => {
