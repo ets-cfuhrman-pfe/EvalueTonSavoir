@@ -1,6 +1,6 @@
 ﻿// EditorV2.tsx
-import React, { useState, useRef } from 'react';
-import { TextareaAutosize, Button } from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -13,7 +13,50 @@ interface EditorV2Props {
 const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label }) => {
     const [value, setValue] = useState(initialValue);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const editorRef = useRef<HTMLTextAreaElement | null>(null);
+    const editorRef = useRef<HTMLTextAreaElement>(null);
+
+    const adjustHeight = useCallback(() => {
+        if (editorRef.current) {
+            editorRef.current.style.height = 'auto';
+            editorRef.current.style.height = `${editorRef.current.scrollHeight + 4}px`;
+        }
+    }, []);
+
+    useEffect(() => {
+        setValue(initialValue);
+    }, [initialValue]);
+
+    // Re-calculate height when content changes
+    useEffect(() => {
+        if (!isCollapsed) {
+            adjustHeight();
+        }
+    }, [value, isCollapsed, adjustHeight]);
+
+    // Handle container resizes 
+    useEffect(() => {
+        if (isCollapsed || !editorRef.current) return;
+
+        let animationFrameId: number;
+
+        const resizeObserver = new ResizeObserver(() => {
+            // Use requestAnimationFrame to avoid ResizeObserver loop limit errors
+            animationFrameId = requestAnimationFrame(() => {
+                adjustHeight();
+            });
+        });
+
+        // Observe the immediate parent container to catch layout changes
+        const container = editorRef.current.parentElement;
+        if (container) {
+            resizeObserver.observe(container);
+        }
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            resizeObserver.disconnect();
+        };
+    }, [isCollapsed, adjustHeight]);
 
     function handleEditorChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
         const text = event.target.value;
@@ -39,13 +82,14 @@ const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label
 
             {/* Collapsible Editor Content */}
             {!isCollapsed && (
-                <TextareaAutosize
+                <textarea
+                    rows={5}
                     id='editor-textarea'
                     ref={editorRef}
                     onChange={handleEditorChange}
                     value={value}
                     className='form-control editor-v2-textarea'
-                    minRows={5}
+                    style={{ overflow: 'hidden', resize: 'none' }}
                 />
             )}
         </div>

@@ -9,6 +9,72 @@ interface GIFTTemplatePreviewV2Props {
     hideAnswers?: boolean;
 }
 
+function applySideImageLayout(previewHtml: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(previewHtml, 'text/html');
+    const questionSections = doc.querySelectorAll<HTMLElement>('section.gift-preview-question');
+
+    questionSections.forEach((section) => {
+        const stemElement = section.querySelector<HTMLElement>('.present-question-stem');
+        if (!stemElement) return;
+
+        const images = Array.from(stemElement.querySelectorAll<HTMLImageElement>('img'));
+        if (images.length === 0) return;
+
+        images.forEach((image) => image.remove());
+
+        const layout = doc.createElement('div');
+        layout.className = 'side-image-layout';
+
+        const contentColumn = doc.createElement('div');
+        contentColumn.className = 'side-image-layout__content';
+        while (section.firstChild) {
+            contentColumn.appendChild(section.firstChild);
+        }
+
+        const imageColumn = doc.createElement('div');
+        imageColumn.className = 'side-image-layout__images';
+        images.forEach((image, index) => {
+            const wrapper = doc.createElement('div');
+            wrapper.className = 'side-image-layout__image-wrapper';
+            wrapper.dataset.imageIndex = String(index);
+            wrapper.appendChild(image);
+            imageColumn.appendChild(wrapper);
+        });
+
+        layout.appendChild(contentColumn);
+        layout.appendChild(imageColumn);
+        section.appendChild(layout);
+    });
+
+    return doc.body.innerHTML;
+}
+
+function applyHideAnswersMask(previewHtml: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(previewHtml, 'text/html');
+
+    doc.querySelectorAll<HTMLElement>('.choice-button').forEach((choiceButton) => {
+        choiceButton.classList.remove('bg-success', 'bg-danger', 'text-white');
+        choiceButton.classList.add('bg-light', 'text-dark');
+    });
+
+    doc.querySelectorAll<HTMLElement>('.choice-letter').forEach((choiceLetter) => {
+        choiceLetter.classList.remove('text-success', 'text-danger', 'border-success', 'border-danger');
+        choiceLetter.classList.add('text-dark');
+    });
+
+    doc.querySelectorAll('.alert.alert-info.small, .true-feedback, .false-feedback, .gift-preview-feedback, .feedback-container').forEach((feedbackNode) => {
+        feedbackNode.remove();
+    });
+
+    doc.querySelectorAll<HTMLInputElement>('input.gift-preview-input').forEach((answerInput) => {
+        answerInput.setAttribute('placeholder', '');
+    });
+
+    return doc.body.innerHTML;
+}
+
 const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     questions,
     hideAnswers = false
@@ -40,11 +106,10 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                 }
             });
 
+            previewHTML = applySideImageLayout(previewHTML);
+
             if (hideAnswers) {
-                const svgRegex = /<svg[^>]*>([\s\S]*?)<\/svg>/gi;
-                previewHTML = previewHTML.replace(svgRegex, '');
-                const placeholderRegex = /(placeholder=")[^"]*(")/gi;
-                previewHTML = previewHTML.replace(placeholderRegex, '$1$2');
+                previewHTML = applyHideAnswersMask(previewHTML);
             }
 
             setItems(previewHTML);

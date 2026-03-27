@@ -1,12 +1,14 @@
 // Editor component styles
-// Custom styling for EditorV2 component
 
 @use '../variables' as vars;
 
 // Editor textarea styling
 .editor-v2-textarea {
   width: 100% !important;
+  max-width: 100% !important;
   min-height: 50px !important;
+  resize: none !important;
+  box-sizing: border-box !important;
   background-color: #f8f9ff !important;
   padding: 10px !important;
   font-size: medium !important;
@@ -14,6 +16,11 @@
   border-radius: vars.$border-radius !important;
   font-family: inherit !important;
   line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
 
 
@@ -30,7 +37,6 @@
 
 // Editor main content layout
 .editor-main-content {
-  height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   
@@ -46,10 +52,86 @@
   padding-right: 0 !important;
 }
 
+// Two-pane layout defaults to 50/50 and is updated via CSS variable during drag.
+.editor-split-pane {
+  --left-pane-width: 50%;
+  --divider-space: 16px;
+}
+
+.editor-split-pane .editor-quiz-editor-col.resizable-pane {
+  width: calc(var(--left-pane-width) - var(--divider-space));
+  max-width: calc(var(--left-pane-width) - var(--divider-space));
+}
+
+.editor-split-pane .editor-quiz-preview-col {
+  width: calc((100% - var(--left-pane-width)) - var(--divider-space));
+  max-width: calc((100% - var(--left-pane-width)) - var(--divider-space));
+  min-width: 20%;
+}
+
+// Resizable panes
+.resizable-pane {
+  width: var(--pane-width, 50%);
+  max-width: var(--pane-width, 50%);
+  min-width: 20%;
+  
+  @media (max-width: 991px) {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem;
+  }
+}
+
+.editor-quiz-preview-col {
+  @media (max-width: 991px) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+
+// Draggable divider
+.editor-draggable-divider {
+  width: 16px;
+  cursor: col-resize;
+  background-color: transparent;
+  margin: 0 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.editor-draggable-divider-handle {
+  height: 30px;
+  width: 4px;
+  background-color: #adb5bd;
+  border-radius: 2px;
+}
+
 // Override any row gutters in the editor
 .editor-main-content .row {
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+// Full page width for the editor and preview boxes
+.content-container.editor-quiz-content-container {
+  width: 98vw !important;
+  max-width: 98vw !important;
+  margin-left: -49vw !important;
+  margin-right: -49vw !important;
+}
+
+@media print {
+  .content-container.editor-quiz-content-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 }
 
 // Print-only quiz title 
@@ -57,7 +139,7 @@
   display: none;
 }
 
-// ===== PRINT STYLES =====
+//PRINT STYLES 
 @media print {
   // Show the print-only quiz title at the top of the page
   .editor-quiz-print-title {

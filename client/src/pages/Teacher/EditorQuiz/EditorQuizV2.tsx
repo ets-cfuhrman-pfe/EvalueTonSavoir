@@ -1,5 +1,5 @@
 // EditorQuizV2.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
@@ -56,6 +56,87 @@ const EditorQuizV2: React.FC = () => {
         message: '',
         severity: 'info'
     });
+
+    const isDraggingRef = useRef(false);
+    const splitPaneRef = useRef<HTMLDivElement>(null);
+    const [leftPanePercent, setLeftPanePercent] = useState(50);
+
+    const setPaneWidth = useCallback((newPercentage: number) => {
+        const clamped = Math.min(80, Math.max(20, newPercentage));
+        setLeftPanePercent(clamped);
+        if (splitPaneRef.current) {
+            splitPaneRef.current.style.setProperty('--left-pane-width', `${clamped}%`);
+        }
+    }, []);
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!isDraggingRef.current) return;
+        const newPercentage = (e.clientX / window.innerWidth) * 100;
+        setPaneWidth(newPercentage);
+    }, [setPaneWidth]);
+
+    const handleMouseUp = useCallback(() => {
+        isDraggingRef.current = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = '';
+        
+        // Remove iframe pointer-events overlay if it exists
+        const overlay = document.getElementById('iframe-drag-overlay');
+        if (overlay) overlay.remove();
+    }, [handleMouseMove]);
+
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        isDraggingRef.current = true;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        
+        // Add overlay to prevent iframes from stealing mouse events during drag
+        const overlay = document.createElement('div');
+        overlay.id = 'iframe-drag-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.zIndex = '9999';
+        overlay.style.cursor = 'col-resize';
+        document.body.appendChild(overlay);
+
+        e.preventDefault();
+    }, [handleMouseMove, handleMouseUp]);
+
+    const handleDividerKeyDown = useCallback((e: React.KeyboardEvent) => {
+        const step = e.shiftKey ? 10 : 1;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setPaneWidth(leftPanePercent - step);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setPaneWidth(leftPanePercent + step);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            setPaneWidth(20);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            setPaneWidth(80);
+        }
+    }, [leftPanePercent, setPaneWidth]);
+
+    useEffect(() => {
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'default';
+            document.body.style.userSelect = '';
+            
+            const overlay = document.getElementById('iframe-drag-overlay');
+            if (overlay) overlay.remove();
+        };
+    }, [handleMouseMove, handleMouseUp]);
 
         const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -366,7 +447,7 @@ const EditorQuizV2: React.FC = () => {
     // Loading state for existing quiz
     if (!isNewQuiz && isLoading) {
         return (
-            <div className="content-container">
+            <div className="content-container editor-quiz-content-container">
                 <div className="d-flex justify-content-center align-items-center vh-100">
                     <div className="text-center">
                         <output className="spinner-border text-primary mb-3" aria-hidden="true"></output>
@@ -391,10 +472,13 @@ const EditorQuizV2: React.FC = () => {
     }
 
     return (
-        <div className="content-container">
+        <div className="content-container editor-quiz-content-container">
             <div className="w-100 p-0 content-full-width">
                 {/* Top Header */}
-                <div className="bg-white border-bottom shadow-sm no-print">
+                <div
+                    className="bg-white border-bottom shadow-sm no-print position-sticky top-0"
+                    style={{ zIndex: 1030 }}
+                >
                     <div className="container-fluid px-2 py-4 content-full-width">
                         <div className="d-flex justify-content-between align-items-center px-4">
                             <div className="d-flex align-items-center gap-3">
@@ -477,10 +561,12 @@ const EditorQuizV2: React.FC = () => {
                     </div>
 
                     {/* Main Editor Section - Scrollable Content Container */}
-                    <div className="flex-grow-1 overflow-hidden">
-                        <div className="row g-4 h-100">
+                    <div className="flex-grow-1 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div ref={splitPaneRef} className="d-flex flex-column flex-lg-row h-100 w-100 editor-split-pane">
                             {/* Editor Column */}
-                            <div className="border rounded col-lg-6 d-flex flex-column h-100 editor-quiz-editor-col">
+                            <div 
+                                className="border rounded d-flex flex-column h-100 editor-quiz-editor-col resizable-pane"
+                            >
                                 <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                  
                                     <div className="overflow-auto flex-grow-1 pe-2">
@@ -550,8 +636,29 @@ const EditorQuizV2: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Draggable Divider */}
+                            <div 
+                                className="d-none d-lg-flex flex-column justify-content-center align-items-center editor-draggable-divider"
+                                role="separator"
+                                aria-orientation="vertical"
+                                aria-label="Redimensionner les panneaux"
+                                aria-valuenow={leftPanePercent}
+                                aria-valuemin={20}
+                                aria-valuemax={80}
+                                tabIndex={0}
+                                onMouseDown={handleMouseDown}
+                                onKeyDown={handleDividerKeyDown}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e9ecef' }}
+                                onMouseLeave={(e) => { if (!isDraggingRef.current) e.currentTarget.style.backgroundColor = 'transparent' }}
+                                title="Faites glisser pour redimensionner"
+                            >
+                                <div className="editor-draggable-divider-handle"></div>
+                            </div>
+
                             {/* Preview Column */}
-                            <div className="col-lg-6 d-flex flex-column h-100 editor-quiz-preview-col">
+                            <div
+                                className="d-flex flex-column h-100 editor-quiz-preview-col"
+                            >
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                     <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
                                         <h4 className="mb-0">Prévisualisation</h4>

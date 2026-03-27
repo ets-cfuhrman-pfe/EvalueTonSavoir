@@ -4,6 +4,14 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import EditorV2 from 'src/components/Editor/EditorV2';
 
+// Mock ResizeObserver which is not present in JSDOM
+class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+}
+global.ResizeObserver = ResizeObserverMock as any;
+
 describe('EditorV2 Component', () => {
     const mockOnEditorChange = jest.fn();
 

@@ -491,7 +491,129 @@
   gap: vars.$spacing-md;
 }
 
-// Side-by-side image layout 
+// Gift Template Preview Styles 
+
+.gift-preview-question {
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: vars.$light;
+  border: 2px solid vars.$light;
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+
+  // Keep option letters, option text, and feedback aligned with stem text size.
+  --quiz-choice-letter-size: 1em;
+  --quiz-choice-text-size: 1em;
+  --quiz-button-text-size: 1em;
+  --quiz-katex-text-size: 1em;
+}
+
+.gift-preview-title {
+  display: flex;
+  font-weight: bold;
+}
+
+.gift-preview-question-label {
+  color: vars.$primary;
+}
+
+.gift-preview-question-untitled {
+  color: vars.$dark;
+}
+
+.gift-preview-type-badge-wrapper {
+  margin-left: auto;
+  padding-left: 0.75rem;
+  flex: none;
+  margin-bottom: 10px;
+}
+
+.gift-preview-type-badge {
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+  padding: 0.4rem 0.7rem;
+  border-radius: 4px;
+  background-color: vars.$light;
+  color: hsl(180, 15%, 41%);
+}
+
+.gift-preview-stem {
+  display: flex;
+}
+
+.present-question-stem {
+  color: vars.$dark;
+}
+
+.gift-preview-question .choice-letter {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+}
+
+.gift-preview-question .alert-info.small,
+.gift-preview-question .true-feedback,
+.gift-preview-question .false-feedback,
+.gift-preview-question .feedback-container {
+  font-size: 1em;
+}
+
+.gift-preview-choice-prompt {
+  color: vars.$dark;
+}
+
+.gift-preview-choice-label {
+  display: inline-block;
+  padding: 0.2em 0;
+  color: hsl(0, 0%, 16%);
+}
+
+.gift-preview-answer-label {
+  color: vars.$dark;
+}
+
+.gift-preview-input {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  line-height: 1.5;
+  color: hsl(0, 0%, 16%);
+  background-color: vars.$light;
+  border: 1px solid hsl(0, 0%, 81%);
+  border-radius: 0.25rem;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  width: 100%;
+}
+
+.gift-preview-feedback {
+  position: relative;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  background-color: hsl(43, 100%, 94%);
+  color: hsl(43, 95%, 9%);
+  border: 1px solid hsl(36, 84%, 93%);
+  border-radius: 6px;
+  box-shadow: 0px 2px 5px hsl(0, 0%, 74%);
+}
+
+.gift-preview-error {
+  flex-wrap: wrap;
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: hsl(0, 100%, 97%);
+  border: 2px solid hsl(0, 53%, 90%);
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px hsl(0, 0%, 74%);
+
+  p {
+    color: vars.$dark;
+  }
+}
+
+// Side-by-side image layout
 .side-image-layout {
   display: flex;
   flex-direction: row;

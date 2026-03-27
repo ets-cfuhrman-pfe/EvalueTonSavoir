@@ -1,6 +1,4 @@
 import { TemplateOptions } from './types';
-import { state } from '.';
-import { ParagraphStyle } from '../constants';
 import { BaseQuestion } from 'gift-pegjs';
 import { FormattedTextTemplate } from './TextTypeTemplate';
 
@@ -10,14 +8,10 @@ interface StemOptions extends TemplateOptions {
 }
 
 export default function StemTemplate({ formattedStem }: StemOptions): string {
-    const Container = `
-  display: flex;
-`;
-
     return `
-  <div style="${Container}">
+  <div class="gift-preview-stem">
     <span>
-      <p style="${ParagraphStyle(state.theme)}" class="present-question-stem">
+      <p class="present-question-stem">
                       ${FormattedTextTemplate(formattedStem)}
                   </p>
     </span>
