@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import Template, { ErrorTemplate, UnsupportedQuestionTypeError } from './templates';
 import { parse } from 'gift-pegjs';
 import { FormattedTextTemplate } from './templates/TextTypeTemplate';
-import { applyQuestionPrintLayout } from './printLayout';
 
 interface GIFTTemplatePreviewV2Props {
     questions: string[];
@@ -65,8 +64,6 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                     previewHTML += `<div class="alert alert-danger" role="alert">${errorMsg}</div>`;
                 }
             });
-
-            previewHTML = applyQuestionPrintLayout(previewHTML);
 
             if (hideAnswers) {
                 previewHTML = applyHideAnswersMask(previewHTML);
