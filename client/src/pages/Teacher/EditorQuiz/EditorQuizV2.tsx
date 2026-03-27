@@ -59,17 +59,21 @@ const EditorQuizV2: React.FC = () => {
 
     const isDraggingRef = useRef(false);
     const splitPaneRef = useRef<HTMLDivElement>(null);
+    const [leftPanePercent, setLeftPanePercent] = useState(50);
+
+    const setPaneWidth = useCallback((newPercentage: number) => {
+        const clamped = Math.min(80, Math.max(20, newPercentage));
+        setLeftPanePercent(clamped);
+        if (splitPaneRef.current) {
+            splitPaneRef.current.style.setProperty('--left-pane-width', `${clamped}%`);
+        }
+    }, []);
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!isDraggingRef.current) return;
-        let newPercentage = (e.clientX / window.innerWidth) * 100;
-        if (newPercentage < 20) newPercentage = 20;
-        if (newPercentage > 80) newPercentage = 80;
-
-        if (splitPaneRef.current) {
-            splitPaneRef.current.style.setProperty('--left-pane-width', `${newPercentage}%`);
-        }
-    }, []);
+        const newPercentage = (e.clientX / window.innerWidth) * 100;
+        setPaneWidth(newPercentage);
+    }, [setPaneWidth]);
 
     const handleMouseUp = useCallback(() => {
         isDraggingRef.current = false;
@@ -104,6 +108,23 @@ const EditorQuizV2: React.FC = () => {
 
         e.preventDefault();
     }, [handleMouseMove, handleMouseUp]);
+
+    const handleDividerKeyDown = useCallback((e: React.KeyboardEvent) => {
+        const step = e.shiftKey ? 10 : 1;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setPaneWidth(leftPanePercent - step);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setPaneWidth(leftPanePercent + step);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            setPaneWidth(20);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            setPaneWidth(80);
+        }
+    }, [leftPanePercent, setPaneWidth]);
 
     useEffect(() => {
         return () => {
@@ -618,7 +639,15 @@ const EditorQuizV2: React.FC = () => {
                             {/* Draggable Divider */}
                             <div 
                                 className="d-none d-lg-flex flex-column justify-content-center align-items-center editor-draggable-divider"
+                                role="separator"
+                                aria-orientation="vertical"
+                                aria-label="Redimensionner les panneaux"
+                                aria-valuenow={leftPanePercent}
+                                aria-valuemin={20}
+                                aria-valuemax={80}
+                                tabIndex={0}
                                 onMouseDown={handleMouseDown}
+                                onKeyDown={handleDividerKeyDown}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e9ecef' }}
                                 onMouseLeave={(e) => { if (!isDraggingRef.current) e.currentTarget.style.backgroundColor = 'transparent' }}
                                 title="Faites glisser pour redimensionner"

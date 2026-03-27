@@ -987,5 +987,38 @@ describe('EditorQuizV2 Component', () => {
       fireEvent.mouseLeave(divider);
       expect(divider.style.backgroundColor).toBe('transparent');
     });
+
+    test('divider has correct accessibility attributes', () => {
+      renderComponent();
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+
+      expect(divider).toHaveAttribute('role', 'separator');
+      expect(divider).toHaveAttribute('aria-orientation', 'vertical');
+      expect(divider).toHaveAttribute('tabindex', '0');
+      expect(divider).toHaveAttribute('aria-valuenow', '50');
+      expect(divider).toHaveAttribute('aria-valuemin', '20');
+      expect(divider).toHaveAttribute('aria-valuemax', '80');
+    });
+
+    test('keyboard navigation adjusts pane width', () => {
+      renderComponent();
+      const divider = screen.getByTitle(TEST_TEXTS.RESIZER_TITLE);
+
+      // Starting at 50%, ArrowRight should increase by 1%
+      fireEvent.keyDown(divider, { key: 'ArrowRight' });
+      expect(divider).toHaveAttribute('aria-valuenow', '51');
+
+      // ArrowLeft should decrease by 1%
+      fireEvent.keyDown(divider, { key: 'ArrowLeft' });
+      expect(divider).toHaveAttribute('aria-valuenow', '50');
+
+      // Home should set to min (20%)
+      fireEvent.keyDown(divider, { key: 'Home' });
+      expect(divider).toHaveAttribute('aria-valuenow', '20');
+
+      // End should set to max (80%)
+      fireEvent.keyDown(divider, { key: 'End' });
+      expect(divider).toHaveAttribute('aria-valuenow', '80');
+    });
   });
 });
