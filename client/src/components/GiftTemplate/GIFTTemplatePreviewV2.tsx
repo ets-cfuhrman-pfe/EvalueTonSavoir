@@ -2,15 +2,20 @@
 import React, { useEffect, useState } from 'react';
 import { FormattedTextTemplate } from './templates/TextTypeTemplate';
 import { buildGiftPreviewHtml } from './buildGiftPreviewHtml';
+import { splitGiftBlocks } from '../../utils/giftDiagnostics';
 
 interface GIFTTemplatePreviewV2Props {
     questions: string[];
     hideAnswers?: boolean;
+    rawDocument?: string;
+    startLineNumbers?: number[];
 }
 
 const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     questions,
-    hideAnswers = false
+    hideAnswers = false,
+    rawDocument,
+    startLineNumbers,
 }) => {
     const [error, setError] = useState('');
     const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -18,10 +23,17 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
 
     useEffect(() => {
         try {
+            let computedStartLines = startLineNumbers;
+            if (!computedStartLines && rawDocument) {
+                const blocks = splitGiftBlocks(rawDocument);
+                computedStartLines = blocks.map(b => b.startLine);
+            }
+
             const previewHTML = buildGiftPreviewHtml(questions, {
                 hideAnswers,
                 printLayout: true,
                 errorMode: 'preview',
+                startLineNumbers: computedStartLines,
             });
 
             setItems(previewHTML);
