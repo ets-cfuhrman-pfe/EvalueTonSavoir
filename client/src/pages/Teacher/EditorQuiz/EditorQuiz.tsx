@@ -686,7 +686,7 @@ const EditorQuiz: React.FC = () => {
                                     </div>
                                     <div className="flex-grow-1  p-3 bg-light overflow-auto pe-2">
                                         <div className="editor-quiz-print-title">{quizTitle}</div>
-                                        <GIFTTemplatePreviewV2 questions={filteredValue} hideAnswers={hideAnswers} />
+                                          <GIFTTemplatePreviewV2 questions={filteredValue} rawDocument={value} hideAnswers={hideAnswers} />
                                     </div>
                                 </div>
                             </div>
