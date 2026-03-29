@@ -8,7 +8,7 @@ export interface GiftDiagnosticMarker {
     endColumn: number;
 }
 
-interface GiftBlock {
+export interface GiftBlock {
     text: string;
     startLine: number;
 }
@@ -18,7 +18,7 @@ function countNewlines(value: string): number {
     return matches ? matches.length : 0;
 }
 
-function splitGiftBlocks(source: string): GiftBlock[] {
+export function splitGiftBlocks(source: string): GiftBlock[] {
     if (!source.trim()) return [];
 
     const blocks: GiftBlock[] = [];
