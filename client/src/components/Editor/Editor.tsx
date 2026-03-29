@@ -1,5 +1,7 @@
 ﻿// Editor.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import MonacoEditor, { OnMount } from '@monaco-editor/react';
+import type { IDisposable } from 'monaco-editor';
 import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -8,61 +10,65 @@ interface EditorProps {
     label: string;
     initialValue: string;
     onEditorChange: (value: string) => void;
+    onCursorChange?: (offset: number) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) => {
+const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, onCursorChange }) => {
     const [value, setValue] = useState(initialValue);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const editorRef = useRef<HTMLTextAreaElement>(null);
-
-    const adjustHeight = useCallback(() => {
-        if (editorRef.current) {
-            editorRef.current.style.height = 'auto';
-            editorRef.current.style.height = `${editorRef.current.scrollHeight + 4}px`;
-        }
-    }, []);
+    const [editorHeight, setEditorHeight] = useState(200);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const resizeSubscriptionRef = useRef<IDisposable | null>(null);
+    const isTestEnvironment = process.env.NODE_ENV === 'test';
 
     useEffect(() => {
         setValue(initialValue);
     }, [initialValue]);
 
-    // Re-calculate height when content changes
-    useEffect(() => {
-        if (!isCollapsed) {
-            adjustHeight();
-        }
-    }, [value, isCollapsed, adjustHeight]);
-
-    // Handle container resizes 
-    useEffect(() => {
-        if (isCollapsed || !editorRef.current) return;
-
-        let animationFrameId: number;
-
-        const resizeObserver = new ResizeObserver(() => {
-            // Use requestAnimationFrame to avoid ResizeObserver loop limit errors
-            animationFrameId = requestAnimationFrame(() => {
-                adjustHeight();
-            });
-        });
-
-        // Observe the immediate parent container to catch layout changes
-        const container = editorRef.current.parentElement;
-        if (container) {
-            resizeObserver.observe(container);
-        }
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            resizeObserver.disconnect();
-        };
-    }, [isCollapsed, adjustHeight]);
-
-    function handleEditorChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-        const text = event.target.value;
+    const handleEditorChange = useCallback((newValue = '') => {
+        const text = newValue;
         setValue(text);
-        onEditorChange(text || '');
-    }
+        onEditorChange(text);
+    }, [onEditorChange]);
+
+    const handleEditorDidMount: OnMount = useCallback((editor) => {
+        const updateEditorHeight = () => {
+            const contentHeight = editor.getContentHeight();
+            setEditorHeight(Math.max(200, contentHeight + 6));
+            editor.layout();
+        };
+
+        updateEditorHeight();
+        resizeSubscriptionRef.current = editor.onDidContentSizeChange(updateEditorHeight);
+
+        if (!onCursorChange) return;
+
+        const model = editor.getModel();
+        if (!model) return;
+
+        const initialOffset = model.getOffsetAt(editor.getPosition() ?? { lineNumber: 1, column: 1 });
+        onCursorChange(initialOffset);
+
+        editor.onDidChangeCursorPosition((event) => {
+            const currentModel = editor.getModel();
+            if (!currentModel) return;
+            onCursorChange(currentModel.getOffsetAt(event.position));
+        });
+    }, [onCursorChange]);
+
+    useEffect(() => {
+        return () => {
+            if (resizeSubscriptionRef.current) {
+                resizeSubscriptionRef.current.dispose();
+                resizeSubscriptionRef.current = null;
+            }
+        };
+    }, []);
+
+    const handleTextareaCursorMove = useCallback(() => {
+        if (!onCursorChange || !textareaRef.current) return;
+        onCursorChange(textareaRef.current.selectionStart ?? 0);
+    }, [onCursorChange]);
 
     return (
         <div className='mb-3'>
@@ -82,15 +88,46 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) 
 
             {/* Collapsible Editor Content */}
             {!isCollapsed && (
-                <textarea
-                    rows={5}
+                <div
                     id='editor-textarea'
-                    ref={editorRef}
-                    onChange={handleEditorChange}
-                    value={value}
-                    className='form-control editor-v2-textarea'
-                    style={{ overflow: 'hidden', resize: 'none' }}
-                />
+                    className='editor-v2-monaco'
+                >
+                    {isTestEnvironment ? (
+                        <textarea
+                            rows={5}
+                            ref={textareaRef}
+                            onChange={(event) => handleEditorChange(event.target.value)}
+                            onClick={handleTextareaCursorMove}
+                            onKeyUp={handleTextareaCursorMove}
+                            value={value}
+                            className='form-control'
+                        />
+                    ) : (
+                        <MonacoEditor
+                            language='plaintext'
+                            value={value}
+                            onChange={handleEditorChange}
+                            onMount={handleEditorDidMount}
+                            height={`${editorHeight}px`}
+                            options={{
+                                lineNumbers: 'on',
+                                glyphMargin: true,
+                                folding: true,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                scrollbar: {
+                                    vertical: 'hidden',
+                                    horizontal: 'auto',
+                                    alwaysConsumeMouseWheel: false,
+                                },
+                                wordWrap: 'on',
+                                automaticLayout: true,
+                                tabSize: 2,
+                                renderLineHighlight: 'all',
+                            }}
+                        />
+                    )}
+                </div>
             )}
         </div>
     );

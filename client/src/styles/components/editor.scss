@@ -2,39 +2,6 @@
 
 @use '../variables' as vars;
 
-// Editor textarea styling
-.editor-v2-textarea {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-height: 50px !important;
-  resize: none !important;
-  box-sizing: border-box !important;
-  background-color: #f8f9ff !important;
-  padding: 10px !important;
-  font-size: medium !important;
-  border: 2px solid black !important;
-  border-radius: vars.$border-radius !important;
-  font-family: inherit !important;
-  line-height: 1.5 !important;
-  white-space: pre-wrap !important;
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
-  overflow-x: hidden !important;
-  overflow-y: hidden !important;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
-
-
-  &:focus {
-    outline: none !important;
-    border-color: vars.$primary !important;
-    box-shadow: 0 0 0 0.2rem rgba(82, 113, 255, 0.25) !important;
-  }
-
-  &::placeholder {
-    color: #6c757d !important;
-  }
-}
-
 // Editor main content layout
 .editor-main-content {
   display: flex;
@@ -219,5 +186,20 @@
   .preview-container section {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+  }
+}
+
+.editor-v2-monaco {
+  width: 100%;
+  max-width: 100%;
+  border: 2px solid black;
+  border-radius: vars.$border-radius;
+  background-color: #f8f9ff;
+  overflow: hidden;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus-within {
+    border-color: vars.$primary;
+    box-shadow: 0 0 0 0.2rem rgba(82, 113, 255, 0.25);
   }
 }
