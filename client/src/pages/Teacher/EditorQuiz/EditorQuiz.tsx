@@ -26,6 +26,63 @@ interface EditQuizParams {
     [key: string]: string | undefined;
 }
 
+interface QuestionRange {
+    index: number;
+    start: number;
+    end: number;
+}
+
+function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[] } {
+    const separatorRegex = /\n{2,}/g;
+    const questions: string[] = [];
+    const ranges: QuestionRange[] = [];
+    let blockStartOffset = 0;
+    let match: RegExpExecArray | null;
+
+    const pushBlock = (rawBlock: string, absoluteStart: number) => {
+        if (rawBlock === '') return;
+
+        const index = questions.length;
+        questions.push(rawBlock);
+        ranges.push({
+            index,
+            start: absoluteStart,
+            end: absoluteStart + rawBlock.length,
+        });
+    };
+
+    while ((match = separatorRegex.exec(text)) !== null) {
+        const separatorStartOffset = match.index;
+        const rawBlock = text.slice(blockStartOffset, separatorStartOffset);
+        pushBlock(rawBlock, blockStartOffset);
+        blockStartOffset = separatorStartOffset + match[0].length;
+    }
+
+    const tailBlock = text.slice(blockStartOffset);
+    pushBlock(tailBlock, blockStartOffset);
+
+    return { questions, ranges };
+}
+
+function findQuestionIndexByCaret(ranges: QuestionRange[], caretOffset: number): number | null {
+    if (ranges.length === 0) return null;
+
+    for (const range of ranges) {
+        if (caretOffset >= range.start && caretOffset < range.end) {
+            return range.index;
+        }
+    }
+
+    const lastRange = ranges.at(-1);
+    if (!lastRange) return null;
+
+    if (caretOffset >= lastRange.end) {
+        return lastRange.index;
+    }
+
+    return null;
+}
+
 const EditorQuiz: React.FC = () => {
     const { id } = useParams<EditQuizParams>();
     const [quizTitle, setQuizTitle] = useState('');
@@ -42,6 +99,8 @@ const EditorQuiz: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [hideAnswers, setHideAnswers] = useState(false);
+    const [questionRanges, setQuestionRanges] = useState<QuestionRange[]>([]);
+    const [activeQuestionIndex, setActiveQuestionIndex] = useState<number | null>(null);
     const [initialQuizState, setInitialQuizState] = useState<{
         title: string;
         content: string;
@@ -162,6 +221,13 @@ const EditorQuiz: React.FC = () => {
         setHasUnsavedChanges(checkForUnsavedChanges());
     }, [checkForUnsavedChanges]);
 
+    const applyEditorValue = useCallback((text: string) => {
+        setValue(text);
+        const { questions, ranges } = splitQuestionsAndRanges(text);
+        setFilteredValue(questions);
+        setQuestionRanges(ranges);
+    }, []);
+
     useEffect(() => {
         const handleScroll = () => {
             if (window.scrollY > 300) {
@@ -222,13 +288,10 @@ const EditorQuiz: React.FC = () => {
                 setQuizTitle(title);
                 setSelectedFolder(folderId);
 
-                // content arrives normalized as string[] from ApiService; 
-                setFilteredValue(content);
-                setValue(content.join('\n\n'));
-                
-                // Create a normalized string version of content to store in initial state
+                // content arrives normalized as string[] from ApiService
                 const normalizedContent = content.join('\n\n');
-
+                applyEditorValue(normalizedContent);
+                
                 // Set initial state for existing quiz
                 setInitialQuizState({
                     title,
@@ -246,7 +309,7 @@ const EditorQuiz: React.FC = () => {
         };
 
         fetchData();
-    }, [id, navigate]);
+    }, [id, navigate, applyEditorValue]);
 
     // Track changes to determine if there are unsaved changes
     useEffect(() => {
@@ -254,18 +317,12 @@ const EditorQuiz: React.FC = () => {
     }, [updateUnsavedChangesState]);
 
     function handleUpdatePreview(value: string) {
-        setValue(value);
-
-        // split value when there is at least one blank line
-        const linesArray = value.split(/\n{2,}/);
-
-        // if the first item in linesArray is blank, remove it
-        if (linesArray[0] === '') linesArray.shift();
-
-        if (linesArray[linesArray.length - 1] === '') linesArray.pop();
-
-        setFilteredValue(linesArray);
+        applyEditorValue(value);
     }
+
+    const handleEditorCursorChange = useCallback((caretOffset: number) => {
+        setActiveQuestionIndex(findQuestionIndexByCaret(questionRanges, caretOffset));
+    }, [questionRanges]);
 
     const handleQuizSave = async () => {
         try {
@@ -561,7 +618,7 @@ const EditorQuiz: React.FC = () => {
                     </div>
 
                     {/* Main Editor Section - Scrollable Content Container */}
-                    <div className="flex-grow-1 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className="flex-grow-1 editor-main-scroll-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
                         <div ref={splitPaneRef} className="d-flex flex-column flex-lg-row h-100 w-100 editor-split-pane">
                             {/* Editor Column */}
                             <div 
@@ -577,6 +634,7 @@ const EditorQuiz: React.FC = () => {
                                                 label="Contenu GIFT du quiz:"
                                                 initialValue={value}
                                                 onEditorChange={handleUpdatePreview}
+                                                onCursorChange={handleEditorCursorChange}
                                             />
                                         </div>
 
@@ -657,7 +715,7 @@ const EditorQuiz: React.FC = () => {
 
                             {/* Preview Column */}
                             <div
-                                className="d-flex flex-column h-100 editor-quiz-preview-col"
+                                className="d-flex flex-column h-100 editor-quiz-preview-col editor-preview-sticky-column"
                             >
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
                                     <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
@@ -684,9 +742,13 @@ const EditorQuiz: React.FC = () => {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="flex-grow-1  p-3 bg-light overflow-auto pe-2">
+                                    <div className="flex-grow-1 p-3 bg-light overflow-auto pe-2 editor-preview-scroll-area">
                                         <div className="editor-quiz-print-title">{quizTitle}</div>
-                                        <GIFTTemplatePreviewV2 questions={filteredValue} hideAnswers={hideAnswers} />
+                                        <GIFTTemplatePreviewV2
+                                            questions={filteredValue}
+                                            hideAnswers={hideAnswers}
+                                            activeQuestionIndex={activeQuestionIndex}
+                                        />
                                     </div>
                                 </div>
                             </div>
