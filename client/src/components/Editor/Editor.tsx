@@ -1,7 +1,7 @@
 ﻿// Editor.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import MonacoEditor, { OnMount } from '@monaco-editor/react';
-import type { IDisposable } from 'monaco-editor';
+import type { IDisposable, editor as MonacoEditorNamespace } from 'monaco-editor';
 import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -15,17 +15,35 @@ interface EditorProps {
     initialValue: string;
     onEditorChange: (value: string) => void;
     onCursorChange?: (offset: number) => void;
+    focusTarget?: {
+        token: number;
+        lineNumber: number;
+        column?: number;
+    } | null;
+    onFocusTargetHandled?: (token: number) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, onCursorChange }) => {
+const Editor: React.FC<EditorProps> = ({
+    initialValue,
+    onEditorChange,
+    label,
+    onCursorChange,
+    focusTarget,
+    onFocusTargetHandled,
+}) => {
     const [value, setValue] = useState(initialValue);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isEditorReady, setIsEditorReady] = useState(false);
     const [editorHeight, setEditorHeight] = useState(200);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const monacoEditorRef = useRef<Parameters<OnMount>[0] | null>(null);
+    const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
     const resizeSubscriptionRef = useRef<IDisposable | null>(null);
     const cursorSubscriptionRef = useRef<IDisposable | null>(null);
     const contentSubscriptionRef = useRef<IDisposable | null>(null);
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const highlightDecorationsRef = useRef<MonacoEditorNamespace.IEditorDecorationsCollection | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
 
     const cleanupMonacoResources = useCallback(() => {
@@ -59,6 +77,78 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         setValue(text);
         onEditorChange(text);
     }, [onEditorChange]);
+
+    const focusTextareaAtLine = useCallback((lineNumber: number): boolean => {
+        const textarea = textareaRef.current;
+        if (!textarea) {
+            return false;
+        }
+
+        const lines = value.split('\n');
+        const safeLineNumber = Math.max(1, Math.min(lineNumber, lines.length || 1));
+        let offset = 0;
+
+        for (let lineIndex = 0; lineIndex < safeLineNumber - 1; lineIndex += 1) {
+            offset += lines[lineIndex].length + 1;
+        }
+
+        const lineLength = lines[safeLineNumber - 1]?.length ?? 0;
+        textarea.focus();
+        textarea.setSelectionRange(offset, offset + lineLength);
+
+        const lineHeight = Number.parseFloat(globalThis.getComputedStyle(textarea).lineHeight || '16') || 16;
+        textarea.scrollTop = Math.max(0, (safeLineNumber - 1) * lineHeight - lineHeight * 2);
+
+        return true;
+    }, [value]);
+
+    const focusMonacoAtLocation = useCallback((lineNumber: number, column: number): boolean => {
+        const editor = monacoEditorRef.current;
+        const monaco = monacoRef.current;
+        const model = editor?.getModel();
+
+        if (!editor || !model || !monaco) {
+            return false;
+        }
+
+        const safeLineNumber = Math.max(1, Math.min(lineNumber, model.getLineCount()));
+        const maxColumn = model.getLineMaxColumn(safeLineNumber);
+        const safeColumn = Math.max(1, Math.min(column, maxColumn));
+
+        editor.revealLineInCenter(safeLineNumber);
+        editor.setPosition({ lineNumber: safeLineNumber, column: safeColumn });
+        editor.focus();
+
+        if (highlightTimeoutRef.current) {
+            clearTimeout(highlightTimeoutRef.current);
+            highlightTimeoutRef.current = null;
+        }
+
+        highlightDecorationsRef.current ??= editor.createDecorationsCollection();
+
+        highlightDecorationsRef.current.set([
+            {
+                range: new monaco.Range(
+                    safeLineNumber,
+                    1,
+                    safeLineNumber,
+                    model.getLineMaxColumn(safeLineNumber)
+                ),
+                options: {
+                    isWholeLine: true,
+                    className: 'gift-error-line-highlight',
+                    marginClassName: 'gift-error-line-highlight-margin',
+                },
+            },
+        ]);
+
+        highlightTimeoutRef.current = setTimeout(() => {
+            highlightDecorationsRef.current?.clear();
+            highlightTimeoutRef.current = null;
+        }, 1800);
+
+        return true;
+    }, []);
 
     const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
         cleanupMonacoResources();

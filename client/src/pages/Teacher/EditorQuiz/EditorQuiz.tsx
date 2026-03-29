@@ -60,6 +60,11 @@ const EditorQuiz: React.FC = () => {
     const isDraggingRef = useRef(false);
     const splitPaneRef = useRef<HTMLDivElement>(null);
     const [leftPanePercent, setLeftPanePercent] = useState(50);
+    const [editorFocusTarget, setEditorFocusTarget] = useState<{
+        token: number;
+        lineNumber: number;
+        column: number;
+    } | null>(null);
 
     const setPaneWidth = useCallback((newPercentage: number) => {
         const clamped = Math.min(80, Math.max(20, newPercentage));
@@ -471,6 +476,24 @@ const EditorQuiz: React.FC = () => {
         setSaveNotification(prev => ({ ...prev, open: false }));
     }
 
+    const handlePreviewErrorLocationClick = (lineNumber: number, column: number) => {
+        setEditorFocusTarget({
+            token: Date.now(),
+            lineNumber,
+            column,
+        });
+    };
+
+    const handleFocusTargetHandled = (token: number) => {
+        setEditorFocusTarget((currentTarget) => {
+            if (currentTarget?.token !== token) {
+                return currentTarget;
+            }
+
+            return null;
+        });
+    };
+
     return (
         <div className="content-container editor-quiz-content-container">
             <div className="w-100 p-0 content-full-width">
@@ -577,6 +600,8 @@ const EditorQuiz: React.FC = () => {
                                                 label="Contenu GIFT du quiz:"
                                                 initialValue={value}
                                                 onEditorChange={handleUpdatePreview}
+                                                focusTarget={editorFocusTarget}
+                                                onFocusTargetHandled={handleFocusTargetHandled}
                                             />
                                         </div>
 
@@ -686,7 +711,12 @@ const EditorQuiz: React.FC = () => {
                                     </div>
                                     <div className="flex-grow-1  p-3 bg-light overflow-auto pe-2">
                                         <div className="editor-quiz-print-title">{quizTitle}</div>
-                                          <GIFTTemplatePreviewV2 questions={filteredValue} rawDocument={value} hideAnswers={hideAnswers} />
+                                        <GIFTTemplatePreviewV2
+                                            questions={filteredValue}
+                                            rawDocument={value}
+                                            hideAnswers={hideAnswers}
+                                            onErrorLocationClick={handlePreviewErrorLocationClick}
+                                        />
                                     </div>
                                 </div>
                             </div>

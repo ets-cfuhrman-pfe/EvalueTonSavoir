@@ -1,5 +1,5 @@
 // GIFTTemplatePreviewV2.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedTextTemplate } from './templates/TextTypeTemplate';
 import { buildGiftPreviewHtml } from './buildGiftPreviewHtml';
 import { splitGiftBlocks } from '../../utils/giftDiagnostics';
@@ -9,6 +9,7 @@ interface GIFTTemplatePreviewV2Props {
     hideAnswers?: boolean;
     rawDocument?: string;
     startLineNumbers?: number[];
+    onErrorLocationClick?: (lineNumber: number, column: number) => void;
 }
 
 const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
@@ -16,10 +17,12 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     hideAnswers = false,
     rawDocument,
     startLineNumbers,
+    onErrorLocationClick,
 }) => {
     const [error, setError] = useState('');
     const [isPreviewReady, setIsPreviewReady] = useState(false);
     const [items, setItems] = useState('');
+    const previewContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         try {
@@ -45,7 +48,41 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                 setError('Une erreur est survenue durant le chargement de la prévisualisation.');
             }
         }
-    }, [questions, hideAnswers]);
+    }, [questions, hideAnswers, rawDocument, startLineNumbers]);
+
+    useEffect(() => {
+        const container = previewContainerRef.current;
+        if (!container || !onErrorLocationClick) {
+            return;
+        }
+
+        const handlePreviewClick = (event: MouseEvent) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) {
+                return;
+            }
+
+            const linkElement = target.closest('a[data-gift-error-link="true"]');
+            if (!(linkElement instanceof HTMLAnchorElement)) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const line = Number.parseInt(linkElement.dataset.line || '', 10);
+            const column = Number.parseInt(linkElement.dataset.column || '', 10);
+
+            if (Number.isFinite(line) && line > 0) {
+                onErrorLocationClick(line, Number.isFinite(column) && column > 0 ? column : 1);
+            }
+        };
+
+        container.addEventListener('click', handlePreviewClick);
+
+        return () => {
+            container.removeEventListener('click', handlePreviewClick);
+        };
+    }, [onErrorLocationClick]);
 
     if (error) {
         return <div className="alert alert-danger" role="alert">{error}</div>;
@@ -56,7 +93,7 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     }
 
     return (
-        <div data-testid="preview-container" className="preview-container">
+        <div data-testid="preview-container" className="preview-container" ref={previewContainerRef}>
             <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: items }) }}></div>
         </div>
     );

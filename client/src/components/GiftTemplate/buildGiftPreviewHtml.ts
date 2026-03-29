@@ -13,6 +13,23 @@ export interface BuildGiftPreviewHtmlOptions {
     startLineNumbers?: number[];
 }
 
+interface GiftErrorLocation {
+    line: number;
+    column: number;
+}
+
+function extractGiftErrorLocation(error: any, startLineNumber: number): GiftErrorLocation | null {
+    const start = error?.location?.start;
+    if (!start || typeof start.line !== 'number' || typeof start.column !== 'number') {
+        return null;
+    }
+
+    return {
+        line: startLineNumber + start.line - 1,
+        column: start.column,
+    };
+}
+
 function buildErrorMarkup(
     error: any,
     errorMode: GiftPreviewErrorMode,
@@ -20,11 +37,10 @@ function buildErrorMarkup(
 ): string {
     let errorHtml: string;
     let errorMessage = 'Erreur inconnue';
+    const errorLocation = extractGiftErrorLocation(error, startLineNumber);
 
-    const hasLocation = error && typeof error === 'object' && 'location' in error;
-    if (hasLocation) {
-        const absoluteLine = startLineNumber + error.location.start.line - 1;
-        errorMessage = `Line ${absoluteLine}, column ${error.location.start.column}: ${error.message}`;
+    if (errorLocation) {
+        errorMessage = `Line ${errorLocation.line}, column ${errorLocation.column}: ${error.message}`;
     } else if (error instanceof UnsupportedQuestionTypeError) {
         errorMessage = `Erreur: ${error.message}`;
     } else if (error instanceof Error) {
@@ -34,7 +50,12 @@ function buildErrorMarkup(
     errorHtml = ErrorTemplate(errorMessage);
 
     if (errorMode === 'preview') {
-        return `<div class="alert alert-danger" role="alert">${errorHtml}</div>`;
+        const jumpLink = errorLocation
+            ? `<a href="#editor-textarea" class="gift-preview-error-link" data-gift-error-link="true" data-line="${errorLocation.line}" data-column="${errorLocation.column}">Aller a la ligne ${errorLocation.line}, colonne ${errorLocation.column}</a>`
+            : '';
+        const jumpLinkContainer = jumpLink ? `<div class="mt-2">${jumpLink}</div>` : '';
+
+        return `<div class="alert alert-danger" role="alert">${errorHtml}${jumpLinkContainer}</div>`;
     }
 
     return errorHtml;
@@ -59,9 +80,7 @@ export function buildGiftPreviewHtml(
                 theme: 'light',
             });
         } catch (error) {
-            const startLine = startLineNumbers && startLineNumbers[index] !== undefined 
-                ? startLineNumbers[index] 
-                : 1;
+            const startLine = startLineNumbers?.[index] ?? 1;
             previewHtml += buildErrorMarkup(error, errorMode, startLine);
         }
     });
