@@ -530,6 +530,12 @@
   background-color: hsl(214, 100%, 97%);
   box-shadow: 0 0 0 2px hsl(214, 90%, 55%);
   animation: activeQuestionPulse 2s infinite ease-in-out;
+
+  @media print {
+    background-color: transparent;
+    box-shadow: none;
+    animation: none;
+  }
 }
 
 .gift-preview-title {
