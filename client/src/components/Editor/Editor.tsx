@@ -28,6 +28,28 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
 
+    const cleanupMonacoResources = useCallback(() => {
+        if (resizeSubscriptionRef.current) {
+            resizeSubscriptionRef.current.dispose();
+            resizeSubscriptionRef.current = null;
+        }
+
+        if (cursorSubscriptionRef.current) {
+            cursorSubscriptionRef.current.dispose();
+            cursorSubscriptionRef.current = null;
+        }
+
+        if (contentSubscriptionRef.current) {
+            contentSubscriptionRef.current.dispose();
+            contentSubscriptionRef.current = null;
+        }
+
+        if (validationTimeoutRef.current) {
+            clearTimeout(validationTimeoutRef.current);
+            validationTimeoutRef.current = null;
+        }
+    }, []);
+
     useEffect(() => {
         setValue(initialValue);
     }, [initialValue]);
@@ -39,6 +61,8 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     }, [onEditorChange]);
 
     const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
+        cleanupMonacoResources();
+
         const updateEditorHeight = () => {
             const contentHeight = editor.getContentHeight();
             setEditorHeight(Math.max(200, contentHeight + 6));
@@ -86,32 +110,16 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
                 onCursorChange(currentModel.getOffsetAt(event.position));
             });
         }
-    }, [onCursorChange]);
+    }, [cleanupMonacoResources, onCursorChange]);
 
     useEffect(() => {
-        // Cleanup function to dispose of Monaco editor subscriptions and timeouts
-        return () => {
-            if (resizeSubscriptionRef.current) {
-                resizeSubscriptionRef.current.dispose();
-                resizeSubscriptionRef.current = null;
-            }
+        if (!isCollapsed) return;
+        cleanupMonacoResources();
+    }, [cleanupMonacoResources, isCollapsed]);
 
-            if (cursorSubscriptionRef.current) {
-                cursorSubscriptionRef.current.dispose();
-                cursorSubscriptionRef.current = null;
-            }
-
-            if (contentSubscriptionRef.current) {
-                contentSubscriptionRef.current.dispose();
-                contentSubscriptionRef.current = null;
-            }
-
-            if (validationTimeoutRef.current) {
-                clearTimeout(validationTimeoutRef.current);
-                validationTimeoutRef.current = null;
-            }
-        };
-    }, []);
+    useEffect(() => {
+        return cleanupMonacoResources;
+    }, [cleanupMonacoResources]);
 
     const handleTextareaCursorMove = useCallback(() => {
         if (!onCursorChange || !textareaRef.current) return;
