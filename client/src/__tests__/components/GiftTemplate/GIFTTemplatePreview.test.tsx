@@ -76,4 +76,18 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(unsupportedMessages).toHaveLength(4);
   });
 
+  it('renders a location link for parse errors', () => {
+    render(
+      <GIFTTemplatePreviewV2
+        questions={['::Q::Question incomplete {=A ~B']}
+        hideAnswers={false}
+      />
+    );
+
+    const jumpLink = screen.getByRole('link', { name: /aller a la ligne/i });
+    expect(jumpLink).toHaveAttribute('href', '#editor-textarea');
+    expect(jumpLink).toHaveAttribute('data-line');
+    expect(jumpLink).toHaveAttribute('data-column');
+  });
+
 });
