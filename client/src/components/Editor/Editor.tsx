@@ -112,8 +112,14 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
                             options={{
                                 lineNumbers: 'on',
                                 glyphMargin: true,
-                                folding: true,
+                                folding: false,
+                                showFoldingControls: 'never',
                                 minimap: { enabled: false },
+                                unicodeHighlight: {
+                                    ambiguousCharacters: false,
+                                    invisibleCharacters: false,
+                                    nonBasicASCII: false,
+                                },
                                 scrollBeyondLastLine: false,
                                 scrollbar: {
                                     vertical: 'hidden',
