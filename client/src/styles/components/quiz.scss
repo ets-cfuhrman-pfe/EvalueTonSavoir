@@ -613,6 +613,23 @@
   }
 }
 
+.gift-preview-error-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #7f1d1d;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+
+  &:hover,
+  &:focus-visible {
+    color: #991b1b;
+    text-decoration-thickness: 3px;
+  }
+}
+
 // Side-by-side image layout
 .side-image-layout {
   display: flex;
