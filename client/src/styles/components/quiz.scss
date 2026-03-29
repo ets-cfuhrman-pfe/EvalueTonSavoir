@@ -509,6 +509,29 @@
   --quiz-katex-text-size: 1em;
 }
 
+.gift-preview-question-anchor {
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+@keyframes activeQuestionPulse {
+  0% {
+    box-shadow: 0 0 0 2px hsl(214, 90%, 55%);
+  }
+  50% {
+    box-shadow: 0 0 0 3px hsl(214, 90%, 55%), 0 0 10px 10px rgba(34, 118, 243, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 2px hsl(214, 90%, 55%);
+  }
+}
+
+.gift-preview-question-anchor--active {
+  background-color: hsl(214, 100%, 97%);
+  box-shadow: 0 0 0 2px hsl(214, 90%, 55%);
+  animation: activeQuestionPulse 2s infinite ease-in-out;
+}
+
 .gift-preview-title {
   display: flex;
   font-weight: bold;
