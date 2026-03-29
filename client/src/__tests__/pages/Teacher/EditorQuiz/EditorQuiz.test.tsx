@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import EditorQuizV2 from '../../../../pages/Teacher/EditorQuiz/EditorQuizV2';
+import EditorQuiz from '../../../../pages/Teacher/EditorQuiz/EditorQuiz';
 import ApiService from '../../../../services/ApiService';
 import { QuizType } from '../../../../Types/QuizType';
 import { FolderType } from '../../../../Types/FolderType';
@@ -17,7 +17,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock child components
-jest.mock('../../../../components/Editor/EditorV2', () => ({
+jest.mock('../../../../components/Editor/Editor', () => ({
   __esModule: true,
   default: ({ label, initialValue, onEditorChange }: any) => (
     <div data-testid="editor-v2">
@@ -189,12 +189,12 @@ beforeEach(() => {
 const renderComponent = (initialEntries = [TEST_ROUTES.NEW_QUIZ]) => {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
-      <EditorQuizV2 />
+      <EditorQuiz />
     </MemoryRouter>
   );
 };
 
-describe('EditorQuizV2 Component', () => {
+describe('EditorQuiz Component', () => {
   describe('Rendering', () => {
     test('renders component for new quiz', async () => {
       (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });

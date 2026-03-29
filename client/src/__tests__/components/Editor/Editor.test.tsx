@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import EditorV2 from 'src/components/Editor/EditorV2';
+import Editor from 'src/components/Editor/Editor';
 
 // Mock ResizeObserver which is not present in JSDOM
 class ResizeObserverMock {
@@ -12,7 +12,7 @@ class ResizeObserverMock {
 }
 global.ResizeObserver = ResizeObserverMock as any;
 
-describe('EditorV2 Component', () => {
+describe('Editor Component', () => {
     const mockOnEditorChange = jest.fn();
 
     const sampleProps = {
@@ -22,7 +22,7 @@ describe('EditorV2 Component', () => {
     };
 
     beforeEach(() => {
-        render(<EditorV2 {...sampleProps} />);
+        render(<Editor {...sampleProps} />);
     });
 
     it('renders correctly with initial value', () => {
@@ -44,7 +44,7 @@ describe('EditorV2 Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<EditorV2 {...updatedProps} />);
+        render(<Editor {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];
@@ -59,7 +59,7 @@ describe('EditorV2 Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<EditorV2 {...updatedProps} />);
+        render(<Editor {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];
@@ -75,7 +75,7 @@ describe('EditorV2 Component', () => {
             onEditorChange: mockOnEditorChange
         };
 
-        render(<EditorV2 {...updatedProps} />);
+        render(<Editor {...updatedProps} />);
 
         const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
         const editorTextarea = editorTextareas[1];

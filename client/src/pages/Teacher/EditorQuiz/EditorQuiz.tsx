@@ -1,10 +1,10 @@
-// EditorQuizV2.tsx
+// EditorQuiz.tsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
 
-import EditorV2 from 'src/components/Editor/EditorV2';
+import Editor from 'src/components/Editor/Editor';
 import GiftCheatSheetV2 from 'src/components/GIFTCheatSheet/GiftCheatSheetV2';
 import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePreviewV2';
 import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
@@ -26,7 +26,7 @@ interface EditQuizParams {
     [key: string]: string | undefined;
 }
 
-const EditorQuizV2: React.FC = () => {
+const EditorQuiz: React.FC = () => {
     const { id } = useParams<EditQuizParams>();
     const [quizTitle, setQuizTitle] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<string>('');
@@ -573,7 +573,7 @@ const EditorQuizV2: React.FC = () => {
                                         {/* GIFT Editor */}
                                         
                                         <div className="mb-4">
-                                            <EditorV2
+                                            <Editor
                                                 label="Contenu GIFT du quiz:"
                                                 initialValue={value}
                                                 onEditorChange={handleUpdatePreview}
@@ -733,4 +733,4 @@ function alphabeticalSort<T extends { title: string }>(items: T[]): T[] {
     return items.sort((a, b) => a.title.localeCompare(b.title));
 }
 
-export default EditorQuizV2;
+export default EditorQuiz;

@@ -1,16 +1,16 @@
-﻿// EditorV2.tsx
+﻿// Editor.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-interface EditorV2Props {
+interface EditorProps {
     label: string;
     initialValue: string;
     onEditorChange: (value: string) => void;
 }
 
-const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label }) => {
+const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label }) => {
     const [value, setValue] = useState(initialValue);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -96,4 +96,4 @@ const EditorV2: React.FC<EditorV2Props> = ({ initialValue, onEditorChange, label
     );
 };
 
-export default EditorV2;
+export default Editor;
