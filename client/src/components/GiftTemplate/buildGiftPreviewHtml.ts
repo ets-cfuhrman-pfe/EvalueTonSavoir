@@ -10,31 +10,31 @@ export interface BuildGiftPreviewHtmlOptions {
     hideAnswers?: boolean;
     printLayout?: boolean;
     errorMode?: GiftPreviewErrorMode;
+    startLineNumbers?: number[];
 }
 
 function buildErrorMarkup(
-    giftQuestion: string,
-    error: unknown,
-    errorMode: GiftPreviewErrorMode
+    error: any,
+    errorMode: GiftPreviewErrorMode,
+    startLineNumber: number = 1
 ): string {
     let errorHtml: string;
+    let errorMessage = 'Erreur inconnue';
 
-    if (errorMode === 'preview') {
-        if (error instanceof UnsupportedQuestionTypeError) {
-            errorHtml = ErrorTemplate(giftQuestion, `Erreur: ${error.message}`);
-        } else if (error instanceof Error) {
-            errorHtml = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
-        } else {
-            errorHtml = ErrorTemplate(giftQuestion, 'Erreur inconnue');
-        }
-
-        return `<div class="alert alert-danger" role="alert">${errorHtml}</div>`;
+    const hasLocation = error && typeof error === 'object' && 'location' in error;
+    if (hasLocation) {
+        const absoluteLine = startLineNumber + error.location.start.line - 1;
+        errorMessage = `Line ${absoluteLine}, column ${error.location.start.column}: ${error.message}`;
+    } else if (error instanceof UnsupportedQuestionTypeError) {
+        errorMessage = `Erreur: ${error.message}`;
+    } else if (error instanceof Error) {
+        errorMessage = `Erreur GIFT: ${error.message}`;
     }
 
-    if (error instanceof Error) {
-        errorHtml = ErrorTemplate(giftQuestion, error.message);
-    } else {
-        errorHtml = ErrorTemplate(giftQuestion, 'Erreur inconnue');
+    errorHtml = ErrorTemplate(errorMessage);
+
+    if (errorMode === 'preview') {
+        return `<div class="alert alert-danger" role="alert">${errorHtml}</div>`;
     }
 
     return errorHtml;
@@ -46,11 +46,12 @@ export function buildGiftPreviewHtml(
         hideAnswers = false,
         printLayout = false,
         errorMode = 'plain',
+        startLineNumbers,
     }: BuildGiftPreviewHtmlOptions = {}
 ): string {
     let previewHtml = '';
 
-    questions.forEach((giftQuestion) => {
+    questions.forEach((giftQuestion, index) => {
         try {
             const question = parse(giftQuestion);
             previewHtml += Template(question[0], {
@@ -58,7 +59,10 @@ export function buildGiftPreviewHtml(
                 theme: 'light',
             });
         } catch (error) {
-            previewHtml += buildErrorMarkup(giftQuestion, error, errorMode);
+            const startLine = startLineNumbers && startLineNumbers[index] !== undefined 
+                ? startLineNumbers[index] 
+                : 1;
+            previewHtml += buildErrorMarkup(error, errorMode, startLine);
         }
     });
 
