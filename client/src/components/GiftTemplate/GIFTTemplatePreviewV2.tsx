@@ -19,6 +19,8 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     const [items, setItems] = useState('');
     const previewContainerRef = useRef<HTMLDivElement>(null);
     const lastScrolledIndexRef = useRef<number | null>(null);
+    const lastActiveIndexRef = useRef<number | null>(null);
+    const lastActiveAnchorRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         try {
@@ -43,10 +45,12 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
         const container = previewContainerRef.current;
         if (!container) return;
 
-        const anchors = container.querySelectorAll<HTMLElement>('.gift-preview-question-anchor');
-        anchors.forEach((anchor) => anchor.classList.remove('gift-preview-question-anchor--active'));
-
         if (activeQuestionIndex === null || activeQuestionIndex < 0) {
+            if (lastActiveAnchorRef.current) {
+                lastActiveAnchorRef.current.classList.remove('gift-preview-question-anchor--active');
+                lastActiveAnchorRef.current = null;
+            }
+            lastActiveIndexRef.current = null;
             lastScrolledIndexRef.current = null;
             return;
         }
@@ -56,11 +60,28 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
         );
 
         if (!target) {
+            if (lastActiveAnchorRef.current) {
+                lastActiveAnchorRef.current.classList.remove('gift-preview-question-anchor--active');
+                lastActiveAnchorRef.current = null;
+            }
+            lastActiveIndexRef.current = null;
             lastScrolledIndexRef.current = null;
             return;
         }
 
-        target.classList.add('gift-preview-question-anchor--active');
+        const isActiveIndexChanged = lastActiveIndexRef.current !== activeQuestionIndex;
+        if (isActiveIndexChanged) {
+            if (lastActiveAnchorRef.current && lastActiveAnchorRef.current !== target) {
+                lastActiveAnchorRef.current.classList.remove('gift-preview-question-anchor--active');
+            }
+            target.classList.add('gift-preview-question-anchor--active');
+            lastActiveAnchorRef.current = target;
+            lastActiveIndexRef.current = activeQuestionIndex;
+        } else if (!target.classList.contains('gift-preview-question-anchor--active')) {
+            // Re-apply after preview HTML refreshes without re-triggering a full class reset.
+            target.classList.add('gift-preview-question-anchor--active');
+            lastActiveAnchorRef.current = target;
+        }
 
         if (lastScrolledIndexRef.current === activeQuestionIndex) {
             return;
