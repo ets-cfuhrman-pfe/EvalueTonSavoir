@@ -18,6 +18,7 @@ import ImageGalleryModalV2 from 'src/components/ImageGallery/ImageGalleryModal/I
 
 import ApiService from '../../../services/ApiService';
 import { escapeForGIFT } from '../../../utils/giftUtils';
+import { splitGiftSource } from 'src/utils/giftBlockSplitter';
 import { ENV_VARIABLES } from 'src/constants';
 import ValidatedTextField from '../../../components/ValidatedTextField/ValidatedTextField';
 
@@ -33,34 +34,7 @@ interface QuestionRange {
 }
 
 function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[] } {
-    const separatorRegex = /\n{2,}/g;
-    const questions: string[] = [];
-    const ranges: QuestionRange[] = [];
-    let blockStartOffset = 0;
-    let match: RegExpExecArray | null;
-
-    const pushBlock = (rawBlock: string, absoluteStart: number) => {
-        if (rawBlock === '') return;
-
-        const index = questions.length;
-        questions.push(rawBlock);
-        ranges.push({
-            index,
-            start: absoluteStart,
-            end: absoluteStart + rawBlock.length,
-        });
-    };
-
-    while ((match = separatorRegex.exec(text)) !== null) {
-        const separatorStartOffset = match.index;
-        const rawBlock = text.slice(blockStartOffset, separatorStartOffset);
-        pushBlock(rawBlock, blockStartOffset);
-        blockStartOffset = separatorStartOffset + match[0].length;
-    }
-
-    const tailBlock = text.slice(blockStartOffset);
-    pushBlock(tailBlock, blockStartOffset);
-
+    const { questions, ranges } = splitGiftSource(text);
     return { questions, ranges };
 }
 
