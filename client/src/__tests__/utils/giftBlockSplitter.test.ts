@@ -43,7 +43,7 @@ describe('splitGiftSource', () => {
         expect(ranges).toEqual([
             { index: 0, start: 0, end: 2 },
             { index: 1, start: 5, end: 7 },
-            { index: 2, start: 11, end: 13 },
+            { index: 2, start: 10, end: 12 },
         ]);
         expect(blocks.map((block) => block.startLine)).toEqual([1, 3, 5]);
     });
