@@ -30,6 +30,7 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(previewContainer).toBeInTheDocument();
     const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveTextContent(/Line \d+, column \d+: Expected .+ , but .+ found\./);
   });
 
   it('renders preview when valid questions are provided, including answers, has no errors', () => {

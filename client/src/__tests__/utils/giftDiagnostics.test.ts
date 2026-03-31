@@ -15,7 +15,7 @@ describe('buildGiftDiagnosticMarkers', () => {
         const markers = buildGiftDiagnosticMarkers(source);
 
         expect(markers).toHaveLength(1);
-        expect(markers[0].message).toBeTruthy();
+        expect(markers[0].message).toMatch(/^Line \d+, column \d+: Expected .+ , but .+ found\.$/);
         expect(markers[0].startLineNumber).toBeGreaterThanOrEqual(1);
         expect(markers[0].startColumn).toBeGreaterThanOrEqual(1);
     });

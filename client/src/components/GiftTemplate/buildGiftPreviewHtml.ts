@@ -3,6 +3,7 @@ import { parse } from 'gift-pegjs';
 import Template, { ErrorTemplate, UnsupportedQuestionTypeError } from './templates';
 import { applyQuestionPrintLayout } from './printLayout';
 import { applyHideAnswersMask } from './hideAnswersMask';
+import { formatGiftParseErrorMessage, isPegjsParseError } from 'src/utils/giftDiagnostics';
 
 export type GiftPreviewErrorMode = 'plain' | 'preview';
 
@@ -13,7 +14,6 @@ export interface BuildGiftPreviewHtmlOptions {
 }
 
 function buildErrorMarkup(
-    giftQuestion: string,
     error: unknown,
     errorMode: GiftPreviewErrorMode
 ): string {
@@ -21,20 +21,22 @@ function buildErrorMarkup(
 
     if (errorMode === 'preview') {
         if (error instanceof UnsupportedQuestionTypeError) {
-            errorHtml = ErrorTemplate(giftQuestion, `Erreur: ${error.message}`);
+            errorHtml = ErrorTemplate(`Erreur: ${error.message}`);
+        } else if (isPegjsParseError(error)) {
+            errorHtml = ErrorTemplate( formatGiftParseErrorMessage(error));
         } else if (error instanceof Error) {
-            errorHtml = ErrorTemplate(giftQuestion, `Erreur GIFT: ${error.message}`);
+            errorHtml = ErrorTemplate(`Erreur GIFT: ${error.message}`);
         } else {
-            errorHtml = ErrorTemplate(giftQuestion, 'Erreur inconnue');
+            errorHtml = ErrorTemplate('Erreur inconnue');
         }
 
         return `<div class="alert alert-danger" role="alert">${errorHtml}</div>`;
     }
 
     if (error instanceof Error) {
-        errorHtml = ErrorTemplate(giftQuestion, error.message);
+        errorHtml = ErrorTemplate( error.message);
     } else {
-        errorHtml = ErrorTemplate(giftQuestion, 'Erreur inconnue');
+        errorHtml = ErrorTemplate( 'Erreur inconnue');
     }
 
     return errorHtml;
@@ -60,7 +62,7 @@ export function buildGiftPreviewHtml(
                 theme: 'light',
             });
         } catch (error) {
-            questionMarkup = buildErrorMarkup(giftQuestion, error, errorMode);
+            questionMarkup = buildErrorMarkup(error, errorMode);
         }
 
         previewHtml += `<div class="gift-preview-question-anchor" data-question-index="${index}">${questionMarkup}</div>`;
