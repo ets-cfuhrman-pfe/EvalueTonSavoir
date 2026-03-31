@@ -89,6 +89,15 @@
   margin-right: -49vw !important;
 }
 
+.editor-preview-sticky-column {
+  @media (min-width: 992px) {
+    position: sticky !important;
+    top: 90px;
+    height: calc(100vh - 110px) !important;
+    align-self: flex-start;
+  }
+}
+
 @media print {
   .content-container.editor-quiz-content-container {
     width: 100% !important;
