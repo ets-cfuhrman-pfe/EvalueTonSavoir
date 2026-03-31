@@ -35,7 +35,7 @@ export function splitGiftSource(source: string): SplitGiftSourceResult {
     const blocks: GiftSplitBlock[] = [];
     const questions: string[] = [];
     const ranges: GiftQuestionRange[] = [];
-    const separatorRegex = /(?:\r?\n){2,}/g;
+    const separatorRegex = /\r?\n(?:[ \t]*\r?\n)+/g;
 
     let blockStartOffset = 0;
     let blockStartLine = 1;

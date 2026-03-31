@@ -33,4 +33,18 @@ describe('splitGiftSource', () => {
         expect(questions).toHaveLength(2);
         expect(ranges.map((range) => range.index)).toEqual([0, 1]);
     });
+
+    it('treats whitespace-only lines as blank line separators', () => {
+        const source = 'Q1\n \nQ2\n\t\nQ3';
+
+        const { questions, ranges, blocks } = splitGiftSource(source);
+
+        expect(questions).toEqual(['Q1', 'Q2', 'Q3']);
+        expect(ranges).toEqual([
+            { index: 0, start: 0, end: 2 },
+            { index: 1, start: 5, end: 7 },
+            { index: 2, start: 11, end: 13 },
+        ]);
+        expect(blocks.map((block) => block.startLine)).toEqual([1, 3, 5]);
+    });
 });
