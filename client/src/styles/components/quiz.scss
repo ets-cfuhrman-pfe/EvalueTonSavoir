@@ -531,6 +531,10 @@
   box-shadow: 0 0 0 2px hsl(214, 90%, 55%);
   animation: activeQuestionPulse 2s infinite ease-in-out;
 
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
   @media print {
     background-color: transparent;
     box-shadow: none;
