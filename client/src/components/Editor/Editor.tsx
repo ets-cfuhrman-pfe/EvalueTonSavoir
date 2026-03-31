@@ -25,6 +25,7 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const resizeSubscriptionRef = useRef<IDisposable | null>(null);
     const cursorSubscriptionRef = useRef<IDisposable | null>(null);
     const contentSubscriptionRef = useRef<IDisposable | null>(null);
+    const focusSubscriptionRef = useRef<IDisposable | null>(null);
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
 
@@ -42,6 +43,11 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         if (contentSubscriptionRef.current) {
             contentSubscriptionRef.current.dispose();
             contentSubscriptionRef.current = null;
+        }
+
+        if (focusSubscriptionRef.current) {
+            focusSubscriptionRef.current.dispose();
+            focusSubscriptionRef.current = null;
         }
 
         if (validationTimeoutRef.current) {
@@ -95,6 +101,13 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         updateEditorHeight();
         resizeSubscriptionRef.current = editor.onDidContentSizeChange(updateEditorHeight);
         contentSubscriptionRef.current = editor.onDidChangeModelContent(scheduleValidation);
+        focusSubscriptionRef.current = editor.onDidFocusEditorText(() => {
+            const viewportX = window.scrollX;
+            const viewportY = window.scrollY;
+            requestAnimationFrame(() => {
+                window.scrollTo(viewportX, viewportY);
+            });
+        });
         validateModel();
 
         if (onCursorChange) {
