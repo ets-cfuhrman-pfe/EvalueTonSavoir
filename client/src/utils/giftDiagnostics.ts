@@ -120,5 +120,5 @@ export function formatGiftParseErrorMessage(error: PegjsParseError): string {
         found = found || parsedMessage.found;
     }
 
-    return `Line ${line}, column ${column}: Expected ${expected} , but ${found} found.`;
+    return `Line ${line}, column ${column}: Expected ${expected}, but ${found} found.`;
 }
