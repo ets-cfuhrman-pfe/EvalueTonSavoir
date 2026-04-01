@@ -1,6 +1,6 @@
 export default function (errorText: string): string {
     // const document = removeBackslash(lineRegex(documentRegex(text)));
-    return `<section class="gift-preview-error"><em>${errorText}</em></p></section>`;
+    return `<section class="gift-preview-error"><em>${errorText}</em></section>`;
 }
 
 // function documentRegex(text: string): string {
