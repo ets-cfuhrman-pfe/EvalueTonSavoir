@@ -108,11 +108,16 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             {/* Header */}
             <div className='row py-2 border-bottom quiz-header sticky-top'>
                 <div className='col-12'>
-                    <div className='d-flex align-items-center justify-content-between'>
+                    <div className='d-flex align-items-center justify-content-between gap-3 flex-wrap'>
                         {/* Left: Quiz title */}
                         <div className='d-flex align-items-center'>
                             {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
                         </div>
+
+                        {/* Center: Question counter */}
+                        <h6 className='mb-0 question-counter text-center text-nowrap'>
+                            {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
+                        </h6>
                         
                         {/* Right: Disconnect button */}
                         <div>
@@ -130,14 +135,11 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                 {/* Question area */}
                 <div className='col-12'>
                     <div className='p-4'>
-                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
-                            <h6 className='mb-0 question-counter'>
-                                {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
-                            </h6>
-                            <div className={`text-muted small ${isAnswerSubmitted ? '' : 'invisible'}`}>
+                        {isAnswerSubmitted && (
+                            <div className="text-muted small mb-3">
                                 En attente pour la prochaine question...
                             </div>
-                        </div>
+                        )}
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
