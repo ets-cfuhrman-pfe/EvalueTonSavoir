@@ -79,8 +79,9 @@ body.hide-header {
     display: none !important;
   }
 
-  // Ensure our manage room content is always visible
+  // Ensure room management/join content is always visible
   .manage-room-v2,
+  .join-room-v2,
   .content-container.manage-room-v2 {
     display: block !important;
     visibility: visible !important;
