@@ -105,33 +105,38 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
             {/* Header */}
             <div className="row py-2 border-bottom quiz-header sticky-top">
                 <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between">
-                        {/* Left: Quiz title and navigation buttons */}
-                        <div className="d-flex align-items-center gap-3 p-2">
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
-                            <div className="d-flex gap-2 quiz-nav-buttons">
+                    <div className="d-flex flex-column gap-2 p-2 quiz-header-content">
+                        <div className="d-flex justify-content-center text-center quiz-header-title-row">
+                            {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
+                        </div>
+
+                        <div className="d-flex align-items-center justify-content-between gap-3 flex-nowrap quiz-header-actions-row">
+                            <div className="d-flex align-items-center gap-2 quiz-nav-buttons quiz-header-nav-row">
                                 <Button
                                     variant="outlined"
                                     onClick={previousQuestion}
                                     disabled={Number(questionInfos.question.id) <= 1}
                                     size="small"
+                                    sx={{ minWidth: '2.75rem', px: 1 }}
                                 >
                                     <ChevronLeft />
                                 </Button>
+
+                                <h6 className="mb-0 question-counter text-center text-nowrap">
+                                    {questionInfos.question.id} / {questions.length}
+                                </h6>
 
                                 <Button
                                     variant="outlined"
                                     onClick={nextQuestion}
                                     disabled={Number(questionInfos.question.id) >= questions.length}
                                     size="small"
+                                    sx={{ minWidth: '2.75rem', px: 1 }}
                                 >
                                     <ChevronRight />
                                 </Button>
                             </div>
-                        </div>
 
-                        {/* Right: Disconnect button */}
-                        <div>
                             <DisconnectButton
                                 onReturn={disconnectWebSocket}
                                 askConfirm={!shouldShowResults}
@@ -147,12 +152,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                 {/* Question area */}
                 <div className="col-12">
                     <div className="p-4 quiz-question-area">
-                        <div className="text-start mb-3 border-bottom-light">
-                            <h4 className="mb-0 question-counter">
-                                Question {questionInfos.question.id}/{questions.length}
-                            </h4>
-                        </div>
-
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}

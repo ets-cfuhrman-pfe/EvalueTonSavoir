@@ -222,6 +222,56 @@
       font-size: 0.9rem;
     }
   }
+
+  .student-mode-quiz-mobile {
+    .quiz-header-content {
+      gap: 0.5rem !important;
+      padding: 0.5rem !important;
+    }
+
+    .quiz-header-title-row {
+      width: 100%;
+      flex: 0 0 100%;
+      justify-content: center !important;
+      text-align: center;
+    }
+
+    .quiz-header-actions-row {
+      width: 100%;
+      flex: 0 0 100%;
+      flex-wrap: nowrap !important;
+      gap: 0.5rem !important;
+      align-items: center;
+    }
+
+    .quiz-header-nav-row {
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: flex-start;
+
+      .MuiButton-root {
+        min-width: 2.75rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+
+      .MuiSvgIcon-root {
+        font-size: 1.1rem;
+      }
+    }
+
+    .quiz-header-actions-row .returnButton {
+      flex: 0 0 auto;
+      white-space: nowrap;
+
+      .MuiButton-root {
+        white-space: nowrap;
+        min-width: 0;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+    }
+  }
 }
 
 // Mobile quiz navigation styles
