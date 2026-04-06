@@ -161,6 +161,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             answer={answers[Number(questionInfos.question.id)-1]?.answer}
                             buttonText={shouldShowResults ? 'Voir les résultats' : 'Répondre'}
                             hideAnswerFeedback={hideFeedback}
+                            sideImageLayout={true}
                         />
 
                         {canToggleFeedback && (

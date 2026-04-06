@@ -142,6 +142,9 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     showCorrectnessBanner = true,
     sideImageLayout = false,
 }) => {
+    const shouldForceSideImageLayout =
+        typeof window !== 'undefined' && window.location.pathname.startsWith('/student/join-room');
+
     const forceShowFeedback = question?.type === 'Numerical' || question?.type === 'Short';
 
     // For numerical and short answers we always show feedback once answered; override hideAnswerFeedback
@@ -163,7 +166,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     // When enabled, render the question stem HTML, extract any <img> tags from
     // it, pass a cleaned stem to the sub-component, and show the images in a
     // column on the right.  Falls back to normal layout when no images are found.
-    if (sideImageLayout && question?.type !== 'Category' && question?.formattedStem) {
+    if ((sideImageLayout || shouldForceSideImageLayout) && question?.type !== 'Category' && question?.formattedStem) {
         const renderedStemHtml = FormattedTextTemplate(question.formattedStem);
         const { cleanHtml, images } = extractImages(renderedStemHtml);
 
