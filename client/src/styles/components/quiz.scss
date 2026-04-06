@@ -336,6 +336,33 @@
   }
 }
 
+.global-feedback-dialog {
+  .global-feedback-dialog__paper {
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
+  }
+
+  .global-feedback-dialog__title {
+    position: relative;
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem 0;
+  }
+
+  .global-feedback-dialog__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .global-feedback-dialog__content {
+    padding-top: 0;
+  }
+
+  .global-feedback {
+    margin: 0;
+  }
+}
+
 // Feedback styling improvements
 .alert-info {
   &.small {

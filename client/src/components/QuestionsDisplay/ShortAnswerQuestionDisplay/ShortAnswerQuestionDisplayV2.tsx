@@ -16,10 +16,11 @@ interface PropsV2 {
     buttonText?: string;
     disabled?: boolean;
     hideAnswerFeedback?: boolean;
+    hideGlobalFeedback?: boolean;
 }
 
 const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, hideAnswerFeedback = false } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, hideAnswerFeedback = false, hideGlobalFeedback = false } = props;
     const [answer, setAnswer] = useState<AnswerType>(passedAnswer || []);
     
     useEffect(() => {
@@ -124,7 +125,7 @@ const ShortAnswerQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && !hideGlobalFeedback && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>

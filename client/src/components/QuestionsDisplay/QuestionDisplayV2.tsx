@@ -19,6 +19,7 @@ interface QuestionV2Props {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    hideGlobalFeedback?: boolean;
     showCorrectnessBanner?: boolean;
     sideImageLayout?: boolean;
 }
@@ -51,6 +52,7 @@ function buildQuestionComponent(
         students: Student[];
         showStatistics: boolean;
         appliedHideAnswerFeedback: boolean;
+        hideGlobalFeedback: boolean;
         showCorrectnessBanner: boolean;
     }
 ): React.ReactElement | null {
@@ -63,6 +65,7 @@ function buildQuestionComponent(
         students,
         showStatistics,
         appliedHideAnswerFeedback,
+        hideGlobalFeedback,
         showCorrectnessBanner,
     } = props;
 
@@ -79,6 +82,7 @@ function buildQuestionComponent(
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                     showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
@@ -94,6 +98,7 @@ function buildQuestionComponent(
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                     showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
@@ -108,6 +113,7 @@ function buildQuestionComponent(
                         buttonText={buttonText}
                         disabled={disabled}
                         hideAnswerFeedback={appliedHideAnswerFeedback}
+                        hideGlobalFeedback={hideGlobalFeedback}
                     />
                 );
             }
@@ -122,6 +128,7 @@ function buildQuestionComponent(
                     buttonText={buttonText}
                     disabled={disabled}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                 />
             );
         default:
@@ -139,6 +146,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     students = [],
     showStatistics = false,
     hideAnswerFeedback = false,
+    hideGlobalFeedback = false,
     showCorrectnessBanner = true,
     sideImageLayout = false,
 }) => {
@@ -159,6 +167,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
         students,
         showStatistics,
         appliedHideAnswerFeedback,
+        hideGlobalFeedback,
         showCorrectnessBanner,
     };
 
