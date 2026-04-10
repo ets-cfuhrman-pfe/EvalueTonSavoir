@@ -16,6 +16,13 @@ const unsupportedQuestions = [
   '$CATEGORY a/b/c'
 ];
 
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: jest.fn(),
+  });
+});
+
 describe('GIFTTemplatePreviewV2 Component', () => {
   it('renders error message when questions contain invalid syntax', () => {
     render(<GIFTTemplatePreviewV2 questions={['T{']} hideAnswers={false} />);
@@ -74,6 +81,21 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     // find all unsupported errors (should be 4)
     const unsupportedMessages = previewContainer.querySelectorAll('.alert.alert-danger');
     expect(unsupportedMessages).toHaveLength(4);
+  });
+
+  it('highlights the active question anchor when activeQuestionIndex is provided', () => {
+    render(
+      <GIFTTemplatePreviewV2
+        questions={validQuestions}
+        hideAnswers={false}
+        activeQuestionIndex={1}
+      />
+    );
+
+    const previewContainer = screen.getByTestId('preview-container');
+    const activeAnchor = previewContainer.querySelector('.gift-preview-question-anchor--active');
+    expect(activeAnchor).toBeInTheDocument();
+    expect(activeAnchor).toHaveAttribute('data-question-index', '1');
   });
 
 });

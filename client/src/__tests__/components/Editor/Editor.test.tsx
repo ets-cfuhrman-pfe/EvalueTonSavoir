@@ -2,17 +2,10 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import EditorV2 from 'src/components/Editor/EditorV2';
 
-// Mock ResizeObserver which is not present in JSDOM
-class ResizeObserverMock {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-}
-global.ResizeObserver = ResizeObserverMock as any;
+import Editor from 'src/components/Editor/Editor';
 
-describe('EditorV2 Component', () => {
+describe('Editor Component', () => {
     const mockOnEditorChange = jest.fn();
 
     const sampleProps = {
@@ -22,66 +15,66 @@ describe('EditorV2 Component', () => {
     };
 
     beforeEach(() => {
-        render(<EditorV2 {...sampleProps} />);
+        jest.clearAllMocks();
     });
 
     it('renders correctly with initial value', () => {
+        render(<Editor {...sampleProps} />);
         const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         expect(editorTextarea).toBeInTheDocument();
         expect(editorTextarea.value).toBe('Sample Initial Value');
     });
 
     it('calls onEditorChange callback when editor value changes', () => {
+        render(<Editor {...sampleProps} />);
         const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         fireEvent.change(editorTextarea, { target: { value: 'Updated Value' } });
         expect(mockOnEditorChange).toHaveBeenCalledWith('Updated Value');
     });
 
     it('updates editor value when initialValue prop changes', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
-        };
+        const { rerender } = render(<Editor {...sampleProps} />);
+        rerender(
+            <Editor
+                label='Updated Label'
+                initialValue='Updated Initial Value'
+                onEditorChange={mockOnEditorChange}
+            />
+        );
 
-        render(<EditorV2 {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
-
+        const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         expect(editorTextarea.value).toBe('Updated Initial Value');
     });
 
     test('should call change text with the correct value on textarea change', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
-        };
+        render(
+            <Editor
+                label='Updated Label'
+                initialValue='Updated Initial Value'
+                onEditorChange={mockOnEditorChange}
+            />
+        );
 
-        render(<EditorV2 {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
+        const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         fireEvent.change(editorTextarea, { target: { value: 'New value' } });
 
         expect(editorTextarea.value).toBe('New value');
     });
 
     test('should call onEditorChange with an empty string if textarea value is falsy', () => {
-        const updatedProps = {
-            label: 'Updated Label',
-            initialValue: 'Updated Initial Value',
-            onEditorChange: mockOnEditorChange
-        };
+        render(
+            <Editor
+                label='Updated Label'
+                initialValue='Updated Initial Value'
+                onEditorChange={mockOnEditorChange}
+            />
+        );
 
-        render(<EditorV2 {...updatedProps} />);
-
-        const editorTextareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[];
-        const editorTextarea = editorTextareas[1];
+        const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         fireEvent.change(editorTextarea, { target: { value: '' } });
 
         expect(editorTextarea.value).toBe('');
+        expect(mockOnEditorChange).toHaveBeenCalledWith('');
     });
 
 

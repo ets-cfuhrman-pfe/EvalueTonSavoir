@@ -50,16 +50,20 @@ export function buildGiftPreviewHtml(
 ): string {
     let previewHtml = '';
 
-    questions.forEach((giftQuestion) => {
+    questions.forEach((giftQuestion, index) => {
+        let questionMarkup = '';
+
         try {
             const question = parse(giftQuestion);
-            previewHtml += Template(question[0], {
+            questionMarkup = Template(question[0], {
                 preview: true,
                 theme: 'light',
             });
         } catch (error) {
-            previewHtml += buildErrorMarkup(giftQuestion, error, errorMode);
+            questionMarkup = buildErrorMarkup(giftQuestion, error, errorMode);
         }
+
+        previewHtml += `<div class="gift-preview-question-anchor" data-question-index="${index}">${questionMarkup}</div>`;
     });
 
     if (printLayout) {
