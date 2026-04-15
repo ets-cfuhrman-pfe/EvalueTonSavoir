@@ -11,11 +11,13 @@ export interface BuildGiftPreviewHtmlOptions {
     hideAnswers?: boolean;
     printLayout?: boolean;
     errorMode?: GiftPreviewErrorMode;
+    questionStartLines?: number[];
 }
 
 function buildErrorMarkup(
     error: unknown,
-    errorMode: GiftPreviewErrorMode
+    errorMode: GiftPreviewErrorMode,
+    blockStartLine: number = 1
 ): string {
     let errorHtml: string;
 
@@ -23,7 +25,7 @@ function buildErrorMarkup(
         if (error instanceof UnsupportedQuestionTypeError) {
             errorHtml = ErrorTemplate(`Erreur: ${error.message}`);
         } else if (isPegjsParseError(error)) {
-            errorHtml = ErrorTemplate( formatGiftParseErrorMessage(error));
+            errorHtml = ErrorTemplate(formatGiftParseErrorMessage(error, blockStartLine));
         } else if (error instanceof Error) {
             errorHtml = ErrorTemplate(`Erreur GIFT: ${error.message}`);
         } else {
@@ -34,9 +36,9 @@ function buildErrorMarkup(
     }
 
     if (error instanceof Error) {
-        errorHtml = ErrorTemplate( error.message);
+        errorHtml = ErrorTemplate(error.message);
     } else {
-        errorHtml = ErrorTemplate( 'Erreur inconnue');
+        errorHtml = ErrorTemplate('Erreur inconnue');
     }
 
     return errorHtml;
@@ -48,12 +50,14 @@ export function buildGiftPreviewHtml(
         hideAnswers = false,
         printLayout = false,
         errorMode = 'plain',
+        questionStartLines = [],
     }: BuildGiftPreviewHtmlOptions = {}
 ): string {
     let previewHtml = '';
 
     questions.forEach((giftQuestion, index) => {
         let questionMarkup = '';
+        const blockStartLine = questionStartLines[index] ?? 1;
 
         try {
             const question = parse(giftQuestion);
@@ -62,7 +66,7 @@ export function buildGiftPreviewHtml(
                 theme: 'light',
             });
         } catch (error) {
-            questionMarkup = buildErrorMarkup(error, errorMode);
+            questionMarkup = buildErrorMarkup(error, errorMode, blockStartLine);
         }
 
         previewHtml += `<div class="gift-preview-question-anchor" data-question-index="${index}">${questionMarkup}</div>`;

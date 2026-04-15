@@ -44,7 +44,7 @@ export function buildGiftDiagnosticMarkers(source: string): GiftDiagnosticMarker
                 const endColumn = Math.max(startColumn + 1, error.location.end.column);
 
                 markers.push({
-                    message: formatGiftParseErrorMessage(error),
+                    message: formatGiftParseErrorMessage(error, block.startLine),
                     startLineNumber,
                     startColumn,
                     endLineNumber,
@@ -106,9 +106,11 @@ function extractExpectedAndFound(message: string): { expected: string; found: st
     };
 }
 
-export function formatGiftParseErrorMessage(error: PegjsParseError): string {
+export function formatGiftParseErrorMessage(error: PegjsParseError, blockStartLine: number = 1): string {
     const parseError = error as PegjsLikeParseError;
-    const line = Math.max(1, error.location.start.line);
+    const blockLineOffset = error.location.start.line - 1;
+    const globalLine = blockStartLine + blockLineOffset;
+    const line = Math.max(1, globalLine);
     const column = Math.max(1, error.location.start.column);
 
     let expected = normalizeToken(parseError.expected, '');
