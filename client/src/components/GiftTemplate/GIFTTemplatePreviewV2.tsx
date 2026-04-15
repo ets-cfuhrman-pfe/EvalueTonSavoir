@@ -7,12 +7,14 @@ interface GIFTTemplatePreviewV2Props {
     questions: string[];
     hideAnswers?: boolean;
     activeQuestionIndex?: number | null;
+    questionStartLines?: number[];
 }
 
 const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     questions,
     hideAnswers = false,
     activeQuestionIndex = null,
+    questionStartLines = [],
 }) => {
     const [error, setError] = useState('');
     const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -28,6 +30,7 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                 hideAnswers,
                 printLayout: true,
                 errorMode: 'preview',
+                questionStartLines,
             });
 
             setItems(previewHTML);
@@ -39,7 +42,7 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
                 setError('Une erreur est survenue durant le chargement de la prévisualisation.');
             }
         }
-    }, [questions, hideAnswers]);
+    }, [questions, hideAnswers, questionStartLines]);
 
     useEffect(() => {
         const container = previewContainerRef.current;

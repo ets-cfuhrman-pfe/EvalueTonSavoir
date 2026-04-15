@@ -33,9 +33,10 @@ interface QuestionRange {
     end: number;
 }
 
-function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[] } {
-    const { questions, ranges } = splitGiftSource(text);
-    return { questions, ranges };
+function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[]; startLines: number[] } {
+    const { questions, ranges, blocks } = splitGiftSource(text);
+    const startLines = blocks.map(block => block.startLine);
+    return { questions, ranges, startLines };
 }
 
 function findQuestionIndexByCaret(ranges: QuestionRange[], caretOffset: number): number | null {
@@ -74,6 +75,7 @@ const EditorQuiz: React.FC = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [hideAnswers, setHideAnswers] = useState(false);
     const [questionRanges, setQuestionRanges] = useState<QuestionRange[]>([]);
+    const [questionStartLines, setQuestionStartLines] = useState<number[]>([]);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState<number | null>(null);
     const [initialQuizState, setInitialQuizState] = useState<{
         title: string;
@@ -197,9 +199,10 @@ const EditorQuiz: React.FC = () => {
 
     const applyEditorValue = useCallback((text: string) => {
         setValue(text);
-        const { questions, ranges } = splitQuestionsAndRanges(text);
+        const { questions, ranges, startLines } = splitQuestionsAndRanges(text);
         setFilteredValue(questions);
         setQuestionRanges(ranges);
+        setQuestionStartLines(startLines);
     }, []);
 
     useEffect(() => {
@@ -722,6 +725,7 @@ const EditorQuiz: React.FC = () => {
                                             questions={filteredValue}
                                             hideAnswers={hideAnswers}
                                             activeQuestionIndex={activeQuestionIndex}
+                                            questionStartLines={questionStartLines}
                                         />
                                     </div>
                                 </div>
