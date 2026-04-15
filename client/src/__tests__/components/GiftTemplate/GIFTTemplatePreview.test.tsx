@@ -99,4 +99,22 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(activeAnchor).toHaveAttribute('data-question-index', '1');
   });
 
+  it('displays correct global line numbers in error messages when questionStartLines are provided', () => {
+    render(
+      <GIFTTemplatePreviewV2
+        questions={['Valid {=answer}', 'T{', '::Q3:: {=answer}']}
+        hideAnswers={false}
+        questionStartLines={[1, 7, 10]}
+      />
+    );
+
+    const previewContainer = screen.getByTestId('preview-container');
+    const errorMessages = previewContainer.querySelectorAll('.alert.alert-danger');
+
+    expect(errorMessages).toHaveLength(1);
+    // The error is in the second question which starts at line 7
+    // So the error should show "Line 7" not "Line 1"
+    expect(errorMessages[0]).toHaveTextContent('Line 7');
+  });
+
 });
