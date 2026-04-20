@@ -13,9 +13,9 @@ class UsersController {
 
     register = async (req, res, next) => {
         try {
-            const { email, password } = req.body;
+            const { email, password, username, roles } = req.body;
     
-            if (!email || !password) {
+            if (!email || !password || !username) {
                 throw new AppError(MISSING_REQUIRED_PARAMETER);
             }
     
@@ -24,7 +24,12 @@ class UsersController {
             }
 
             const startTime = Date.now();
-            await this.users.register(email, password);
+            await this.users.register({ 
+                email, 
+                password, 
+                name: username, 
+                roles 
+            });
             const dbOperationTime = Date.now() - startTime;
             
             // Log database operation
