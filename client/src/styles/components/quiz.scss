@@ -222,6 +222,56 @@
       font-size: 0.9rem;
     }
   }
+
+  .student-mode-quiz-mobile {
+    .quiz-header-content {
+      gap: 0.5rem !important;
+      padding: 0.5rem !important;
+    }
+
+    .quiz-header-title-row {
+      width: 100%;
+      flex: 0 0 100%;
+      justify-content: center !important;
+      text-align: center;
+    }
+
+    .quiz-header-actions-row {
+      width: 100%;
+      flex: 0 0 100%;
+      flex-wrap: nowrap !important;
+      gap: 0.5rem !important;
+      align-items: center;
+    }
+
+    .quiz-header-nav-row {
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: flex-start;
+
+      .MuiButton-root {
+        min-width: 2.75rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+
+      .MuiSvgIcon-root {
+        font-size: 1.1rem;
+      }
+    }
+
+    .quiz-header-actions-row .returnButton {
+      flex: 0 0 auto;
+      white-space: nowrap;
+
+      .MuiButton-root {
+        white-space: nowrap;
+        min-width: 0;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+    }
+  }
 }
 
 // Mobile quiz navigation styles
@@ -232,6 +282,44 @@
       background-color: vars.$light;
       border-top: 1px solid rgba(0, 0, 0, 0.125);
       margin-top: auto;
+    }
+  }
+}
+
+// Teacher mode quiz header mobile styling
+@media (max-width: #{vars.$breakpoint-sm - 1px}) {
+  .quiz-header {
+    .d-flex {
+      gap: 0.5rem !important;
+      flex-wrap: wrap;
+
+      > div,
+      h6 {
+        flex: 0 1 auto;
+      }
+
+      h6 {
+        order: 2;
+        flex-basis: 100%;
+        text-align: center;
+        margin-bottom: 0.25rem !important;
+      }
+
+      > div:first-child {
+        order: 1;
+        flex: 1 1 auto;
+
+        h6 {
+          margin-right: 0 !important;
+          flex-basis: auto;
+          order: unset;
+        }
+      }
+
+      > div:last-child {
+        order: 3;
+        flex: 0 0 auto;
+      }
     }
   }
 }
@@ -283,6 +371,33 @@
     .MuiButton-root {
       font-weight: 500;
     }
+  }
+}
+
+.global-feedback-dialog {
+  .global-feedback-dialog__paper {
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
+  }
+
+  .global-feedback-dialog__title {
+    position: relative;
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem 0;
+  }
+
+  .global-feedback-dialog__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .global-feedback-dialog__content {
+    padding-top: 0;
+  }
+
+  .global-feedback {
+    margin: 0;
   }
 }
 
@@ -402,63 +517,15 @@
   background-color: rgba(33, 150, 243, 0.35) !important;
 }
 
-// Manage Room font and layout adjustments 
-// use .quiz-question-area for the stem and the CSS vars below for choice
-.manage-room-v2 {
-  &.content-container {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    margin-left: -47.5vw !important;
-    margin-right: -47.5vw !important;
-  }
-
-  // Choice button text (MultipleChoice + TrueFalse)
-  --quiz-choice-letter-size: 1rem;
-  --quiz-choice-text-size:   1.3rem;
-  --quiz-button-text-size:   1.3rem;
-
-  // KaTeX inside choice options 
-  --quiz-katex-text-size: 1.3rem;
-
-  // Applies to all question types
-  .quiz-question-area {
-    font-size: 1.3rem;
-    font-weight: bold;
-
-    @media (max-width: #{vars.$breakpoint-md - 1px}) {
-      font-size: 1.3rem;
-    }
-
-    // KaTeX in the question stem
-    .katex {
-      font-size: 1.2em !important;
-      
-    }
-  }
-
-  .choice-button {
-    min-height: 3rem !important;
-    padding:    0.6rem 0.75rem !important;
-  }
-
-  // Scale the letter badge to match the increased text size.
-  .choice-letter {
-    width:     2.3rem !important;
-    height:    2.3rem !important;
-    min-width: 2.3rem !important;
-    font-size: 1.3rem !important;
-  }
-}
-
-.manage-room-header {
+@mixin room-page-header($desktop-padding, $mobile-padding) {
   position: sticky;
   top: 0;
   z-index: 1030;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: vars.$spacing-md vars.$spacing-xl;
-  background: #ffffff;
+  padding: $desktop-padding;
+  background: vars.$light;
   border-bottom: 1px solid var(--bs-border-color, #dee2e6);
   box-shadow: vars.$box-shadow-sm;
 
@@ -466,23 +533,118 @@
     flex-direction: column;
     align-items: flex-start;
     gap: vars.$spacing-md;
-    padding: vars.$spacing-md;
+    padding: $mobile-padding;
   }
 }
 
-.manage-room-control-bar {
+@mixin room-page-control-bar($desktop-padding, $mobile-padding) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: vars.$spacing-sm vars.$spacing-xl;
+  padding: $desktop-padding;
   background-color: var(--bs-light, #f8f9fa);
   border-bottom: 1px solid var(--bs-border-color, #dee2e6);
 
   @media (max-width: #{vars.$breakpoint-md - 1px}) {
     flex-direction: column;
     gap: vars.$spacing-sm;
-    padding: vars.$spacing-sm vars.$spacing-md;
+    padding: $mobile-padding;
   }
+}
+
+// Shared visual scale between ManageRoom and JoinRoom pages.
+.room-page-v2 {
+  --quiz-choice-letter-size: #{vars.$room-page-choice-letter-size};
+  --quiz-choice-text-size: #{vars.$room-page-choice-text-size};
+  --quiz-button-text-size: #{vars.$room-page-button-text-size};
+  --quiz-katex-text-size: #{vars.$room-page-katex-text-size};
+
+  .quiz-question-area {
+    font-size: vars.$room-page-question-size;
+    font-weight: bold;
+
+    @media (max-width: #{vars.$breakpoint-md - 1px}) {
+      font-size: vars.$room-page-question-size;
+    }
+
+    .katex {
+      font-size: 1.2em !important;
+    }
+  }
+
+  .choice-button {
+    min-height: vars.$room-page-choice-min-height !important;
+    padding: vars.$room-page-choice-padding-y vars.$room-page-choice-padding-x !important;
+  }
+
+  .choice-letter {
+    width: vars.$room-page-choice-badge-size !important;
+    height: vars.$room-page-choice-badge-size !important;
+    min-width: vars.$room-page-choice-badge-size !important;
+    font-size: vars.$room-page-choice-text-size !important;
+  }
+}
+
+// Manage Room font and layout adjustments 
+// use .quiz-question-area for the stem and the CSS vars below for choice
+.manage-room-v2 {
+  @extend .room-page-v2;
+
+  &.content-container {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin-left: -47.5vw !important;
+    margin-right: -47.5vw !important;
+  }
+}
+
+.manage-room-header {
+  @include room-page-header(vars.$spacing-md vars.$spacing-xl, vars.$spacing-md);
+}
+
+.manage-room-control-bar {
+  @include room-page-control-bar(vars.$spacing-sm vars.$spacing-xl, vars.$spacing-sm vars.$spacing-md);
+}
+
+.join-room-v2 {
+  @extend .room-page-v2;
+  background-color: var(--bs-light, #f8f9fa);
+
+  &.center-content {
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    min-height: calc(100vh - 4rem);
+    width: 100%;
+    padding: vars.$spacing-xl vars.$spacing-md;
+  }
+
+  .join-room-login-card {
+    width: min(100%, 460px);
+    justify-self: center;
+
+    > .w-100 {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .join-room-waiting-title {
+    font-size: vars.$room-page-title-size;
+    font-weight: 700;
+    color: var(--bs-dark, #212529);
+    margin-bottom: vars.$spacing-xs;
+  }
+
+  .join-room-waiting-subtitle {
+    font-size: vars.$room-page-subtitle-size;
+    color: var(--bs-secondary, #6c757d);
+    margin-bottom: 0;
+  }
+}
+
+.join-room-header {
+  @include room-page-header(vars.$spacing-md vars.$spacing-xl, vars.$spacing-md);
 }
 
 .manage-room-pagination {

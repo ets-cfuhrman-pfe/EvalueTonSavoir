@@ -18,11 +18,12 @@ interface PropsV2 {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    hideGlobalFeedback?: boolean;
     showCorrectnessBanner?: boolean;
 }
 
 const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
-    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false, showCorrectnessBanner = true } = props;
+    const { question, showAnswer, handleOnSubmitAnswer, passedAnswer, buttonText = 'Répondre', disabled = false, students = [], showStatistics = false, hideAnswerFeedback = false, hideGlobalFeedback = false, showCorrectnessBanner = true } = props;
 
     const statsContainerClass = 'ms-auto d-flex align-items-center gap-2 px-2 choice-button-content';
 
@@ -198,7 +199,7 @@ const TrueFalseQuestionDisplayV2: React.FC<PropsV2> = (props) => {
 
             {/* Global feedback - always reserve space */}
             <div className="d-flex flex-column">
-                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && (
+                {question.formattedGlobalFeedback && showAnswer && !hideAnswerFeedback && !hideGlobalFeedback && (
                     <div className="global-feedback">
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(question.formattedGlobalFeedback) }} />
                     </div>

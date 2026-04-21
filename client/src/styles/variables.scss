@@ -76,3 +76,16 @@ $container-width-large: 480px !default;
 $quiz-submit-primary: #f3b26a;
 $quiz-submit-hover: #eaa85f;
 $quiz-submit-disabled: #f7c891;
+
+// Shared room page visual scale (Teacher ManageRoom + Student JoinRoom)
+$room-page-choice-letter-size: 1rem !default;
+$room-page-choice-text-size: 1.3rem !default;
+$room-page-button-text-size: 1.3rem !default;
+$room-page-katex-text-size: 1.3rem !default;
+$room-page-question-size: 1.3rem !default;
+$room-page-choice-min-height: 3rem !default;
+$room-page-choice-padding-y: 0.6rem !default;
+$room-page-choice-padding-x: 0.75rem !default;
+$room-page-choice-badge-size: 2.3rem !default;
+$room-page-title-size: 1.75rem !default;
+$room-page-subtitle-size: 1.05rem !default;

@@ -19,6 +19,7 @@ interface QuestionV2Props {
     students?: Student[];
     showStatistics?: boolean;
     hideAnswerFeedback?: boolean;
+    hideGlobalFeedback?: boolean;
     showCorrectnessBanner?: boolean;
     sideImageLayout?: boolean;
 }
@@ -51,6 +52,7 @@ function buildQuestionComponent(
         students: Student[];
         showStatistics: boolean;
         appliedHideAnswerFeedback: boolean;
+        hideGlobalFeedback: boolean;
         showCorrectnessBanner: boolean;
     }
 ): React.ReactElement | null {
@@ -63,6 +65,7 @@ function buildQuestionComponent(
         students,
         showStatistics,
         appliedHideAnswerFeedback,
+        hideGlobalFeedback,
         showCorrectnessBanner,
     } = props;
 
@@ -79,6 +82,7 @@ function buildQuestionComponent(
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                     showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
@@ -94,6 +98,7 @@ function buildQuestionComponent(
                     students={students}
                     showStatistics={showStatistics}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                     showCorrectnessBanner={showCorrectnessBanner}
                 />
             );
@@ -108,6 +113,7 @@ function buildQuestionComponent(
                         buttonText={buttonText}
                         disabled={disabled}
                         hideAnswerFeedback={appliedHideAnswerFeedback}
+                        hideGlobalFeedback={hideGlobalFeedback}
                     />
                 );
             }
@@ -122,6 +128,7 @@ function buildQuestionComponent(
                     buttonText={buttonText}
                     disabled={disabled}
                     hideAnswerFeedback={appliedHideAnswerFeedback}
+                    hideGlobalFeedback={hideGlobalFeedback}
                 />
             );
         default:
@@ -139,9 +146,13 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     students = [],
     showStatistics = false,
     hideAnswerFeedback = false,
+    hideGlobalFeedback = false,
     showCorrectnessBanner = true,
     sideImageLayout = false,
 }) => {
+    const shouldForceSideImageLayout =
+        typeof window !== 'undefined' && window.location.pathname.startsWith('/student/join-room');
+
     const forceShowFeedback = question?.type === 'Numerical' || question?.type === 'Short';
 
     // For numerical and short answers we always show feedback once answered; override hideAnswerFeedback
@@ -156,6 +167,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
         students,
         showStatistics,
         appliedHideAnswerFeedback,
+        hideGlobalFeedback,
         showCorrectnessBanner,
     };
 
@@ -163,7 +175,7 @@ const QuestionDisplayV2: React.FC<QuestionV2Props> = ({
     // When enabled, render the question stem HTML, extract any <img> tags from
     // it, pass a cleaned stem to the sub-component, and show the images in a
     // column on the right.  Falls back to normal layout when no images are found.
-    if (sideImageLayout && question?.type !== 'Category' && question?.formattedStem) {
+    if ((sideImageLayout || shouldForceSideImageLayout) && question?.type !== 'Category' && question?.formattedStem) {
         const renderedStemHtml = FormattedTextTemplate(question.formattedStem);
         const { cleanHtml, images } = extractImages(renderedStemHtml);
 

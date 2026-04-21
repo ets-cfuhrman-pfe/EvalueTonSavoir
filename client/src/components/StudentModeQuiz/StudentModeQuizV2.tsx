@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
 import { QuestionType } from '../../Types/QuestionType';
-import { Button } from '@mui/material';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Button, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { ChevronLeft, ChevronRight, Close } from '@mui/icons-material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
@@ -11,6 +11,7 @@ import { AnswerType } from 'src/pages/Student/JoinRoom/JoinRoomV2';
 import QuizResults from '../QuizResults/QuizResults';
 import { Student, Answer } from '../../Types/StudentType';
 import { checkIfIsCorrect } from '../../pages/Teacher/ManageRoom/useRooms';
+import { FormattedTextTemplate } from '../GiftTemplate/templates/TextTypeTemplate';
 
 interface StudentModeQuizV2Props {
     questions: QuestionType[];
@@ -33,7 +34,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
-    const [hideFeedback, setHideFeedback] = useState(true);
+    const [hideFeedback, setHideFeedback] = useState(false);
 
     const hasFeedback = (question: Question) => {
         if (!question) return false;
@@ -61,7 +62,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 
     // Always re-show feedback when moving to a different question
     useEffect(() => {
-        setHideFeedback(true);
+        setHideFeedback(false);
     }, [questionInfos.question?.id]);
 
     const previousQuestion = () => {
@@ -87,6 +88,12 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const answerSubmission = answers[Number(questionInfos.question.id) - 1];
     const isAnswerSubmitted = answerSubmission?.answer !== undefined && answerSubmission?.roomName !== undefined;
     const canToggleFeedback = (isAnswerSubmitted || shouldShowResults) && hasFeedback(questionInfos.question as Question);
+    const globalFeedback = questionInfos.question?.formattedGlobalFeedback;
+    const showGlobalFeedbackModal = Boolean(
+        globalFeedback &&
+        (isAnswerSubmitted || shouldShowResults) &&
+        !hideFeedback
+    );
 
     // Create a student object for the current student
     const currentStudent: Student = new Student(
@@ -105,33 +112,38 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
             {/* Header */}
             <div className="row py-2 border-bottom quiz-header sticky-top">
                 <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between">
-                        {/* Left: Quiz title and navigation buttons */}
-                        <div className="d-flex align-items-center gap-3 p-2">
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
-                            <div className="d-flex gap-2 quiz-nav-buttons">
+                    <div className="d-flex flex-column gap-2 p-2 quiz-header-content">
+                        <div className="d-flex justify-content-center text-center quiz-header-title-row">
+                            {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
+                        </div>
+
+                        <div className="d-flex align-items-center justify-content-between gap-3 flex-nowrap quiz-header-actions-row">
+                            <div className="d-flex align-items-center gap-2 quiz-nav-buttons quiz-header-nav-row">
                                 <Button
                                     variant="outlined"
                                     onClick={previousQuestion}
                                     disabled={Number(questionInfos.question.id) <= 1}
                                     size="small"
+                                    sx={{ minWidth: '2.75rem', px: 1 }}
                                 >
                                     <ChevronLeft />
                                 </Button>
+
+                                <h6 className="mb-0 question-counter text-center text-nowrap">
+                                    {questionInfos.question.id} / {questions.length}
+                                </h6>
 
                                 <Button
                                     variant="outlined"
                                     onClick={nextQuestion}
                                     disabled={Number(questionInfos.question.id) >= questions.length}
                                     size="small"
+                                    sx={{ minWidth: '2.75rem', px: 1 }}
                                 >
                                     <ChevronRight />
                                 </Button>
                             </div>
-                        </div>
 
-                        {/* Right: Disconnect button */}
-                        <div>
                             <DisconnectButton
                                 onReturn={disconnectWebSocket}
                                 askConfirm={!shouldShowResults}
@@ -147,12 +159,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                 {/* Question area */}
                 <div className="col-12">
                     <div className="p-4 quiz-question-area">
-                        <div className="text-start mb-3 border-bottom-light">
-                            <h4 className="mb-0 question-counter">
-                                Question {questionInfos.question.id}/{questions.length}
-                            </h4>
-                        </div>
-
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
@@ -161,6 +167,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             answer={answers[Number(questionInfos.question.id)-1]?.answer}
                             buttonText={shouldShowResults ? 'Voir les résultats' : 'Répondre'}
                             hideAnswerFeedback={hideFeedback}
+                            hideGlobalFeedback={Boolean(globalFeedback)}
+                            sideImageLayout={true}
                         />
 
                         {canToggleFeedback && (
@@ -184,6 +192,36 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                     </div>
                 </div>
             </div>
+
+            <Dialog
+                open={showGlobalFeedbackModal}
+                onClose={() => setHideFeedback(true)}
+                maxWidth="sm"
+                fullWidth
+                className="global-feedback-dialog"
+                PaperProps={{ className: 'global-feedback-dialog__paper' }}
+            >
+                <DialogTitle className="global-feedback-dialog__title">
+                    <IconButton
+                        aria-label="Fermer la rétroaction"
+                        onClick={() => setHideFeedback(true)}
+                        className="global-feedback-dialog__close"
+                        size="small"
+                    >
+                        <Close fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent className="global-feedback-dialog__content">
+                    {globalFeedback && (
+                        <div
+                            className="global-feedback"
+                            dangerouslySetInnerHTML={{
+                                __html: FormattedTextTemplate(globalFeedback),
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* Quiz Results Modal */}
             <QuizResults

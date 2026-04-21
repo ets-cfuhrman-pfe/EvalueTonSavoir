@@ -278,8 +278,8 @@ const JoinRoomV2: React.FC = () => {
 
     if (isWaitingForTeacher) {
         return (
-            <div className='full-height' style={{ backgroundColor: 'var(--bs-light)' }}>
-                <div className='card-header'>
+            <div className='content-container full-height join-room-v2 room-page-v2'>
+                <div className='join-room-header'>
                     <div className='flex-between'>
                         <div>
                             <DisconnectButton
@@ -289,8 +289,8 @@ const JoinRoomV2: React.FC = () => {
                         </div>
 
                         <div className='flex-grow-1 text-center'>
-                            <h1 className='title-lg'>Salle: {roomName}</h1>
-                            <p className='subtitle'>
+                            <h1 className='join-room-waiting-title'>Salle: {roomName}</h1>
+                            <p className='join-room-waiting-subtitle'>
                                 En attente que le professeur lance le questionnaire...
                             </p>
                         </div>
@@ -310,7 +310,7 @@ const JoinRoomV2: React.FC = () => {
     switch (quizMode) {
         case 'student':
             return (
-                <div className="d-flex flex-column full-height">
+                <div className="d-flex flex-column full-height join-room-v2 room-page-v2">
                     <StudentModeQuizV2
                         questions={questions}
                         answers={answers}
@@ -324,7 +324,7 @@ const JoinRoomV2: React.FC = () => {
             );
         case 'teacher': {
             return (
-                <div className="d-flex flex-column full-height">
+                <div className="d-flex flex-column full-height join-room-v2 room-page-v2">
                     {question ? (
                         <TeacherModeQuizV2
                             questionInfos={question}
@@ -344,66 +344,68 @@ const JoinRoomV2: React.FC = () => {
         }
         default:
             return (
-                <div className="center-content compact-height" style={{ backgroundColor: 'var(--bs-light)' }}>
-                    <LoginContainer
-                        title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
-                        error={connectionError}
-                    >
-                        <div className="card-form">
-                            {/* Afficher champ salle SEULEMENT si pas de QR code */}
-                            {!isQRCodeJoin && (
+                <div className="center-content compact-height join-room-v2 room-page-v2">
+                    <div className="join-room-login-card">
+                        <LoginContainer
+                            title={isQRCodeJoin ? `Rejoindre la salle ${roomName}` : 'Rejoindre une salle'}
+                            error={connectionError}
+                        >
+                            <div className="card-form">
+                                {/* Afficher champ salle SEULEMENT si pas de QR code */}
+                                {!isQRCodeJoin && (
+                                    <div className="mb-3">
+                                        <ValidatedTextField
+                                            fieldPath="room.name"
+                                            label="Nom de la salle"
+                                            variant="outlined"
+                                            initialValue={roomName}
+                                            onValueChange={(value, isValid) => {
+                                                setRoomName(value.toUpperCase());
+                                                setIsManualRoomNameValid(isValid);
+                                            }}
+                                            placeholder="Nom de la salle"
+                                            fullWidth={true}
+                                            onKeyDown={handleReturnKey}
+                                            required={true}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Champ username toujours visible */}
                                 <div className="mb-3">
                                     <ValidatedTextField
-                                        fieldPath="room.name"
-                                        label="Nom de la salle"
+                                        fieldPath="user.username"
+                                        label="Nom d'utilisateur"
                                         variant="outlined"
-                                        initialValue={roomName}
+                                        initialValue={username}
                                         onValueChange={(value, isValid) => {
-                                            setRoomName(value.toUpperCase());
-                                            setIsManualRoomNameValid(isValid);
+                                            setUsername(value);
+                                            setIsUsernameValid(isValid);
                                         }}
-                                        placeholder="Nom de la salle"
+                                        placeholder="Nom d'utilisateur"
                                         fullWidth={true}
                                         onKeyDown={handleReturnKey}
                                         required={true}
                                     />
                                 </div>
-                            )}
 
-                            {/* Champ username toujours visible */}
-                            <div className="mb-3">
-                                <ValidatedTextField
-                                    fieldPath="user.username"
-                                    label="Nom d'utilisateur"
-                                    variant="outlined"
-                                    initialValue={username}
-                                    onValueChange={(value, isValid) => {
-                                        setUsername(value);
-                                        setIsUsernameValid(isValid);
-                                    }}
-                                    placeholder="Nom d'utilisateur"
-                                    fullWidth={true}
-                                    onKeyDown={handleReturnKey}
-                                    required={true}
-                                />
+                                <LoadingButton
+                                    loading={isConnecting}
+                                    onClick={handleSocket}
+                                    variant="contained"
+                                    className="btn-primary"
+                                    disabled={
+                                        !username ||
+                                        !isUsernameValid ||
+                                        (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
+                                        (isQRCodeJoin && (!roomName || !isRoomNameValid))
+                                    }
+                                >
+                                    {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
+                                </LoadingButton>
                             </div>
-
-                            <LoadingButton
-                                loading={isConnecting}
-                                onClick={handleSocket}
-                                variant="contained"
-                                className="btn-primary"
-                                disabled={
-                                    !username ||
-                                    !isUsernameValid ||
-                                    (!isQRCodeJoin && (!roomName || !isManualRoomNameValid)) ||
-                                    (isQRCodeJoin && (!roomName || !isRoomNameValid))
-                                }
-                            >
-                                {isQRCodeJoin ? 'Rejoindre avec QR Code' : 'Rejoindre'}
-                            </LoadingButton>
-                        </div>
-                    </LoginContainer>
+                        </LoginContainer>
+                    </div>
                 </div>
             );
     }
