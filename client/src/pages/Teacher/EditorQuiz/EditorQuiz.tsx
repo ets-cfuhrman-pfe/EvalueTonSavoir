@@ -73,6 +73,7 @@ const EditorQuiz: React.FC = () => {
     const [selectedFolder, setSelectedFolder] = useState<string>('');
     const [filteredValue, setFilteredValue] = useState<string[]>([]);
     const [value, setValue] = useState('');
+    const [editorInitialContent, setEditorInitialContent] = useState('');
     const [isNewQuiz, setIsNewQuiz] = useState(!id || id === 'new');
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [isLoading, setIsLoading] = useState(id !== 'new' && !!id);
@@ -280,6 +281,7 @@ const EditorQuiz: React.FC = () => {
                 // content arrives normalized as string[] from ApiService
                 const normalizedContent = content.join('\n\n');
                 applyEditorValue(normalizedContent);
+                setEditorInitialContent(normalizedContent);
                 
                 // Set initial state for existing quiz
                 setInitialQuizState({
@@ -628,7 +630,7 @@ const EditorQuiz: React.FC = () => {
                                         <div className="mb-4">
                                             <Editor
                                                 label="Contenu GIFT du quiz:"
-                                                initialValue={value}
+                                                initialValue={editorInitialContent}
                                                 onEditorChange={handleUpdatePreview}
                                                 onCursorChange={handleEditorCursorChange}
                                             />
