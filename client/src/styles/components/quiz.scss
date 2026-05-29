@@ -201,11 +201,12 @@
   }
 }
 
-// Floating correctness banner so it stays visible while scrolling
+// Floating correctness banner so it stays visible while scrolling.
+// z-index sits above the feedback backdrop (1028) and card (1030).
 .quiz-correctness-banner {
   position: sticky;
   top: 72px;
-  z-index: 1020;
+  z-index: 1035;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 
   @media (max-width: #{vars.$breakpoint-sm - 1px}) {
@@ -759,5 +760,123 @@
       flex: 0 0 44%;
       max-width: 44%;
     }
+  }
+}
+
+// Clickable backdrop that dims quiz content while the feedback card is visible.
+// Starts below the sticky quiz header; clicking anywhere on it closes the dialog.
+.student-feedback-backdrop {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 1028;
+  cursor: pointer;
+
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    top: 64px;
+  }
+}
+
+// Student mode: feedback card centered in the viewport.
+// Above backdrop (1028), below correctness banner (1035).
+.student-feedback-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1030;
+  width: calc(100% - 2rem);
+  max-width: 720px;
+
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 0.75rem;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  animation: feedback-pop-in 0.2s ease-out;
+
+  @media (max-width: #{vars.$breakpoint-sm - 1px}) {
+    padding: 1rem 1.25rem;
+  }
+
+  .global-feedback {
+    margin-top: 0;
+    background: var(--bs-light, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    box-shadow: none;
+  }
+
+  .true-feedback,
+  .false-feedback {
+    margin-top: 0;
+    background: var(--bs-light, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-left: 3px solid var(--bs-info);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    box-shadow: none;
+  }
+
+  .alert-info.small {
+    margin-left: 0;
+    background: var(--bs-light, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-left: 3px solid var(--bs-info);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    box-shadow: none;
+  }
+}
+
+@keyframes feedback-pop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// Teacher mode: full-content-area waiting screen after answer submission
+.teacher-mode-waiting-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+
+  .waiting-icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid vars.$secondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: vars.$secondary;
+  }
+
+  .waiting-hourglass-icon {
+    font-size: 2rem !important;
+  }
+
+  .waiting-message {
+    font-size: 1.2rem;
+    color: vars.$dark;
+    max-width: 320px;
+    line-height: 1.5;
+    margin: 0;
   }
 }
