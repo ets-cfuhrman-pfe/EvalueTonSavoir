@@ -99,6 +99,17 @@ describe('TextType', () => {
         expect(FormattedTextTemplate(input)).toBe(expectedOutput);
     });
 
+    it('should render \\neq without throwing and produce katex output (regression for issue #96)', () => {
+        const input: TextFormat = {
+            text: String.raw`$A \neq B$`,
+            format: 'plain'
+        };
+        const output = FormattedTextTemplate(input);
+        expect(output).toContain('class="katex"');
+        // The rendered output must not be the raw LaTeX fallback string
+        expect(output).not.toBe(String.raw`$A \neq B$`);
+    });
+
     // Add more tests for other formats if needed
     it('should format a resized image correctly', () => {
         const input: TextFormat = {

@@ -38,6 +38,12 @@ body {
   --quiz-katex-text-size: 1.6rem;
 }
 
+// KaTeX font override: forces KaTeX_Main on all katex descendant elements so that
+// symbols like \neq use the correct private-use glyph rather than a system-font fallback
+.katex * {
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+}
+
 // Hide the main app header specifically in ManageRoomV2 component
 .manage-room-v2 {
   min-height: 100vh;
