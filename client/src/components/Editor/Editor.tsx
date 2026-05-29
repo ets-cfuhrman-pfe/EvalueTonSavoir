@@ -28,6 +28,10 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const focusSubscriptionRef = useRef<IDisposable | null>(null);
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
+    const onCursorChangeRef = useRef(onCursorChange);
+    useEffect(() => {
+        onCursorChangeRef.current = onCursorChange;
+    }, [onCursorChange]);
 
     const cleanupMonacoResources = useCallback(() => {
         if (resizeSubscriptionRef.current) {
@@ -110,20 +114,20 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         });
         validateModel();
 
-        if (onCursorChange) {
+        if (onCursorChangeRef.current) {
             const model = editor.getModel();
             if (!model) return;
 
             const initialOffset = model.getOffsetAt(editor.getPosition() ?? { lineNumber: 1, column: 1 });
-            onCursorChange(initialOffset);
+            onCursorChangeRef.current(initialOffset);
 
             cursorSubscriptionRef.current = editor.onDidChangeCursorPosition((event) => {
                 const currentModel = editor.getModel();
                 if (!currentModel) return;
-                onCursorChange(currentModel.getOffsetAt(event.position));
+                onCursorChangeRef.current?.(currentModel.getOffsetAt(event.position));
             });
         }
-    }, [cleanupMonacoResources, onCursorChange]);
+    }, [cleanupMonacoResources]);
 
     useEffect(() => {
         if (!isCollapsed) return;
