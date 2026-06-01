@@ -33,28 +33,38 @@ interface QuestionRange {
     end: number;
 }
 
-function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[] } {
-    const { questions, ranges } = splitGiftSource(text);
-    return { questions, ranges };
+function splitQuestionsAndRanges(text: string): { questions: string[]; ranges: QuestionRange[]; startLines: number[] } {
+    const { questions, ranges, blocks } = splitGiftSource(text);
+    const startLines = blocks.map(block => block.startLine);
+    return { questions, ranges, startLines };
 }
 
 function findQuestionIndexByCaret(ranges: QuestionRange[], caretOffset: number): number | null {
     if (ranges.length === 0) return null;
 
-    for (const range of ranges) {
-        if (caretOffset >= range.start && caretOffset < range.end) {
+    // Cursor before or within the first question (covers the range + "before first" region)
+    if (caretOffset <= ranges[0].end) {
+        return ranges[0].index;
+    }
+
+    for (let i = 0; i < ranges.length; i++) {
+        const range = ranges[i];
+        const nextRange = ranges[i + 1];
+
+        // Cursor inside this question (inclusive end fixes off-by-one at last char)
+        if (caretOffset >= range.start && caretOffset <= range.end) {
+            return range.index;
+        }
+
+        // Cursor in the blank-line separator between this question and the next:
+        // stay on the preceding question rather than returning null
+        if (nextRange && caretOffset > range.end && caretOffset < nextRange.start) {
             return range.index;
         }
     }
 
-    const lastRange = ranges.at(-1);
-    if (!lastRange) return null;
-
-    if (caretOffset >= lastRange.end) {
-        return lastRange.index;
-    }
-
-    return null;
+    // Cursor after the last question
+    return ranges[ranges.length - 1].index;
 }
 
 const EditorQuiz: React.FC = () => {
@@ -63,6 +73,7 @@ const EditorQuiz: React.FC = () => {
     const [selectedFolder, setSelectedFolder] = useState<string>('');
     const [filteredValue, setFilteredValue] = useState<string[]>([]);
     const [value, setValue] = useState('');
+    const [editorInitialContent, setEditorInitialContent] = useState('');
     const [isNewQuiz, setIsNewQuiz] = useState(!id || id === 'new');
     const [quiz, setQuiz] = useState<QuizType | null>(null);
     const [isLoading, setIsLoading] = useState(id !== 'new' && !!id);
@@ -74,6 +85,7 @@ const EditorQuiz: React.FC = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [hideAnswers, setHideAnswers] = useState(false);
     const [questionRanges, setQuestionRanges] = useState<QuestionRange[]>([]);
+    const [questionStartLines, setQuestionStartLines] = useState<number[]>([]);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState<number | null>(null);
     const [initialQuizState, setInitialQuizState] = useState<{
         title: string;
@@ -92,6 +104,8 @@ const EditorQuiz: React.FC = () => {
 
     const isDraggingRef = useRef(false);
     const splitPaneRef = useRef<HTMLDivElement>(null);
+    const questionRangesRef = useRef<QuestionRange[]>([]);
+    const latestCursorOffsetRef = useRef<number>(0);
     const [leftPanePercent, setLeftPanePercent] = useState(50);
 
     const setPaneWidth = useCallback((newPercentage: number) => {
@@ -197,9 +211,11 @@ const EditorQuiz: React.FC = () => {
 
     const applyEditorValue = useCallback((text: string) => {
         setValue(text);
-        const { questions, ranges } = splitQuestionsAndRanges(text);
+        const { questions, ranges, startLines } = splitQuestionsAndRanges(text);
+        questionRangesRef.current = ranges; // synchronous — available to cursor callback immediately
         setFilteredValue(questions);
         setQuestionRanges(ranges);
+        setQuestionStartLines(startLines);
     }, []);
 
     useEffect(() => {
@@ -265,6 +281,7 @@ const EditorQuiz: React.FC = () => {
                 // content arrives normalized as string[] from ApiService
                 const normalizedContent = content.join('\n\n');
                 applyEditorValue(normalizedContent);
+                setEditorInitialContent(normalizedContent);
                 
                 // Set initial state for existing quiz
                 setInitialQuizState({
@@ -295,7 +312,14 @@ const EditorQuiz: React.FC = () => {
     }
 
     const handleEditorCursorChange = useCallback((caretOffset: number) => {
-        setActiveQuestionIndex(findQuestionIndexByCaret(questionRanges, caretOffset));
+        latestCursorOffsetRef.current = caretOffset;
+        setActiveQuestionIndex(findQuestionIndexByCaret(questionRangesRef.current, caretOffset));
+    }, []); // no deps — reads only from stable refs
+
+    useEffect(() => {
+        setActiveQuestionIndex(
+            findQuestionIndexByCaret(questionRanges, latestCursorOffsetRef.current)
+        );
     }, [questionRanges]);
 
     const handleQuizSave = async () => {
@@ -606,7 +630,7 @@ const EditorQuiz: React.FC = () => {
                                         <div className="mb-4">
                                             <Editor
                                                 label="Contenu GIFT du quiz:"
-                                                initialValue={value}
+                                                initialValue={editorInitialContent}
                                                 onEditorChange={handleUpdatePreview}
                                                 onCursorChange={handleEditorCursorChange}
                                             />
@@ -722,6 +746,7 @@ const EditorQuiz: React.FC = () => {
                                             questions={filteredValue}
                                             hideAnswers={hideAnswers}
                                             activeQuestionIndex={activeQuestionIndex}
+                                            questionStartLines={questionStartLines}
                                         />
                                     </div>
                                 </div>

@@ -70,10 +70,10 @@ export default function Template(
             throw new UnsupportedQuestionTypeError(type);  }
 }
 
-export function ErrorTemplate(questionText: string, errorText: string, options?: Partial<DisplayOptions>): string {
+export function ErrorTemplate(errorText: string, options?: Partial<DisplayOptions>): string {
     Object.assign(state, options);
 
-    return Error(questionText, errorText);
+    return Error(errorText);
 }
 
 export {
