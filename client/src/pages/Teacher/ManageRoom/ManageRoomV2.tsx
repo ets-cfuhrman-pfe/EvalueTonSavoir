@@ -737,13 +737,11 @@ const ManageRoomV2: React.FC = () => {
                                         color="info"
                                     />
                                 )}
-                                {formattedRoomName && (
-                                    <Chip
-                                        label={`Salle : ${formattedRoomName}`}
-                                        size="small"
-                                        sx={{ fontWeight: 'bold' }}
-                                    />
-                                )}
+                                <Chip
+                                    label={`Salle : ${formattedRoomName}`}
+                                    size="small"
+                                    sx={{ fontWeight: 'bold' }}
+                                />
                             </Box>
                         </Box>
 
