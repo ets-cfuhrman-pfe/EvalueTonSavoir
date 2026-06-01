@@ -115,6 +115,19 @@ export async function loginAsTeacher(page: Page): Promise<void> {
 
 // Selects the first available room
  
+export async function fillMonacoEditor(page: Page, content: string): Promise<void> {
+    const container = page.locator('.editor-v2-monaco');
+    await container.click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type(content);
+}
+
+export async function getMonacoEditorValue(page: Page): Promise<string> {
+    return page.evaluate(
+        () => (window as any).monaco?.editor?.getModels()?.[0]?.getValue() ?? ''
+    );
+}
+
 export async function selectActiveRoom(page: Page): Promise<void> {
     // Try selectors from most to least specific
     let roomDropdown = page.locator('#room-select');

@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { loginAsTeacher, TIMEOUTS, DEFAULT_FOLDER_NAME } from './helpers';
+import { loginAsTeacher, TIMEOUTS, DEFAULT_FOLDER_NAME, fillMonacoEditor, getMonacoEditorValue } from './helpers';
 
 test.describe('Teacher Create Quiz Workflow', () => {
     test('Complete workflow - Teacher creates a new quiz with GIFT content', async ({
@@ -81,14 +81,10 @@ test.describe('Teacher Create Quiz Workflow', () => {
                 .click();
             console.log('Selected default folder');
 
-            const giftEditor = teacherPage
-                .locator('textarea')
-                .or(teacherPage.locator('[contenteditable="true"]'))
-                .first();
             const initialGift = `::Question 1:: What's 2+2? {=4}
 
 ::Question 2:: What's the capital of France? {=Paris}`;
-            await giftEditor.fill(initialGift);
+            await fillMonacoEditor(teacherPage, initialGift);
             await teacherPage.keyboard.press('Tab');
 
             const saveButton = teacherPage
@@ -107,7 +103,7 @@ test.describe('Teacher Create Quiz Workflow', () => {
             const additionalGift = `
 
 ::Question 3:: What is 5*5? {=25}`;
-            await giftEditor.fill(initialGift + additionalGift);
+            await fillMonacoEditor(teacherPage, initialGift + additionalGift);
             await teacherPage.keyboard.press('Tab');
             console.log('Added more GIFT content');
 
@@ -115,8 +111,7 @@ test.describe('Teacher Create Quiz Workflow', () => {
             console.log('Clicked "Enregistrer" - Second save');
 
             await teacherPage.waitForTimeout(TIMEOUTS.PAGE_STABILIZE);
-            const editorContent =
-                (await giftEditor.inputValue()) || (await giftEditor.textContent());
+            const editorContent = await getMonacoEditorValue(teacherPage);
             if (!editorContent?.includes('Question 3') || !editorContent?.includes('25')) {
                 throw new Error('New changes not saved correctly');
             }
