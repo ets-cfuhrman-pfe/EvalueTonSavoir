@@ -722,7 +722,7 @@ const ManageRoomV2: React.FC = () => {
                                     {quiz.title}
                                 </Typography>
                             )}
-                            <Box display="flex" gap={1} flexWrap="wrap">
+                            <Box display="flex" gap={1} flexWrap="wrap" alignItems="center">
                                 <Chip
                                     icon={<PeopleAlt fontSize="small" />}
                                     label={`${connectedCount} / ${MAX_PARTICIPANTS} participants`}
@@ -737,6 +737,11 @@ const ManageRoomV2: React.FC = () => {
                                         color="info"
                                     />
                                 )}
+                                <Chip
+                                    label={`Salle : ${formattedRoomName}`}
+                                    size="small"
+                                    sx={{ fontWeight: 'bold' }}
+                                />
                             </Box>
                         </Box>
 
