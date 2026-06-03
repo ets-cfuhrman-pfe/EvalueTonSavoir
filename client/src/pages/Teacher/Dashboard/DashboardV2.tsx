@@ -11,6 +11,7 @@ import ImportModal from 'src/components/ImportModal/ImportModal';
 import ValidatedTextField from 'src/components/ValidatedTextField/ValidatedTextField';
 
 import DownloadQuizModal from 'src/components/DownloadQuizModal/DownloadQuizModal';
+import ShareFolderModal from 'src/components/ShareFolderModal/ShareFolderModal';
 import {
     Dialog,
     DialogActions,
@@ -71,6 +72,8 @@ const DashboardV2: React.FC = () => {
     const [folderMenuAnchor, setFolderMenuAnchor] = useState<null | HTMLElement>(null);
     const [selectedFolderForMenu, setSelectedFolderForMenu] = useState<FolderType | null>(null);
     const [isFolderListExpanded, setIsFolderListExpanded] = useState(true);
+    const [openShareFolderDialog, setOpenShareFolderDialog] = useState(false);
+    const [folderToShare, setFolderToShare] = useState<FolderType | null>(null);
 
     // Room management
     const [rooms, setRooms] = useState<RoomType[]>([]);
@@ -308,6 +311,10 @@ const DashboardV2: React.FC = () => {
                 break;
             case 'delete':
                 handleDeleteFolder();
+                break;
+            case 'share':
+                setFolderToShare(selectedFolderForMenu);
+                setOpenShareFolderDialog(true);
                 break;
         }
     };
@@ -1093,6 +1100,13 @@ const DashboardV2: React.FC = () => {
                             primary="Dupliquer"
                         />
                     </MenuItem>
+                    {/* Share */}
+                    <MenuItem onClick={() => handleFolderMenuAction("share")}>
+                        <ListItemIcon>
+                            <Share fontSize="small" sx={{ color: "primary.main" }} />
+                        </ListItemIcon>
+                        <ListItemText primary="Partager" />
+                    </MenuItem>
                     <Divider />
                     {/* Delete */}
                     <MenuItem onClick={() => handleFolderMenuAction("delete")}>
@@ -1104,6 +1118,16 @@ const DashboardV2: React.FC = () => {
                         />
                     </MenuItem>
                 </Menu>
+
+                {/* Share Folder Modal */}
+                <ShareFolderModal
+                    open={openShareFolderDialog}
+                    folder={folderToShare}
+                    onClose={() => {
+                        setOpenShareFolderDialog(false);
+                        setFolderToShare(null);
+                    }}
+                />
 
                 {/* Error Dialog */}
                 <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)}>
