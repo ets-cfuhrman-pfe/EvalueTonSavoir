@@ -1,14 +1,14 @@
-const Users = require('../models/users');
+const Users = require('../../models/users');
 const bcrypt = require('bcrypt');
-const Quizzes = require('../models/quiz');
-const Folders = require('../models/folders');
+const Quizzes = require('../../models/quiz');
+const Folders = require('../../models/folders');
 const { ObjectId } = require('mongodb');
-const logger = require('../config/logger');
+const logger = require('../../config/logger');
 
 jest.mock('bcrypt');
-jest.mock('../middleware/AppError');
-jest.mock('../models/folders');
-jest.mock('../config/logger', () => ({
+jest.mock('../../middleware/AppError');
+jest.mock('../../models/folders');
+jest.mock('../../config/logger', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),

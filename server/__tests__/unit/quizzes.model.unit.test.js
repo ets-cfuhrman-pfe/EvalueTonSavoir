@@ -1,15 +1,15 @@
 const { ObjectId } = require('mongodb');
-const Quizzes = require('../models/quiz'); // Adjust the path as necessary
+const Quizzes = require('../../models/quiz'); // Adjust the path as necessary
 
 // Mock logger for testing
-jest.mock('../config/logger', () => ({
+jest.mock('../../config/logger', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn()
 }));
 
-const logger = require('../config/logger');
+const logger = require('../../config/logger');
 
 describe('Quizzes', () => {
     let db;
