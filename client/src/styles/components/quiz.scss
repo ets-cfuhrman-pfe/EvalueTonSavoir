@@ -651,7 +651,7 @@
 .side-image-layout {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   gap: 1.5rem;
 
   &__content {
@@ -749,7 +749,7 @@
 
   .side-image-layout {
     flex-direction: row !important;
-    align-items: flex-start;
+    align-items: center;
     gap: 1.25rem;
 
     &__content {
