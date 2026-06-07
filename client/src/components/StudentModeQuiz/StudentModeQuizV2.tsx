@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
 import FeedbackBox from './FeedbackBox';
 import { QuestionType } from '../../Types/QuestionType';
-import { Button } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
@@ -21,6 +21,7 @@ interface StudentModeQuizV2Props {
     studentName?: string;
     quizTitle?: string;
     quizCompleted?: boolean;
+    roomName?: string;
 }
 
 const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
@@ -30,7 +31,8 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     disconnectWebSocket,
     studentName,
     quizTitle,
-    quizCompleted = false
+    quizCompleted = false,
+    roomName,
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
@@ -111,10 +113,11 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
             <div className="row py-2 border-bottom quiz-header sticky-top">
                 <div className="col-12">
                     <div className="d-flex align-items-center justify-content-between">
-                        {/* Left: Quiz title and navigation buttons */}
-                        <div className="d-flex align-items-center gap-3 p-2">
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
-                            <div className="d-flex gap-2 quiz-nav-buttons">
+                        {/* Left: Quiz title, room name, and navigation */}
+                        <div className="d-flex align-items-center gap-2 p-2 flex-wrap">
+                            {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
+                            {roomName && <Chip label={`Salle : ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
+                            <div className="d-flex align-items-center gap-1 quiz-nav-buttons">
                                 <Button
                                     variant="outlined"
                                     onClick={previousQuestion}
@@ -123,7 +126,9 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                                 >
                                     <ChevronLeft />
                                 </Button>
-
+                                <span className="question-counter px-2">
+                                    {questionInfos.question.id}/{questions.length}
+                                </span>
                                 <Button
                                     variant="outlined"
                                     onClick={nextQuestion}
@@ -152,12 +157,6 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                 {/* Question area */}
                 <div className="col-12">
                     <div className="p-4 quiz-question-area">
-                        <div className="text-start mb-3 border-bottom-light">
-                            <h4 className="mb-0 question-counter">
-                                Question {questionInfos.question.id}/{questions.length}
-                            </h4>
-                        </div>
-
                         <QuestionDisplayV2
                             key={questionInfos.question.id} // Force remount on question change to prevent flicker
                             handleOnSubmitAnswer={handleOnSubmitAnswer}
@@ -166,6 +165,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             answer={answers[Number(questionInfos.question.id)-1]?.answer}
                             buttonText={shouldShowResults ? 'Voir les résultats' : 'Répondre'}
                             hideAnswerFeedback={true}
+                            sideImageLayout={true}
                         />
 
                         {(isAnswerSubmitted || shouldShowResults) && canToggleFeedback && !isFeedbackHidden && (
