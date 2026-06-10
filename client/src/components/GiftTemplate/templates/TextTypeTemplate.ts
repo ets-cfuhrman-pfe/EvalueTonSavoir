@@ -4,18 +4,26 @@ import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
+// KaTeX_Main digits are tabular (every digit advances 0.5em) but the ink of "1" is
+// narrower than its slot, so a decimal comma written as {,} or \mathord{,} leaves a
+// visibly larger hole before a "1" than before other digits. Compensate with a kern
+// equal to the side-bearing difference between "1" (0.08em) and the other digits (0.04em).
+function tightenDecimalCommaBeforeOne(math: string): string {
+    return math.replace(/(\\mathord\{,\}|\{,\})(\s*)1/g, String.raw`$1\kern-0.04em$2 1`);
+}
+
 function formatLatex(text: string): string {
 
     let renderedText = '';
+    const render = (inner: string, displayMode: boolean) =>
+        katex.renderToString(tightenDecimalCommaBeforeOne(inner), { displayMode });
 
     try {
     renderedText = text
-        .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
-        .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
-        .replace(/\\\[(.*?)\\\]/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
-        .replace(/\\\((.*?)\\\)/g, (_, inner) =>
-            katex.renderToString(inner, { displayMode: false })
-        );
+        .replace(/\$\$(.*?)\$\$/g, (_, inner) => render(inner, true))
+        .replace(/\$(.*?)\$/g, (_, inner) => render(inner, false))
+        .replace(/\\\[(.*?)\\\]/g, (_, inner) => render(inner, true))
+        .replace(/\\\((.*?)\\\)/g, (_, inner) => render(inner, false));
     } catch (error) {
         console.log('Error rendering LaTeX (KaTeX):', error);
         renderedText = text;

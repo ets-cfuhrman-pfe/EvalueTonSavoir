@@ -110,6 +110,44 @@ describe('TextType', () => {
         expect(output).not.toBe(String.raw`$A \neq B$`);
     });
 
+    describe('decimal comma kerning before "1" (tabular-figure side bearings)', () => {
+        it('should kern a {,} decimal comma followed by 1', () => {
+            const input: TextFormat = {
+                text: String.raw`\( 3{,}15x^2 \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).toContain('margin-right:-0.04em');
+        });
+
+        it(String.raw`should kern a \mathord{,} decimal comma followed by 1`, () => {
+            const input: TextFormat = {
+                text: String.raw`\( [3\mathord{,}1] \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).toContain('margin-right:-0.04em');
+        });
+
+        it('should not kern a decimal comma followed by another digit', () => {
+            const input: TextFormat = {
+                text: String.raw`\( 3{,}25x^2 \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).not.toContain('margin-right:-0.04em');
+        });
+
+        it('should not kern a plain math-punctuation comma', () => {
+            const input: TextFormat = {
+                text: String.raw`\( f(x, 1) \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).not.toContain('margin-right:-0.04em');
+        });
+    });
+
     // Add more tests for other formats if needed
     it('should format a resized image correctly', () => {
         const input: TextFormat = {
