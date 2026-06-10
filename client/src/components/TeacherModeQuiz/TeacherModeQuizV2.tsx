@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
 import WaitingForNextQuestion from './WaitingForNextQuestion';
 import { QuestionType } from '../../Types/QuestionType';
+import { Chip } from '@mui/material';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
 import { AnswerSubmissionToBackendType } from 'src/services/WebsocketService';
@@ -21,6 +22,7 @@ interface TeacherModeQuizV2Props {
     quizCompleted?: boolean;
     questions?: QuestionType[];
     studentName?: string;
+    roomName?: string;
 }
 
 const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
@@ -32,7 +34,8 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
     totalQuestions,
     quizCompleted = false,
     questions = [],
-    studentName
+    studentName,
+    roomName,
 }) => {
     const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
     const [answer, setAnswer] = useState<AnswerType>();
@@ -99,9 +102,13 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             <div className='row py-2 border-bottom quiz-header sticky-top'>
                 <div className='col-12'>
                     <div className='d-flex align-items-center justify-content-between'>
-                        {/* Left: Quiz title */}
-                        <div className='d-flex align-items-center'>
-                            {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
+                        {/* Left: Quiz title, room name, and question counter */}
+                        <div className='d-flex align-items-center gap-2 p-2'>
+                            {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
+                            {roomName && <Chip label={`Salle : ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
+                            <span className='question-counter px-1'>
+                                {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
+                            </span>
                         </div>
 
                         {/* Right: Disconnect button */}
@@ -119,12 +126,6 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
             <div className='row'>
                 <div className='col-12'>
                     <div className='p-4'>
-                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
-                            <h6 className='mb-0 question-counter'>
-                                {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
-                            </h6>
-                        </div>
-
                         {/* State 1: Quiz completed — show waiting page with results button */}
                         {shouldShowResults && (
                             <WaitingForNextQuestion
@@ -148,6 +149,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                                 buttonText='Répondre'
                                 hideAnswerFeedback={true}
                                 showCorrectnessBanner={false}
+                                sideImageLayout={true}
                             />
                         )}
                     </div>
