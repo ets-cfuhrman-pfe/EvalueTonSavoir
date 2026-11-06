@@ -32,7 +32,7 @@ const FeedbackBox: React.FC<FeedbackBoxProps> = ({ question, answer, onDismiss }
         if (!hasContent) return null;
 
         return (
-            <div className="student-feedback-box" data-testid="feedback-box">
+            <div className="student-feedback-box" role="dialog" aria-modal="true" aria-label="Rétroactions" data-testid="feedback-box">
                 {choiceFeedbacks}
                 {mc.formattedGlobalFeedback && (
                     <div className="global-feedback mb-0">
@@ -66,7 +66,7 @@ const FeedbackBox: React.FC<FeedbackBoxProps> = ({ question, answer, onDismiss }
         if (!hasContent) return null;
 
         return (
-            <div className="student-feedback-box" data-testid="feedback-box">
+            <div className="student-feedback-box" role="dialog" aria-modal="true" aria-label="Rétroactions" data-testid="feedback-box">
                 {specificFeedback && (
                     <div className={`${isTrue ? 'true-feedback' : 'false-feedback'} mb-2`}>
                         <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate(specificFeedback) }} />

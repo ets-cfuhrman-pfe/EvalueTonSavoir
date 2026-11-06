@@ -763,8 +763,8 @@
   }
 }
 
-// Clickable backdrop that dims quiz content while the feedback card is visible.
-// Starts below the sticky quiz header; clicking anywhere on it closes the dialog.
+// Transparent click-target that covers the viewport below the sticky quiz header.
+// Clicking anywhere on it closes the feedback dialog.
 .student-feedback-backdrop {
   position: fixed;
   top: 72px;

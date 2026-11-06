@@ -1,7 +1,7 @@
 ﻿// Editor.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import MonacoEditor, { OnMount } from '@monaco-editor/react';
-import type { IDisposable } from 'monaco-editor';
+import type { editor as MonacoEditorNS, IDisposable } from 'monaco-editor';
 import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -22,12 +22,17 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [editorHeight, setEditorHeight] = useState(200);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const editorInstanceRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
     const resizeSubscriptionRef = useRef<IDisposable | null>(null);
     const cursorSubscriptionRef = useRef<IDisposable | null>(null);
     const contentSubscriptionRef = useRef<IDisposable | null>(null);
     const focusSubscriptionRef = useRef<IDisposable | null>(null);
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
+    const onCursorChangeRef = useRef(onCursorChange);
+    useEffect(() => {
+        onCursorChangeRef.current = onCursorChange;
+    }, [onCursorChange]);
 
     const cleanupMonacoResources = useCallback(() => {
         if (resizeSubscriptionRef.current) {
@@ -57,7 +62,14 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     }, []);
 
     useEffect(() => {
-        setValue(initialValue);
+        setValue(initialValue); // keeps the test-environment textarea in sync
+
+        const editorInstance = editorInstanceRef.current;
+        if (!editorInstance) return;
+        const model = editorInstance.getModel();
+        if (!model || model.getValue() === initialValue) return;
+
+        model.setValue(initialValue);
     }, [initialValue]);
 
     const handleEditorChange = useCallback((newValue = '') => {
@@ -67,6 +79,7 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     }, [onEditorChange]);
 
     const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
+        editorInstanceRef.current = editor;
         cleanupMonacoResources();
 
         const updateEditorHeight = () => {
@@ -110,20 +123,20 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         });
         validateModel();
 
-        if (onCursorChange) {
+        if (onCursorChangeRef.current) {
             const model = editor.getModel();
             if (!model) return;
 
             const initialOffset = model.getOffsetAt(editor.getPosition() ?? { lineNumber: 1, column: 1 });
-            onCursorChange(initialOffset);
+            onCursorChangeRef.current(initialOffset);
 
             cursorSubscriptionRef.current = editor.onDidChangeCursorPosition((event) => {
                 const currentModel = editor.getModel();
                 if (!currentModel) return;
-                onCursorChange(currentModel.getOffsetAt(event.position));
+                onCursorChangeRef.current?.(currentModel.getOffsetAt(event.position));
             });
         }
-    }, [cleanupMonacoResources, onCursorChange]);
+    }, [cleanupMonacoResources]);
 
     useEffect(() => {
         if (!isCollapsed) return;
@@ -174,7 +187,7 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
                     ) : (
                         <MonacoEditor
                             language='plaintext'
-                            value={value}
+                            defaultValue={initialValue}
                             onChange={handleEditorChange}
                             onMount={handleEditorDidMount}
                             height={`${editorHeight}px`}
