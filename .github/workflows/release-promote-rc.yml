@@ -150,13 +150,14 @@ jobs:
 
           if [ -n "$PREV_TAG" ]; then
             RANGE="${PREV_TAG}..${PROD_TAG}"
-            HEADER="**Changes since \`${PREV_TAG}\`:**"
+            HEADER="**${PACKAGE} changes since \`${PREV_TAG}\`:**"
           else
             RANGE="${PROD_TAG}"
-            HEADER="**Changes:**"
+            HEADER="**${PACKAGE} changes:**"
           fi
 
-          COMMITS=$(git log "$RANGE" --no-merges --pretty=format:'- %s (%h) by %an' \
+          # Only commits that touch this package's folder (client/ or server/)
+          COMMITS=$(git log "$RANGE" --no-merges --pretty=format:'- %s (%h) by %an' -- "${PACKAGE}/" \
             | grep -v '\[skip ci\]' || true)
           [ -z "$COMMITS" ] && COMMITS="- No changes"
 
