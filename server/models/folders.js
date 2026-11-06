@@ -138,6 +138,47 @@ class Folders {
         return newFolderId;
     }
 
+    /**
+     * Import a folder shared by another teacher: creates a new folder owned by
+     * userId (with a unique title) and copies every quiz of the source folder into it.
+     * Unlike duplicate(), the source folder may belong to any user.
+     */
+    async importShared(folderId, userId) {
+        if (!folderId || !userId) {
+            throw new Error('Missing required parameter(s)');
+        }
+
+        await this.db.connect();
+        const conn = this.db.getConnection();
+        const foldersCollection = conn.collection('folders');
+
+        const sourceFolder = await foldersCollection.findOne({ _id: ObjectId.createFromHexString(folderId) });
+        if (!sourceFolder) {
+            throw new Error(`Folder ${folderId} not found`);
+        }
+
+        const titleTaken = async (title) => await foldersCollection.findOne({ title: title, userId: userId });
+        // Keep the original title when the requester has no folder with that name
+        const newFolderTitle = (await titleTaken(sourceFolder.title))
+            ? await generateUniqueTitle(sourceFolder.title, titleTaken)
+            : sourceFolder.title;
+
+        const newFolderId = await this.create(newFolderTitle, userId);
+        if (!newFolderId) {
+            throw new Error('Failed to create imported folder');
+        }
+
+        const content = await this.getContent(folderId);
+        for (const quiz of content) {
+            const result = await this.quizModel.create(quiz.title, quiz.content, newFolderId.toString(), userId);
+            if (!result) {
+                throw new Error('Failed to import quiz');
+            }
+        }
+
+        return { folderId: newFolderId, title: newFolderTitle, quizCount: content.length };
+    }
+
     async folderExists(title, userId) {
         await this.db.connect();
         const conn = this.db.getConnection();

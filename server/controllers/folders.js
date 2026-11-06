@@ -329,6 +329,90 @@ class FoldersController {
         }
     }
     
+    /**
+     * Public preview of a shared folder (any authenticated teacher holding the link).
+     * Returns only the folder title and the quiz titles, never the quiz content.
+     */
+    getShare = async (req, res, next) => {
+        try {
+            const { folderId } = req.params;
+
+            if (!folderId) {
+                throw new AppError(MISSING_REQUIRED_PARAMETER);
+            }
+
+            let folder;
+            try {
+                folder = await this.folders.getFolderById(folderId);
+            } catch {
+                throw new AppError(FOLDER_NOT_FOUND);
+            }
+            // getFolderById returns (not throws) an Error when the folder is missing
+            if (!folder || folder instanceof Error) {
+                throw new AppError(FOLDER_NOT_FOUND);
+            }
+
+            const content = await this.folders.getContent(folderId);
+            if (!content) {
+                throw new AppError(GETTING_FOLDER_ERROR);
+            }
+
+            return res.status(200).json({
+                data: {
+                    title: folder.title,
+                    isOwner: folder.userId == req.user.userId,
+                    quizzes: content.map((quiz) => ({ _id: quiz._id, title: quiz.title })),
+                }
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    /**
+     * Import every quiz of a shared folder into a new folder owned by the requester.
+     */
+    receiveShare = async (req, res, next) => {
+        try {
+            const { folderId } = req.body;
+
+            if (!folderId) {
+                throw new AppError(MISSING_REQUIRED_PARAMETER);
+            }
+
+            let result;
+            try {
+                result = await this.folders.importShared(folderId, req.user.userId);
+            } catch (error) {
+                if (error && /not found/.test(error.message)) {
+                    throw new AppError(FOLDER_NOT_FOUND);
+                }
+                throw new AppError(COPY_FOLDER_ERROR);
+            }
+
+            if (!result) {
+                throw new AppError(COPY_FOLDER_ERROR);
+            }
+
+            if (req.logAction) {
+                req.logAction('folder_share_received', {
+                    sourceFolderId: folderId,
+                    newFolderId: result.folderId,
+                    quizCount: result.quizCount,
+                });
+            }
+
+            return res.status(200).json({
+                message: 'Dossier partagé importé avec succès.',
+                newFolderId: result.folderId,
+                title: result.title,
+                quizCount: result.quizCount,
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
     getFolderById = async (req, res, next) => {
         try {
             const { folderId } = req.params;

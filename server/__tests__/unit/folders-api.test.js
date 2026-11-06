@@ -43,6 +43,7 @@ const mockFoldersModel = {
     folderExists: jest.fn(),
     duplicate: jest.fn(),
     copy: jest.fn(),
+    importShared: jest.fn(),
 };
 
 // Create test app with manual routing 
@@ -116,6 +117,17 @@ const createTestApp = () => {
         "/api/folder/folderExists",
         jwtMiddleware.authenticate,
         asyncHandler(foldersController.folderExists)
+    );
+
+    app.get(
+        "/api/folder/getShare/:folderId",
+        jwtMiddleware.authenticate,
+        asyncHandler(foldersController.getShare)
+    );
+    app.post(
+        "/api/folder/receiveShare",
+        jwtMiddleware.authenticate,
+        asyncHandler(foldersController.receiveShare)
     );
 
     // Add error handler
@@ -595,6 +607,118 @@ describe("Folders API Integration Tests", () => {
                 .expect(200);
 
             expect(response.body.message).toContain("mis à jours avec succès");
+        });
+    });
+
+    describe("GET /api/folder/getShare/:folderId", () => {
+        it("returns folder title and quiz titles (no content) to any authenticated teacher", async () => {
+            mockFoldersModel.getFolderById.mockResolvedValue({ _id: "f1", title: "Physique", userId: "someoneElse" });
+            mockFoldersModel.getContent.mockResolvedValue([
+                { _id: "q1", title: "Quiz 1", content: ["secret question"] },
+                { _id: "q2", title: "Quiz 2", content: [] },
+            ]);
+
+            const response = await request(app)
+                .get("/api/folder/getShare/f1")
+                .set("Authorization", `Bearer ${authToken}`)
+                .expect(200);
+
+            expect(response.body.data).toEqual({
+                title: "Physique",
+                isOwner: false,
+                quizzes: [{ _id: "q1", title: "Quiz 1" }, { _id: "q2", title: "Quiz 2" }],
+            });
+            expect(JSON.stringify(response.body)).not.toContain("secret question");
+            expect(mockFoldersModel.getOwner).not.toHaveBeenCalled();
+        });
+
+        it("flags isOwner when the requester owns the folder", async () => {
+            mockFoldersModel.getFolderById.mockResolvedValue({ _id: "f1", title: "Mine", userId: "user123" });
+            mockFoldersModel.getContent.mockResolvedValue([]);
+
+            const response = await request(app)
+                .get("/api/folder/getShare/f1")
+                .set("Authorization", `Bearer ${authToken}`)
+                .expect(200);
+
+            expect(response.body.data.isOwner).toBe(true);
+            expect(response.body.data.quizzes).toEqual([]);
+        });
+
+        it("returns 404 when the model returns an Error for a missing folder", async () => {
+            mockFoldersModel.getFolderById.mockResolvedValue(new Error("Folder f1 not found"));
+
+            await request(app)
+                .get("/api/folder/getShare/f1")
+                .set("Authorization", `Bearer ${authToken}`)
+                .expect(404);
+        });
+
+        it("returns 404 when the folder id is malformed (model throws)", async () => {
+            mockFoldersModel.getFolderById.mockRejectedValue(new Error("input must be a 24 character hex string"));
+
+            await request(app)
+                .get("/api/folder/getShare/not-an-id")
+                .set("Authorization", `Bearer ${authToken}`)
+                .expect(404);
+        });
+
+        it("returns 401 without a token", async () => {
+            await request(app).get("/api/folder/getShare/f1").expect(401);
+        });
+    });
+
+    describe("POST /api/folder/receiveShare", () => {
+        it("imports the shared folder for the requesting user", async () => {
+            mockFoldersModel.importShared.mockResolvedValue({ folderId: "new1", title: "Physique (1)", quizCount: 3 });
+
+            const response = await request(app)
+                .post("/api/folder/receiveShare")
+                .set("Authorization", `Bearer ${authToken}`)
+                .send({ folderId: "f1" })
+                .expect(200);
+
+            expect(mockFoldersModel.importShared).toHaveBeenCalledWith("f1", "user123");
+            expect(response.body).toEqual({
+                message: "Dossier partagé importé avec succès.",
+                newFolderId: "new1",
+                title: "Physique (1)",
+                quizCount: 3,
+            });
+        });
+
+        it("returns 400 when folderId is missing", async () => {
+            await request(app)
+                .post("/api/folder/receiveShare")
+                .set("Authorization", `Bearer ${authToken}`)
+                .send({})
+                .expect(400);
+            expect(mockFoldersModel.importShared).not.toHaveBeenCalled();
+        });
+
+        it("returns 404 when the source folder does not exist", async () => {
+            mockFoldersModel.importShared.mockRejectedValue(new Error("Folder f1 not found"));
+
+            await request(app)
+                .post("/api/folder/receiveShare")
+                .set("Authorization", `Bearer ${authToken}`)
+                .send({ folderId: "f1" })
+                .expect(404);
+        });
+
+        it("returns 500 when the import fails midway", async () => {
+            mockFoldersModel.importShared.mockRejectedValue(new Error("Failed to import quiz"));
+
+            const response = await request(app)
+                .post("/api/folder/receiveShare")
+                .set("Authorization", `Bearer ${authToken}`)
+                .send({ folderId: "f1" })
+                .expect(500);
+            expect(response.body.message).toBe("Une erreur s'est produite lors de la copie du dossier.");
+        });
+
+        it("returns 401 without a token", async () => {
+            await request(app).post("/api/folder/receiveShare").send({ folderId: "f1" }).expect(401);
         });
     });
 

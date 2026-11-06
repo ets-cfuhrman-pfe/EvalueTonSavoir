@@ -13,12 +13,22 @@ import {
     Alert,
     Typography,
     Box,
+    Divider,
+    Stack,
 } from '@mui/material';
-import { ContentCopy } from '@mui/icons-material';
+import { ContentCopy, Link as LinkIcon, FolderZip } from '@mui/icons-material';
 
 import { FolderType } from '../../Types/FolderType';
 import { QuizType } from '../../Types/QuizType';
 import ApiService from '../../services/ApiService';
+import {
+    getQuizShareUrl,
+    getFolderShareUrl,
+    buildQuizLinkList,
+    buildFolderGiftZip,
+    sanitizeFileName,
+    downloadBlob,
+} from '../../utils/folderShare';
 
 interface ShareFolderModalProps {
     open: boolean;
@@ -26,8 +36,7 @@ interface ShareFolderModalProps {
     onClose: () => void;
 }
 
-const getShareUrl = (quizId: string): string =>
-    `${window.location.origin}/teacher/share/${quizId}`;
+type Feedback = { severity: 'success' | 'error'; message: string } | null;
 
 const writeToClipboard = async (text: string): Promise<void> => {
     if (navigator.clipboard) {
@@ -50,29 +59,43 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
     const [quizzes, setQuizzes] = useState<QuizType[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [copyFeedback, setCopyFeedback] = useState<'idle' | 'success' | 'error'>('idle');
+    const [feedback, setFeedback] = useState<Feedback>(null);
     const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
 
+    const folderId = folder?._id;
+
     useEffect(() => {
-        if (!open || !folder) return;
+        if (!open || !folderId) return;
+        // Ignore responses for a folder that is no longer displayed
+        let cancelled = false;
         setLoading(true);
         setError(null);
         setQuizzes([]);
-        ApiService.getFolderContent(folder._id).then((result) => {
-            if (typeof result === 'string') {
-                setError(result);
-            } else {
-                setQuizzes(result as QuizType[]);
-            }
-            setLoading(false);
-        });
-    }, [open, folder?._id]);
+        ApiService.getFolderContent(folderId)
+            .then((result) => {
+                if (cancelled) return;
+                if (typeof result === 'string') {
+                    setError(result);
+                } else {
+                    setQuizzes(result);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setError("Impossible de charger le contenu du dossier.");
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [open, folderId]);
 
     useEffect(() => {
-        if (copyFeedback === 'idle') return;
-        const timer = setTimeout(() => setCopyFeedback('idle'), 2000);
+        if (!feedback) return;
+        const timer = setTimeout(() => setFeedback(null), 2500);
         return () => clearTimeout(timer);
-    }, [copyFeedback]);
+    }, [feedback]);
 
     useEffect(() => {
         if (!copiedQuizId) return;
@@ -80,30 +103,49 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
         return () => clearTimeout(timer);
     }, [copiedQuizId]);
 
-    const handleCopyLink = async (quizId: string) => {
+    const copy = async (text: string, successMessage: string) => {
         try {
-            await writeToClipboard(getShareUrl(quizId));
-            setCopiedQuizId(quizId);
-            setCopyFeedback('success');
+            await writeToClipboard(text);
+            setFeedback({ severity: 'success', message: successMessage });
+            return true;
         } catch {
-            setCopyFeedback('error');
+            setFeedback({ severity: 'error', message: 'Impossible de copier dans le presse-papiers.' });
+            return false;
         }
     };
 
-    const handleCopyAllLinks = async () => {
-        const allUrls = quizzes.map((q) => `${q.title} :\n${getShareUrl(q._id)}`).join('\n\n');
+    const handleCopyLink = async (quizId: string) => {
+        if (await copy(getQuizShareUrl(quizId), 'Lien copié dans le presse-papiers.')) {
+            setCopiedQuizId(quizId);
+        }
+    };
+
+    const handleCopyAllLinks = () =>
+        copy(buildQuizLinkList(quizzes), 'Liste des quiz copiée dans le presse-papiers.');
+
+    const handleCopyFolderLink = () => {
+        if (!folderId) return;
+        return copy(getFolderShareUrl(folderId), "Lien d'importation du dossier copié.");
+    };
+
+    const handleDownloadZip = () => {
+        if (!folder) return;
         try {
-            await writeToClipboard(allUrls);
-            setCopyFeedback('success');
+            const zip = buildFolderGiftZip(quizzes);
+            downloadBlob(zip, `${sanitizeFileName(folder.title)}.zip`, 'application/zip');
+            setFeedback({ severity: 'success', message: 'Archive .zip téléchargée.' });
         } catch {
-            setCopyFeedback('error');
+            setFeedback({ severity: 'error', message: "Impossible de générer l'archive .zip." });
         }
     };
 
     const handleClose = () => {
-        setCopyFeedback('idle');
+        setFeedback(null);
         onClose();
     };
+
+    const isEmpty = !loading && !error && quizzes.length === 0;
+    const actionsDisabled = loading || !!error || quizzes.length === 0;
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -114,13 +156,9 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
                         <CircularProgress />
                     </Box>
                 )}
-                {!loading && error && (
-                    <Alert severity="error">{error}</Alert>
-                )}
-                {!loading && !error && quizzes.length === 0 && (
-                    <Typography color="text.secondary">
-                        Ce dossier ne contient aucun quiz.
-                    </Typography>
+                {!loading && error && <Alert severity="error">{error}</Alert>}
+                {isEmpty && (
+                    <Typography color="text.secondary">Ce dossier ne contient aucun quiz.</Typography>
                 )}
                 {!loading && !error && quizzes.length > 0 && (
                     <List disablePadding>
@@ -130,16 +168,14 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
                                 disableGutters
                                 sx={quiz._id === copiedQuizId ? { backgroundColor: 'success.light', borderRadius: 1 } : undefined}
                                 secondaryAction={
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleCopyLink(quiz._id)}
-                                            title="Copier le lien"
-                                            aria-label={`Copier le lien de ${quiz.title}`}
-                                        >
-                                            <ContentCopy fontSize="small" />
-                                        </IconButton>
-                                    </Box>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleCopyLink(quiz._id)}
+                                        title="Copier le lien"
+                                        aria-label={`Copier le lien de ${quiz.title}`}
+                                    >
+                                        <ContentCopy fontSize="small" />
+                                    </IconButton>
                                 }
                             >
                                 <ListItemText primary={quiz.title} />
@@ -147,26 +183,42 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
                         ))}
                     </List>
                 )}
+
+                <Divider sx={{ my: 2 }} />
+
+                <Stack spacing={1}>
+                    <Button
+                        startIcon={<ContentCopy />}
+                        onClick={handleCopyAllLinks}
+                        disabled={actionsDisabled}
+                        variant="outlined"
+                    >
+                        Copier la liste des quiz (titres et liens)
+                    </Button>
+                    <Button
+                        startIcon={<LinkIcon />}
+                        onClick={handleCopyFolderLink}
+                        disabled={actionsDisabled}
+                        variant="outlined"
+                    >
+                        Copier le lien d&apos;importation du dossier
+                    </Button>
+                    <Button
+                        startIcon={<FolderZip />}
+                        onClick={handleDownloadZip}
+                        disabled={actionsDisabled}
+                        variant="outlined"
+                    >
+                        Télécharger tous les quiz (.zip GIFT)
+                    </Button>
+                </Stack>
             </DialogContent>
             <DialogActions sx={{ flexWrap: 'wrap', gap: 1, px: 2, py: 1.5 }}>
-                {copyFeedback === 'success' && (
-                    <Alert severity="success" sx={{ py: 0, flexGrow: 1 }}>
-                        Lien copié dans le presse-papiers.
+                {feedback && (
+                    <Alert severity={feedback.severity} sx={{ py: 0, flexGrow: 1 }}>
+                        {feedback.message}
                     </Alert>
                 )}
-                {copyFeedback === 'error' && (
-                    <Alert severity="error" sx={{ py: 0, flexGrow: 1 }}>
-                        Impossible de copier le lien.
-                    </Alert>
-                )}
-                <Button
-                    startIcon={<ContentCopy />}
-                    onClick={handleCopyAllLinks}
-                    disabled={loading || quizzes.length === 0}
-                    variant="outlined"
-                >
-                    Copier tous les liens
-                </Button>
                 <Button onClick={handleClose}>Fermer</Button>
             </DialogActions>
         </Dialog>
