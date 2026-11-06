@@ -110,6 +110,19 @@ describe('TextType', () => {
         expect(output).not.toBe(String.raw`$A \neq B$`);
     });
 
+    describe('plain decimal comma (no {,} needed)', () => {
+        const render = (text: string) => FormattedTextTemplate({ text, format: 'plain' });
+
+        it('should render 3,14 like 3{,}14 (no thin space)', () => {
+            expect(render(String.raw`\( 3,14 \)`)).toBe(render(String.raw`\( 3{,}14 \)`));
+            expect(render(String.raw`\( 3,14 \)`)).not.toContain('margin-right:0.1667em');
+        });
+
+        it('should keep spacing for a comma followed by a space', () => {
+            expect(render(String.raw`\( (1, 2) \)`)).toContain('margin-right:0.1667em');
+        });
+    });
+
     describe('decimal comma kerning before "1" (tabular-figure side bearings)', () => {
         it('should kern a {,} decimal comma followed by 1', () => {
             const input: TextFormat = {

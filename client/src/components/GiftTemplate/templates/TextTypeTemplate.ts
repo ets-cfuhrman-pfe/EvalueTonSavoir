@@ -12,11 +12,19 @@ function tightenDecimalCommaBeforeOne(math: string): string {
     return math.replace(/(\\mathord\{,\}|\{,\})(\s*)1/g, String.raw`$1\kern-0.04em$2 1`);
 }
 
+// In math mode KaTeX treats "," as punctuation and adds a thin space after it, so
+// "3,14" renders as "3, 14". A comma directly between two digits is a decimal comma:
+// wrap it in braces ({,}) so it renders as an ordinary symbol with no trailing space.
+// Lists such as "f(x, 1)" or "(1, 2)" keep their spacing because they contain a space.
+function normalizeDecimalComma(math: string): string {
+    return math.replace(/(\d),(?=\d)/g, '$1{,}');
+}
+
 function formatLatex(text: string): string {
 
     let renderedText = '';
     const render = (inner: string, displayMode: boolean) =>
-        katex.renderToString(tightenDecimalCommaBeforeOne(inner), { displayMode });
+        katex.renderToString(tightenDecimalCommaBeforeOne(normalizeDecimalComma(inner)), { displayMode });
 
     try {
     renderedText = text
