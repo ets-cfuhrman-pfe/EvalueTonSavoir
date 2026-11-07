@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { unzipSync, strFromU8 } from 'fflate';
+import { readZip } from '../../../testUtils/readZip';
 import ShareFolderModal from '../../../components/ShareFolderModal/ShareFolderModal';
 import ApiService from '../../../services/ApiService';
 import { downloadBlob } from '../../../utils/folderShare';
@@ -224,10 +224,10 @@ describe('ShareFolderModal', () => {
             expect(fileName).toBe('Mon Dossier.zip');
             expect(type).toBe('application/zip');
 
-            const files = unzipSync(data as Uint8Array);
+            const files = readZip(data as Uint8Array);
             expect(Object.keys(files).sort()).toEqual(['Quiz A.gift', 'Quiz B.gift']);
-            expect(strFromU8(files['Quiz A.gift'])).toBe('::Q1:: Question? {=Oui ~Non}\n\n');
-            expect(strFromU8(files['Quiz B.gift'])).toBe('::Q2:: Autre? {=Vrai ~Faux}\n\n::Q3:: Encore? {TRUE}\n\n');
+            expect(files['Quiz A.gift']).toBe('::Q1:: Question? {=Oui ~Non}\n\n');
+            expect(files['Quiz B.gift']).toBe('::Q2:: Autre? {=Vrai ~Faux}\n\n::Q3:: Encore? {TRUE}\n\n');
             expect(await screen.findByText(/archive .zip téléchargée/i)).toBeInTheDocument();
         });
 

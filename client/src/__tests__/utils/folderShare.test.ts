@@ -1,4 +1,4 @@
-import { unzipSync, strFromU8 } from 'fflate';
+import { readZip } from '../../testUtils/readZip';
 import {
     getQuizShareUrl,
     getFolderShareUrl,
@@ -7,6 +7,7 @@ import {
     quizToGift,
     buildFolderGiftZip,
     downloadBlob,
+    crc32,
 } from '../../utils/folderShare';
 
 const origin = window.location.origin;
@@ -64,15 +65,23 @@ describe('folderShare utils', () => {
         });
     });
 
+    describe('crc32', () => {
+        it('matches the standard CRC-32 check values', () => {
+            expect(crc32(new TextEncoder().encode('123456789'))).toBe(0xcbf43926);
+            expect(crc32(new Uint8Array())).toBe(0);
+            expect(crc32(new TextEncoder().encode('The quick brown fox jumps over the lazy dog'))).toBe(0x414fa339);
+        });
+    });
+
     describe('buildFolderGiftZip', () => {
         it('produces a valid zip with one gift file per quiz', () => {
             const zip = buildFolderGiftZip([
                 { _id: '1', title: 'Quiz 1', content: ['Q1 {T}'] },
                 { _id: '2', title: 'Quiz 2', content: ['Q2 {F}', 'Q3 {T}'] },
             ]);
-            const files = unzipSync(zip);
+            const files = readZip(zip);
             expect(Object.keys(files).sort()).toEqual(['Quiz 1.gift', 'Quiz 2.gift']);
-            expect(strFromU8(files['Quiz 2.gift'])).toBe('Q2 {F}\n\nQ3 {T}\n\n');
+            expect(files['Quiz 2.gift']).toBe('Q2 {F}\n\nQ3 {T}\n\n');
         });
 
         it('keeps every quiz when titles collide (case-insensitive) or sanitize to the same name', () => {
@@ -83,22 +92,32 @@ describe('folderShare utils', () => {
                 { _id: '4', title: 'a/b', content: ['D'] },
                 { _id: '5', title: 'a:b', content: ['E'] },
             ]);
-            const files = unzipSync(zip);
+            const files = readZip(zip);
             expect(Object.keys(files)).toHaveLength(5);
-            expect(strFromU8(files['Test.gift'])).toBe('A\n\n');
-            expect(strFromU8(files['test (1).gift'])).toBe('B\n\n');
-            expect(strFromU8(files['Test (2).gift'])).toBe('C\n\n');
-            expect(strFromU8(files['a_b.gift'])).toBe('D\n\n');
-            expect(strFromU8(files['a_b (1).gift'])).toBe('E\n\n');
+            expect(files['Test.gift']).toBe('A\n\n');
+            expect(files['test (1).gift']).toBe('B\n\n');
+            expect(files['Test (2).gift']).toBe('C\n\n');
+            expect(files['a_b.gift']).toBe('D\n\n');
+            expect(files['a_b (1).gift']).toBe('E\n\n');
         });
 
         it('preserves UTF-8 accents in file names and content', () => {
-            const files = unzipSync(buildFolderGiftZip([{ _id: '1', title: 'Énergie', content: ['Qu’est-ce que l’été? {T}'] }]));
-            expect(strFromU8(files['Énergie.gift'])).toBe('Qu’est-ce que l’été? {T}\n\n');
+            const files = readZip(buildFolderGiftZip([{ _id: '1', title: 'Énergie', content: ['Qu’est-ce que l’été? {T}'] }]));
+            expect(files['Énergie.gift']).toBe('Qu’est-ce que l’été? {T}\n\n');
+        });
+
+        it('writes a byte-exact zip layout (signatures, sizes, offsets)', () => {
+            const zip = buildFolderGiftZip([{ _id: '1', title: 'A', content: ['x'] }]);
+            // local header (30 + "A.gift") + data (3 bytes) + central (46 + 6) + end (22)
+            expect(zip).toHaveLength(30 + 6 + 3 + 46 + 6 + 22);
+            const v = new DataView(zip.buffer, zip.byteOffset);
+            expect(v.getUint32(0, true)).toBe(0x04034b50);
+            expect(v.getUint32(39, true)).toBe(0x02014b50);
+            expect(v.getUint32(zip.length - 22, true)).toBe(0x06054b50);
         });
 
         it('produces an empty but valid zip for an empty folder', () => {
-            expect(Object.keys(unzipSync(buildFolderGiftZip([])))).toEqual([]);
+            expect(Object.keys(readZip(buildFolderGiftZip([])))).toEqual([]);
         });
     });
 
