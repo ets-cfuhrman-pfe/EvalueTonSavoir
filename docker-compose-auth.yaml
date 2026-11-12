@@ -23,10 +23,10 @@ services:
       MONGO_URI: "mongodb://mongo:27017/evaluetonsavoir"
       MONGO_DATABASE: evaluetonsavoir
       EMAIL_SERVICE: gmail
-      SENDER_EMAIL: infoevaluetonsavoir@gmail.com
-      EMAIL_PSW: 'vvml wmfr dkzb vjzb'
-      JWT_SECRET: haQdgd2jp09qb897GeBZyJetC8ECSpbFJe
-      SESSION_Secret: 'lookMomImQuizzing'
+      SENDER_EMAIL: "${SENDER_EMAIL:?SENDER_EMAIL is required}"
+      EMAIL_PSW: "${EMAIL_PSW:?EMAIL_PSW is required}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
+      SESSION_Secret: "${SESSION_Secret:?SESSION_Secret is required}"
       SITE_URL: http://localhost
       FRONTEND_PORT: 5173
       USE_PORTS: false
@@ -78,8 +78,8 @@ services:
     container_name: keycloak
     image: quay.io/keycloak/keycloak:latest
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:?KEYCLOAK_ADMIN is required}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}"
       KC_HEALTH_ENABLED: 'true'
       KC_FEATURES: preview
     ports:
