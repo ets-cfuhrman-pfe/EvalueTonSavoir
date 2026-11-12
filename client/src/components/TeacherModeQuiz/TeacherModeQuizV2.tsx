@@ -103,10 +103,10 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                 <div className='col-12'>
                     <div className='d-flex align-items-center justify-content-between'>
                         {/* Left: Quiz title, room name, and question counter */}
-                        <div className='d-flex align-items-center gap-2 p-2'>
+                        <div className='d-flex align-items-center gap-2 p-2 flex-wrap' style={{ minWidth: 0 }}>
                             {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
-                            {roomName && <Chip label={`Salle : ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
-                            <span className='question-counter px-1'>
+                            {roomName && <Chip label={`Salle: ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
+                            <span className='question-counter px-1' role='status' aria-label={`Question ${questionInfos.question.id}${totalQuestions ? ` sur ${totalQuestions}` : ''}`}>
                                 {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
                             </span>
                         </div>

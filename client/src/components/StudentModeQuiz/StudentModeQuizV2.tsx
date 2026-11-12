@@ -116,7 +116,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                         {/* Left: Quiz title, room name, and navigation */}
                         <div className="d-flex align-items-center gap-2 p-2 flex-wrap">
                             {quizTitle && <h6 className='mb-0 fw-bold'>{quizTitle}</h6>}
-                            {roomName && <Chip label={`Salle : ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
+                            {roomName && <Chip label={`Salle: ${roomName}`} size="small" sx={{ fontWeight: 'bold' }} />}
                             <div className="d-flex align-items-center gap-1 quiz-nav-buttons">
                                 <Button
                                     variant="outlined"
@@ -126,7 +126,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                                 >
                                     <ChevronLeft />
                                 </Button>
-                                <span className="question-counter px-2">
+                                <span className="question-counter px-2" role="status" aria-label={`Question ${questionInfos.question.id} sur ${questions.length}`}>
                                     {questionInfos.question.id}/{questions.length}
                                 </span>
                                 <Button
