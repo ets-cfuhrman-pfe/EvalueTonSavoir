@@ -110,6 +110,57 @@ describe('TextType', () => {
         expect(output).not.toBe(String.raw`$A \neq B$`);
     });
 
+    describe('plain decimal comma (no {,} needed)', () => {
+        const render = (text: string) => FormattedTextTemplate({ text, format: 'plain' });
+
+        it('should render 3,14 like 3{,}14 (no thin space)', () => {
+            expect(render(String.raw`\( 3,14 \)`)).toBe(render(String.raw`\( 3{,}14 \)`));
+            expect(render(String.raw`\( 3,14 \)`)).not.toContain('margin-right:0.1667em');
+        });
+
+        it('should keep spacing for a comma followed by a space', () => {
+            expect(render(String.raw`\( (1, 2) \)`)).toContain('margin-right:0.1667em');
+        });
+    });
+
+    describe('decimal comma kerning before "1" (tabular-figure side bearings)', () => {
+        it('should kern a {,} decimal comma followed by 1', () => {
+            const input: TextFormat = {
+                text: String.raw`\( 3{,}15x^2 \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).toContain('margin-right:-0.04em');
+        });
+
+        it(String.raw`should kern a \mathord{,} decimal comma followed by 1`, () => {
+            const input: TextFormat = {
+                text: String.raw`\( [3\mathord{,}1] \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).toContain('margin-right:-0.04em');
+        });
+
+        it('should not kern a decimal comma followed by another digit', () => {
+            const input: TextFormat = {
+                text: String.raw`\( 3{,}25x^2 \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).not.toContain('margin-right:-0.04em');
+        });
+
+        it('should not kern a plain math-punctuation comma', () => {
+            const input: TextFormat = {
+                text: String.raw`\( f(x, 1) \)`,
+                format: 'plain'
+            };
+            const output = FormattedTextTemplate(input);
+            expect(output).not.toContain('margin-right:-0.04em');
+        });
+    });
+
     // Add more tests for other formats if needed
     it('should format a resized image correctly', () => {
         const input: TextFormat = {

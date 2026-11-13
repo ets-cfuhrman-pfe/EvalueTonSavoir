@@ -4,18 +4,34 @@ import katex from 'katex';
 import { TextFormat } from 'gift-pegjs';
 import DOMPurify from 'dompurify';  // cleans HTML to prevent XSS attacks, etc.
 
+// KaTeX_Main digits are tabular (every digit advances 0.5em) but the ink of "1" is
+// narrower than its slot, so a decimal comma written as {,} or \mathord{,} leaves a
+// visibly larger hole before a "1" than before other digits. Compensate with a kern
+// equal to the side-bearing difference between "1" (0.08em) and the other digits (0.04em).
+function tightenDecimalCommaBeforeOne(math: string): string {
+    return math.replace(/(\\mathord\{,\}|\{,\})(\s*)1/g, String.raw`$1\kern-0.04em$2 1`);
+}
+
+// In math mode KaTeX treats "," as punctuation and adds a thin space after it, so
+// "3,14" renders as "3, 14". A comma directly between two digits is a decimal comma:
+// wrap it in braces ({,}) so it renders as an ordinary symbol with no trailing space.
+// Lists such as "f(x, 1)" or "(1, 2)" keep their spacing because they contain a space.
+function normalizeDecimalComma(math: string): string {
+    return math.replace(/(\d),(?=\d)/g, '$1{,}');
+}
+
 function formatLatex(text: string): string {
 
     let renderedText = '';
+    const render = (inner: string, displayMode: boolean) =>
+        katex.renderToString(tightenDecimalCommaBeforeOne(normalizeDecimalComma(inner)), { displayMode });
 
     try {
     renderedText = text
-        .replace(/\$\$(.*?)\$\$/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
-        .replace(/\$(.*?)\$/g, (_, inner) => katex.renderToString(inner, { displayMode: false }))
-        .replace(/\\\[(.*?)\\\]/g, (_, inner) => katex.renderToString(inner, { displayMode: true }))
-        .replace(/\\\((.*?)\\\)/g, (_, inner) =>
-            katex.renderToString(inner, { displayMode: false })
-        );
+        .replace(/\$\$(.*?)\$\$/g, (_, inner) => render(inner, true))
+        .replace(/\$(.*?)\$/g, (_, inner) => render(inner, false))
+        .replace(/\\\[(.*?)\\\]/g, (_, inner) => render(inner, true))
+        .replace(/\\\((.*?)\\\)/g, (_, inner) => render(inner, false));
     } catch (error) {
         console.log('Error rendering LaTeX (KaTeX):', error);
         renderedText = text;
