@@ -106,4 +106,19 @@ describe('applyQuestionPrintLayout', () => {
         expect(contentImages).toHaveLength(1);
         expect(contentImages?.[0].getAttribute('src')).toBe('https://example.com/second.png');
     });
+
+    it('removes leading line breaks in stem after moving image so number and text stay inline', () => {
+        const input = `
+            <section class="gift-preview-question">
+                <div class="present-question-stem"><img src="https://example.com/q.png" alt="q visual" /><br/>Question text</div>
+            </section>
+        `;
+
+        const resultDoc = parseHtml(applyQuestionPrintLayout(input));
+        const stem = resultDoc.querySelector<HTMLElement>('.present-question-stem');
+
+        expect(stem?.firstElementChild?.classList.contains('question-inline-number')).toBe(true);
+        expect(stem?.textContent).toBe('1. Question text');
+        expect(stem?.querySelector('br')).toBeNull();
+    });
 });

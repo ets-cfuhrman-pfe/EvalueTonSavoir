@@ -1,6 +1,7 @@
 // StudentModeQuizV2.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
+import FeedbackBox from './FeedbackBox';
 import { QuestionType } from '../../Types/QuestionType';
 import { Button } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
@@ -33,7 +34,7 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
 }) => {
     const [questionInfos, setQuestionInfos] = useState<QuestionType>(questions[0]);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
-    const [hideFeedback, setHideFeedback] = useState(true);
+    const [dismissedFeedback, setDismissedFeedback] = useState<Set<string>>(new Set());
 
     const hasFeedback = (question: Question) => {
         if (!question) return false;
@@ -59,10 +60,14 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
     const isQuizCompleted = answers.length === questions.length && answers.every(answer => answer?.answer !== undefined);
     const shouldShowResults = isQuizCompleted || quizCompleted;
 
-    // Always re-show feedback when moving to a different question
-    useEffect(() => {
-        setHideFeedback(true);
-    }, [questionInfos.question?.id]);
+    const currentQuestionId = questionInfos.question?.id?.toString() ?? '';
+    const isFeedbackHidden = dismissedFeedback.has(currentQuestionId);
+
+    const dismissCurrentFeedback = () =>
+        setDismissedFeedback(prev => new Set([...prev, currentQuestionId]));
+
+    const restoreCurrentFeedback = () =>
+        setDismissedFeedback(prev => { const next = new Set(prev); next.delete(currentQuestionId); return next; });
 
     const previousQuestion = () => {
         setQuestionInfos(questions[Number(questionInfos.question?.id) - 2]);
@@ -160,10 +165,25 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                             showAnswer={isAnswerSubmitted}
                             answer={answers[Number(questionInfos.question.id)-1]?.answer}
                             buttonText={shouldShowResults ? 'Voir les résultats' : 'Répondre'}
-                            hideAnswerFeedback={hideFeedback}
+                            hideAnswerFeedback={true}
                         />
 
-                        {canToggleFeedback && (
+                        {(isAnswerSubmitted || shouldShowResults) && canToggleFeedback && !isFeedbackHidden && (
+                            <>
+                                <div
+                                    className="student-feedback-backdrop"
+                                    role="presentation"
+                                    onClick={dismissCurrentFeedback}
+                                />
+                                <FeedbackBox
+                                    question={questionInfos.question as Question}
+                                    answer={answers[Number(questionInfos.question.id)-1]?.answer}
+                                    onDismiss={dismissCurrentFeedback}
+                                />
+                            </>
+                        )}
+
+                        {canToggleFeedback && isFeedbackHidden && (
                             <div className="container-fluid">
                                 <div className="row">
                                     <div className="col-12">
@@ -172,9 +192,9 @@ const StudentModeQuizV2: React.FC<StudentModeQuizV2Props> = ({
                                                 variant="outlined"
                                                 size="large"
                                                 className="quiz-feedback-toggle-btn w-100"
-                                                onClick={() => setHideFeedback((prev) => !prev)}
+                                                onClick={restoreCurrentFeedback}
                                             >
-                                                {hideFeedback ? 'Afficher rétroactions' : 'Masquer rétroactions'}
+                                                Afficher rétroactions
                                             </Button>
                                         </div>
                                     </div>

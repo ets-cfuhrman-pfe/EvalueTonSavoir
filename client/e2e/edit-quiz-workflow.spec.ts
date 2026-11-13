@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { loginAsTeacher, TIMEOUTS, DEFAULT_FOLDER_NAME } from './helpers';
+import { loginAsTeacher, TIMEOUTS, DEFAULT_FOLDER_NAME, fillMonacoEditor, getMonacoEditorValue } from './helpers';
 
 test.describe('Teacher Edit Quiz Workflow', () => {
     test('Complete workflow - Teacher creates a quiz, then edits it with additional GIFT content', async ({
@@ -84,12 +84,7 @@ test.describe('Teacher Edit Quiz Workflow', () => {
 
 ::Question 2:: What's the capital of France? {=Paris}`;
 
-            // Declare editor locator for the creation step
-            const creationEditor = teacherPage
-                .locator('textarea')
-                .or(teacherPage.locator('[contenteditable="true"]'))
-                .first();
-            await creationEditor.fill(initialGift);
+            await fillMonacoEditor(teacherPage, initialGift);
             await teacherPage.keyboard.press('Tab');
             console.log('Added initial GIFT content');
 
@@ -130,16 +125,10 @@ test.describe('Teacher Edit Quiz Workflow', () => {
             await teacherPage.waitForLoadState('networkidle');
             await teacherPage.waitForTimeout(TIMEOUTS.ACTION_SETTLE);
 
-            // Re-declare the editor locator
-            const editEditor = teacherPage
-                .locator('textarea')
-                .or(teacherPage.locator('[contenteditable="true"]'))
-                .first();
-
             const additionalGift = `
 
 ::Question 3:: What is 5*5? {=25}`;
-            await editEditor.fill(initialGift + additionalGift);
+            await fillMonacoEditor(teacherPage, initialGift + additionalGift);
             await teacherPage.keyboard.press('Tab');
             console.log('Added more GIFT content');
 
@@ -151,8 +140,7 @@ test.describe('Teacher Edit Quiz Workflow', () => {
             console.log('Clicked "Enregistrer" - Save edits');
 
             await teacherPage.waitForTimeout(TIMEOUTS.PAGE_STABILIZE);
-            const editorContent =
-                (await editEditor.inputValue()) || (await editEditor.textContent());
+            const editorContent = await getMonacoEditorValue(teacherPage);
             if (!editorContent?.includes('Question 3') || !editorContent?.includes('25')) {
                 throw new Error('Edits not saved correctly');
             }

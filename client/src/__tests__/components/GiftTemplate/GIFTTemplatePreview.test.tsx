@@ -16,6 +16,13 @@ const unsupportedQuestions = [
   '$CATEGORY a/b/c'
 ];
 
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: jest.fn(),
+  });
+});
+
 describe('GIFTTemplatePreviewV2 Component', () => {
   it('renders error message when questions contain invalid syntax', () => {
     render(<GIFTTemplatePreviewV2 questions={['T{']} hideAnswers={false} />);
@@ -23,6 +30,7 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     expect(previewContainer).toBeInTheDocument();
     const errorMessage = previewContainer.querySelector('.alert.alert-danger');
     expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveTextContent(/Line \d+, column \d+: Expected .+, but .+ found\./);
   });
 
   it('renders preview when valid questions are provided, including answers, has no errors', () => {
@@ -74,6 +82,39 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     // find all unsupported errors (should be 4)
     const unsupportedMessages = previewContainer.querySelectorAll('.alert.alert-danger');
     expect(unsupportedMessages).toHaveLength(4);
+  });
+
+  it('highlights the active question anchor when activeQuestionIndex is provided', () => {
+    render(
+      <GIFTTemplatePreviewV2
+        questions={validQuestions}
+        hideAnswers={false}
+        activeQuestionIndex={1}
+      />
+    );
+
+    const previewContainer = screen.getByTestId('preview-container');
+    const activeAnchor = previewContainer.querySelector('.gift-preview-question-anchor--active');
+    expect(activeAnchor).toBeInTheDocument();
+    expect(activeAnchor).toHaveAttribute('data-question-index', '1');
+  });
+
+  it('displays correct global line numbers in error messages when questionStartLines are provided', () => {
+    render(
+      <GIFTTemplatePreviewV2
+        questions={['Valid {=answer}', 'T{', '::Q3:: {=answer}']}
+        hideAnswers={false}
+        questionStartLines={[1, 7, 10]}
+      />
+    );
+
+    const previewContainer = screen.getByTestId('preview-container');
+    const errorMessages = previewContainer.querySelectorAll('.alert.alert-danger');
+
+    expect(errorMessages).toHaveLength(1);
+    // The error is in the second question which starts at line 7
+    // So the error should show "Line 7" not "Line 1"
+    expect(errorMessages[0]).toHaveTextContent('Line 7');
   });
 
 });

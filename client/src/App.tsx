@@ -11,7 +11,7 @@ import Share from './pages/Teacher/Share/Share';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
 import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
-import EditorQuizV2 from './pages/Teacher/EditorQuiz/EditorQuizV2';
+import EditorQuiz from './pages/Teacher/EditorQuiz/EditorQuiz';
 
 // Pages espace étudiant
 import JoinRoomV2 from './pages/Student/JoinRoom/JoinRoomV2';
@@ -97,7 +97,7 @@ const App: React.FC = () => {
                         />
                         <Route
                             path="/teacher/editor-quiz/:id"
-                            element={isTeacherAuthenticated ? <EditorQuizV2 /> : <Navigate to="/login" />}
+                            element={isTeacherAuthenticated ? <EditorQuiz /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/teacher/manage-room/:quizId"

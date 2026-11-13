@@ -136,9 +136,46 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PACKAGE="${{ steps.version.outputs.PACKAGE }}"
+          PROD_TAG="${{ steps.version.outputs.PROD_TAG }}"
+
+          # Previous production tag for this package (skip RC tags and the new tag)
+          PREV_TAG=$(git tag --list "${PACKAGE}-v*" --sort=-v:refname \
+            | grep -v -- '-rc\.' \
+            | grep -vx "$PROD_TAG" \
+            | head -n 1 || true)
+
+          if [ -n "$PREV_TAG" ]; then
+            RANGE="${PREV_TAG}..${PROD_TAG}"
+            HEADER="**${PACKAGE} changes since \`${PREV_TAG}\`:**"
+          else
+            RANGE="${PROD_TAG}"
+            HEADER="**${PACKAGE} changes:**"
+          fi
+
+          # Only commits that touch this package's folder (client/ or server/)
+          COMMITS=$(git log "$RANGE" --no-merges --pretty=format:'- %s (%h) by %an' -- "${PACKAGE}/" \
+            | grep -v '\[skip ci\]' || true)
+          [ -z "$COMMITS" ] && COMMITS="- No changes"
+
+          {
+            echo "CHANGELOG<<CHANGELOG_EOF"
+            echo "$HEADER"
+            echo "$COMMITS"
+            if [ -n "$PREV_TAG" ]; then
+              echo ""
+              echo "**Full diff:** ${{ github.server_url }}/${{ github.repository }}/compare/${PREV_TAG}...${PROD_TAG}"
+            fi
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release (Production)
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           tag_name: ${{ steps.version.outputs.PROD_TAG }}
           name: "${{ steps.version.outputs.PACKAGE }} ${{ steps.version.outputs.PROD_VERSION }}"
           body: |
@@ -150,6 +187,8 @@ jobs:
             **Branch:** main
             
             This release was promoted from RC tag `${{ steps.version.outputs.RC_TAG }}`.
+
+            ${{ steps.changelog.outputs.CHANGELOG }}
           prerelease: false
           draft: false
 

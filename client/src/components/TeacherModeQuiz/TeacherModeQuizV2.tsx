@@ -1,6 +1,7 @@
 // TeacherModeQuizV2.tsx
 import React, { useEffect, useState } from 'react';
 import QuestionDisplayV2 from '../QuestionsDisplay/QuestionDisplayV2';
+import WaitingForNextQuestion from './WaitingForNextQuestion';
 import { QuestionType } from '../../Types/QuestionType';
 import DisconnectButton from 'src/components/DisconnectButton/DisconnectButton';
 import { Question } from 'gift-pegjs';
@@ -47,34 +48,23 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
         setIsAnswerSubmitted(oldAnswer !== undefined && answerSubmission?.roomName !== undefined);
     }, [questionInfos?.question, answers]);
 
-    const handleOnSubmitAnswer = (answer: AnswerType) => {
-        if (shouldShowResults) {
-            // Quiz is completed, show results instead of submitting
-            setIsModalOpen(true);
-        } else if (!isAnswerSubmitted) {
-            // Quiz is still in progress and no answer submitted yet, submit the answer
+    const handleOnSubmitAnswer = (submittedAnswer: AnswerType) => {
+        if (!isAnswerSubmitted) {
             const idQuestion = Number(questionInfos.question.id) || -1;
-            submitAnswer(answer, idQuestion);
-            setAnswer(answer);
+            submitAnswer(submittedAnswer, idQuestion);
+            setAnswer(submittedAnswer);
             setIsAnswerSubmitted(true);
         }
     };
 
     // Check if student has answered all questions
-    const hasAnsweredAllQuestions = questions && questions.length > 0 && 
-        answers.length === questions.length && 
+    const hasAnsweredAllQuestions = questions && questions.length > 0 &&
+        answers.length === questions.length &&
         answers.every(answer => answer?.answer !== undefined && answer?.roomName !== undefined);
 
     // Check if we should show results (quiz completed or all questions answered)
     const shouldShowResults = hasAnsweredAllQuestions || quizCompleted;
 
-    // Determine button text based on quiz completion status
-    let buttonText = 'Répondre';
-    if (shouldShowResults) {
-        buttonText = 'Voir les résultats';
-    }
-
-    // Render modal if quiz is completed
     const renderModal = () => {
         if (!shouldShowResults || !questions || questions.length === 0 || !studentName) {
             return null;
@@ -113,7 +103,7 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
                         <div className='d-flex align-items-center'>
                             {quizTitle && <h6 className='mb-0 fw-bold me-3'>{quizTitle}</h6>}
                         </div>
-                        
+
                         {/* Right: Disconnect button */}
                         <div>
                             <DisconnectButton
@@ -127,26 +117,39 @@ const TeacherModeQuizV2: React.FC<TeacherModeQuizV2Props> = ({
 
             {/* Main content area */}
             <div className='row'>
-                {/* Question area */}
                 <div className='col-12'>
                     <div className='p-4'>
-                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
+                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom-light">
                             <h6 className='mb-0 question-counter'>
                                 {questionInfos.question.id}{totalQuestions ? `/${totalQuestions}` : ''}
                             </h6>
-                            <div className={`text-muted small ${isAnswerSubmitted ? '' : 'invisible'}`}>
-                                En attente pour la prochaine question...
-                            </div>
                         </div>
-                        <QuestionDisplayV2
-                            key={questionInfos.question.id} // Force remount on question change to prevent flicker
-                            handleOnSubmitAnswer={handleOnSubmitAnswer}
-                            question={questionInfos.question as Question}
-                            showAnswer={isAnswerSubmitted}
-                            answer={answer}
-                            buttonText={buttonText}
-                            hideAnswerFeedback={true}
-                        />
+
+                        {/* State 1: Quiz completed — show waiting page with results button */}
+                        {shouldShowResults && (
+                            <WaitingForNextQuestion
+                                onViewResults={() => setIsModalOpen(true)}
+                            />
+                        )}
+
+                        {/* State 2: Answer submitted, waiting for next question */}
+                        {!shouldShowResults && isAnswerSubmitted && (
+                            <WaitingForNextQuestion />
+                        )}
+
+                        {/* State 3: Awaiting answer — show the question form */}
+                        {!shouldShowResults && !isAnswerSubmitted && (
+                            <QuestionDisplayV2
+                                key={questionInfos.question.id}
+                                handleOnSubmitAnswer={handleOnSubmitAnswer}
+                                question={questionInfos.question as Question}
+                                showAnswer={false}
+                                answer={answer}
+                                buttonText='Répondre'
+                                hideAnswerFeedback={true}
+                                showCorrectnessBanner={false}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

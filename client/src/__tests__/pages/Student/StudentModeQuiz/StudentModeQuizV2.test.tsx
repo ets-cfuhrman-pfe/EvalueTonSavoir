@@ -102,27 +102,30 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     );
   };
 
-  it('starts hidden, then shows and hides feedback on toggle', () => {
+  it('shows feedback by default after answer submission, then hides and re-shows on toggle', () => {
     const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
     renderQuiz(questions, answeredWithPlaceholder);
 
-    // Ensure the quiz results modal does not hide the feedback toggle
     closeResultsDialogIfOpen();
 
-    const toggleButton = screen.getByRole('button', { name: /afficher rétroactions/i });
-    expect(toggleButton).toBeInTheDocument();
-
-    // Hidden by default
-    expect(screen.queryByText('Feedback A')).not.toBeInTheDocument();
-
-    fireEvent.click(toggleButton);
-    expect(screen.getByText('Feedback A')).toBeInTheDocument();
+    // Feedback is visible by default — FeedbackBox is rendered
+    expect(screen.getByTestId('feedback-box')).toBeInTheDocument();
     expect(screen.getByText('Feedback global')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /masquer rétroactions/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /masquer rétroactions/i }));
-    expect(screen.queryByText('Feedback A')).not.toBeInTheDocument();
+    // Toggle button starts as "Masquer" since feedback is visible
+    const hideButton = screen.getByRole('button', { name: /masquer rétroactions/i });
+    expect(hideButton).toBeInTheDocument();
+
+    // Click to hide
+    fireEvent.click(hideButton);
+    expect(screen.queryByTestId('feedback-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Feedback global')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /afficher rétroactions/i })).toBeInTheDocument();
+
+    // Click to show again
+    fireEvent.click(screen.getByRole('button', { name: /afficher rétroactions/i }));
+    expect(screen.getByTestId('feedback-box')).toBeInTheDocument();
+    expect(screen.getByText('Feedback global')).toBeInTheDocument();
   });
 
   it('does not show toggle when no answer submitted and quiz not completed', () => {
@@ -171,6 +174,27 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     expect(screen.getByText(/Bonne réponse/)).toBeInTheDocument();
   });
 
+  it('does not render FeedbackBox for numerical questions', () => {
+    const questions: QuestionType[] = [makeNumericalQuestion()];
+    renderQuiz(questions, makeAnswersWithPlaceholder(['4']));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.queryByTestId('feedback-box')).not.toBeInTheDocument();
+    // No toggle button either (hasFeedback returns false for numerical with no formattedGlobalFeedback)
+    expect(screen.queryByRole('button', { name: /rétroactions/i })).not.toBeInTheDocument();
+  });
+
+  it('does not render FeedbackBox for short answer questions', () => {
+    const questions: QuestionType[] = [makeShortQuestion()];
+    renderQuiz(questions, makeAnswersWithPlaceholder(['merci']));
+
+    closeResultsDialogIfOpen();
+
+    expect(screen.queryByTestId('feedback-box')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /rétroactions/i })).not.toBeInTheDocument();
+  });
+
   it('shows toggle when quiz is marked completed even without answers', () => {
     const questions: QuestionType[] = [makeMultipleChoiceQuestion(true)];
     renderQuiz(questions, [{} as AnswerSubmissionToBackendType], { quizCompleted: true });
@@ -178,7 +202,8 @@ describe('StudentModeQuizV2 feedback toggle', () => {
     // Close the auto-shown results modal to reveal the toggle in the main view
     closeResultsDialogIfOpen();
 
-    expect(screen.getByRole('button', { name: /afficher rétroactions/i })).toBeInTheDocument();
+    // Feedback is on by default, so button reads "Masquer"
+    expect(screen.getByRole('button', { name: /masquer rétroactions/i })).toBeInTheDocument();
   });
 
   it('hides toggle entirely when question has no feedback', () => {

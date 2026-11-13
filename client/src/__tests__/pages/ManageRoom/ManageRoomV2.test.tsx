@@ -1168,4 +1168,34 @@ describe('ManageRoomV2 Component', () => {
       });
     });
   });
+
+  describe('Room Name Display in Active Header', () => {
+    const launchQuiz = async () => {
+      renderComponent();
+      await screen.findByText('Options de lancement du quiz');
+
+      const roomSelect = screen.getByRole('combobox');
+      fireEvent.change(roomSelect, { target: { value: 'room1' } });
+
+      const launchButtons = screen.getAllByText('Lancer le quiz');
+      fireEvent.click(launchButtons[0]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      await screen.findByTestId('question-display-v2');
+    };
+
+    test('should display formatted room name in the header after launch', async () => {
+      await launchQuiz();
+      expect(screen.getByText('Salle : ROOM 1')).toBeInTheDocument();
+    });
+
+    test('should not display room name label before launch', async () => {
+      renderComponent();
+      await screen.findByText('Options de lancement du quiz');
+      expect(screen.queryByText(/Salle :/)).not.toBeInTheDocument();
+    });
+  });
 });
