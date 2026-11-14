@@ -68,6 +68,10 @@ describe('ShareFolder page', () => {
         expect(screen.getByText(/ses 2 quiz/)).toBeInTheDocument();
         expect(screen.getByText('Forces')).toBeInTheDocument();
         expect(screen.getByText('Énergie')).toBeInTheDocument();
+        expect(screen.getByTestId('shared-folder-quiz-list')).toHaveStyle({
+            maxHeight: '260px',
+            overflowY: 'auto',
+        });
         expect(screen.queryByText(/vous appartient déjà/)).not.toBeInTheDocument();
     });
 
