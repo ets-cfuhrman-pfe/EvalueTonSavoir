@@ -8,6 +8,7 @@ import Home from './pages/Home/Home';
 // Pages espace enseignant
 import DashboardV2 from './pages/Teacher/Dashboard/DashboardV2';
 import Share from './pages/Teacher/Share/Share';
+import ShareFolder from './pages/Teacher/Share/ShareFolder';
 import Register from './pages/AuthManager/providers/SimpleLogin/Register';
 import ResetPassword from './pages/AuthManager/providers/SimpleLogin/ResetPassword';
 import ManageRoomV2 from './pages/Teacher/ManageRoom/ManageRoomV2';
@@ -94,6 +95,10 @@ const App: React.FC = () => {
                         <Route
                             path="/teacher/share/:id"
                             element={isTeacherAuthenticated ? <Share /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/teacher/share-folder/:id"
+                            element={isTeacherAuthenticated ? <ShareFolder /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/teacher/editor-quiz/:id"

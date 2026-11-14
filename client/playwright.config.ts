@@ -37,6 +37,11 @@ export default defineConfig({
     extraHTTPHeaders: {
       'Accept': 'application/json, text/html',
     },
+    launchOptions: {
+      args: process.env.PLAYWRIGHT_BASE_URL
+        ? [`--unsafely-treat-insecure-origin-as-secure=${process.env.PLAYWRIGHT_BASE_URL}`]
+        : [],
+    },
   },
 
   /* Global test timeout for integration tests */

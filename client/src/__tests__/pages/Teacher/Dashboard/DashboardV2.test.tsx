@@ -31,6 +31,17 @@ jest.mock('../../../../components/ImportModal/ImportModal', () => {
     ) : null;
   };
 });
+jest.mock('../../../../components/ShareFolderModal/ShareFolderModal', () => {
+  return function MockShareFolderModal({ open, folder, onClose }: any) {
+    if (!open) return null;
+    return (
+      <div data-testid="share-folder-modal">
+        <span>{`share-folder:${folder?._id}:${folder?.title}`}</span>
+        <button onClick={onClose}>close-share-folder</button>
+      </div>
+    );
+  };
+});
 jest.mock('../../../../components/DownloadQuizModal/DownloadQuizModal', () => {
   return function MockDownloadQuizModal({ quiz }: any) {
     return <div data-testid={`download-modal-${quiz._id}`}>Download Modal</div>;
@@ -545,6 +556,49 @@ describe('DashboardV2 Component', () => {
 
       await waitFor(() => {
         expect(mockApiService.duplicateFolder).toHaveBeenCalledWith('folder1');
+      });
+    });
+    test('should open the share folder modal for the selected folder from the folder menu', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const folderButton = screen.getAllByText('Dossier 1')[0];
+        fireEvent.click(folderButton);
+      });
+
+      expect(screen.queryByTestId('share-folder-modal')).not.toBeInTheDocument();
+
+      await waitFor(() => {
+        const menuButtons = screen.getAllByTestId('MoreVertIcon');
+        fireEvent.click(menuButtons[0]);
+      });
+
+      fireEvent.click(screen.getByText('Partager'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('share-folder-modal')).toBeInTheDocument();
+      });
+      expect(screen.getByText('share-folder:folder1:Dossier 1')).toBeInTheDocument();
+    });
+
+    test('should close the share folder modal', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const folderButton = screen.getAllByText('Dossier 1')[0];
+        fireEvent.click(folderButton);
+      });
+      await waitFor(() => {
+        const menuButtons = screen.getAllByTestId('MoreVertIcon');
+        fireEvent.click(menuButtons[0]);
+      });
+      fireEvent.click(screen.getByText('Partager'));
+      await waitFor(() => expect(screen.getByTestId('share-folder-modal')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByText('close-share-folder'));
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('share-folder-modal')).not.toBeInTheDocument();
       });
     });
   });

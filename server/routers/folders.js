@@ -15,6 +15,9 @@ router.post("/duplicate", jwt.authenticate, asyncHandler(folders.duplicate));
 
 router.post("/copy/:folderId", jwt.authenticate, validateFolderCopy, asyncHandler(folders.copy));
 
+router.get("/getShare/:folderId", jwt.authenticate, asyncHandler(folders.getShare));
+router.post("/receiveShare", jwt.authenticate, asyncHandler(folders.receiveShare));
+
 module.exports = router;
 
 // export also folders (the controller)

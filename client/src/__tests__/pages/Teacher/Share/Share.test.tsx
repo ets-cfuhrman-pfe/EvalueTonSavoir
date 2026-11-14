@@ -92,4 +92,29 @@ describe('Share Component', () => {
     });
   });
 
+  it('should render labeled folder select and submit quiz import form', async () => {
+    mockApiService.isLoggedIn.mockReturnValue(true);
+    mockApiService.getAllQuizIds.mockResolvedValue([]);
+    mockApiService.getUserFolders.mockResolvedValue([
+      { _id: 'f1', userId: 'u1', title: 'Sciences', created_at: '2025-01-01' },
+    ]);
+    mockApiService.getSharedQuiz.mockResolvedValue('Test Quiz');
+    mockApiService.receiveSharedQuiz.mockResolvedValue(true);
+
+    renderComponent();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Importation du Quiz: Test Quiz' })
+    ).toBeInTheDocument();
+
+    const select = screen.getByLabelText(/dossier de destination/i);
+    fireEvent.change(select, { target: { value: 'f1' } });
+    fireEvent.click(screen.getByRole('button', { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(mockApiService.receiveSharedQuiz).toHaveBeenCalledWith('quiz123', 'f1');
+      expect(mockNavigate).toHaveBeenCalledWith('/teacher/dashboard');
+    });
+  });
+
 });

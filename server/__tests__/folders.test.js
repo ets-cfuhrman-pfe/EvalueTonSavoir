@@ -296,6 +296,111 @@ describe('Folders', () => {
         });
     });
     
+    describe('importShared', () => {
+        const folderId = '60c72b2f9b1d8b3a4c8e4d3b';
+
+        it('copies a folder owned by another user into a new folder for the requester', async () => {
+            collection.findOne
+                .mockResolvedValueOnce({ _id: folderId, title: 'Physique', userId: 'owner' })
+                .mockResolvedValueOnce(null);
+            const newId = new ObjectId();
+            const createSpy = jest.spyOn(folders, 'create').mockResolvedValue(newId);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([
+                { title: 'Q1', content: ['a'] },
+                { title: 'Q2', content: ['b'] },
+            ]);
+            jest.spyOn(quizzes, 'create').mockResolvedValue(new ObjectId());
+
+            const result = await folders.importShared(folderId, 'requester');
+
+            // source lookup must NOT be scoped to the requester
+            expect(collection.findOne).toHaveBeenNthCalledWith(1, { _id: new ObjectId(folderId) });
+            expect(createSpy).toHaveBeenCalledWith('Physique', 'requester');
+            expect(quizzes.create).toHaveBeenCalledTimes(2);
+            expect(quizzes.create).toHaveBeenCalledWith('Q1', ['a'], newId.toString(), 'requester');
+            expect(quizzes.create).toHaveBeenCalledWith('Q2', ['b'], newId.toString(), 'requester');
+            expect(result).toEqual({ folderId: newId, title: 'Physique', quizCount: 2 });
+        });
+
+        it('generates a unique title when the requester already has a folder with that name', async () => {
+            collection.findOne
+                .mockResolvedValueOnce({ _id: folderId, title: 'Physique', userId: 'owner' })
+                .mockResolvedValueOnce({ title: 'Physique' })
+                .mockResolvedValueOnce(null);
+            const createSpy = jest.spyOn(folders, 'create').mockResolvedValue(new ObjectId());
+            jest.spyOn(folders, 'getContent').mockResolvedValue([]);
+
+            const result = await folders.importShared(folderId, 'requester');
+
+            expect(createSpy).toHaveBeenCalledWith('Physique (1)', 'requester');
+            expect(result.quizCount).toBe(0);
+        });
+
+        it('throws when the source folder does not exist', async () => {
+            collection.findOne.mockResolvedValue(null);
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow(`Folder ${folderId} not found`);
+        });
+
+        const mockSource = () => collection.findOne
+            .mockResolvedValueOnce({ _id: folderId, title: 'Physique', userId: 'owner' })
+            .mockResolvedValueOnce(null);
+
+        it('rolls back the new folder and copied quizzes when a quiz copy returns null', async () => {
+            mockSource();
+            const newId = new ObjectId();
+            jest.spyOn(folders, 'create').mockResolvedValue(newId);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([
+                { title: 'Q1', content: [] },
+                { title: 'Q2', content: [] },
+            ]);
+            jest.spyOn(quizzes, 'create')
+                .mockResolvedValueOnce(new ObjectId())
+                .mockResolvedValueOnce(null);
+            const deleteQuizzesSpy = jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockResolvedValue(true);
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('Failed to import quiz');
+
+            expect(deleteQuizzesSpy).toHaveBeenCalledWith(newId.toString());
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: newId });
+        });
+
+        it('rolls back when a quiz copy throws and rethrows the original error', async () => {
+            mockSource();
+            const newId = new ObjectId();
+            jest.spyOn(folders, 'create').mockResolvedValue(newId);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Q1', content: [] }]);
+            jest.spyOn(quizzes, 'create').mockRejectedValue(new Error('db down'));
+            jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockResolvedValue(true);
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('db down');
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: newId });
+        });
+
+        it('still reports the import error when the rollback itself fails', async () => {
+            mockSource();
+            jest.spyOn(folders, 'create').mockResolvedValue(new ObjectId());
+            jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Q1', content: [] }]);
+            jest.spyOn(quizzes, 'create').mockResolvedValue(null);
+            jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockRejectedValue(new Error('cleanup failed'));
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('Failed to import quiz');
+        });
+
+        it('creates no folder when reading the source content fails', async () => {
+            mockSource();
+            const createSpy = jest.spyOn(folders, 'create');
+            jest.spyOn(folders, 'getContent').mockRejectedValue(new Error('read failed'));
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('read failed');
+            expect(createSpy).not.toHaveBeenCalled();
+        });
+
+        it('throws on missing parameters', async () => {
+            await expect(folders.importShared(undefined, 'u')).rejects.toThrow('Missing required parameter(s)');
+            await expect(folders.importShared(folderId, undefined)).rejects.toThrow('Missing required parameter(s)');
+        });
+    });
+
     describe('folderExists', () => {
         it('should return true if folder exists', async () => {
             const title = 'Test Folder';

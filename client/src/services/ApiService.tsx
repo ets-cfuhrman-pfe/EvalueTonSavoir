@@ -8,6 +8,18 @@ import { QuizType } from 'src/Types/QuizType';
 import { RoomType } from 'src/Types/RoomType';
 
 type ApiResponse = boolean | string;
+
+export interface SharedFolderPreview {
+    title: string;
+    isOwner: boolean;
+    quizzes: { _id: string; title: string }[];
+}
+
+export interface SharedFolderImportResult {
+    newFolderId: string;
+    title: string;
+    quizCount: number;
+}
 export type AdminDataResource = 'folders' | 'quizzes' | 'images' | 'rooms';
 
 class ApiService {
@@ -1042,6 +1054,76 @@ public async login(email: string, password: string): Promise<any> {
             }
 
             return `An unexpected error occurred.`;
+        }
+    }
+
+    /**
+     * Preview of a folder shared by link: its title and quiz titles.
+     * @returns the preview, or an error message string.
+     */
+    async getSharedFolder(folderId: string): Promise<SharedFolderPreview | string> {
+        try {
+            if (!folderId) {
+                throw new Error(`folderId is required.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/folder/getShare/${folderId}`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.get(url, { headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`Get shared folder failed. Status: ${result.status}`);
+            }
+
+            return result.data.data as SharedFolderPreview;
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { message?: string; error?: string } | undefined;
+                return data?.message || data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
+        }
+    }
+
+    /**
+     * Import every quiz of a shared folder into a new folder owned by the current user.
+     * @returns the import result, or an error message string.
+     */
+    async receiveSharedFolder(folderId: string): Promise<SharedFolderImportResult | string> {
+        try {
+            if (!folderId) {
+                throw new Error(`folderId is required.`);
+            }
+
+            const url: string = this.constructRequestUrl(`/folder/receiveShare`);
+            const headers = this.constructRequestHeaders();
+
+            const result: AxiosResponse = await axios.post(url, { folderId }, { headers: headers });
+
+            if (result.status !== 200) {
+                throw new Error(`Receive shared folder failed. Status: ${result.status}`);
+            }
+
+            return {
+                newFolderId: result.data.newFolderId,
+                title: result.data.title,
+                quizCount: result.data.quizCount,
+            };
+        } catch (error) {
+            console.log("Error details: ", error);
+
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                const data = err.response?.data as { message?: string; error?: string } | undefined;
+                return data?.message || data?.error || 'Erreur serveur inconnue lors de la requête.';
+            }
+
+            return `Une erreur inattendue s'est produite.`;
         }
     }
 
