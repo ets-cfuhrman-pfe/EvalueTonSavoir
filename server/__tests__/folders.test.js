@@ -341,15 +341,58 @@ describe('Folders', () => {
             await expect(folders.importShared(folderId, 'requester')).rejects.toThrow(`Folder ${folderId} not found`);
         });
 
-        it('throws when a quiz copy fails', async () => {
-            collection.findOne
-                .mockResolvedValueOnce({ _id: folderId, title: 'Physique', userId: 'owner' })
+        const mockSource = () => collection.findOne
+            .mockResolvedValueOnce({ _id: folderId, title: 'Physique', userId: 'owner' })
+            .mockResolvedValueOnce(null);
+
+        it('rolls back the new folder and copied quizzes when a quiz copy returns null', async () => {
+            mockSource();
+            const newId = new ObjectId();
+            jest.spyOn(folders, 'create').mockResolvedValue(newId);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([
+                { title: 'Q1', content: [] },
+                { title: 'Q2', content: [] },
+            ]);
+            jest.spyOn(quizzes, 'create')
+                .mockResolvedValueOnce(new ObjectId())
                 .mockResolvedValueOnce(null);
+            const deleteQuizzesSpy = jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockResolvedValue(true);
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('Failed to import quiz');
+
+            expect(deleteQuizzesSpy).toHaveBeenCalledWith(newId.toString());
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: newId });
+        });
+
+        it('rolls back when a quiz copy throws and rethrows the original error', async () => {
+            mockSource();
+            const newId = new ObjectId();
+            jest.spyOn(folders, 'create').mockResolvedValue(newId);
+            jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Q1', content: [] }]);
+            jest.spyOn(quizzes, 'create').mockRejectedValue(new Error('db down'));
+            jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockResolvedValue(true);
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('db down');
+            expect(collection.deleteOne).toHaveBeenCalledWith({ _id: newId });
+        });
+
+        it('still reports the import error when the rollback itself fails', async () => {
+            mockSource();
             jest.spyOn(folders, 'create').mockResolvedValue(new ObjectId());
             jest.spyOn(folders, 'getContent').mockResolvedValue([{ title: 'Q1', content: [] }]);
             jest.spyOn(quizzes, 'create').mockResolvedValue(null);
+            jest.spyOn(quizzes, 'deleteQuizzesByFolderId').mockRejectedValue(new Error('cleanup failed'));
 
             await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('Failed to import quiz');
+        });
+
+        it('creates no folder when reading the source content fails', async () => {
+            mockSource();
+            const createSpy = jest.spyOn(folders, 'create');
+            jest.spyOn(folders, 'getContent').mockRejectedValue(new Error('read failed'));
+
+            await expect(folders.importShared(folderId, 'requester')).rejects.toThrow('read failed');
+            expect(createSpy).not.toHaveBeenCalled();
         });
 
         it('throws on missing parameters', async () => {

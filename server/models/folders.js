@@ -1,6 +1,7 @@
 //model
 const ObjectId = require('mongodb').ObjectId;
 const { generateUniqueTitle } = require('./utils');
+const logger = require('../config/logger');
 
 class Folders {
     constructor(db, quizModel) {
@@ -163,20 +164,47 @@ class Folders {
             ? await generateUniqueTitle(sourceFolder.title, titleTaken)
             : sourceFolder.title;
 
+        // Read the source content before writing anything, so a read failure leaves no trace
+        const content = await this.getContent(folderId);
+
         const newFolderId = await this.create(newFolderTitle, userId);
         if (!newFolderId) {
             throw new Error('Failed to create imported folder');
         }
 
-        const content = await this.getContent(folderId);
-        for (const quiz of content) {
-            const result = await this.quizModel.create(quiz.title, quiz.content, newFolderId.toString(), userId);
-            if (!result) {
-                throw new Error('Failed to import quiz');
+        // MongoDB runs standalone (no replica set), so multi-document transactions are not
+        // available: on any failure, undo what was written so the import is all-or-nothing.
+        try {
+            for (const quiz of content) {
+                const result = await this.quizModel.create(quiz.title, quiz.content, newFolderId.toString(), userId);
+                if (!result) {
+                    throw new Error('Failed to import quiz');
+                }
             }
+        } catch (error) {
+            await this.rollbackImport(newFolderId.toString());
+            throw error;
         }
 
         return { folderId: newFolderId, title: newFolderTitle, quizCount: content.length };
+    }
+
+    /**
+     * Removes a partially imported folder and the quizzes already copied into it.
+     * Never throws: a cleanup failure is logged so the original import error is the one reported.
+     */
+    async rollbackImport(newFolderId) {
+        try {
+            await this.quizModel.deleteQuizzesByFolderId(newFolderId);
+            const conn = this.db.getConnection();
+            await conn.collection('folders').deleteOne({ _id: ObjectId.createFromHexString(newFolderId) });
+        } catch (cleanupError) {
+            logger.error('Failed to roll back partial folder import', {
+                folderId: newFolderId,
+                error: cleanupError.message,
+                module: 'folder-model'
+            });
+        }
     }
 
     async folderExists(title, userId) {
