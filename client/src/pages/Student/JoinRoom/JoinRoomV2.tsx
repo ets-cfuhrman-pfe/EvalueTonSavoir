@@ -319,6 +319,7 @@ const JoinRoomV2: React.FC = () => {
                         studentName={username}
                         quizCompleted={quizCompleted || hasCompletedAllQuestions}
                         quizTitle={quizTitle}
+                        roomName={roomName}
                     />
                 </div>
             );
@@ -336,6 +337,7 @@ const JoinRoomV2: React.FC = () => {
                             studentName={username}
                             quizTitle={quizTitle}
                             totalQuestions={questions.length}
+                            roomName={roomName}
                         />
                     ) : (<div>Chargement de la question...</div>
                     )}
