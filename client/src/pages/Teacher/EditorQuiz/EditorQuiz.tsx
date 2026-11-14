@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { FolderType } from '../../../Types/FolderType';
 
-import Editor from 'src/components/Editor/Editor';
+import Editor, { EditorCursorRequest } from 'src/components/Editor/Editor';
 import GiftCheatSheetV2 from 'src/components/GIFTCheatSheet/GiftCheatSheetV2';
 import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePreviewV2';
 import ReturnButtonV2 from 'src/components/ReturnButton/ReturnButtonV2';
@@ -106,6 +106,8 @@ const EditorQuiz: React.FC = () => {
     const splitPaneRef = useRef<HTMLDivElement>(null);
     const questionRangesRef = useRef<QuestionRange[]>([]);
     const latestCursorOffsetRef = useRef<number>(0);
+    const [editorCursorRequest, setEditorCursorRequest] = useState<EditorCursorRequest | null>(null);
+    const cursorRequestIdRef = useRef<number>(0);
     const [leftPanePercent, setLeftPanePercent] = useState(50);
 
     const setPaneWidth = useCallback((newPercentage: number) => {
@@ -315,6 +317,20 @@ const EditorQuiz: React.FC = () => {
         latestCursorOffsetRef.current = caretOffset;
         setActiveQuestionIndex(findQuestionIndexByCaret(questionRangesRef.current, caretOffset));
     }, []); // no deps — reads only from stable refs
+
+    const handlePreviewQuestionClick = useCallback((questionIndex: number) => {
+        const range = questionRangesRef.current[questionIndex];
+        if (!range) return;
+
+        cursorRequestIdRef.current += 1;
+        latestCursorOffsetRef.current = range.start;
+        setActiveQuestionIndex(questionIndex);
+        setEditorCursorRequest({
+            offset: range.start,
+            endOffset: range.end,
+            requestId: cursorRequestIdRef.current,
+        });
+    }, []);
 
     useEffect(() => {
         setActiveQuestionIndex(
@@ -633,6 +649,7 @@ const EditorQuiz: React.FC = () => {
                                                 initialValue={editorInitialContent}
                                                 onEditorChange={handleUpdatePreview}
                                                 onCursorChange={handleEditorCursorChange}
+                                                cursorRequest={editorCursorRequest}
                                             />
                                         </div>
 
@@ -747,6 +764,7 @@ const EditorQuiz: React.FC = () => {
                                             hideAnswers={hideAnswers}
                                             activeQuestionIndex={activeQuestionIndex}
                                             questionStartLines={questionStartLines}
+                                            onQuestionClick={handlePreviewQuestionClick}
                                         />
                                     </div>
                                 </div>

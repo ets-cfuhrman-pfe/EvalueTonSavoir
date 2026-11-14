@@ -8,6 +8,7 @@ interface GIFTTemplatePreviewV2Props {
     hideAnswers?: boolean;
     activeQuestionIndex?: number | null;
     questionStartLines?: number[];
+    onQuestionClick?: (questionIndex: number) => void;
 }
 
 const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
@@ -15,6 +16,7 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     hideAnswers = false,
     activeQuestionIndex = null,
     questionStartLines = [],
+    onQuestionClick,
 }) => {
     const [error, setError] = useState('');
     const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -111,6 +113,23 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
         lastScrolledIndexRef.current = activeQuestionIndex;
     }, [activeQuestionIndex, items]);
 
+    const handlePreviewClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!onQuestionClick) return;
+        const target = event.target instanceof Element
+            ? event.target.closest<HTMLElement>('.gift-preview-question-anchor')
+            : null;
+        if (!target) return;
+
+        const rawIndex = target.getAttribute('data-question-index');
+        if (rawIndex === null) return;
+
+        const questionIndex = Number.parseInt(rawIndex, 10);
+        if (Number.isNaN(questionIndex) || questionIndex < 0) return;
+
+        lastScrolledIndexRef.current = questionIndex;
+        onQuestionClick(questionIndex);
+    };
+
     if (error) {
         return <div className="alert alert-danger" role="alert">{error}</div>;
     }
@@ -120,7 +139,12 @@ const GIFTTemplatePreviewV2: React.FC<GIFTTemplatePreviewV2Props> = ({
     }
 
     return (
-        <div ref={previewContainerRef} data-testid="preview-container" className="preview-container">
+        <div
+            ref={previewContainerRef}
+            data-testid="preview-container"
+            className="preview-container"
+            onClick={handlePreviewClick}
+        >
             <div dangerouslySetInnerHTML={{ __html: FormattedTextTemplate({ format: 'html', text: items }) }}></div>
         </div>
     );

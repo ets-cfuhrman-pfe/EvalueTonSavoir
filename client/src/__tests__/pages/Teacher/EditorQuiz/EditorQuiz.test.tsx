@@ -19,8 +19,12 @@ jest.mock('react-router-dom', () => ({
 // Mock child components
 jest.mock('../../../../components/Editor/Editor', () => ({
   __esModule: true,
-  default: ({ label, initialValue, onEditorChange }: any) => (
-    <div data-testid="editor-v2">
+  default: ({ label, initialValue, onEditorChange, cursorRequest }: any) => (
+    <div
+      data-testid="editor-v2"
+      data-cursor-offset={cursorRequest?.offset ?? ''}
+      data-cursor-end-offset={cursorRequest?.endOffset ?? ''}
+    >
       <label>{label}</label>
       <textarea
         data-testid="editor-textarea"
@@ -38,10 +42,20 @@ jest.mock('../../../../components/GIFTCheatSheet/GiftCheatSheetV2', () => ({
 
 jest.mock('../../../../components/GiftTemplate/GIFTTemplatePreviewV2', () => ({
   __esModule: true,
-  default: ({ questions, hideAnswers }: any) => (
-    <div data-testid="gift-preview" data-hide-answers={hideAnswers}>
+  default: ({ questions, hideAnswers, activeQuestionIndex, onQuestionClick }: any) => (
+    <div
+      data-testid="gift-preview"
+      data-hide-answers={hideAnswers}
+      data-active-question-index={activeQuestionIndex ?? ''}
+    >
       {questions.map((q: string, i: number) => (
-        <div key={`question-${q}-${i}`} data-testid={`question-${i}`}>{q}</div>
+        <div
+          key={`question-${q}-${i}`}
+          data-testid={`question-${i}`}
+          onClick={() => onQuestionClick?.(i)}
+        >
+          {q}
+        </div>
       ))}
     </div>
   ),
@@ -1019,6 +1033,38 @@ describe('EditorQuiz Component', () => {
       // End should set to max (80%)
       fireEvent.keyDown(divider, { key: 'End' });
       expect(divider).toHaveAttribute('aria-valuenow', '80');
+    });
+
+    test('clicking a question in the preview sets the editor cursor offset to that question start', async () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
+
+      renderComponent();
+
+      const editorTextarea = screen.getByTestId(TEST_IDS.EDITOR_TEXTAREA);
+      const giftSource = 'Question 1?\n\nQuestion 2?\n\nQuestion 3?';
+      fireEvent.change(editorTextarea, { target: { value: giftSource } });
+
+      const secondQuestionPreview = await screen.findByTestId(`${TEST_IDS.QUESTION_PREFIX}1`);
+      fireEvent.click(secondQuestionPreview);
+
+      const editorWrapper = screen.getByTestId(TEST_IDS.EDITOR);
+      const giftPreview = screen.getByTestId(TEST_IDS.PREVIEW);
+      expect(editorWrapper).toHaveAttribute('data-cursor-offset', String(giftSource.indexOf('Question 2?')));
+      expect(editorWrapper).toHaveAttribute(
+        'data-cursor-end-offset',
+        String(giftSource.indexOf('Question 2?') + 'Question 2?'.length)
+      );
+      expect(giftPreview).toHaveAttribute('data-active-question-index', '1');
+
+      const thirdQuestionPreview = screen.getByTestId(`${TEST_IDS.QUESTION_PREFIX}2`);
+      fireEvent.click(thirdQuestionPreview);
+
+      expect(editorWrapper).toHaveAttribute('data-cursor-offset', String(giftSource.indexOf('Question 3?')));
+      expect(editorWrapper).toHaveAttribute(
+        'data-cursor-end-offset',
+        String(giftSource.indexOf('Question 3?') + 'Question 3?'.length)
+      );
+      expect(giftPreview).toHaveAttribute('data-active-question-index', '2');
     });
   });
 });

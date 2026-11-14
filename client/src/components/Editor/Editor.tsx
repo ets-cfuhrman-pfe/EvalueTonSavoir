@@ -6,21 +6,54 @@ import { Button } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { buildGiftDiagnosticMarkers } from 'src/utils/giftDiagnostics';
+import { splitGiftSource } from 'src/utils/giftBlockSplitter';
 
 const MONACO_MARKER_OWNER = 'gift-diagnostics';
 const DIAGNOSTIC_DEBOUNCE_MS = 250;
+
+export interface EditorCursorRequest {
+    offset: number;
+    endOffset?: number;
+    requestId: number;
+}
+
+function resolveQuestionOffsets(
+    text: string,
+    request: EditorCursorRequest
+): { startOffset: number; endOffset: number } {
+    const startOffset = Math.max(0, Math.min(request.offset, text.length));
+    let endOffset: number;
+
+    if (typeof request.endOffset === 'number') {
+        endOffset = request.endOffset;
+    } else {
+        const matchedRange = splitGiftSource(text).ranges.find(
+            (r) => startOffset >= r.start && startOffset <= r.end
+        );
+        endOffset = matchedRange ? matchedRange.end : startOffset;
+    }
+
+    endOffset = Math.max(startOffset, Math.min(endOffset, text.length));
+    while (endOffset > startOffset && (text[endOffset - 1] === '\n' || text[endOffset - 1] === '\r')) {
+        endOffset -= 1;
+    }
+
+    return { startOffset, endOffset };
+}
 
 interface EditorProps {
     label: string;
     initialValue: string;
     onEditorChange: (value: string) => void;
     onCursorChange?: (offset: number) => void;
+    cursorRequest?: EditorCursorRequest | null;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, onCursorChange }) => {
+const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, onCursorChange, cursorRequest }) => {
     const [value, setValue] = useState(initialValue);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [editorHeight, setEditorHeight] = useState(200);
+    const [highlightedLineRange, setHighlightedLineRange] = useState<{ startLine: number; endLine: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const editorInstanceRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
     const resizeSubscriptionRef = useRef<IDisposable | null>(null);
@@ -28,11 +61,56 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const contentSubscriptionRef = useRef<IDisposable | null>(null);
     const focusSubscriptionRef = useRef<IDisposable | null>(null);
     const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const redirectDecorationsRef = useRef<MonacoEditorNS.IEditorDecorationsCollection | null>(null);
     const isTestEnvironment = process.env.NODE_ENV === 'test';
     const onCursorChangeRef = useRef(onCursorChange);
+    const isProgrammaticFocusRef = useRef(false);
+    const pendingCursorRequestRef = useRef<EditorCursorRequest | null>(null);
+    const lastAppliedRequestIdRef = useRef<number | null>(null);
     useEffect(() => {
         onCursorChangeRef.current = onCursorChange;
     }, [onCursorChange]);
+
+    const clearRedirectHighlight = useCallback(() => {
+        redirectDecorationsRef.current?.clear();
+        setHighlightedLineRange(null);
+    }, []);
+
+    const highlightRedirectedQuestion = useCallback((startLineNumber: number, endLineNumber: number, requestId: number) => {
+        const safeEndLine = Math.max(startLineNumber, endLineNumber);
+        setHighlightedLineRange({ startLine: startLineNumber, endLine: safeEndLine });
+
+        const editor = editorInstanceRef.current;
+        const model = editor?.getModel();
+        if (!editor || !model) return;
+
+        redirectDecorationsRef.current ??= editor.createDecorationsCollection?.() ?? null;
+        if (!redirectDecorationsRef.current) return;
+
+        const pulseClass =
+            requestId % 2 === 0
+                ? 'editor-redirect-line-highlight--pulse-even'
+                : 'editor-redirect-line-highlight--pulse-odd';
+
+        redirectDecorationsRef.current.set([
+            {
+                range: {
+                    startLineNumber,
+                    startColumn: 1,
+                    endLineNumber: safeEndLine,
+                    endColumn: model.getLineMaxColumn(safeEndLine),
+                },
+                options: {
+                    isWholeLine: true,
+                    shouldFillLineOnLineBreak: true,
+                    className: `editor-redirect-line-highlight ${pulseClass}`,
+                    linesDecorationsClassName: 'editor-redirect-line-accent',
+                    marginClassName: 'editor-redirect-line-margin',
+                    lineNumberClassName: 'editor-redirect-line-number',
+                },
+            },
+        ]);
+    }, []);
 
     const cleanupMonacoResources = useCallback(() => {
         if (resizeSubscriptionRef.current) {
@@ -59,6 +137,9 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
             clearTimeout(validationTimeoutRef.current);
             validationTimeoutRef.current = null;
         }
+
+        redirectDecorationsRef.current?.clear();
+        redirectDecorationsRef.current = null;
     }, []);
 
     useEffect(() => {
@@ -75,8 +156,83 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     const handleEditorChange = useCallback((newValue = '') => {
         const text = newValue;
         setValue(text);
+        clearRedirectHighlight();
         onEditorChange(text);
-    }, [onEditorChange]);
+    }, [clearRedirectHighlight, onEditorChange]);
+
+    const applyCursorRequest = useCallback((request: EditorCursorRequest) => {
+        if (isTestEnvironment) {
+            const textarea = textareaRef.current;
+            if (!textarea) {
+                pendingCursorRequestRef.current = request;
+                return;
+            }
+
+            const { startOffset, endOffset } = resolveQuestionOffsets(textarea.value, request);
+            const startLineNumber = textarea.value.slice(0, startOffset).split('\n').length;
+            const endLineNumber = textarea.value.slice(0, endOffset).split('\n').length;
+            textarea.focus();
+            textarea.setSelectionRange(startOffset, startOffset);
+            setHighlightedLineRange({
+                startLine: startLineNumber,
+                endLine: Math.max(startLineNumber, endLineNumber),
+            });
+            onCursorChangeRef.current?.(startOffset);
+            lastAppliedRequestIdRef.current = request.requestId;
+            pendingCursorRequestRef.current = null;
+            return;
+        }
+
+        const editor = editorInstanceRef.current;
+        const model = editor?.getModel();
+        if (!editor || !model) {
+            pendingCursorRequestRef.current = request;
+            return;
+        }
+
+        const { startOffset, endOffset } = resolveQuestionOffsets(model.getValue(), request);
+        const position = model.getPositionAt(startOffset);
+        const endPosition = model.getPositionAt(endOffset);
+
+        isProgrammaticFocusRef.current = true;
+        editor.setPosition(position);
+        editor.revealLineInCenterIfOutsideViewport?.(position.lineNumber);
+        editor.focus();
+        highlightRedirectedQuestion(position.lineNumber, endPosition.lineNumber, request.requestId);
+        onCursorChangeRef.current?.(startOffset);
+        lastAppliedRequestIdRef.current = request.requestId;
+        pendingCursorRequestRef.current = null;
+
+        const domNode = editor.getDomNode?.();
+        const lineTop = typeof editor.getTopForLineNumber === 'function'
+            ? editor.getTopForLineNumber(position.lineNumber)
+            : 0;
+        if (domNode) {
+            const scrollContainer = domNode.closest('.overflow-auto');
+            const rect = domNode.getBoundingClientRect();
+            if (scrollContainer && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const offsetInContainer = (rect.top - containerRect.top) + lineTop;
+                scrollContainer.scrollBy({
+                    top: offsetInContainer - 24,
+                    behavior: 'smooth',
+                });
+            }
+            const stickyHeaderOffset = 120;
+            const targetWindowY = Math.max(0, window.scrollY + rect.top + lineTop - stickyHeaderOffset);
+            requestAnimationFrame(() => {
+                window.scrollTo({
+                    top: targetWindowY,
+                    behavior: 'smooth',
+                });
+                isProgrammaticFocusRef.current = false;
+            });
+        } else {
+            requestAnimationFrame(() => {
+                isProgrammaticFocusRef.current = false;
+            });
+        }
+    }, [highlightRedirectedQuestion, isTestEnvironment]);
 
     const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
         editorInstanceRef.current = editor;
@@ -102,6 +258,10 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         };
 
         const scheduleValidation = () => {
+            if (!isProgrammaticFocusRef.current) {
+                clearRedirectHighlight();
+            }
+
             if (validationTimeoutRef.current) {
                 clearTimeout(validationTimeoutRef.current);
             }
@@ -115,6 +275,9 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         resizeSubscriptionRef.current = editor.onDidContentSizeChange(updateEditorHeight);
         contentSubscriptionRef.current = editor.onDidChangeModelContent(scheduleValidation);
         focusSubscriptionRef.current = editor.onDidFocusEditorText(() => {
+            if (isProgrammaticFocusRef.current) {
+                return;
+            }
             const viewportX = window.scrollX;
             const viewportY = window.scrollY;
             requestAnimationFrame(() => {
@@ -123,23 +286,45 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         });
         validateModel();
 
-        if (onCursorChangeRef.current) {
-            const model = editor.getModel();
-            if (!model) return;
-
+        const model = editor.getModel();
+        if (model && onCursorChangeRef.current) {
             const initialOffset = model.getOffsetAt(editor.getPosition() ?? { lineNumber: 1, column: 1 });
             onCursorChangeRef.current(initialOffset);
-
-            cursorSubscriptionRef.current = editor.onDidChangeCursorPosition((event) => {
-                const currentModel = editor.getModel();
-                if (!currentModel) return;
-                onCursorChangeRef.current?.(currentModel.getOffsetAt(event.position));
-            });
         }
-    }, [cleanupMonacoResources]);
+
+        cursorSubscriptionRef.current = editor.onDidChangeCursorPosition((event) => {
+            if (!isProgrammaticFocusRef.current) {
+                clearRedirectHighlight();
+            }
+
+            const currentModel = editor.getModel();
+            if (!currentModel) return;
+            onCursorChangeRef.current?.(currentModel.getOffsetAt(event.position));
+        });
+
+        if (pendingCursorRequestRef.current) {
+            applyCursorRequest(pendingCursorRequestRef.current);
+        }
+    }, [applyCursorRequest, cleanupMonacoResources, clearRedirectHighlight]);
+
+    useEffect(() => {
+        if (!cursorRequest || cursorRequest.requestId === lastAppliedRequestIdRef.current) {
+            return;
+        }
+
+        pendingCursorRequestRef.current = cursorRequest;
+
+        if (isCollapsed) {
+            setIsCollapsed(false);
+            return;
+        }
+
+        applyCursorRequest(cursorRequest);
+    }, [cursorRequest, isCollapsed, applyCursorRequest]);
 
     useEffect(() => {
         if (!isCollapsed) return;
+        editorInstanceRef.current = null;
         cleanupMonacoResources();
     }, [cleanupMonacoResources, isCollapsed]);
 
@@ -148,9 +333,16 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
     }, [cleanupMonacoResources]);
 
     const handleTextareaCursorMove = useCallback(() => {
+        clearRedirectHighlight();
         if (!onCursorChange || !textareaRef.current) return;
         onCursorChange(textareaRef.current.selectionStart ?? 0);
-    }, [onCursorChange]);
+    }, [clearRedirectHighlight, onCursorChange]);
+
+    const highlightedLineAttr = highlightedLineRange
+        ? highlightedLineRange.startLine === highlightedLineRange.endLine
+            ? `${highlightedLineRange.startLine}`
+            : `${highlightedLineRange.startLine}-${highlightedLineRange.endLine}`
+        : undefined;
 
     return (
         <div className='mb-3'>
@@ -172,7 +364,10 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
             {!isCollapsed && (
                 <div
                     id='editor-textarea'
-                    className='editor-v2-monaco'
+                    className={`editor-v2-monaco${highlightedLineRange !== null ? ' editor-v2-monaco--line-highlighted' : ''}`}
+                    data-highlighted-line={highlightedLineAttr}
+                    data-highlighted-start-line={highlightedLineRange?.startLine}
+                    data-highlighted-end-line={highlightedLineRange?.endLine}
                 >
                     {isTestEnvironment ? (
                         <textarea
