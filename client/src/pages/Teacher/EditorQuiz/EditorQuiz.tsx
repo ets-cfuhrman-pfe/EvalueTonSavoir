@@ -103,6 +103,8 @@ const EditorQuiz: React.FC = () => {
     });
 
     const isDraggingRef = useRef(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const stickyHeaderRef = useRef<HTMLDivElement>(null);
     const splitPaneRef = useRef<HTMLDivElement>(null);
     const questionRangesRef = useRef<QuestionRange[]>([]);
     const latestCursorOffsetRef = useRef<number>(0);
@@ -515,6 +517,32 @@ const EditorQuiz: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        if (isLoading && !isNewQuiz) return;
+
+        const updateStickyOffset = () => {
+            if (!containerRef.current || !stickyHeaderRef.current) return;
+            containerRef.current.style.setProperty(
+                '--editor-sticky-top',
+                `${stickyHeaderRef.current.offsetHeight}px`
+            );
+        };
+
+        updateStickyOffset();
+        window.addEventListener('resize', updateStickyOffset);
+
+        let observer: ResizeObserver | null = null;
+        if (typeof ResizeObserver !== 'undefined' && stickyHeaderRef.current) {
+            observer = new ResizeObserver(updateStickyOffset);
+            observer.observe(stickyHeaderRef.current);
+        }
+
+        return () => {
+            window.removeEventListener('resize', updateStickyOffset);
+            observer?.disconnect();
+        };
+    }, [isLoading, isNewQuiz]);
+
     // Loading state for existing quiz
     if (!isNewQuiz && isLoading) {
         return (
@@ -543,21 +571,59 @@ const EditorQuiz: React.FC = () => {
     }
 
     return (
-        <div className="content-container editor-quiz-content-container">
+        <div ref={containerRef} className="content-container editor-quiz-content-container">
             <div className="w-100 p-0 content-full-width">
-                {/* Top Header */}
+                {/* Combined Sticky Header & Quiz Configuration */}
                 <div
-                    className="bg-white border-bottom shadow-sm no-print position-sticky top-0"
+                    ref={stickyHeaderRef}
+                    className="bg-white border-bottom shadow-sm no-print position-sticky top-0 editor-quiz-sticky-header"
+                    data-testid="editor-quiz-sticky-header"
                     style={{ zIndex: 1030 }}
                 >
-                    <div className="container-fluid px-2 py-4 content-full-width">
-                        <div className="d-flex justify-content-between align-items-center px-4">
-                            <div className="d-flex align-items-center gap-3">
-                                <h1 className="h3 mb-0 text-dark fw-bold">Éditeur de quiz</h1>
+                    <div className="container-fluid px-3 py-3 content-full-width">
+                        <div className="editor-quiz-sticky-toolbar">
+                            <div className="editor-quiz-sticky-title">
+                                <h1 className="h4 mb-0 text-dark fw-bold text-nowrap">Éditeur de quiz</h1>
                             </div>
 
-                            <div className="d-flex align-items-center gap-3">
-                              
+                            <div className="editor-quiz-sticky-fields">
+                                <div className="editor-quiz-sticky-field">
+                                    <ValidatedTextField
+                                        fieldPath="quiz.title"
+                                        initialValue={quizTitle}
+                                        onValueChange={(value) => setQuizTitle(value)}
+                                        label="Titre du quiz"
+                                        placeholder="Titre du quiz"
+                                        fullWidth
+                                        variant="outlined"
+                                        size="small"
+                                    />
+                                </div>
+                                <div className="editor-quiz-sticky-field">
+                                    <FormControl fullWidth variant="outlined" size="small">
+                                        <InputLabel id="select-folder-label">Dossier</InputLabel>
+                                        <Select
+                                            labelId="select-folder-label"
+                                            id="select-folder"
+                                            value={selectedFolder}
+                                            onChange={(event) => setSelectedFolder(event.target.value)}
+                                            disabled={!isNewQuiz}
+                                            label="Dossier"
+                                        >
+                                            <MenuItem disabled value="">
+                                                <em>Choisir un dossier...</em>
+                                            </MenuItem>
+                                            {alphabeticalSort(folders).map((folder: FolderType) => (
+                                                <MenuItem value={folder._id} key={folder._id}>
+                                                    {folder.title}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </div>
+                            </div>
+
+                            <div className="editor-quiz-sticky-actions">
                                 <Button
                                     variant="contained"
                                     onClick={handleQuizSave}
@@ -589,48 +655,6 @@ const EditorQuiz: React.FC = () => {
 
                 {/* Main Content */}
                 <div className="container-fluid py-2 editor-main-content">
-                    {/* Quiz Configuration Card */}
-                    <div className="card mb-3 flex-shrink-0 no-print">
-                        <div className="card-body py-3">
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <ValidatedTextField
-                                        fieldPath="quiz.title"
-                                        initialValue={quizTitle}
-                                        onValueChange={(value) => setQuizTitle(value)}
-                                        label="Titre du quiz"
-                                        placeholder="Titre du quiz"
-                                        fullWidth
-                                        variant="outlined"
-                                        size="small"
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <FormControl fullWidth variant="outlined" size="small">
-                                        <InputLabel id="select-folder-label">Dossier</InputLabel>
-                                        <Select
-                                            labelId="select-folder-label"
-                                            id="select-folder"
-                                            value={selectedFolder}
-                                            onChange={(event) => setSelectedFolder(event.target.value)}
-                                            disabled={!isNewQuiz}
-                                            label="Dossier"
-                                        >
-                                            <MenuItem disabled value="">
-                                                <em>Choisir un dossier...</em>
-                                            </MenuItem>
-                                            {alphabeticalSort(folders).map((folder: FolderType) => (
-                                                <MenuItem value={folder._id} key={folder._id}>
-                                                    {folder.title}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Main Editor Section - Scrollable Content Container */}
                     <div className="flex-grow-1 editor-main-scroll-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
                         <div ref={splitPaneRef} className="d-flex flex-column flex-lg-row h-100 w-100 editor-split-pane">
@@ -638,9 +662,9 @@ const EditorQuiz: React.FC = () => {
                             <div 
                                 className="border rounded d-flex flex-column h-100 editor-quiz-editor-col resizable-pane"
                             >
-                                <div className="p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
+                                <div className="p-3 bg-white h-100 d-flex flex-column">
                                  
-                                    <div className="overflow-auto flex-grow-1 pe-2">
+                                    <div className="flex-grow-1 pe-2">
                                         {/* GIFT Editor */}
                                         
                                         <div className="mb-4">
@@ -733,7 +757,10 @@ const EditorQuiz: React.FC = () => {
                                 className="d-flex flex-column h-100 editor-quiz-preview-col editor-preview-sticky-column"
                             >
                                 <div className="border rounded p-3 bg-white h-100 d-flex flex-column" style={{ maxHeight: '100%' }}>
-                                    <div className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print">
+                                    <div
+                                        className="mb-3 flex-shrink-0 d-flex align-items-center justify-content-between flex-wrap gap-2 no-print editor-preview-sticky-header"
+                                        data-testid="preview-section-header"
+                                    >
                                         <h4 className="mb-0">Prévisualisation</h4>
                                         <div className="d-flex align-items-center gap-2">
                                             <FormControlLabel

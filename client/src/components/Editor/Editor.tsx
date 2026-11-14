@@ -218,7 +218,7 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
                     behavior: 'smooth',
                 });
             }
-            const stickyHeaderOffset = 120;
+            const stickyHeaderOffset = 140;
             const targetWindowY = Math.max(0, window.scrollY + rect.top + lineTop - stickyHeaderOffset);
             requestAnimationFrame(() => {
                 window.scrollTo({
@@ -345,9 +345,12 @@ const Editor: React.FC<EditorProps> = ({ initialValue, onEditorChange, label, on
         : undefined;
 
     return (
-        <div className='mb-3'>
+        <div className='mb-3 editor-v2-root'>
             {/* Editor Header with Collapse Toggle */}
-            <div className='d-flex justify-content-between align-items-center mb-2'>
+            <div
+                className='d-flex justify-content-between align-items-center mb-2 editor-v2-sticky-header'
+                data-testid='editor-section-header'
+            >
                 <h4 className='mb-0'>{label}</h4>
                 <Button
                     variant='text'

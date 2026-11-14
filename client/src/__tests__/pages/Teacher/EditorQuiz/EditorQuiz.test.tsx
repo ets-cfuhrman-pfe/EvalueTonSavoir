@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -255,6 +255,36 @@ describe('EditorQuiz Component', () => {
       
       const folderLabel = screen.getByLabelText(TEST_TEXTS.FOLDER_LABEL);
       expect(folderLabel).toBeInTheDocument();
+    });
+
+    test('renders page title, quiz configuration fields, and action buttons inside a single sticky header', () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
+
+      renderComponent();
+
+      const stickyHeader = screen.getByTestId('editor-quiz-sticky-header');
+      expect(stickyHeader).toHaveClass('position-sticky', 'top-0', 'editor-quiz-sticky-header');
+
+      const scoped = within(stickyHeader);
+      expect(scoped.getByText(TEST_TEXTS.PAGE_TITLE)).toBeInTheDocument();
+      expect(scoped.getByLabelText(TEST_TEXTS.QUIZ_TITLE_LABEL)).toBeInTheDocument();
+      expect(scoped.getByLabelText(TEST_TEXTS.FOLDER_LABEL)).toBeInTheDocument();
+      expect(scoped.getByRole('button', { name: TEST_TEXTS.SAVE_BUTTON })).toBeInTheDocument();
+      expect(scoped.getByRole('button', { name: TEST_TEXTS.SAVE_EXIT_BUTTON })).toBeInTheDocument();
+      expect(scoped.getByTestId('return-button')).toBeInTheDocument();
+    });
+
+    test('uses consistent sticky headers for both editor and preview panes', () => {
+      (require('react-router-dom').useParams as jest.Mock).mockReturnValue({ id: MOCK_IDS.NEW });
+
+      renderComponent();
+
+      const previewHeader = screen.getByTestId('preview-section-header');
+      expect(previewHeader).toHaveClass('editor-preview-sticky-header');
+      expect(previewHeader).toHaveTextContent(TEST_TEXTS.PREVIEW_TITLE);
+
+      const editorWrapper = screen.getByTestId(TEST_IDS.EDITOR);
+      expect(editorWrapper.closest('.overflow-auto')).toBeNull();
     });
   });
 

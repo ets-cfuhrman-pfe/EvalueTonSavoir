@@ -23,6 +23,10 @@ describe('Editor Component', () => {
         const editorTextarea = screen.getByRole('textbox') as HTMLTextAreaElement;
         expect(editorTextarea).toBeInTheDocument();
         expect(editorTextarea.value).toBe('Sample Initial Value');
+
+        const sectionHeader = screen.getByTestId('editor-section-header');
+        expect(sectionHeader).toHaveClass('editor-v2-sticky-header');
+        expect(sectionHeader).toHaveTextContent('Sample Label');
     });
 
     it('calls onEditorChange callback when editor value changes', () => {
