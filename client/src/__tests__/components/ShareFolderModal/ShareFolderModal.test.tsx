@@ -168,7 +168,7 @@ describe('ShareFolderModal', () => {
             await waitFor(() =>
                 expect(clipboardWriteMock).toHaveBeenCalledWith(`${window.location.origin}/teacher/share/q2`)
             );
-            expect(await screen.findByText(/lien copié/i)).toBeInTheDocument();
+            expect(await screen.findByText(/lien copié dans le presse-papiers/i)).toBeInTheDocument();
         });
 
         it('shows error feedback when clipboard write is rejected', async () => {
@@ -237,6 +237,36 @@ describe('ShareFolderModal', () => {
             await waitForQuizzes();
             fireEvent.click(zipButton());
             expect(await screen.findByText(/impossible de générer l'archive/i)).toBeInTheDocument();
+        });
+    });
+
+    describe('layout and clarity', () => {
+        it('renders section headings', async () => {
+            renderModal();
+            await waitForQuizzes();
+
+            expect(screen.getByRole('heading', { name: 'Partager un quiz individuel (2)' })).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'Partager tout le dossier' })).toBeInTheDocument();
+        });
+
+        it('bounds the quiz list height with internal vertical scrolling', async () => {
+            renderModal();
+            await waitForQuizzes();
+
+            const list = screen.getByTestId('folder-quiz-list');
+            expect(list).toHaveStyle({ maxHeight: '210px', overflowY: 'auto' });
+        });
+
+        it('changes the quiz copy button text from "Copier le lien" to "Lien copié" after copying', async () => {
+            renderModal();
+            await waitForQuizzes();
+
+            const copyButton = screen.getByRole('button', { name: 'Copier le lien de Quiz A' });
+            expect(copyButton).toHaveTextContent('Copier le lien');
+
+            fireEvent.click(copyButton);
+
+            await waitFor(() => expect(copyButton).toHaveTextContent('Lien copié'));
         });
     });
 

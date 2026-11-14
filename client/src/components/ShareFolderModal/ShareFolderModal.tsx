@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     ListItemText,
-    IconButton,
     CircularProgress,
     Alert,
     Typography,
@@ -16,7 +15,7 @@ import {
     Divider,
     Stack,
 } from '@mui/material';
-import { ContentCopy, Link as LinkIcon, FolderZip } from '@mui/icons-material';
+import { Check, ContentCopy, Link as LinkIcon, FolderZip } from '@mui/icons-material';
 
 import { FolderType } from '../../Types/FolderType';
 import { QuizType } from '../../Types/QuizType';
@@ -147,10 +146,36 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
     const isEmpty = !loading && !error && quizzes.length === 0;
     const actionsDisabled = loading || !!error || quizzes.length === 0;
 
+    const folderActions = [
+        {
+            key: 'list',
+            icon: <ContentCopy />,
+            onClick: handleCopyAllLinks,
+            label: 'Copier la liste des quiz (titres et liens)',
+        },
+        {
+            key: 'link',
+            icon: <LinkIcon />,
+            onClick: handleCopyFolderLink,
+            label: "Copier le lien d'importation du dossier",
+        },
+        {
+            key: 'zip',
+            icon: <FolderZip />,
+            onClick: handleDownloadZip,
+            label: 'Télécharger tous les quiz (.zip GIFT)',
+        },
+    ];
+
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <DialogTitle>Partager le dossier &ldquo;{folder?.title}&rdquo;</DialogTitle>
             <DialogContent dividers>
+                <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+                    Partager un quiz individuel
+                    {!loading && !error && quizzes.length > 0 ? ` (${quizzes.length})` : ''}
+                </Typography>
+
                 {loading && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
                         <CircularProgress />
@@ -161,56 +186,85 @@ const ShareFolderModal: React.FC<ShareFolderModalProps> = ({ open, folder, onClo
                     <Typography color="text.secondary">Ce dossier ne contient aucun quiz.</Typography>
                 )}
                 {!loading && !error && quizzes.length > 0 && (
-                    <List disablePadding>
-                        {quizzes.map((quiz) => (
-                            <ListItem
-                                key={quiz._id}
-                                disableGutters
-                                sx={quiz._id === copiedQuizId ? { backgroundColor: 'success.light', borderRadius: 1 } : undefined}
-                                secondaryAction={
-                                    <IconButton
+                    <List
+                        disablePadding
+                        data-testid="folder-quiz-list"
+                        sx={{
+                            maxHeight: 210,
+                            overflowY: 'auto',
+                            border: 1,
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                        }}
+                    >
+                        {quizzes.map((quiz, index) => {
+                            const isCopied = quiz._id === copiedQuizId;
+                            return (
+                                <ListItem
+                                    key={quiz._id}
+                                    disableGutters
+                                    divider={index < quizzes.length - 1}
+                                    sx={{
+                                        px: 1.5,
+                                        py: 0.75,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: 1.5,
+                                        backgroundColor: isCopied ? 'action.selected' : undefined,
+                                    }}
+                                >
+                                    <ListItemText
+                                        primary={quiz.title}
+                                        sx={{ my: 0, minWidth: 0 }}
+                                        primaryTypographyProps={{ noWrap: true }}
+                                    />
+                                    <Button
                                         size="small"
+                                        variant={isCopied ? 'contained' : 'outlined'}
+                                        color={isCopied ? 'success' : 'primary'}
+                                        startIcon={isCopied ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
                                         onClick={() => handleCopyLink(quiz._id)}
-                                        title="Copier le lien"
-                                        aria-label={`Copier le lien de ${quiz.title}`}
+                                        aria-label={
+                                            isCopied
+                                                ? `Lien copié - Copier le lien de ${quiz.title}`
+                                                : `Copier le lien de ${quiz.title}`
+                                        }
+                                        sx={{ flexShrink: 0, textTransform: 'none' }}
                                     >
-                                        <ContentCopy fontSize="small" />
-                                    </IconButton>
-                                }
-                            >
-                                <ListItemText primary={quiz.title} />
-                            </ListItem>
-                        ))}
+                                        {isCopied ? 'Lien copié' : 'Copier le lien'}
+                                    </Button>
+                                </ListItem>
+                            );
+                        })}
                     </List>
                 )}
 
                 <Divider sx={{ my: 2 }} />
 
+                <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+                    Partager tout le dossier
+                </Typography>
+
                 <Stack spacing={1}>
-                    <Button
-                        startIcon={<ContentCopy />}
-                        onClick={handleCopyAllLinks}
-                        disabled={actionsDisabled}
-                        variant="outlined"
-                    >
-                        Copier la liste des quiz (titres et liens)
-                    </Button>
-                    <Button
-                        startIcon={<LinkIcon />}
-                        onClick={handleCopyFolderLink}
-                        disabled={actionsDisabled}
-                        variant="outlined"
-                    >
-                        Copier le lien d&apos;importation du dossier
-                    </Button>
-                    <Button
-                        startIcon={<FolderZip />}
-                        onClick={handleDownloadZip}
-                        disabled={actionsDisabled}
-                        variant="outlined"
-                    >
-                        Télécharger tous les quiz (.zip GIFT)
-                    </Button>
+                    {folderActions.map((action) => (
+                        <Button
+                            key={action.key}
+                            startIcon={action.icon}
+                            onClick={action.onClick}
+                            disabled={actionsDisabled}
+                            variant="outlined"
+                            sx={{
+                                justifyContent: 'flex-start',
+                                textAlign: 'left',
+                                textTransform: 'none',
+                                py: 1,
+                                px: 1.5,
+                            }}
+                        >
+                            {action.label}
+                        </Button>
+                    ))}
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ flexWrap: 'wrap', gap: 1, px: 2, py: 1.5 }}>
