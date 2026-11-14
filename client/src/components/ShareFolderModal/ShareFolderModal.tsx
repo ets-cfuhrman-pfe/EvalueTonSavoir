@@ -46,11 +46,12 @@ const writeToClipboard = async (text: string): Promise<void> => {
     textarea.value = text;
     textarea.style.position = 'fixed';
     textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
+    const container = document.activeElement?.parentElement || document.body;
+    container.appendChild(textarea);
     textarea.focus();
     textarea.select();
     const success = document.execCommand('copy');
-    document.body.removeChild(textarea);
+    textarea.remove();
     if (!success) throw new Error('execCommand copy failed');
 };
 
