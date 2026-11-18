@@ -21,7 +21,7 @@ on:
           - minor
           - major
       release_notes:
-        description: 'Nouveautés (client) : issue = publier l''issue « Notes de version », none = aucune note'
+        description: 'Release notes (client)'
         required: true
         default: issue
         type: choice
@@ -29,7 +29,7 @@ on:
           - issue
           - none
       notes_issue:
-        description: 'Numéro de l''issue « Notes de version » (vide = l''issue ouverte avec l''étiquette notes-de-version)'
+        description: 'Release notes issue # (optional)'
         required: false
         type: string
 
