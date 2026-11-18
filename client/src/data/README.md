@@ -37,27 +37,21 @@ Les versions sont listées de la plus récente à la plus ancienne.
 
 ## Comment les notes sont produites
 
-Les notes sont écrites au moment de la création d'un RC, par le workflow
-**Release - Create Staging Release (RC)** (`.github/workflows/release-create-rc.yml`) lancé
-sur `staging` avec `package: client`. L'option `release_notes` choisit la méthode :
+Les notes sont écrites à la main, avant la release, puis publiées au moment de la création
+d'un RC par le workflow **Release - Create Staging Release (RC)**
+(`.github/workflows/release-create-rc.yml`) lancé sur `staging` avec `package: client`.
+L'option `release_notes` choisit le comportement :
 
 | Option | Comportement |
 | --- | --- |
-| `auto` (par défaut) | Si une entrée `"unreleased"` existe, elle est utilisée (voir plus bas). Sinon, l'IA (GitHub Models) rédige les notes à partir des commits touchant `client/` depuis la dernière version en production. Si l'IA échoue ou répond quelque chose d'invalide, le RC continue sans nouvelles notes (avertissement dans le résumé du workflow). |
-| `manual` | Une entrée `"unreleased"` est obligatoire. Sans elle, le workflow échoue **avant** tout commit ou push. |
-| `none` | Le fichier n'est pas modifié. |
+| `manual` (par défaut) | L'entrée `"unreleased"` (voir plus bas) reçoit le numéro de version (sans le suffixe `-rc.N`) et la date du jour, puis elle est incluse dans le commit de version et dans l'image du RC. Sans entrée `"unreleased"`, le workflow échoue **avant** tout commit ou push. |
+| `none` | Le fichier n'est pas modifié (release purement technique, sans changement visible pour les enseignants). |
 
-Dans les deux premiers cas, l'entrée reçoit le numéro de version (sans le suffixe `-rc.N`) et
-la date du jour, puis elle est incluse dans le commit de version et dans l'image du RC.
-Le résumé du workflow affiche l'entrée obtenue.
+Le résumé du workflow affiche l'entrée publiée.
 
-Relancer un RC pour la même version (ex. `-rc.1`) remplace l'entrée de cette version au lieu
-d'en ajouter une deuxième. Attention : en mode `auto`, l'IA réécrit alors les notes. Pour garder
-des notes déjà corrigées à la main, relancez avec `release_notes: manual` (les notes existantes
-de la version sont conservées) ou `none`.
-
-Pour voir ce que l'IA produirait sans rien modifier, lancez le workflow
-**Nouveautés - Preview release notes** (`.github/workflows/whats-new-preview.yml`).
+Relancer un RC pour la même version (ex. `-rc.1`) sans nouvelle entrée `"unreleased"` conserve
+les notes déjà publiées pour cette version. Avec une nouvelle entrée `"unreleased"`, celle-ci
+remplace les notes de la version au lieu d'en ajouter une deuxième.
 
 ## Écrire les notes à la main
 
@@ -85,8 +79,10 @@ Pour voir ce que l'IA produirait sans rien modifier, lancez le workflow
    }
    ```
 
-2. Une fois la PR fusionnée, lancez le RC avec `release_notes: manual` (ou `auto`, qui utilise
-   aussi l'entrée `"unreleased"` en priorité et n'appelle pas l'IA).
+2. Une fois la PR fusionnée, lancez le RC avec `release_notes: manual` (valeur par défaut).
+
+Pour savoir quoi écrire, consultez les PR fusionnées depuis la dernière version, par exemple :
+`git log client-v2.5.0..staging --merges --oneline`.
 
 Il ne peut y avoir qu'une seule entrée `"unreleased"`.
 
@@ -111,5 +107,4 @@ Le script et ses tests se trouvent dans `.github/scripts/whats-new/` :
 ```bash
 node --test .github/scripts/whats-new/update-whats-new.test.mjs
 node .github/scripts/whats-new/update-whats-new.mjs --mode manual --version 2.6.0-rc.0 --dry-run
-node .github/scripts/whats-new/update-whats-new.mjs --collect-commits
 ```

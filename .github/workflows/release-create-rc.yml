@@ -20,6 +20,14 @@ on:
           - patch
           - minor
           - major
+      release_notes:
+        description: 'Nouveautés (client only): manual = publish the "unreleased" entry of client/src/data/whatsNew.json (required), none = no notes for this release'
+        required: true
+        default: manual
+        type: choice
+        options:
+          - manual
+          - none
 
 jobs:
   release-rc:
@@ -69,10 +77,25 @@ jobs:
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
           echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
           echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
+      # --- "Nouveautés" release notes (client only) -------------------------
+      # Stamps the hand-written "unreleased" entry of client/src/data/whatsNew.json
+      # with the version and date before the version bump commit, so the notes
+      # ship in the RC image. Manual mode fails here, before any push.
+      - name: Update whatsNew.json
+        if: inputs.package == 'client'
+        run: |
+          node .github/scripts/whats-new/update-whats-new.mjs \
+            --mode "${{ inputs.release_notes }}" \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Commit version bump
         run: |
           git add ${{ github.event.inputs.package }}/package.json
           git add ${{ github.event.inputs.package }}/package-lock.json
+          if [ "${{ github.event.inputs.package }}" = "client" ] && [ -f client/src/data/whatsNew.json ]; then
+            git add client/src/data/whatsNew.json
+          fi
           git commit -m "chore(${{ steps.version.outputs.PACKAGE }}): release ${{ steps.version.outputs.VERSION }} [skip ci]"
       - name: Create Git tag
         run: |
