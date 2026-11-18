@@ -1,0 +1,39 @@
+name: Notes de version (Nouveautés)
+description: Rédiger en français les nouveautés et corrections affichées aux enseignants à la prochaine version du client.
+title: "Notes de version : prochaine version du client"
+labels: ["notes-de-version"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ces notes s'affichent aux enseignants dans le panneau **Nouveautés** de la barre de navigation.
+        Écrivez pour un enseignant, en français simple, une phrase par élément, sans jargon technique.
+
+        Au lancement du workflow **Release - Create Staging Release (RC)** (`release_notes: issue`), ces notes
+        sont ajoutées automatiquement à l'application, puis l'issue est fermée. Un commentaire automatique
+        affiche un aperçu (ou les erreurs de format) chaque fois que vous créez ou modifiez cette issue.
+
+  - type: textarea
+    id: features
+    attributes:
+      label: Nouvelles fonctionnalités
+      description: |
+        Une nouveauté par ligne, au format `[Zone] Titre : description`.
+        Zones possibles : Éditeur, Quiz en direct, Tableau de bord, Impression, Connexion, Navigation, Préférences, Autre.
+        La zone est facultative (par défaut : Autre). Laissez vide s'il n'y a aucune nouveauté.
+      placeholder: |
+        [Éditeur] L'aperçu suit votre curseur : La question que vous modifiez est surlignée et l'aperçu défile jusqu'à elle.
+        [Quiz en direct] Rétroaction pour les élèves : Après chaque réponse, l'élève voit une boîte de rétroaction.
+    validations:
+      required: false
+
+  - type: textarea
+    id: fixes
+    attributes:
+      label: Corrections
+      description: Une correction par ligne, en une phrase. Laissez vide s'il n'y a aucune correction.
+      placeholder: |
+        L'éditeur ne saute plus en haut de la page quand on clique dedans.
+        Les symboles mathématiques comme ≠ s'affichent correctement.
+    validations:
+      required: false

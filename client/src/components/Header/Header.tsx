@@ -6,6 +6,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { getCurrentRoomName } from '../../utils/roomUtils';
+import WhatsNewButton from '../WhatsNew/WhatsNewButton';
 
 interface HeaderProps {
     isLoggedIn: boolean;
@@ -69,6 +70,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* Navigation Items */}
                 <div className="d-flex align-items-center ms-auto flex-shrink-0 gap-2">
+                    {isTeacherAuthenticated && <WhatsNewButton />}
                     {isTeacherAuthenticated && (
                         <Link to="/teacher/dashboard" className="text-decoration-none">
                             <button 

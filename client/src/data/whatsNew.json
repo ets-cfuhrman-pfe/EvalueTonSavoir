@@ -1,0 +1,102 @@
+{
+  "releases": [
+    {
+      "version": "2.5.0",
+      "date": "2026-11-13",
+      "features": [
+        {
+          "area": "Éditeur",
+          "title": "L'aperçu suit votre curseur",
+          "description": "La question que vous modifiez est surlignée et l'aperçu défile tout seul jusqu'à elle. Plus besoin de la chercher."
+        },
+        {
+          "area": "Éditeur",
+          "title": "Erreurs plus faciles à trouver",
+          "description": "Quand une question contient une erreur, le message indique maintenant le numéro de la ligne à corriger."
+        },
+        {
+          "area": "Quiz en direct",
+          "title": "Rétroaction pour les élèves",
+          "description": "Après chaque réponse, l'élève voit une boîte de rétroaction qu'il peut fermer quand il a terminé de la lire."
+        },
+        {
+          "area": "Quiz en direct",
+          "title": "Écrans d'attente plus clairs",
+          "description": "Entre deux questions, élèves et enseignants voient un écran qui indique clairement qu'on attend la suite."
+        },
+        {
+          "area": "Quiz en direct",
+          "title": "Nom de la salle toujours visible",
+          "description": "Le nom de la salle s'affiche dans l'en-tête pendant le quiz, pour que tout le monde sache où il se trouve."
+        },
+        {
+          "area": "Préférences",
+          "title": "Animation clignotante désactivable",
+          "description": "Vous pouvez maintenant couper l'animation qui pulse si elle vous dérange."
+        }
+      ],
+      "fixes": [
+        {
+          "description": "L'éditeur ne saute plus en haut de la page quand on clique dedans."
+        },
+        {
+          "description": "Une ligne qui ne contient que des espaces sépare bien deux questions."
+        },
+        {
+          "description": "Les symboles mathématiques comme ≠ s'affichent correctement."
+        },
+        {
+          "description": "Le surlignage de la question active n'apparaît plus sur les quiz imprimés."
+        },
+        {
+          "description": "Les séparateurs en trop au début d'une question sont retirés automatiquement."
+        }
+      ]
+    },
+    {
+      "version": "2.4.0",
+      "date": "2026-03-27",
+      "features": [
+        {
+          "area": "Impression",
+          "title": "Imprimer un quiz depuis le navigateur",
+          "description": "Le quiz s'imprime avec une mise en page propre, avec ou sans les réponses."
+        },
+        {
+          "area": "Éditeur",
+          "title": "Éditeur et aperçu redimensionnables",
+          "description": "Glissez la barre du milieu (ou utilisez le clavier) pour donner plus de place à l'éditeur ou à l'aperçu."
+        },
+        {
+          "area": "Éditeur",
+          "title": "Zone d'édition qui s'agrandit",
+          "description": "La zone de texte grandit avec votre contenu au lieu de le couper."
+        },
+        {
+          "area": "Connexion",
+          "title": "Nouvelle page de connexion",
+          "description": "La page de connexion a été repensée pour être plus claire."
+        },
+        {
+          "area": "Navigation",
+          "title": "Barre du haut toujours visible",
+          "description": "La barre de navigation reste en place lorsque vous faites défiler la page."
+        }
+      ],
+      "fixes": [
+        {
+          "description": "L'aperçu ressemble maintenant exactement au quiz que voient les élèves."
+        },
+        {
+          "description": "Les rétroactions ne s'affichent plus dans l'aperçu de l'éditeur."
+        },
+        {
+          "description": "Le bouton « Masquer les réponses » s'affiche correctement."
+        },
+        {
+          "description": "Le bouton de connexion en double a été retiré de la page de connexion."
+        }
+      ]
+    }
+  ]
+}
