@@ -36,11 +36,21 @@
         }
       ],
       "fixes": [
-        { "description": "L'éditeur ne saute plus en haut de la page quand on clique dedans." },
-        { "description": "Une ligne qui ne contient que des espaces sépare bien deux questions." },
-        { "description": "Les symboles mathématiques comme ≠ s'affichent correctement." },
-        { "description": "Le surlignage de la question active n'apparaît plus sur les quiz imprimés." },
-        { "description": "Les séparateurs en trop au début d'une question sont retirés automatiquement." }
+        {
+          "description": "L'éditeur ne saute plus en haut de la page quand on clique dedans."
+        },
+        {
+          "description": "Une ligne qui ne contient que des espaces sépare bien deux questions."
+        },
+        {
+          "description": "Les symboles mathématiques comme ≠ s'affichent correctement."
+        },
+        {
+          "description": "Le surlignage de la question active n'apparaît plus sur les quiz imprimés."
+        },
+        {
+          "description": "Les séparateurs en trop au début d'une question sont retirés automatiquement."
+        }
       ]
     },
     {
@@ -74,10 +84,18 @@
         }
       ],
       "fixes": [
-        { "description": "L'aperçu ressemble maintenant exactement au quiz que voient les élèves." },
-        { "description": "Les rétroactions ne s'affichent plus dans l'aperçu de l'éditeur." },
-        { "description": "Le bouton « Masquer les réponses » s'affiche correctement." },
-        { "description": "Le bouton de connexion en double a été retiré de la page de connexion." }
+        {
+          "description": "L'aperçu ressemble maintenant exactement au quiz que voient les élèves."
+        },
+        {
+          "description": "Les rétroactions ne s'affichent plus dans l'aperçu de l'éditeur."
+        },
+        {
+          "description": "Le bouton « Masquer les réponses » s'affiche correctement."
+        },
+        {
+          "description": "Le bouton de connexion en double a été retiré de la page de connexion."
+        }
       ]
     }
   ]
