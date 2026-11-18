@@ -21,13 +21,17 @@ on:
           - minor
           - major
       release_notes:
-        description: 'Nouveautés (client only): manual = publish the "unreleased" entry of client/src/data/whatsNew.json (required), none = no notes for this release'
+        description: 'Nouveautés (client) : issue = publier l''issue « Notes de version », none = aucune note'
         required: true
-        default: manual
+        default: issue
         type: choice
         options:
-          - manual
+          - issue
           - none
+      notes_issue:
+        description: 'Numéro de l''issue « Notes de version » (vide = l''issue ouverte avec l''étiquette notes-de-version)'
+        required: false
+        type: string
 
 jobs:
   release-rc:
@@ -36,6 +40,7 @@ jobs:
     if: github.ref == 'refs/heads/staging'
     permissions:
       contents: write
+      issues: write # read the "Notes de version" issue, then comment on and close it
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,15 +83,51 @@ jobs:
           echo "PACKAGE=${PACKAGE}" >> $GITHUB_OUTPUT
           echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
       # --- "Nouveautés" release notes (client only) -------------------------
-      # Stamps the hand-written "unreleased" entry of client/src/data/whatsNew.json
-      # with the version and date before the version bump commit, so the notes
-      # ship in the RC image. Manual mode fails here, before any push.
+      # The notes are written in a GitHub issue ("Notes de version" issue form) and
+      # added to client/src/data/whatsNew.json before the version bump commit, so
+      # they ship in the RC image. Any problem fails here, before any push.
+      # The issue body is untrusted text: it only ever goes through a file.
+      - name: Find "Notes de version" issue
+        id: notes_issue
+        if: inputs.package == 'client' && inputs.release_notes == 'issue'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOTES_ISSUE: ${{ inputs.notes_issue }}
+        run: |
+          NUMBER="$(echo "$NOTES_ISSUE" | tr -d '[:space:]#')"
+          if [ -n "$NUMBER" ]; then
+            if ! [[ "$NUMBER" =~ ^[0-9]+$ ]]; then
+              echo "::error title=Nouveautés::notes_issue doit être un numéro d'issue (reçu : $NOTES_ISSUE)."
+              exit 1
+            fi
+          else
+            OPEN=$(gh issue list --repo "$GITHUB_REPOSITORY" --label notes-de-version --state open --json number -q '.[].number')
+            COUNT=$(echo "$OPEN" | grep -c . || true)
+            if [ "$COUNT" -gt 1 ]; then
+              echo "::error title=Nouveautés::Plusieurs issues « Notes de version » ouvertes ($(echo $OPEN | tr ' ' ',')). Fermez les autres ou précisez notes_issue."
+              exit 1
+            fi
+            NUMBER="$OPEN"
+          fi
+          if [ -n "$NUMBER" ]; then
+            gh issue view "$NUMBER" --repo "$GITHUB_REPOSITORY" --json body -q .body > "$RUNNER_TEMP/notes-issue.md"
+            echo "Notes de version : issue #$NUMBER"
+          else
+            echo "Aucune issue « Notes de version » ouverte."
+          fi
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+
       - name: Update whatsNew.json
         if: inputs.package == 'client'
         run: |
+          ISSUE_ARGS=()
+          if [ -f "$RUNNER_TEMP/notes-issue.md" ]; then
+            ISSUE_ARGS=(--issue-body "$RUNNER_TEMP/notes-issue.md")
+          fi
           node .github/scripts/whats-new/update-whats-new.mjs \
             --mode "${{ inputs.release_notes }}" \
             --version "${{ steps.version.outputs.VERSION }}" \
+            "${ISSUE_ARGS[@]}" \
             --summary "$GITHUB_STEP_SUMMARY"
 
       - name: Commit version bump
@@ -107,6 +148,21 @@ jobs:
         run: |
           git push origin staging
           git push origin ${{ steps.version.outputs.TAG }}
+      - name: Close "Notes de version" issue
+        if: steps.notes_issue.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.notes_issue.outputs.number }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          {
+            echo "✅ Ces notes ont été ajoutées à l'application dans la version **client $VERSION** (\`client/src/data/whatsNew.json\`, commit $(git rev-parse --short HEAD) sur \`staging\`)."
+            echo ""
+            echo "Pour corriger le texte : modifiez cette issue, puis relancez le workflow RC avec \`notes_issue: $NUMBER\`."
+          } > "$RUNNER_TEMP/notes-comment.md"
+          gh issue comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/notes-comment.md"
+          # Already closed when an RC is re-run with notes_issue: that's fine.
+          gh issue close "$NUMBER" --repo "$GITHUB_REPOSITORY" --reason completed || true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

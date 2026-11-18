@@ -1,0 +1,68 @@
+name: Nouveautés - Check release notes issue
+
+# Comments a preview of the "Notes de version" issue (or its format errors)
+# every time it is opened or edited, so mistakes show up in GitHub right away
+# instead of at release time. Keeps a single comment up to date.
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: whats-new-issue-check-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: contains(github.event.issue.labels.*.name, 'notes-de-version') && github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The issue body is untrusted text: pass it through an env var into a file,
+      # never interpolate it into the script.
+      - name: Check issue format
+        id: check
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          printf '%s' "$ISSUE_BODY" > "$RUNNER_TEMP/notes-issue.md"
+          set +e
+          node .github/scripts/whats-new/update-whats-new.mjs --check \
+            --issue-body "$RUNNER_TEMP/notes-issue.md" > "$RUNNER_TEMP/notes-comment.md"
+          CODE=$?
+          set -e
+          cat "$RUNNER_TEMP/notes-comment.md" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" -ne 0 ] && [ "$CODE" -ne 2 ]; then exit "$CODE"; fi
+          echo "valid=$([ "$CODE" -eq 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Post or update preview comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          EXISTING=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments" --paginate \
+            -q '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- whats-new-check -->")))][0].id // empty')
+          if [ -n "$EXISTING" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$EXISTING" \
+              -F "body=@$RUNNER_TEMP/notes-comment.md" > /dev/null
+          else
+            gh issue comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/notes-comment.md"
+          fi
+
+      - name: Fail on format errors
+        if: steps.check.outputs.valid == 'false'
+        run: |
+          echo "::error title=Nouveautés::L'issue « Notes de version » contient des erreurs de format (voir le commentaire sur l'issue)."
+          exit 1
