@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GIFTTemplatePreviewV2 from 'src/components/GiftTemplate/GIFTTemplatePreviewV2';
 
@@ -115,6 +115,27 @@ describe('GIFTTemplatePreviewV2 Component', () => {
     // The error is in the second question which starts at line 7
     // So the error should show "Line 7" not "Line 1"
     expect(errorMessages[0]).toHaveTextContent('Line 7');
+  });
+
+  it('calls onQuestionClick with the clicked question index', () => {
+    const handleQuestionClick = jest.fn();
+    render(
+      <GIFTTemplatePreviewV2
+        questions={validQuestions}
+        hideAnswers={false}
+        onQuestionClick={handleQuestionClick}
+      />
+    );
+
+    const previewContainer = screen.getByTestId('preview-container');
+    const secondQuestionAnchor = previewContainer.querySelector(
+      '.gift-preview-question-anchor[data-question-index="1"]'
+    ) as HTMLElement;
+    expect(secondQuestionAnchor).toBeInTheDocument();
+
+    fireEvent.click(secondQuestionAnchor);
+    expect(handleQuestionClick).toHaveBeenCalledTimes(1);
+    expect(handleQuestionClick).toHaveBeenCalledWith(1);
   });
 
 });

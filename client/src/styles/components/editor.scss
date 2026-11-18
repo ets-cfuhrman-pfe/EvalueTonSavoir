@@ -89,11 +89,82 @@
   margin-right: -49vw !important;
 }
 
+.editor-quiz-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: #ffffff;
+}
+
+.editor-quiz-sticky-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.editor-quiz-sticky-title {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.editor-quiz-sticky-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1 1 420px;
+  min-width: 280px;
+
+  @media (max-width: 991px) {
+    order: 3;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  @media (max-width: 575px) {
+    flex-direction: column;
+  }
+}
+
+.editor-quiz-sticky-field {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.editor-quiz-sticky-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.editor-v2-sticky-header {
+  position: sticky;
+  top: var(--editor-sticky-top, 76px);
+  z-index: 20;
+  background-color: #ffffff;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.editor-preview-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #ffffff;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .editor-preview-sticky-column {
   @media (min-width: 992px) {
     position: sticky !important;
-    top: 90px;
-    height: calc(100vh - 110px) !important;
+    top: calc(var(--editor-sticky-top, 76px) + 8px);
+    height: calc(100vh - var(--editor-sticky-top, 76px) - 24px) !important;
     align-self: flex-start;
   }
 }
@@ -198,6 +269,36 @@
   }
 }
 
+@keyframes editorRedirectLinePulseOdd {
+  0% {
+    background-color: rgba(250, 204, 21, 0.78);
+  }
+  30% {
+    background-color: rgba(255, 224, 102, 0.32);
+  }
+  58% {
+    background-color: rgba(250, 204, 21, 0.68);
+  }
+  100% {
+    background-color: rgba(255, 224, 102, 0.42);
+  }
+}
+
+@keyframes editorRedirectLinePulseEven {
+  0% {
+    background-color: rgba(250, 204, 21, 0.78);
+  }
+  30% {
+    background-color: rgba(255, 224, 102, 0.32);
+  }
+  58% {
+    background-color: rgba(250, 204, 21, 0.68);
+  }
+  100% {
+    background-color: rgba(255, 224, 102, 0.42);
+  }
+}
+
 .editor-v2-monaco {
   width: 100%;
   max-width: 100%;
@@ -210,5 +311,48 @@
   &:focus-within {
     border-color: vars.$primary;
     box-shadow: 0 0 0 0.2rem rgba(82, 113, 255, 0.25);
+  }
+
+  .monaco-editor .view-overlays .editor-redirect-line-highlight {
+    background-color: rgba(255, 224, 102, 0.42);
+    box-sizing: border-box;
+
+    &--pulse-odd {
+      animation: editorRedirectLinePulseOdd 1.8s ease-out;
+    }
+
+    &--pulse-even {
+      animation: editorRedirectLinePulseEven 1.8s ease-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+
+  .monaco-editor .view-overlays > div:has(.editor-redirect-line-highlight) .current-line {
+    background-color: transparent !important;
+    border-color: transparent !important;
+  }
+
+  .monaco-editor .margin-view-overlays .editor-redirect-line-margin {
+    background-color: rgba(255, 224, 102, 0.35);
+  }
+
+  .monaco-editor .margin-view-overlays > div:has(.editor-redirect-line-margin) {
+    .current-line,
+    .current-line-margin {
+      background-color: transparent !important;
+      border-color: transparent !important;
+    }
+  }
+
+  .monaco-editor .margin-view-overlays .editor-redirect-line-accent {
+    border-left: 4px solid #f59e0b;
+  }
+
+  .monaco-editor .margin-view-overlays .editor-redirect-line-number {
+    color: #b45309 !important;
+    font-weight: 700 !important;
   }
 }
